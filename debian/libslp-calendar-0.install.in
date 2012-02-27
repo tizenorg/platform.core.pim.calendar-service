@@ -1,3 +1,2 @@
 @PREFIX@/lib/*.so.*
 @PREFIX@/bin/calendar-svc-initdb
-/opt/*
