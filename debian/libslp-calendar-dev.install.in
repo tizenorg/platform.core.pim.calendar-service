@@ -1,0 +1,5 @@
+@PREFIX@/lib/*.so
+@PREFIX@/include/calendar-svc/*.h
+@PREFIX@/include/calendar/*.h
+@PREFIX@/lib/pkgconfig/calendar-service.pc
+@PREFIX@/lib/pkgconfig/calendar.pc

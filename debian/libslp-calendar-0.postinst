@@ -1,0 +1,22 @@
+#!/bin/sh
+
+if [ ! -d /opt/dbspace ]
+then
+	mkdir -p /opt/dbspace
+fi
+
+calendar-svc-initdb
+
+if [ "$USER" = "root" ]
+then
+	chown root:root /usr/lib/libcalendar-service.so.*
+   chown :6003 /opt/data/calendar-svc/.CALENDAR_SVC_*
+	chown :6003 /opt/dbspace/.calendar-svc.db
+	chown :6003 /opt/dbspace/.calendar-svc.db-journal
+fi
+
+chmod 660 /opt/dbspace/.calendar-svc.db
+chmod 660 /opt/dbspace/.calendar-svc.db-journal
+chmod 660 /opt/data/calendar-svc/.CALENDAR_SVC_*
+
+echo "Done"
