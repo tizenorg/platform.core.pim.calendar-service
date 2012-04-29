@@ -111,6 +111,16 @@ typedef enum
 } cal_repeat_term_t;
 
 /**
+ * This enumeration defines Repeat term.
+ */
+typedef enum
+{
+	CALS_REPEAT_UNTIL_TYPE_NONE = 0,  /**< Repeat endlessly */
+	CALS_REPEAT_UNTIL_TYPE_DATETIME,  /**< Repeat until the date-time which the CAL_VALUE_GMT_REPEAT_END_DATE indicates */
+	CALS_REPEAT_UNTIL_TYPE_COUNT,     /**< Repeat number of times, which the CAL_VALUE_INT_REPEAT_OCCURRENCES indicates */
+} cal_repeat_until_type_t;
+
+/**
  * This enumeration defines sync status.
  */
 typedef enum
@@ -281,6 +291,18 @@ typedef enum
 } cals_calendar_store_type;
 
 /**
+ * This enumeration defines calendar sensitivity.
+ * (related with CAL_VALUE_INT_SENSITIVITY)
+ */
+typedef enum
+{
+	CALS_SENSITIVITY_PUBLIC = 0x0,
+	CALS_SENSITIVITY_PRIVATE,
+	CALS_SENSITIVITY_CONFIDENTIAL,
+} cals_sensitivity_t;
+
+
+/**
  * @}
  */
 
@@ -372,50 +394,51 @@ typedef enum
  * brief
  * 		calendar_svc_value_xxx()'s argument
  */
-#define CAL_VALUE_INT_INDEX 				  "id"					/**< Record index */
+#define CAL_VALUE_INT_INDEX				  "id"					/**< Record index */
 #define CAL_VALUE_INT_ACCOUNT_ID			  "account_id"			/**< account id */
-#define CAL_VALUE_INT_TYPE 				  "type"				/**< Calendar component type */
-#define CAL_VALUE_INT_CATEGORY 			  "category"			/**< Category of schedule #cal_sch_category_t */
-#define CAL_VALUE_TXT_SUMMARY 				  "summary"				/**< Summary, appointment, task: subject, birthday:Name */
-#define CAL_VALUE_TXT_DESCRIPTION	 		  "description"			/**< Description,appointment, task: description, anniversary,holiday:occasion*/
-#define CAL_VALUE_TXT_LOCATION 			 	  "location"				/**< Location */
-#define CAL_VALUE_INT_ALL_DAY_EVENT		 	  "all_day_event"		/**< All day event flag */
-#define CAL_VALUE_GMT_START_DATE_TIME	 	  "start_date_time"		/**< schedule:start time, anniv,holiday,birthday,memo,todo: date */
-#define CAL_VALUE_GMT_END_DATE_TIME		 	  "end_date_time"		/**< end time */
-#define CAL_VALUE_INT_REPEAT_TERM		 	  "repeat_item"			/**< Repeat term */
-#define CAL_VALUE_INT_REPEAT_INTERVAL	 	  "repeat_interval"		/**< Interval of repeat term */
-#define CAL_VALUE_INT_REPEAT_OCCURRENCES 	  "repeat_occurrences"	  /**< occurrences of repeat */
-#define CAL_VALUE_GMT_REPEAT_END_DATE	 	  "repeat_end_date"		/**< End date for repeat */
-#define CAL_VALUE_INT_SUN_MOON			 	  "sun_moon"				/**< Using sun or lunar calendar */
-#define CAL_VALUE_INT_WEEK_START		 	  "week_start"			/**< Start day of a week */
-#define CAL_VALUE_TXT_WEEK_FLAG			 	  "week_flag" 			/**< 1001000(sun,wed) Indicate which day is select in a week */
-#define CAL_VALUE_INT_DAY_DATE			 	  "day_date"				/**< 0- for weekday(sun,mon,etc.), 1- for specific day(1,2.. Etc) */
-#define CAL_VALUE_GMT_LAST_MODIFIED_TIME 	  "last_modified_time"	/**< for PC Sync */
-#define CAL_VALUE_INT_MISSED			 	  "missed"				  /**< Miss alarm flag */
-#define CAL_VALUE_INT_TASK_STATUS		 	  "task_status"			/**< current task status #cals_status_t */
-#define CAL_VALUE_INT_PRIORITY			 	  "priority"				/**< Priority */
-#define CAL_VALUE_INT_TIMEZONE			 	  "timezone"				/**< deprecated - timezone of task */
-#define CAL_VALUE_INT_FILE_ID 			 	  "file_id"				/**< file id for attach or alarm tone*/
-#define CAL_VALUE_INT_CONTACT_ID		 	  "contact_id"			/**< contact id for birthday in contact list */
-#define CAL_VALUE_INT_BUSY_STATUS		 	  "busy_status"			/**< ACS, G : Flag of busy or not */
-#define CAL_VALUE_INT_SENSITIVITY		 	  "sensitivity"			/**< ACS, G : The sensitivity of the task item (normal, presonal, private, confidential). */
-#define CAL_VALUE_TXT_UID				 	  "uid"					  /**< ACS, G : Unique ID of the meeting item */
-#define CAL_VALUE_INT_CALENDAR_TYPE		 	  "calendar_type"		/**< ACS, G : Type(all,phone,google) of calendar */
-#define CAL_VALUE_TXT_ORGANIZER_NAME	 	  "organizer_name"		/**< ACS, G : Name of organizer(author) */
-#define CAL_VALUE_TXT_ORGANIZER_EMAIL	 	  "organizer_email"		/**< ACS, G : Email of organizer */
-#define CAL_VALUE_INT_MEETING_STATUS	 	  "meeting_status"		/**< ACS, G : The status of the meeting. */
-#define CAL_VALUE_TXT_GCAL_ID			 	  "gcal_id"				/**< G : Server id of calendar */
-#define CAL_VALUE_INT_DELETED			 	  "deleted"				/**< G : Flag for deleted */
-#define CAL_VALUE_TXT_UPDATED			 	  "updated"				/**< G : Updated time stamp */
-#define CAL_VALUE_INT_LOCATION_TYPE		 	  "location_type"		/**< G : Location type */
-#define CAL_VALUE_TXT_LOCATION_SUMMARY	 	  "location_summary"	/**< G : A simple string value that can be used as a representation of this location */
-#define CAL_VALUE_TXT_ETAG				 	  "etag"					/**< G : ETAG of this event */
-#define CAL_VALUE_INT_CALENDAR_ID 		 	  "calendar_id"			/**< G : id to map from calendar table */
-#define CAL_VALUE_INT_SYNC_STATUS		 	  "sync_status"			/**< G : Indication for event entry whether added/ modified/ deleted */
-#define CAL_VALUE_TXT_EDIT_URL			 	  "edit_uri"     	/**< G : EditUri for google calendar */
-#define CAL_VALUE_TXT_GEDERID		 	 	  "gevent_id"				/**< G : Server id of an event */
-#define CAL_VALUE_INT_DST 				 	  "dst"					  /**< dst of event */
-#define CAL_VALUE_INT_ORIGINAL_EVENT_ID	 	  "original_event_id" /**< original event id for recurrency exception */
+#define CAL_VALUE_INT_TYPE				  "type"				/**< Calendar component type */
+#define CAL_VALUE_INT_CATEGORY			  "category"			/**< Category of schedule #cal_sch_category_t */
+#define CAL_VALUE_TXT_SUMMARY				  "summary"				/**< Summary, appointment, task: subject, birthday:Name */
+#define CAL_VALUE_TXT_DESCRIPTION			  "description"			/**< Description,appointment, task: description, anniversary,holiday:occasion*/
+#define CAL_VALUE_TXT_LOCATION				  "location"				/**< Location */
+#define CAL_VALUE_INT_ALL_DAY_EVENT			  "all_day_event"		/**< All day event flag */
+#define CAL_VALUE_GMT_START_DATE_TIME		  "start_date_time"		/**< schedule:start time, anniv,holiday,birthday,memo,todo: date */
+#define CAL_VALUE_GMT_END_DATE_TIME			  "end_date_time"		/**< end time */
+#define CAL_VALUE_INT_REPEAT_TERM			  "repeat_item"			/**< Repeat term */
+#define CAL_VALUE_INT_REPEAT_INTERVAL		  "repeat_interval"		/**< Interval of repeat term */
+#define CAL_VALUE_INT_REPEAT_UNTIL_TYPE		  "repeat_until_type"	/**< Repeat until type */
+#define CAL_VALUE_INT_REPEAT_OCCURRENCES	  "repeat_occurrences"	  /**< occurrences of repeat */
+#define CAL_VALUE_GMT_REPEAT_END_DATE		  "repeat_end_date"		/**< End date for repeat */
+#define CAL_VALUE_INT_SUN_MOON				  "sun_moon"				/**< Using sun or lunar calendar */
+#define CAL_VALUE_INT_WEEK_START			  "week_start"			/**< Start day of a week */
+#define CAL_VALUE_TXT_WEEK_FLAG				  "week_flag"			/**< 1001000(sun,wed) Indicate which day is select in a week */
+#define CAL_VALUE_INT_DAY_DATE				  "day_date"				/**< 0- for weekday(sun,mon,etc.), 1- for specific day(1,2.. Etc) */
+#define CAL_VALUE_GMT_LAST_MODIFIED_TIME	  "last_modified_time"	/**< for PC Sync */
+#define CAL_VALUE_INT_MISSED				  "missed"				  /**< Miss alarm flag */
+#define CAL_VALUE_INT_TASK_STATUS			  "task_status"			/**< current task status #cals_status_t */
+#define CAL_VALUE_INT_PRIORITY				  "priority"				/**< Priority */
+#define CAL_VALUE_INT_TIMEZONE				  "timezone"				/**< deprecated - timezone of task */
+#define CAL_VALUE_INT_FILE_ID				  "file_id"				/**< file id for attach or alarm tone*/
+#define CAL_VALUE_INT_CONTACT_ID			  "contact_id"			/**< contact id for birthday in contact list */
+#define CAL_VALUE_INT_BUSY_STATUS			  "busy_status"			/**< ACS, G : Flag of busy or not */
+#define CAL_VALUE_INT_SENSITIVITY			  "sensitivity"			/**< iCal:CLASS #cals_sensitivity_t */
+#define CAL_VALUE_TXT_UID					  "uid"					  /**< ACS, G : Unique ID of the meeting item */
+#define CAL_VALUE_INT_CALENDAR_TYPE			  "calendar_type"		/**< ACS, G : Type(all,phone,google) of calendar */
+#define CAL_VALUE_TXT_ORGANIZER_NAME		  "organizer_name"		/**< ACS, G : Name of organizer(author) */
+#define CAL_VALUE_TXT_ORGANIZER_EMAIL		  "organizer_email"		/**< ACS, G : Email of organizer */
+#define CAL_VALUE_INT_MEETING_STATUS		  "meeting_status"		/**< ACS, G : The status of the meeting. */
+#define CAL_VALUE_TXT_GCAL_ID				  "gcal_id"				/**< G : Server id of calendar */
+#define CAL_VALUE_INT_DELETED				  "deleted"				/**< G : Flag for deleted */
+#define CAL_VALUE_TXT_UPDATED				  "updated"				/**< G : Updated time stamp */
+#define CAL_VALUE_INT_LOCATION_TYPE			  "location_type"		/**< G : Location type */
+#define CAL_VALUE_TXT_LOCATION_SUMMARY		  "location_summary"	/**< G : A simple string value that can be used as a representation of this location */
+#define CAL_VALUE_TXT_ETAG					  "etag"					/**< G : ETAG of this event */
+#define CAL_VALUE_INT_CALENDAR_ID			  "calendar_id"			/**< G : id to map from calendar table */
+#define CAL_VALUE_INT_SYNC_STATUS			  "sync_status"			/**< G : Indication for event entry whether added/ modified/ deleted */
+#define CAL_VALUE_TXT_EDIT_URL				  "edit_uri"	/**< G : EditUri for google calendar */
+#define CAL_VALUE_TXT_GEDERID				  "gevent_id"				/**< G : Server id of an event */
+#define CAL_VALUE_INT_DST					  "dst"					  /**< dst of event */
+#define CAL_VALUE_INT_ORIGINAL_EVENT_ID		  "original_event_id" /**< original event id for recurrency exception */
 #define CAL_VALUE_INT_CALENDAR_INDEX      "calendar_index"   /**< specific calendar id - will be remove */
 #define CAL_VALUE_DBL_LATITUDE         "latitude"      /**< latitude */
 #define CAL_VALUE_DBL_LONGITUDE        "longitude"     /**< longitude */
@@ -2742,14 +2765,6 @@ int calendar_svc_struct_set_time(cal_struct* record, const char *field,int timez
 time_t calendar_svc_struct_get_time(cal_struct* record, const char *field, int timezone_flag);
 
 /**
- * @fn void calendar_svc_util_get_local_tz_info(char **lock_city_name,char **lock_tz_path,char** lock_tz_offset,char **local_city_name,char **local_tz_path,char **local_tz_offset);
-	get timezone information by setting value
- * @deprecated it will be deprecated.
- */
-void calendar_svc_util_get_local_tz_info(char **lock_city_name,char **lock_tz_path,char** lock_tz_offset,
-											char **local_city_name,char **local_tz_path,char **local_tz_offset);
-
-/**
  * @fn int calendar_svc_find_event_list(int account_id,const char* search_type,const void* search_value, cal_iter **iter);
  * This function get records from database by search param,it is convenient for user to get records according to some condition.
  *
@@ -2848,14 +2863,17 @@ int calendar_svc_search_list(int account_id,int calendar_id,const char *data_typ
 }
 #endif
 
+/**
+ * deprecated
+ */
 typedef enum
 {
-        CAL_STATUS_FREE = 0,               /**< deprecated */
-        CAL_STATUS_TENTATIVE,             /**< deprecated */
-        CAL_STATUS_BUSY,                     /**< deprecated */
-        CAL_STATUS_OUROFOFFICE,           /**< deprecated */
-        CAL_STATUS_CONFIRM,               /**< deprecated */
-        CAL_STATUS_DENIED,                /**< deprecated */
+	CAL_STATUS_FREE = 0,		   /**< deprecated */
+	CAL_STATUS_TENTATIVE,		  /**< deprecated */
+	CAL_STATUS_BUSY,		     /**< deprecated */
+	CAL_STATUS_OUROFOFFICE,		  /**< deprecated */
+	CAL_STATUS_CONFIRM,		  /**< deprecated */
+	CAL_STATUS_DENIED,		  /**< deprecated */
 } cal_status_type_t;
 
 #endif /* __CALENDAR_SVC_H__ */

@@ -1,24 +1,21 @@
-Name:	    libslp-calendar
+Name:       libslp-calendar
 Summary:    DB library for calendar
 Version:    0.1.12
-Release:    1
+Release:    29
 Group:      System/Libraries
-License:    Apache-2.0
+License:    Apache 2.0
 Source0:    %{name}-%{version}.tar.gz
 Requires(post): /sbin/ldconfig
+Requires(post): /usr/bin/sqlite3
 Requires(postun): /sbin/ldconfig
 
 BuildRequires: cmake
 BuildRequires: pkgconfig(db-util)
-BuildRequires: pkgconfig(dbus-glib-1)
-BuildRequires: pkgconfig(gconf-2.0)
-BuildRequires: pkgconfig(gmodule-2.0)
-BuildRequires: pkgconfig(vconf)
+BuildRequires: pkgconfig(sqlite3)
+BuildRequires: pkgconfig(glib-2.0)
 BuildRequires: pkgconfig(dlog)
-BuildRequires: pkgconfig(heynoti)
+BuildRequires: pkgconfig(vconf)
 BuildRequires: pkgconfig(alarm-service)
-BuildRequires: pkgconfig(aul)
-Requires(post): /usr/bin/sqlite3
 
 %description
 DB library for calendar
@@ -27,6 +24,7 @@ DB library for calendar
 Summary:    DB library for calendar
 Group:      Development/Libraries
 Requires:   %{name} = %{version}-%{release}
+Requires:   pkgconfig(alarm-service)
 
 %description devel
 DB library for calendar (developement files)
@@ -47,29 +45,37 @@ make %{?jobs:-j%jobs}
 
 %post
 /sbin/ldconfig
+mkdir -p /opt/dbspace
+if [ -f /opt/dbspace/.calendar-svc.db ]
+then
+        echo "calendar-svc.db exist"
+else
+		calendar-svc-initdb
+fi
 
-/usr/bin/calendar-svc-initdb
-
-chown root:root /usr/lib/libcalendar-service.so.*
-chown :6003 /opt/data/calendar-svc/.CALENDAR_SVC_*
 chown :6003 /opt/dbspace/.calendar-svc.db
 chown :6003 /opt/dbspace/.calendar-svc.db-journal
+chown :6003 /opt/data/calendar-svc/.CALENDAR_SVC_*
 
 chmod 660 /opt/dbspace/.calendar-svc.db
 chmod 660 /opt/dbspace/.calendar-svc.db-journal
 chmod 660 /opt/data/calendar-svc/.CALENDAR_SVC_*
 
-
 %postun -p /sbin/ldconfig
 
 
 %files
-/usr/lib/lib*.so.*
-/usr/bin/calendar-svc-initdb
-/opt/data/calendar-svc/.*
+%defattr(-,root,root,-)
+%{_bindir}/calendar-svc-initdb
+%{_libdir}/libcalendar-service.so.*
+/opt/data/calendar-svc/.CALENDAR_SVC_CALENDAR_CHANGED
+/opt/data/calendar-svc/.CALENDAR_SVC_EVENT_CHANGED
+/opt/data/calendar-svc/.CALENDAR_SVC_TODO_CHANGED
 
 %files devel
-/usr/lib/pkgconfig/*.pc
-/usr/include/calendar/*.h
-/usr/include/calendar-svc/*.h
-/usr/lib/lib*.so
+%defattr(-,root,root,-)
+%{_includedir}/calendar-svc/*.h
+%{_includedir}/calendar/*.h
+%{_libdir}/*.so
+%{_libdir}/pkgconfig/calendar.pc
+%{_libdir}/pkgconfig/calendar-service.pc

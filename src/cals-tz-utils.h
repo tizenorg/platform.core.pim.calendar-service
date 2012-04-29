@@ -662,5 +662,6 @@ static const Time_Zone tz_path_array[] =
 time_t cals_mktime(struct tm *date_time);
 struct tm *cals_tmtime(time_t *sec);
 struct tm* cals_tmtime_r(time_t *ttTime, struct tm *tmTime);
+char *cals_tzutil_get_tz_path(void);
 
 #endif /* __CALENDAR_SVC_TZ_UTILS_H__ */

@@ -99,7 +99,7 @@ static inline int _cals_insert_schedule(cal_sch_full_t *record)
 			"account_id, type, category, "
 			"summary, description, location, all_day_event, "
 			"start_date_time, end_date_time, repeat_item, repeat_interval, "
-			"repeat_occurrences, repeat_end_date, sun_moon, week_start, "
+			"repeat_until_type, repeat_occurrences, repeat_end_date, sun_moon, week_start, "
 			"week_flag, day_date, last_modified_time, missed, "
 			"task_status, priority, timezone, file_id, "
 			"contact_id, busy_status, sensitivity, uid, "
@@ -114,7 +114,7 @@ static inline int _cals_insert_schedule(cal_sch_full_t *record)
 			"%d, %d, %d, "
 			"?, ?, ?, %d, "
 			"%ld, %ld, %d, %d, "
-			"%d, %ld, %d, %d, "
+			"%d, %d, %ld, %d, %d, "
 			"?, %d, %ld, %d, "
 			"%d, %d, %d, %d, "
 			"%d, %d, %d, ?, "
@@ -129,7 +129,7 @@ static inline int _cals_insert_schedule(cal_sch_full_t *record)
 			record->account_id, record->cal_type, record->sch_category,
 			record->all_day_event,
 			conv_start_time, conv_end_time, record->repeat_term, record->repeat_interval,
-			record->repeat_occurrences, conv_repeat_end_time, record->sun_moon, record->week_start,
+			record->repeat_until_type, record->repeat_occurrences, conv_repeat_end_time, record->sun_moon, record->week_start,
 			record->day_date,	(long int)conv_last_modified_time, record->missed,
 			record->task_status,	record->priority,	record->timezone, record->file_id,
 			record->contact_id, record->busy_status, record->sensitivity,
@@ -284,9 +284,9 @@ static inline int _cals_sch_check_validity(cal_sch_full_t *sch_record)
 	if(sch_record->cal_type != CAL_EVENT_SCHEDULE_TYPE)
 		return CAL_SUCCESS;
 
-	if((sch_record->repeat_term != CAL_REPEAT_NONE) &&
+	if((sch_record->repeat_term != CAL_REPEAT_NONE) && ((
 		(sch_record->repeat_occurrences) != 0 &&
-		(sch_record->repeat_end_date.tm_year == BASE_TIME_YEAR))
+		(sch_record->repeat_end_date.tm_year == BASE_TIME_YEAR)) || (sch_record->repeat_until_type == CALS_REPEAT_UNTIL_TYPE_NONE)))
 	{
 		cal_db_service_set_repeat_end_date(sch_record);
 	}
@@ -626,6 +626,7 @@ static inline int _cals_update_schedule(const int index, cal_sch_full_t *current
 			"end_date_time = %ld,"
 			"repeat_item = %d,"
 			"repeat_interval = %d,"
+			"repeat_until_type = %d,"
 			"repeat_occurrences = %d,"
 			"repeat_end_date = %ld,"
 			"sun_moon = %d,"
@@ -677,6 +678,7 @@ static inline int _cals_update_schedule(const int index, cal_sch_full_t *current
 		(long int)conv_end_time,
 		current_record->repeat_term,
 		current_record->repeat_interval,
+		current_record->repeat_until_type,
 		current_record->repeat_occurrences,
 		(long int)conv_repeat_end_time,
 		current_record->sun_moon,
@@ -795,10 +797,8 @@ int cals_update_schedule(const int index, cal_sch_full_t *sch_record)
 
 	sch_record->missed = 0;
 
-	if((sch_record->repeat_occurrences) != 0 && (sch_record->repeat_end_date.tm_year == BASE_TIME_YEAR))
-	{
-		cal_db_service_set_repeat_end_date(sch_record);
-	}
+	ret = _cals_sch_check_validity(sch_record);
+	retvm_if(CAL_SUCCESS != ret, ret, "_cals_sch_check_validity() is Failed(%d)", ret);
 
 	ret = _cals_update_schedule(index, sch_record);
 	retvm_if(CAL_SUCCESS != ret, ret, "_cals_update_schedule() Failed(%d)", ret);
@@ -1243,6 +1243,11 @@ int cals_stmt_get_filted_schedule(sqlite3_stmt *stmt,
 		start = result;
 	}
 
+	if((result = strstr(start, CAL_VALUE_INT_REPEAT_UNTIL_TYPE))) {
+		sch_record->repeat_until_type = sqlite3_column_int(stmt, count++);
+		start = result;
+	}
+
 	if((result = strstr(start, CAL_VALUE_INT_REPEAT_OCCURRENCES))) {
 		sch_record->repeat_occurrences = sqlite3_column_int(stmt, count++);
 		start = result;
@@ -1505,6 +1510,7 @@ void cals_stmt_get_full_schedule(sqlite3_stmt *stmt,cal_sch_full_t *sch_record, 
 
 	sch_record->repeat_term = sqlite3_column_int(stmt, count++);
 	sch_record->repeat_interval = sqlite3_column_int(stmt, count++);
+	sch_record->repeat_until_type = sqlite3_column_int(stmt, count++);
 	sch_record->repeat_occurrences = sqlite3_column_int(stmt, count++);
 
 	tmp_time = sqlite3_column_int(stmt, count++);

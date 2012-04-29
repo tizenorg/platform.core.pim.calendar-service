@@ -28,7 +28,7 @@
 #include "cals-utils.h"
 #include "cals-alarm.h"
 
-#define PKG_CALENDAR_APP "org.tizen.calendar"
+#define PKG_CALENDAR_APP "org.tizen.efl-calendar"
 
 int cals_alarm_remove(int type, int related_id)
 {
@@ -128,10 +128,10 @@ static inline int _cals_alarm_add(const int event_id, cal_alarm_info_t *alarm_in
 	retvm_if(NULL == stmt, CAL_ERR_DB_FAILED, "cals_query_prepare() Failed");
 
 	if (alarm_info->alarm_tone)
-		cals_stmt_bind_text(stmt, 0, alarm_info->alarm_tone);
+		cals_stmt_bind_text(stmt, 1, alarm_info->alarm_tone);
 
 	if (alarm_info->alarm_description)
-		cals_stmt_bind_text(stmt, 1, alarm_info->alarm_description);
+		cals_stmt_bind_text(stmt, 2, alarm_info->alarm_description);
 
 	rc = cals_stmt_step(stmt);
 	if (CAL_SUCCESS != rc) {

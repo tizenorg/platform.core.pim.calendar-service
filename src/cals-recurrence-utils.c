@@ -169,43 +169,6 @@ void cal_service_set_day_of_week(struct tm* tm)
 	tm->tm_wday = days%7;
 }
 
-/*
-/// just refer
-void __cal_service_convert_datetime_to_tm(struct tm *date,struct tm *tm)
-{
-tm->tm_year = date->date.tm_year-BENCHMARK_YEAR;
-tm->tm_mon = date->date.month-1;
-tm->tm_mday = date->date.tm_mday;
-tm->tm_wday = date->date.wday;
-tm->tm_hour = date->time.hours;
-tm->tm_min = date->time.minutes;
-tm->tm_sec = date->time.seconds;
-}
-
-void __cal_service_convert_tm_to_datetime(struct tm *tm,struct tm *date)
-{
-date->date.tm_year =tm->tm_year+BENCHMARK_YEAR;
-date->date.month = tm->tm_mon+1;
-date->date.tm_mday = tm->tm_mday;
-date->date.wday =tm->tm_wday;
-date->time.hours = tm->tm_hour;
-date->time.minutes = tm->tm_min;
-date->time.seconds = tm->tm_sec;
-}
-
-
-bool
-cal_db_service_adjust_time(struct tm* pDateTime, long adjustment)
-{
-time_t base_time = cals_mktime(pDateTime);
-
-base_time = base_time+adjustment;
-memcpy(pDateTime,cals_tmtime(&base_time),sizeof(struct tm));
-
-return true;
-}
-*/
-
 
 bool cal_is_used_dst_timezone(cal_sch_full_t *sch_record)
 {
@@ -215,28 +178,14 @@ bool cal_is_used_dst_timezone(cal_sch_full_t *sch_record)
 
 void cal_svc_set_tz_base_info(int year)
 {
-	char *tz_name = NULL;
-	char * lock_city_name= NULL;
-	char * lock_tz_path= NULL;
-	char * lock_tz_offset= NULL;
-	char * local_city_name= NULL;
-	char * local_tz_path= NULL;
-	char * local_tz_offset= NULL;
+	char *tz_name;
 
-	//temp(test code)
-	//local_tz_path=strdup("Asia/Seoul");
+	tz_name = cals_tzutil_get_tz_path();
 
-	calendar_svc_util_get_local_tz_info(&lock_city_name,&lock_tz_path,&lock_tz_offset,&local_city_name,&local_tz_path,&local_tz_offset);
-
-
-	if(lock_tz_path)
-		tz_name = lock_tz_path;
-	else if(local_tz_path)
-		tz_name = local_tz_path;
-	else
-		tz_name = "localtime";
-
-
+	if (!tz_name) {
+		ERR("cals_tzutil_get_tz_path failed");
+		return;
+	}
 
 	if(cal_svc_tm_value.is_initialize == FALSE || year != cal_svc_tm_value.start_local_dst_date_time.tm_year)
 	{
@@ -249,13 +198,9 @@ void cal_svc_set_tz_base_info(int year)
 		strncpy(cal_svc_tm_value.local_tz_name,tz_name, sizeof(cal_svc_tm_value.local_tz_name));
 	}
 
+	free(tz_name);
 
-	CAL_FREE(lock_city_name);
-	CAL_FREE(lock_tz_path);
-	CAL_FREE(lock_tz_offset);
-	CAL_FREE(local_city_name);
-	CAL_FREE(local_tz_path);
-	CAL_FREE(local_tz_offset);
+	return;
 }
 
 bool cal_get_dst_info_time(cal_date_param_t *cal_date_param,const cal_sch_full_t *sch_record)

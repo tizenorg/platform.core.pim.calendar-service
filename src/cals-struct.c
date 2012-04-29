@@ -79,6 +79,7 @@ int cals_init_full_record(cal_sch_full_t *sch_full_record)
 
 	sch_full_record->index = CAL_INVALID_INDEX;
 	sch_full_record->repeat_term = CAL_REPEAT_NONE;
+	sch_full_record->repeat_until_type = CALS_REPEAT_UNTIL_TYPE_NONE;
 	sch_full_record->day_date = 1;
 	sch_full_record->timezone = -1;
 	sch_full_record->contact_id = CAL_INVALID_INDEX;
@@ -437,6 +438,10 @@ API int calendar_svc_struct_get_int(cal_struct *event, const char *field)
 		else if(0 == strcmp(field,CAL_VALUE_INT_REPEAT_INTERVAL))
 		{
 			return sch_rec->repeat_interval;
+		}
+		else if(0 == strcmp(field,CAL_VALUE_INT_REPEAT_UNTIL_TYPE))
+		{
+			return sch_rec->repeat_until_type;
 		}
 		else if(0 == strcmp(field,CAL_VALUE_INT_REPEAT_OCCURRENCES))
 		{
@@ -902,6 +907,10 @@ API int calendar_svc_struct_set_int (cal_struct *event, const char *field, int i
 		else if(0 == strcmp(field,CAL_VALUE_INT_REPEAT_INTERVAL))
 		{
 			sch_rec->repeat_interval = intval;
+		}
+		else if(0 == strcmp(field,CAL_VALUE_INT_REPEAT_UNTIL_TYPE))
+		{
+			sch_rec->repeat_until_type = intval;
 		}
 		else if(0 == strcmp(field,CAL_VALUE_INT_REPEAT_OCCURRENCES))
 		{

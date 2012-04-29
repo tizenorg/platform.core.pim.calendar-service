@@ -324,6 +324,7 @@ typedef struct
 	GList *alarm_list;
 	cal_repeat_term_t repeat_term;		/**< Repeat term */
 	int repeat_interval;	/**< Interval of repeat term */
+	int repeat_until_type;	/**< repeat until type */
 	int repeat_occurrences;	/**< occurrences of repeat */
 	struct tm repeat_end_date;	/**< End date for repeat */
 	cal_date_type_t sun_moon;			/**< Using sun or lunar calendar */
@@ -394,6 +395,7 @@ typedef struct
 
 	cal_repeat_term_t repeat_term;		/**< Repeat term */
 	int repeat_interval;	/**< Interval of repeat term */
+	int repeat_until_type;	/**< Repeat until type */
 	struct tm repeat_end_date;	/**< End date for repeat */
 	cal_date_type_t sun_moon;			/**< Using sun or lunar calendar */
 	cal_starting_day_type_t week_start;			/**< Start day of a week */

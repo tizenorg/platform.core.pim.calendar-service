@@ -902,6 +902,7 @@ int cal_db_service_get_month_event(int account_id, time_t startdate, time_t endd
 				"st.end_date_time, "\
 				"st.repeat_item, "\
 				"st.repeat_interval, "\
+				"st.repeat_until_type, "\
 				"st.repeat_occurrences, "\
 				"st.repeat_end_date, "\
 				"st.week_start, "\

@@ -426,6 +426,7 @@ bool cal_db_service_convert_stmt_to_month_field_record(sqlite3_stmt *stmt,int is
 	{
 		sch_record->repeat_term = sqlite3_column_int(stmt, i++);
 		sch_record->repeat_interval = sqlite3_column_int(stmt, i++);
+		sch_record->repeat_until_type = sqlite3_column_int(stmt, i++);
 		sch_record->repeat_occurrences = sqlite3_column_int(stmt, i++);
 		temp = sqlite3_column_int(stmt, i++);
 		cal_db_service_copy_struct_tm((struct tm*)cals_tmtime(&temp),&(sch_record->repeat_end_date));

@@ -783,36 +783,43 @@ API int calendar_svc_search_list(int account_id,int calendar_id,const char *data
 {
 	CALS_FN_CALL;
 	sqlite3_stmt *stmt = NULL;
-	char sql_value[CALS_SQL_MIN_LEN] = {0};
+	char sql_value[CALS_SQL_MAX_LEN] = {0};
 	int rc = 0;
-	char condition_value[1024] = {0};
+	char condition_value[CALS_SQL_MAX_LEN] = {0};
+	char search_str[CALS_SQL_MAX_LEN] = {0};
 	cal_value_type_t value_type = 0;
-	retex_if(NULL == data_type,,"Invalid parameter.\n");
-	retex_if(NULL == iter,,"Invalid parameter.\n");
-	retex_if(0 > calendar_id,,"Invalid parameter.\n");
+
+	retv_if(NULL == data_type, CAL_ERR_FAIL);
+	retv_if(NULL == search_type, CAL_ERR_FAIL);
+	retv_if(NULL == search_value, CAL_ERR_FAIL);
+	retv_if(CALS_SQL_MIN_LEN < strlen(search_value), CAL_ERR_FAIL);
+	retv_if(NULL == iter, CAL_ERR_FAIL);
+	retv_if(calendar_id < 0, CAL_ERR_FAIL);
 
 	*iter = calloc(1, sizeof(cal_iter));
 	retvm_if(NULL == *iter, CAL_ERR_OUT_OF_MEMORY, "calloc() Failed(%d)", errno);
 
-	value_type = __calendar_svc_get_type(CAL_STRUCT_TYPE_SCHEDULE,search_type);
+	value_type = __calendar_svc_get_type(CAL_STRUCT_TYPE_SCHEDULE, search_type);
 
 	switch(value_type)
 	{
 	case VALUE_TYPE_TEXT:
 
 		retex_if(search_value == NULL,,"search_value is NULL");
+		cals_escape_like_pattern(search_value, search_str, sizeof(search_str));
+		DBG("%s %s", search_value, search_str);
 
 		if(ALL_VISIBILITY_ACCOUNT == account_id)
 		{
-			sprintf(condition_value,"where st.type=%d and upper(%s) like upper('%%%s%%')",CAL_EVENT_SCHEDULE_TYPE, search_type, (char*)search_value);
+			sprintf(condition_value,"where st.type=%d and upper(%s) like upper('%%%s%%') ESCAPE '\\'",CAL_EVENT_SCHEDULE_TYPE, search_type, search_str);
 		}
 		else if(0 != account_id)
 		{
-			sprintf(condition_value,"where st.type=%d and upper(%s) like upper('%%%s%%') and account_id = %d",CAL_EVENT_SCHEDULE_TYPE, search_type, (char*)search_value, account_id);
+			sprintf(condition_value,"where st.type=%d and upper(%s) like upper('%%%s%%') ESCAPE '\\'and account_id = %d",CAL_EVENT_SCHEDULE_TYPE, search_type, search_str, account_id);
 		}
 		else
 		{
-			sprintf(condition_value,"where st.type=%d and upper(%s) like upper('%%%s%%') ",CAL_EVENT_SCHEDULE_TYPE, search_type, (char*)search_value);
+			sprintf(condition_value,"where st.type=%d and upper(%s) like upper('%%%s%%') ESCAPE '\\'",CAL_EVENT_SCHEDULE_TYPE, search_type, search_str);
 		}
 		break;
 	case VALUE_TYPE_INT:
@@ -845,13 +852,13 @@ API int calendar_svc_search_list(int account_id,int calendar_id,const char *data
 			sprintf(sql_value,"select st.id,st.summary,st.location,st.all_day_event,st.start_date_time,st.end_date_time,st.repeat_item,st.week_start,st.week_flag,st.calendar_id "
 					"from schedule_table as st, calendar_table as ct %s "
 					"and ct.visibility = 1 and st.calendar_id = ct.rowid and "
-					"st.is_deleted = 0 order by st.summary limit %d,%d;",condition_value,offset,count);
+					"st.is_deleted = 0 order by st.summary limit %d,%d ;",condition_value,offset,count);
 		}
 		else
 		{
 
 			sprintf(sql_value,"select st.id,st.summary,st.location,st.all_day_event,st.start_date_time,st.end_date_time,st.repeat_item,st.week_start,st.week_flag,st.calendar_id "\
-					"from schedule_table as st %s and is_deleted = 0 order by st.summary limit %d,%d;",condition_value,offset,count);
+					"from schedule_table as st %s and is_deleted = 0 order by st.summary limit %d,%d ;",condition_value,offset,count);
 		}
 
 		(*iter)->i_type = CAL_STRUCT_TYPE_SCHEDULE_LIST;
@@ -1159,42 +1166,49 @@ API int calendar_svc_find_event_list(int account_id,const char *search_type,cons
 
 		if(ALL_VISIBILITY_ACCOUNT == account_id)
 		{
-			sprintf(sql_value,"SELECT * FROM %s WHERE %s like upper('%%%s%%') AND is_deleted = 0;",
-				CALS_TABLE_SCHEDULE, search_type, (char*)search_value);
+			sprintf(sql_value,
+					"SELECT * FROM %s WHERE %s like upper('%%%s%%') AND is_deleted = 0 ORDER BY start_date_time;",
+					CALS_TABLE_SCHEDULE, search_type, (char*)search_value);
 		}
 		else if(0 != account_id)
 		{
-			sprintf(sql_value,"SELECT * FROM %s WHERE %s like upper('%%%s%%') AND is_deleted = 0 and account_id = %d;",
-				CALS_TABLE_SCHEDULE, search_type, (char*)search_value, account_id);
+			sprintf(sql_value,
+					"SELECT * FROM %s WHERE %s like upper('%%%s%%') AND is_deleted = 0 and account_id = %d ORDER BY start_date_time;",
+					CALS_TABLE_SCHEDULE, search_type, (char*)search_value, account_id);
 		}
 		else
 		{
-			sprintf(sql_value,"SELECT * FROM %s WHERE %s like upper('%%%s%%') AND is_deleted = 0;",
-				CALS_TABLE_SCHEDULE, search_type, (char*)search_value);
+			sprintf(sql_value,
+					"SELECT * FROM %s WHERE %s like upper('%%%s%%') AND is_deleted = 0 ORDER BY start_date_time;",
+					CALS_TABLE_SCHEDULE, search_type, (char*)search_value);
 		}
 		break;
 	case VALUE_TYPE_INT:
 		if(ALL_VISIBILITY_ACCOUNT == account_id)
 		{
-			sprintf(sql_value,"SELECT * FROM %s WHERE %s = %d AND is_deleted = 0;",
-				CALS_TABLE_SCHEDULE, search_type,(int)search_value);
+			sprintf(sql_value,
+					"SELECT * FROM %s WHERE %s = %d AND is_deleted = 0 ORDER BY start_date_time;",
+					CALS_TABLE_SCHEDULE, search_type,(int)search_value);
 		}
 		else if(0 != account_id)
 		{
-			sprintf(sql_value,"SELECT * FROM %s WHERE %s = %d AND is_deleted = 0 AND account_id = %d;",
-				CALS_TABLE_SCHEDULE, search_type, (int)search_value, account_id);
+			sprintf(sql_value,
+					"SELECT * FROM %s WHERE %s = %d AND is_deleted = 0 AND account_id = %d ORDER BY start_date_time;",
+					CALS_TABLE_SCHEDULE, search_type, (int)search_value, account_id);
 		}
 		else
 		{
-			sprintf(sql_value,"SELECT * FROM %s WHERE %s = %d AND is_deleted = 0;",
-				CALS_TABLE_SCHEDULE, search_type, (int)search_value);
+			sprintf(sql_value,
+					"SELECT * FROM %s WHERE %s = %d AND is_deleted = 0 ORDER BY start_date_time;",
+					CALS_TABLE_SCHEDULE, search_type, (int)search_value);
 		}
 		break;
 	case VALUE_TYPE_USER:
 		if (0 == strcmp(CAL_VALUE_INT_ALARMS_ID, search_type)) {
 			ret = cals_alarm_get_event_id((int)search_value);
-			sprintf(sql_value,"SELECT * FROM %s WHERE id = %d AND is_deleted = 0",
-				CALS_TABLE_SCHEDULE, ret);
+			sprintf(sql_value,
+					"SELECT * FROM %s WHERE id = %d AND is_deleted = 0 ORDER BY start_date_time",
+					CALS_TABLE_SCHEDULE, ret);
 			break;
 		}
 	case VALUE_TYPE_TIME:
@@ -1406,15 +1420,23 @@ static inline int __calendar_svc_find_calendar_list(int account_id,int calendar_
 	{
 	case VALUE_TYPE_TEXT:
 		if(account_id)
-			sprintf(sql_value,"select rowid,* from calendar_table where %s like '%%%s%%' and is_deleted = 0 and account_id = %d;", search_type, (char*)search_value, account_id);
+			sprintf(sql_value,
+					"select rowid,* from calendar_table where %s like '%%%s%%' and is_deleted = 0 and account_id = %d ORDER BY start_date_time;",
+					search_type, (char*)search_value, account_id);
 		else
-			sprintf(sql_value,"select rowid,* from calendar_table where %s like '%%%s%%' and is_deleted = 0;", search_type, (char*)search_value);
+			sprintf(sql_value,
+					"select rowid,* from calendar_table where %s like '%%%s%%' and is_deleted = 0 ORDER BY start_date_time;",
+					search_type, (char*)search_value);
 		break;
 	case VALUE_TYPE_INT:
 		if(account_id)
-			sprintf(sql_value,"select rowid,* from calendar_table where %s = %d and is_deleted = 0 and account_id = %d;", search_type, (int)search_value, account_id);
+			sprintf(sql_value,
+					"select rowid,* from calendar_table where %s = %d and is_deleted = 0 and account_id = %d ORDER BY start_date_time;",
+					search_type, (int)search_value, account_id);
 		else
-			sprintf(sql_value,"select rowid,* from calendar_table where %s = %d and is_deleted = 0;", search_type, (int)search_value);
+			sprintf(sql_value,
+					"select rowid,* from calendar_table where %s = %d and is_deleted = 0 ORDER BY start_date_time;",
+					search_type, (int)search_value);
 		break;
 	case VALUE_TYPE_TIME:
 	case VALUE_TYPE_DOUBLE:
@@ -2650,157 +2672,6 @@ int calendar_svc_util_set_calendar_timezone(const char *tzname)
 	return CAL_SUCCESS;
 }
 
-bool cal_svc_util_get_timezone_info(char *city,char **tz_path,char**offset)
-{
-	int left = 0;
-	int right = sizeof(time_zone_array)/sizeof(Time_Zone) -1;
-	int index = 0;
-	int result = 0;
-	int max_count = right;
-
-
-	while(true)
-	{
-		index = ( left + right ) / 2;
-
-		result = strcmp(time_zone_array[index].city, city);
-
-		if(result == 0)
-		{
-			*tz_path = strdup(time_zone_array[index].tz_path);
-			*offset = strdup(time_zone_array[index].gmt);
-			//DBG("%s,%s,%s,%s",*tz_path,*offset,time_zone_array[index].tz_path,time_zone_array[index].gmt);
-			break;
-		}
-		else if(result < 0)
-			left = index+1;
-		else
-			right = index-1;
-
-		if(left <0 || left >max_count)
-			goto error;
-		if(right <0 || right >max_count)
-			goto error;
-		if(left > right)
-			goto error;
-
-	}
-
-	if(*tz_path == NULL)
-		return false;
-	else
-		return true;
-error:
-	*tz_path = NULL;
-	*offset = NULL;
-	return false;
-}
-
-
-bool cal_svc_util_get_timezone_info_by_tz_path(char *tz_path,char **city_name,char**offset)
-{
-	int left = 0;
-	int right = sizeof(tz_path_array)/sizeof(Time_Zone) -1;
-	int index = 0;
-	int result = 0;
-	int max_count = right;
-
-
-	while(true)
-	{
-		index = ( left + right ) / 2;
-
-		result = strcmp(tz_path_array[index].tz_path, tz_path);
-
-		if(result == 0)
-		{
-			*city_name = strdup(tz_path_array[index].city);
-			*offset = strdup(tz_path_array[index].gmt);
-			//DBG("%s,%s,%s,%s",*tz_path,*offset,time_zone_array[index].tz_path,time_zone_array[index].gmt);
-			break;
-		}
-		else if(result < 0)
-			left = index+1;
-		else
-			right = index-1;
-
-		if(left <0 || left >max_count)
-			goto error;
-		if(right <0 || right >max_count)
-			goto error;
-		if(left > right)
-			goto error;
-
-	}
-
-	if(*city_name == NULL)
-		return false;
-	else
-		return true;
-error:
-	*city_name = NULL;
-	*offset = NULL;
-	return false;
-}
-
-void calendar_svc_util_get_city_info(char *tz_path, char**city_name, char**tz_offset)
-{
-	bool r = false;
-	if(tz_path == NULL || city_name==NULL || tz_offset == NULL)
-		return;
-
-	r = cal_svc_util_get_timezone_info_by_tz_path(tz_path,city_name,tz_offset);
-	if(r){
-		ERR("%s,%s,%s",tz_path,*city_name,*tz_offset);
-	}
-}
-
-
-API void calendar_svc_util_get_local_tz_info(char **lock_city_name,char **lock_tz_path,char** lock_tz_offset,
-		char **local_city_name,char **local_tz_path,char **local_tz_offset)
-{
-	int lock_on = 0;
-	bool r = false;
-	clock_t start_time=0,end_time = 0;
-	start_time = CAL_PROFILE_GET_TIME();
-
-	vconf_get_int("db/calendar/timezone_on_off",&lock_on);
-
-	if(lock_on)
-	{
-		*lock_city_name = vconf_get_str("db/calendar/timezone");
-		r = cal_svc_util_get_timezone_info(*lock_city_name,lock_tz_path,lock_tz_offset);
-
-		if(r){
-			ERR("%s,%s,%s",*lock_city_name,*lock_tz_path,*lock_tz_offset);
-		}
-	}
-	else
-	{
-		*lock_city_name = NULL;
-		*lock_tz_path = NULL;
-		*lock_tz_offset = NULL;
-	}
-
-	if(*local_tz_path)
-	{
-		r = cal_svc_util_get_timezone_info_by_tz_path(*local_tz_path,local_city_name,local_tz_offset);
-	}
-	else
-	{
-		*local_city_name = vconf_get_str(VCONFKEY_SETAPPL_CITYNAME_INDEX_INT);
-		cal_svc_util_get_timezone_info(*local_city_name,local_tz_path,local_tz_offset);
-	}
-
-	if(r){
-		ERR("%s,%s,%s",*local_city_name,*local_tz_path,*local_tz_offset);
-	}
-
-	end_time = CAL_PROFILE_GET_TIME();
-	CAL_PROFILE_PRINT(start_time,end_time);
-
-}
-
 
 /* hidden api */
 API int calendar_svc_get_month_event_list (int account_id, time_t startdate, time_t enddate,int is_repeat, cal_iter **iter)
@@ -2910,7 +2781,6 @@ static inline void __set_day_flag(struct tm*stm,struct tm*etm,struct tm*estm,str
 	for(i=start_day-1;i<end_day;i++)
 	{
 		day_flag[i]++;
-		//DBG("day_flag[%d]=%d\n",i,day_flag[i]);
 	}
 }
 
@@ -2976,8 +2846,10 @@ API int calendar_svc_get_month_event_check (int account_id, time_t startdate, ti
 
 	while (calendar_svc_iter_next(it) == CAL_SUCCESS) {
 		rc = calendar_svc_iter_get_month_info(it,true, &cs);
-		if (rc != CAL_SUCCESS || cs == NULL)
+		if (rc != CAL_SUCCESS || cs == NULL) {
+			ERR("calendar_svc_iter_get_month_info return %d", rc);
 			break;
+		}
 
 		memset(&lstm,0x00,sizeof(struct tm));
 		memset(&letm,0x00,sizeof(struct tm));
@@ -2985,7 +2857,6 @@ API int calendar_svc_get_month_event_check (int account_id, time_t startdate, ti
 		while (calendar_svc_util_next_valid_event_tm(cs,
 					&stm, &etm, &lstm, &letm) == CAL_SUCCESS) {
 			__set_day_flag(&stm,&etm,&lstm,&letm,day_flag);
-
 		}
 		calendar_svc_struct_free(&cs);
 	}

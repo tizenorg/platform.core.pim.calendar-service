@@ -155,3 +155,30 @@ int cals_stmt_step(sqlite3_stmt *stmt)
 	}
 	return ret;
 }
+
+
+int cals_escape_like_pattern(const char *src, char * const dest, int dest_size)
+{
+	int s_pos=0, d_pos=0;
+
+	if (NULL == src) {
+		ERR("The parameter(src) is NULL");
+		dest[d_pos] = '\0';
+		return 0;
+	}
+
+	while (src[s_pos] != 0) {
+		if (dest_size == d_pos - 1)
+			break;
+		if ('%' == src[s_pos] || '_' == src[s_pos]) {
+			dest[d_pos++] = '\\';
+		}
+		dest[d_pos++] = src[s_pos++];
+	}
+
+	dest[d_pos] = '\0';
+
+	return d_pos;
+}
+
+

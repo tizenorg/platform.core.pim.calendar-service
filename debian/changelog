@@ -4,12 +4,4 @@ libslp-calendar (0.1.12-16) unstable; urgency=low
   * Git: pkgs/l/libslp-calendar
   * Tag: libslp-calendar_0.1.12-16
 
- -- Taeho Kang <taeho84.kang@samsung.com>  Tue, 28 Feb 2012 00:16:13 +0900
-
-libslp-calendar (0.1.12-15) unstable; urgency=low
-
-  * release
-  * Git: pkgs/l/libslp-calendar
-  * Tag: libslp-calendar_0.1.12-15
-
- -- Youngjae Shin <yj99.shin@samsung.com>  Wed, 01 Feb 2012 10:16:13 +0900
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Tue, 21 Feb 2012 10:00:00 +0900

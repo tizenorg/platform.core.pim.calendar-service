@@ -39,4 +39,6 @@ static inline int cals_stmt_bind_text(sqlite3_stmt *stmt, int pos, const char *s
 	return sqlite3_bind_text(stmt, pos, str, strlen(str), SQLITE_STATIC);
 }
 
+int cals_escape_like_pattern(const char *src, char *dest, int dest_size);
+
 #endif /* __CALENDAR_SVC_SQLITE_H__ */
