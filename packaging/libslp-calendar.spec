@@ -5,6 +5,7 @@ Release:    29
 Group:      System/Libraries
 License:    Apache 2.0
 Source0:    %{name}-%{version}.tar.gz
+Source1001: packaging/libslp-calendar.manifest 
 Requires(post): /sbin/ldconfig
 Requires(post): /usr/bin/sqlite3
 Requires(postun): /sbin/ldconfig
@@ -34,6 +35,7 @@ DB library for calendar (developement files)
 
 
 %build
+cp %{SOURCE1001} .
 cmake . -DCMAKE_INSTALL_PREFIX=%{_prefix}
 
 
@@ -65,6 +67,7 @@ chmod 660 /opt/data/calendar-svc/.CALENDAR_SVC_*
 
 
 %files
+%manifest libslp-calendar.manifest
 %defattr(-,root,root,-)
 %{_bindir}/calendar-svc-initdb
 %{_libdir}/libcalendar-service.so.*
@@ -73,6 +76,7 @@ chmod 660 /opt/data/calendar-svc/.CALENDAR_SVC_*
 /opt/data/calendar-svc/.CALENDAR_SVC_TODO_CHANGED
 
 %files devel
+%manifest libslp-calendar.manifest
 %defattr(-,root,root,-)
 %{_includedir}/calendar-svc/*.h
 %{_includedir}/calendar/*.h
