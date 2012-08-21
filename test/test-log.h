@@ -25,12 +25,12 @@
 #define PRT(prio, fmt, arg...) \
 	do { fprintf((prio?stderr:stdout),fmt"\n", ##arg); } while (0)
 #define INFO(fmt, arg...) PRT(0, fmt, ##arg)
-#define ERR(fmt, arg...) PRT(1,"\x1b[101;38m[ERROR]\x1b[0m%s :" fmt, __FUNCTION__, ##arg)
+#define ERR(fmt, arg...) PRT(1,"\x1b[101;38m[ERROR]\x1b[0m%s:%d" fmt, __FUNCTION__, __LINE__, ##arg)
 #define DBG(fmt, arg...) \
 	do { \
-		printf("\x1b[105;37m[%s]\x1b[0m" fmt"\n", __FUNCTION__, ##arg); \
+		printf(fmt"\n", ##arg); \
 	} while (0)
 
-#define TEST_FN_START DBG("[FUNC_START]")
+#define TEST_FN_START DBG("[START] \x1b[105;37m[%s]\x1b[0m", __FUNCTION__)
 
 #endif /* __TEST_LOG_H__ */

@@ -1,7 +1,7 @@
 Name:       libslp-calendar
 Summary:    DB library for calendar
-Version:    0.1.12
-Release:    29
+Version:    0.1.13
+Release:    36
 Group:      System/Libraries
 License:    Apache 2.0
 Source0:    %{name}-%{version}.tar.gz
@@ -16,6 +16,8 @@ BuildRequires: pkgconfig(glib-2.0)
 BuildRequires: pkgconfig(dlog)
 BuildRequires: pkgconfig(vconf)
 BuildRequires: pkgconfig(alarm-service)
+BuildRequires: pkgconfig(icu-i18n)
+BuildRequires: pkgconfig(appsvc)
 
 %description
 DB library for calendar
@@ -60,6 +62,9 @@ chown :6003 /opt/data/calendar-svc/.CALENDAR_SVC_*
 chmod 660 /opt/dbspace/.calendar-svc.db
 chmod 660 /opt/dbspace/.calendar-svc.db-journal
 chmod 660 /opt/data/calendar-svc/.CALENDAR_SVC_*
+
+vconftool set -t int db/calendar/timezone_on_off 0 -g 6003
+vconftool set -t string db/calendar/timezone_path "Asia/Seoul" -g 6003
 
 %postun -p /sbin/ldconfig
 

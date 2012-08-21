@@ -26,6 +26,9 @@
 #include "db-util.h"
 #include <glib.h>
 
+/* sec to 1970 1 1 0:0:0 */
+#define D19700101 62167219200
+
 //SQL operation type. May be used for other usage.
 typedef enum
 {
@@ -63,7 +66,7 @@ typedef enum
 	CAL_SCH_FIELD_MISSED,						/**< This is missed flag */
 	CAL_SCH_FIELD_CALENDAR_TYPE,			/**< Calendar type */
 	CAL_SCH_FIELD_TIME_ZOON,					/**< This is time zoon of calendar event */
-  	CAL_SCH_FIELD_DST,						/**< This is dst of an event*/
+	CAL_SCH_FIELD_DST,						/**< This is dst of an event*/
 
 	CAL_SCH_FIELD_CNT_MAX			/**< This is count max */
 } __cal_sch_field_t;
@@ -80,36 +83,17 @@ bool cal_db_get_text_from_stmt(sqlite3_stmt * stmt,char * * p_str_dst,int column
 bool cal_db_get_blob_from_stmt(sqlite3_stmt * stmt,struct tm * p_tm,int column);
 
 bool cal_db_service_convert_stmt_to_tz_info(sqlite3_stmt *stmt,cal_timezone_t * tz_info);
-
-int cal_db_service_get_day_count_in_month(int input_year, int input_mon);
-
-bool cal_db_service_get_current_time(struct tm * time_date);
-
-bool cal_db_service_get_tomorrow(struct tm* tm);
-
-bool cal_db_service_get_next_month(struct tm* tm);
-
-void cal_db_service_copy_struct_tm(const struct tm *tm_src, struct tm *tm_des);
-
-void cal_db_service_set_sch_weekflag(struct tm* date_time, char *week_flag);
-
-bool cal_vcalendar_convert_tm_to_vdata_str(const struct tm * tm, char * utc_str);
-
-void cal_vcalendar_convert_utc_str_to_tm(const char *szText, struct tm * tm);
-
 bool cal_util_convert_query_string(const char *src, char *dst);
-
-void cal_db_service_set_repeat_end_date(cal_sch_full_t *sch_record);
-
-bool cal_db_service_convert_stmt_to_list_field_record(sqlite3_stmt *stmt,cal_sch_full_t *sch_record, bool is_utc);
-bool cal_db_service_convert_stmt_to_month_field_record(sqlite3_stmt *stmt,int is_repeat,cal_sch_full_t *sch_record, bool is_utc);
-
-cal_iter* cals_get_updated_list(int type, int calendar_id, time_t timestamp);
 
 int cals_notify(cals_noti_type operation_type);
 int cals_begin_trans(void);
 int cals_end_trans(bool is_success);
+int cals_get_next_ver(void);
 const char* cals_noti_get_file_path(int type);
+inline cals_updated* cals_updated_schedule_add_mempool(void);
+inline int cals_updated_schedule_free_mempool(cals_updated *mempool);
 
+long long int _date_to_utime(int y, int mon, int d, int h, int min, int s);
+long long int _datetime_to_utime(char *datetime);
 
 #endif /* __CALENDAR_SVC_UTILS_H__ */

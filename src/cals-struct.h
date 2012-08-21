@@ -19,6 +19,4 @@
 #ifndef _CALENDAR_SVC_STRUCT_INTERNAL_H_
 #define _CALENDAR_SVC_STRUCT_INTERNAL_H_
 
-int cals_init_full_record(cal_sch_full_t *sch_full_record);
-
 #endif // _CALENDAR_SVC_STRUCT_INTERNAL_H_

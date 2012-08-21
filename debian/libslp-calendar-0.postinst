@@ -10,9 +10,11 @@ calendar-svc-initdb
 if [ "$USER" = "root" ]
 then
 	chown root:root /usr/lib/libcalendar-service.so.*
-   chown :6003 /opt/data/calendar-svc/.CALENDAR_SVC_*
+	chown :6003 /opt/data/calendar-svc/.CALENDAR_SVC_*
 	chown :6003 /opt/dbspace/.calendar-svc.db
 	chown :6003 /opt/dbspace/.calendar-svc.db-journal
+	vconftool set -t int db/calendar/timezone_on_off 0 -g 6003
+	vconftool set -t string db/calendar/timezone_path "Asia/Seoul" -g 6003
 fi
 
 chmod 660 /opt/dbspace/.calendar-svc.db

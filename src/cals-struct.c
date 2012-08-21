@@ -23,95 +23,8 @@
 #include "calendar-svc-provider.h"
 #include "cals-internal.h"
 #include "cals-typedef.h"
-#include "cals-tz-utils.h"
 #include "cals-db.h"
 #include "cals-utils.h"
-
-int cals_init_full_record(cal_sch_full_t *sch_full_record)
-{
-	time_t t = time(NULL);
-	tzset();
-	struct tm * cur_time = NULL;//localtime(&t);
-	struct tm ttm;
-
-	cur_time = localtime_r(&t,&ttm);
-	if(NULL == cur_time)
-	{
-		return CAL_ERR_FAIL;
-	}
-	struct tm temp_date_time = {0};
-	struct tm current_time = {0};
-
-	retvm_if(NULL == sch_full_record, CAL_ERR_ARG_INVALID , "sch_full_record is NULL");
-
-	memset(sch_full_record,0,sizeof(cal_sch_full_t));
-
-	sch_full_record->cal_type = CAL_EVENT_SCHEDULE_TYPE;
-	sch_full_record->sch_category = CAL_SCH_APPOINTMENT;
-	memset(&temp_date_time, 0 ,sizeof(struct tm));
-	memset(&sch_full_record->start_date_time, 0 ,sizeof(struct tm));
-	memset(&sch_full_record->end_date_time, 0 ,sizeof(struct tm));
-	memset(&sch_full_record->repeat_end_date, 0 ,sizeof(struct tm));
-	memset(&sch_full_record->last_modified_time, 0 ,sizeof(struct tm));
-	memset(&sch_full_record->created_date_time, 0 ,sizeof(struct tm));
-	memset(&sch_full_record->completed_date_time, 0 ,sizeof(struct tm));
-	memcpy(&current_time,cur_time,sizeof(struct tm));
-
-	memcpy(&sch_full_record->start_date_time,&current_time,sizeof(struct tm));
-	memcpy(&sch_full_record->end_date_time,&current_time,sizeof(struct tm));
-	sch_full_record->start_date_time.tm_sec = 0;
-	sch_full_record->end_date_time.tm_sec = 0;
-	sch_full_record->end_date_time.tm_hour ++;
-	if (sch_full_record->end_date_time.tm_hour > 23)
-	{
-		sch_full_record->end_date_time.tm_hour = 0;
-		cal_db_service_get_tomorrow(&sch_full_record->end_date_time);
-	}
-
-	cal_db_service_get_next_month(&sch_full_record->repeat_end_date);
-	temp_date_time.tm_year = TM_YEAR_MIN;
-	temp_date_time.tm_mon = MONTH_MIN;
-	temp_date_time.tm_mday = MONTH_DAY_MIN;
-	memcpy(&sch_full_record->repeat_end_date,&temp_date_time,sizeof(struct tm));
-	memcpy(&sch_full_record->last_modified_time,&temp_date_time,sizeof(struct tm));
-	memcpy(&sch_full_record->created_date_time,&temp_date_time,sizeof(struct tm));
-	memcpy(&sch_full_record->completed_date_time,&temp_date_time,sizeof(struct tm));
-
-	sch_full_record->index = CAL_INVALID_INDEX;
-	sch_full_record->repeat_term = CAL_REPEAT_NONE;
-	sch_full_record->repeat_until_type = CALS_REPEAT_UNTIL_TYPE_NONE;
-	sch_full_record->day_date = 1;
-	sch_full_record->timezone = -1;
-	sch_full_record->contact_id = CAL_INVALID_INDEX;
-	sch_full_record->calendar_type = CAL_PHONE_CALENDAR;
-	sch_full_record->calendar_id = CAL_INVALID_INDEX;
-	sch_full_record->attendee_list = NULL;
-	sch_full_record->meeting_category = NULL;
-	sch_full_record->busy_status = 2;
-	sch_full_record->summary = NULL;
-	sch_full_record->description = NULL;
-	sch_full_record->location= NULL;
-	sch_full_record->organizer_email = NULL;
-	sch_full_record->organizer_name = NULL;
-	sch_full_record->uid= NULL;
-	sch_full_record->gcal_id = NULL;
-	sch_full_record->location_summary = NULL;
-	sch_full_record->etag = NULL;
-	sch_full_record->edit_uri = NULL;
-	sch_full_record->gevent_id = NULL;
-	sch_full_record->tz_name = NULL;
-	sch_full_record->tz_city_name = NULL;
-	sch_full_record->original_event_id = CAL_INVALID_INDEX;
-
-	// TODO : To define default value.
-	sch_full_record->sync_status = CAL_SYNC_STATUS_NEW;
-	sch_full_record->timezone = CAL_TIME_ZONE_GMT_L11;
-	sch_full_record->is_deleted = 0;
-	sch_full_record->account_id = -1;
-	sch_full_record->calendar_id = DEFAULT_CALENDAR_ID;
-
-	return CAL_SUCCESS;
-}
 
 static inline void cals_init_calendar_record(calendar_t *calendar)
 {
@@ -134,28 +47,26 @@ API cal_struct* calendar_svc_struct_new(const char *event_type)
 		user_data = (cal_sch_full_t*)malloc(sizeof(cal_sch_full_t));
 		retvm_if(NULL == user_data, NULL, "malloc(cal_sch_full_t:sch) Failed(%d)", errno);
 
-		ret = cals_init_full_record(user_data);
+		ret = cals_event_init(user_data);
 		if(ret) {
 			free(user_data);
-			ERR("cals_init_full_record() Failed(%d)", ret);
+			ERR("cals_event_init() Failed(%d)", ret);
 			return NULL;
 		}
+
 	} else if (0 == strcmp(event_type, CAL_STRUCT_TODO)) {
 		type = CAL_STRUCT_TYPE_TODO;
 
-		user_data = (cal_sch_full_t*)malloc(sizeof(cal_sch_full_t));
-		retvm_if(NULL == user_data, NULL, "malloc(cal_sch_full_t:todo) Failed(%d)", errno);
+		user_data = (cal_sch_full_t*)calloc(1, sizeof(cal_sch_full_t));
+		retvm_if(NULL == user_data, NULL, "calloc(cal_sch_full_t:todo) Failed(%d)", errno);
 
-		ret = cals_init_full_record(user_data);
+		ret = cals_todo_init(user_data);
 		if(ret) {
 			free(user_data);
-			ERR("cals_init_full_record() Failed(%d)", ret);
+			ERR("cals_todo_init() Failed(%d)", ret);
 			return NULL;
 		}
 
-		((cal_sch_full_t*)user_data)->cal_type = CAL_EVENT_TODO_TYPE;
-		((cal_sch_full_t*)user_data)->end_date_time.tm_year = 69;
-		((cal_sch_full_t*)user_data)->sch_category = CAL_SCH_NONE;
 	} else if (0 == strcmp(event_type, CAL_STRUCT_CALENDAR)) {
 		type = CAL_STRUCT_TYPE_CALENDAR;
 
@@ -168,6 +79,74 @@ API cal_struct* calendar_svc_struct_new(const char *event_type)
 
 		user_data = (cal_timezone_t*)calloc(1, sizeof(cal_timezone_t));
 		retvm_if(NULL == user_data, NULL, "calloc(cal_timezone_t) Failed(%d)", errno);
+	} else if(0 == strcmp(event_type, CAL_STRUCT_UPDATED)) {
+		type = CAL_STRUCT_TYPE_UPDATED_LIST;
+
+		user_data = (cals_updated*)calloc(1, sizeof(cals_updated));
+		retvm_if(NULL == user_data, NULL, "calloc(cals_updated) Failed(%d)", errno);
+	} else if(0 == strcmp(event_type, CALS_STRUCT_PERIOD_NORMAL_ONOFF)) {
+		type = CALS_STRUCT_TYPE_PERIOD_NORMAL_ONOFF;;
+		user_data = (cals_struct_period_normal_onoff*)calloc(1,
+				sizeof(cals_struct_period_normal_onoff));
+		retvm_if(NULL == user_data, NULL,
+				"Failed to calloc PERIOD_NORMAL_ONOFF(%d)", errno);
+
+	} else if(0 == strcmp(event_type, CALS_STRUCT_PERIOD_ALLDAY_ONOFF)) {
+		type = CALS_STRUCT_TYPE_PERIOD_ALLDAY_ONOFF;;
+		user_data = (cals_struct_period_allday_onoff*)calloc(1,
+				sizeof(cals_struct_period_allday_onoff));
+		retvm_if(NULL == user_data, NULL,
+				"Failed to calloc PERIOD_ALLDAY_ONOFF(%d)", errno);
+
+	} else if(0 == strcmp(event_type, CALS_STRUCT_PERIOD_NORMAL_BASIC)) {
+		type = CALS_STRUCT_TYPE_PERIOD_NORMAL_BASIC;
+		user_data = (cals_struct_period_normal_basic*)calloc(1,
+				sizeof(cals_struct_period_normal_basic));
+		retvm_if(NULL == user_data, NULL,
+				"Failed to calloc CAL_STRUCT_PERIOD_NORMAL_BASIC(%d)", errno);
+
+	} else if(0 == strcmp(event_type, CALS_STRUCT_PERIOD_ALLDAY_BASIC)) {
+		type = CALS_STRUCT_TYPE_PERIOD_ALLDAY_BASIC;
+		user_data = (cals_struct_period_allday_basic*)calloc(1,
+				sizeof(cals_struct_period_allday_basic));
+		retvm_if(NULL == user_data, NULL,
+				"Failed to calloc CAL_STRUCT_PERIOD_ALLDAY_BASIC(%d)", errno);
+
+	} else if(0 == strcmp(event_type, CALS_STRUCT_PERIOD_NORMAL_OSP)) {
+		type = CALS_STRUCT_TYPE_PERIOD_NORMAL_OSP;
+		user_data = (cals_struct_period_normal_osp*)calloc(1,
+				sizeof(cals_struct_period_normal_osp));
+		retvm_if(NULL == user_data, NULL,
+				"Failed to calloc CAL_STRUCT_PERIOD_NORMAL_BASIC(%d)", errno);
+
+	} else if(0 == strcmp(event_type, CALS_STRUCT_PERIOD_ALLDAY_OSP)) {
+		type = CALS_STRUCT_TYPE_PERIOD_ALLDAY_OSP;
+		user_data = (cals_struct_period_allday_osp*)calloc(1,
+				sizeof(cals_struct_period_allday_osp));
+		retvm_if(NULL == user_data, NULL,
+				"Failed to calloc CAL_STRUCT_PERIOD_ALLDAY_BASIC(%d)", errno);
+
+	} else if(0 == strcmp(event_type, CALS_STRUCT_PERIOD_NORMAL_LOCATION)) {
+		type = CALS_STRUCT_TYPE_PERIOD_NORMAL_LOCATION;
+		user_data = (cals_struct_period_normal_location*)calloc(1,
+				sizeof(cals_struct_period_normal_location));
+		retvm_if(NULL == user_data, NULL,
+				"Failed to calloc CAL_STRUCT_PERIOD_NORMAL_LOCATION(%d)", errno);
+
+	} else if(0 == strcmp(event_type, CALS_STRUCT_PERIOD_ALLDAY_LOCATION)) {
+		type = CALS_STRUCT_TYPE_PERIOD_ALLDAY_LOCATION;
+		user_data = (cals_struct_period_allday_location*)calloc(1,
+				sizeof(cals_struct_period_allday_location));
+		retvm_if(NULL == user_data, NULL,
+				"Failed to calloc CAL_STRUCT_PERIOD_ALLDAY_BASIC(%d)", errno);
+
+	} else if(0 == strcmp(event_type, CALS_STRUCT_PERIOD_NORMAL_ALARM)) {
+		type = CALS_STRUCT_TYPE_PERIOD_NORMAL_ALARM;
+		user_data = (cals_struct_period_normal_alarm*)calloc(1,
+				sizeof(cals_struct_period_normal_alarm));
+		retvm_if(NULL == user_data, NULL,
+				"Failed to calloc CAL_STRUCT_PERIOD_NORMAL_ALARM(%d)", errno);
+
 	} else {
 		ERR("Unknown type(%s)", event_type);
 		return NULL;
@@ -237,6 +216,10 @@ API int calendar_svc_struct_free (cal_struct** event)
 		cals_free_timezone_record((cal_timezone_t*)(*event)->user_data);
 		CAL_FREE(*event);
 		break;
+	case CAL_STRUCT_TYPE_UPDATED_LIST:
+		CAL_FREE((*event)->user_data);
+		CAL_FREE(*event);
+		break;
 	default:
 		ERR("Unknown type(%d)", (*event)->event_type);
 		break;
@@ -254,6 +237,12 @@ API char * calendar_svc_struct_get_str (cal_struct *event,const char *field)
 	cal_sch_full_t * sch_rec = NULL;
 	calendar_t * cal_rec = NULL;
 	cal_timezone_t *tz_rec = NULL;
+	cals_struct_period_normal_basic *nbs = NULL;
+	cals_struct_period_allday_basic *abs = NULL;
+	cals_struct_period_normal_osp *nosp = NULL;
+	cals_struct_period_allday_osp *aosp = NULL;
+	cals_struct_period_normal_location *nosl = NULL;
+	cals_struct_period_allday_location *aosl = NULL;
 
 	switch(event->event_type)
 	{
@@ -272,9 +261,13 @@ API char * calendar_svc_struct_get_str (cal_struct *event,const char *field)
 		{
 			return (sch_rec->location);
 		}
-		else if(0 == strcmp(field,CAL_VALUE_TXT_WEEK_FLAG))
+		else if(0 == strcmp(field, CAL_VALUE_TXT_CATEGORIES))
 		{
-			return (sch_rec->week_flag);
+			return (sch_rec->categories);
+		}
+		else if(0 == strcmp(field, CAL_VALUE_TXT_EXDATE))
+		{
+			return (sch_rec->exdate);
 		}
 		else if(0 == strcmp(field,CAL_VALUE_TXT_UID))
 		{
@@ -312,14 +305,28 @@ API char * calendar_svc_struct_get_str (cal_struct *event,const char *field)
 		{
 			return (sch_rec->gevent_id);
 		}
-		else if(0 == strcmp(field,CAL_VALUE_TXT_TZ_NAME))
-		{
-			return (sch_rec->tz_name);
-		}
-		else if(0 == strcmp(field,CAL_VALUE_TXT_TZ_CITY_NAME))
-		{
-			return (sch_rec->tz_city_name);
-		}
+		else if(0 == strcmp(field, CALS_VALUE_TXT_DTSTART_TZID))
+			return (sch_rec->dtstart_tzid);
+		else if(0 == strcmp(field, CALS_VALUE_TXT_DTEND_TZID))
+			return (sch_rec->dtend_tzid);
+		else if(0 == strcmp(field, CALS_VALUE_TXT_RRULE_BYSECOND))
+			return (sch_rec->bysecond);
+		else if(0 == strcmp(field, CALS_VALUE_TXT_RRULE_BYMINUTE))
+			return (sch_rec->byminute);
+		else if(0 == strcmp(field, CALS_VALUE_TXT_RRULE_BYHOUR))
+			return (sch_rec->byhour);
+		else if(0 == strcmp(field, CALS_VALUE_TXT_RRULE_BYDAY))
+			return (sch_rec->byday);
+		else if(0 == strcmp(field, CALS_VALUE_TXT_RRULE_BYMONTHDAY))
+			return (sch_rec->bymonthday);
+		else if(0 == strcmp(field, CALS_VALUE_TXT_RRULE_BYYEARDAY))
+			return (sch_rec->byyearday);
+		else if(0 == strcmp(field, CALS_VALUE_TXT_RRULE_BYWEEKNO))
+			return (sch_rec->byweekno);
+		else if(0 == strcmp(field, CALS_VALUE_TXT_RRULE_BYMONTH))
+			return (sch_rec->bymonth);
+		else if(0 == strcmp(field, CALS_VALUE_TXT_RRULE_BYSETPOS))
+			return (sch_rec->bysetpos);
 		else
 		{
 			ERR("Can not find the field(%s)!", field);
@@ -393,8 +400,96 @@ API char * calendar_svc_struct_get_str (cal_struct *event,const char *field)
 			ERR("Can not find the field!(%s)",field);
 			return NULL;
 		}
-
 		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_NORMAL_ONOFF:
+		ERR("No field in CALS_LIST_PERIOD_NORMAL_ONOFF");
+		return NULL;
+
+	case CALS_STRUCT_TYPE_PERIOD_ALLDAY_ONOFF:
+		ERR("No field in CALS_LIST_PERIOD_ALLDAY_ONOFF");
+		return NULL;
+
+	case CALS_STRUCT_TYPE_PERIOD_NORMAL_BASIC:
+		nbs = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_BASIC_TXT_SUMMARY))
+			return nbs->summary;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_BASIC_TXT_LOCATION))
+			return nbs->location;
+		else {
+			ERR("Can not find the field!(%s)",field);
+			return NULL;
+		}
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_ALLDAY_BASIC:
+		abs = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_BASIC_TXT_SUMMARY))
+			return abs->summary;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_BASIC_TXT_LOCATION))
+			return abs->location;
+		else {
+			ERR("Can not find the field!(%s)", field);
+			return NULL;
+		}
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_NORMAL_OSP:
+		nosp = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_OSP_TXT_SUMMARY))
+			return nosp->summary;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_OSP_TXT_LOCATION))
+			return nosp->location;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_OSP_TXT_DESCRIPTION))
+			return nosp->description;
+		else {
+			ERR("Can not find the field!(%s)", field);
+			return NULL;
+		}
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_ALLDAY_OSP:
+		aosp = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_TXT_SUMMARY))
+			return aosp->summary;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_TXT_LOCATION))
+			return aosp->location;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_TXT_DESCRIPTION))
+			return aosp->description;
+		else {
+			ERR("Can not find the field!(%s)", field);
+			return NULL;
+		}
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_NORMAL_LOCATION:
+		nosl = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_LOCATION_TXT_SUMMARY))
+			return nosl->summary;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_LOCATION_TXT_LOCATION))
+			return nosl->location;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_LOCATION_TXT_DESCRIPTION))
+			return nosl->description;
+		else {
+			ERR("Can not find the field!(%s)", field);
+			return NULL;
+		}
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_ALLDAY_LOCATION:
+		aosl = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_TXT_SUMMARY))
+			return aosl->summary;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_TXT_LOCATION))
+			return aosl->location;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_TXT_DESCRIPTION))
+			return aosl->description;
+		else {
+			ERR("Can not find the field!(%s)", field);
+			return NULL;
+		}
+		break;
+
 	default:
 		ERR("Can not find the field!(%s)!", field);
 		return NULL;
@@ -404,12 +499,21 @@ API char * calendar_svc_struct_get_str (cal_struct *event,const char *field)
 API int calendar_svc_struct_get_int(cal_struct *event, const char *field)
 {
 	cal_sch_full_t * sch_rec = NULL;
+	cals_updated *update = NULL;
 	calendar_t * cal_rec = NULL;
 	cal_timezone_t *tz_rec = NULL;
+	cals_struct_period_normal_onoff *nof = NULL;
+	cals_struct_period_allday_onoff *aof = NULL;
+	cals_struct_period_normal_basic *nbs = NULL;
+	cals_struct_period_allday_basic *abs = NULL;
+	cals_struct_period_normal_osp *nosp = NULL;
+	cals_struct_period_allday_osp *aosp = NULL;
+	cals_struct_period_normal_location *nosl = NULL;
+	cals_struct_period_allday_location *aosl = NULL;
+	cals_struct_period_normal_alarm *nosa = NULL;
 
 	retvm_if(NULL == event || NULL==event->user_data || NULL == field, 0,
 				"Invalid parameters(event(%p), field(%p))", event, field);
-
 	switch(event->event_type)
 	{
 	case CAL_STRUCT_TYPE_SCHEDULE:
@@ -426,30 +530,6 @@ API int calendar_svc_struct_get_int(cal_struct *event, const char *field)
 		else if(0 == strcmp(field, CAL_VALUE_INT_TYPE))
 		{
 			return sch_rec->cal_type;
-		}
-		else if(0 == strcmp(field, CAL_VALUE_INT_CATEGORY))
-		{
-			return sch_rec->sch_category;
-		}
-		else if(0 == strcmp(field,CAL_VALUE_INT_REPEAT_TERM))
-		{
-			return sch_rec->repeat_term;
-		}
-		else if(0 == strcmp(field,CAL_VALUE_INT_REPEAT_INTERVAL))
-		{
-			return sch_rec->repeat_interval;
-		}
-		else if(0 == strcmp(field,CAL_VALUE_INT_REPEAT_UNTIL_TYPE))
-		{
-			return sch_rec->repeat_until_type;
-		}
-		else if(0 == strcmp(field,CAL_VALUE_INT_REPEAT_OCCURRENCES))
-		{
-			return sch_rec->repeat_occurrences;
-		}
-		else if(0 == strcmp(field,CAL_VALUE_INT_DAY_DATE))
-		{
-			return sch_rec->day_date;
 		}
 		else if(0 == strcmp(field,CAL_VALUE_INT_FILE_ID))
 		{
@@ -491,25 +571,13 @@ API int calendar_svc_struct_get_int(cal_struct *event, const char *field)
 		{
 			return sch_rec->original_event_id;
 		}
-		else if(0 == strcmp(field,CAL_VALUE_INT_ALL_DAY_EVENT))
-		{
-			return sch_rec->all_day_event;
-		}
 		else if(0 == strcmp(field,CAL_VALUE_INT_SYNC_STATUS))
 		{
 			return sch_rec->sync_status;
 		}
-		else if(0 == strcmp(field,CAL_VALUE_INT_SUN_MOON))
-		{
-			return sch_rec->sun_moon;
-		}
 		else if(0 == strcmp(field,CAL_VALUE_INT_PRIORITY))
 		{
 			return sch_rec->priority;
-		}
-		else if(0 == strcmp(field,CAL_VALUE_INT_WEEK_START))
-		{
-			return sch_rec->week_start;
 		}
 		else if(0 == strcmp(field,CAL_VALUE_INT_TASK_STATUS))
 		{
@@ -529,11 +597,56 @@ API int calendar_svc_struct_get_int(cal_struct *event, const char *field)
 		}
 		else if(0 == strcmp(field,CAL_VALUE_INT_DELETED))
 		{
-			return sch_rec->deleted;
+			return 0;
 		}
 		else if(0 == strcmp(field,CAL_VALUE_INT_PROGRESS))
 		{
 			return sch_rec->progress;
+		}
+		else if(0 == strcmp(field, CALS_VALUE_INT_DTSTART_TYPE))
+			return sch_rec->dtstart_type;
+		else if(0 == strcmp(field, CALS_VALUE_INT_DTSTART_YEAR))
+			return sch_rec->dtstart_year;
+		else if(0 == strcmp(field, CALS_VALUE_INT_DTSTART_MONTH))
+			return sch_rec->dtstart_month;
+		else if(0 == strcmp(field, CALS_VALUE_INT_DTSTART_MDAY))
+			return sch_rec->dtstart_mday;
+		else if(0 == strcmp(field, CALS_VALUE_INT_DTEND_TYPE))
+			return sch_rec->dtend_type;
+		else if(0 == strcmp(field, CALS_VALUE_INT_DTEND_YEAR))
+			return sch_rec->dtend_year;
+		else if(0 == strcmp(field, CALS_VALUE_INT_DTEND_MONTH))
+			return sch_rec->dtend_month;
+		else if(0 == strcmp(field, CALS_VALUE_INT_DTEND_MDAY))
+			return sch_rec->dtend_mday;
+		else if(0 == strcmp(field, CALS_VALUE_INT_RRULE_FREQ))
+			return sch_rec->freq;
+		else if(0 == strcmp(field, CALS_VALUE_INT_RRULE_ID))
+			return sch_rec->rrule_id;
+		else if(0 == strcmp(field, CALS_VALUE_INT_RRULE_RANGE_TYPE))
+			return sch_rec->range_type;
+		else if(0 == strcmp(field, CALS_VALUE_INT_RRULE_UNTIL_TYPE))
+			return sch_rec->until_type;
+		else if(0 == strcmp(field, CALS_VALUE_INT_RRULE_UNTIL_YEAR))
+			return sch_rec->until_year;
+		else if(0 == strcmp(field, CALS_VALUE_INT_RRULE_UNTIL_MONTH))
+			return sch_rec->until_month;
+		else if(0 == strcmp(field, CALS_VALUE_INT_RRULE_UNTIL_MDAY))
+			return sch_rec->until_mday;
+		else if(0 == strcmp(field, CALS_VALUE_INT_RRULE_COUNT))
+			return sch_rec->count;
+		else if(0 == strcmp(field, CALS_VALUE_INT_RRULE_INTERVAL))
+			return sch_rec->interval;
+		else if(0 == strcmp(field, CALS_VALUE_INT_RRULE_WKST))
+			return sch_rec->wkst;
+		/* deprecated start >>>>>>>>>>>>>>>>>>>>>>>>>*/
+		else if(0 == strcmp(field, "index"))
+		{
+			return sch_rec->index;
+		}
+		else if(0 == strcmp(field, CAL_VALUE_INT_CAL_TYPE))
+		{
+			return sch_rec->cal_type;
 		}
 		else
 		{
@@ -720,6 +833,239 @@ API int calendar_svc_struct_get_int(cal_struct *event, const char *field)
 		}
 
 		break;
+	case CAL_STRUCT_TYPE_UPDATED_LIST:
+		update = event->user_data;
+		if(0 == strcmp(field, CALS_STRUCT_UPDATED_INT_TYPE))
+		{
+			return update->type;
+		}
+		else if(0 == strcmp(field, CALS_STRUCT_UPDATED_INT_ID))
+		{
+			return update->id;
+		}
+		else if(0 == strcmp(field, CALS_STRUCT_UPDATED_INT_VERSION))
+		{
+			return update->ver;
+		}
+		else
+		{
+			ERR("Can not find the field(%s)",field);
+		}
+		break;
+	case CALS_STRUCT_TYPE_PERIOD_NORMAL_ONOFF:
+		nof = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_ONOFF_INT_EVENTID))
+			return nof->index;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_ONOFF_INT_DTSTART_TYPE))
+			return nof->dtstart_type;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_ONOFF_INT_DTEND_TYPE))
+			return nof->dtstart_type;
+		else
+			ERR("Can't find field(%s)", field);
+
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_ALLDAY_ONOFF:
+		aof = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_ONOFF_INT_EVENTID))
+			return aof->index;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_ONOFF_INT_DTSTART_TYPE))
+			return nof->dtstart_type;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_ONOFF_INT_DTSTART_YEAR))
+			return aof->dtstart_year;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_ONOFF_INT_DTSTART_MONTH))
+			return aof->dtstart_month;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_ONOFF_INT_DTSTART_MDAY))
+			return aof->dtstart_mday;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_ONOFF_INT_DTEND_TYPE))
+			return nof->dtend_type;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_ONOFF_INT_DTEND_YEAR))
+			return aof->dtend_year;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_ONOFF_INT_DTEND_MONTH))
+			return aof->dtend_month;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_ONOFF_INT_DTEND_MDAY))
+			return aof->dtend_mday;
+		else
+			ERR("Can't find field(%s)", field);
+
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_NORMAL_BASIC:
+		nbs = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_BASIC_INT_EVENTID))
+			return nbs->index;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_BASIC_INT_DTSTART_TYPE))
+			return nbs->dtstart_type;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_BASIC_INT_DTEND_TYPE))
+			return nbs->dtstart_type;
+		else
+			ERR("Can't find field(%s)", field);
+
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_ALLDAY_BASIC:
+		abs = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_BASIC_INT_EVENTID))
+			return abs->index;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_BASIC_INT_DTSTART_TYPE))
+			return abs->dtstart_type;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_BASIC_INT_DTSTART_YEAR))
+			return abs->dtstart_year;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_BASIC_INT_DTSTART_MONTH))
+			return abs->dtstart_month;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_BASIC_INT_DTSTART_MDAY))
+			return abs->dtstart_mday;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_BASIC_INT_DTEND_TYPE))
+			return abs->dtend_type;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_BASIC_INT_DTEND_YEAR))
+			return abs->dtend_year;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_BASIC_INT_DTEND_MONTH))
+			return abs->dtend_month;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_BASIC_INT_DTEND_MDAY))
+			return abs->dtend_mday;
+		else
+			ERR("Can't find field(%s)", field);
+
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_NORMAL_OSP:
+		nosp = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_OSP_INT_EVENTID))
+			return nosp->index;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_OSP_INT_DTSTART_TYPE))
+			return nosp->dtstart_type;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_OSP_INT_DTEND_TYPE))
+			return nosp->dtend_type;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_OSP_INT_CALENDAR_ID))
+			return nosp->calendar_id;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_OSP_INT_BUSY_STATUS))
+			return nosp->busy_status;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_OSP_INT_STATUS))
+			return nosp->meeting_status;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_OSP_INT_PRIORITY))
+			return nosp->priority;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_OSP_INT_VISIBILITY))
+			return nosp->sensitivity;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_OSP_INT_IS_RECURRING))
+			return nosp->rrule_id;
+		else
+			ERR("Can't find field(%s)", field);
+
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_ALLDAY_OSP:
+		aosp = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_INT_EVENTID))
+			return aosp->index;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_INT_DTSTART_TYPE))
+			return aosp->dtstart_type;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_INT_DTSTART_YEAR))
+			return aosp->dtstart_year;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_INT_DTSTART_MONTH))
+			return aosp->dtstart_month;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_INT_DTSTART_MDAY))
+			return aosp->dtstart_mday;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_INT_DTEND_TYPE))
+			return aosp->dtend_type;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_INT_DTEND_YEAR))
+			return aosp->dtend_year;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_INT_DTEND_MONTH))
+			return aosp->dtend_month;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_INT_DTEND_MDAY))
+			return aosp->dtend_mday;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_INT_CALENDAR_ID))
+			return aosp->calendar_id;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_INT_BUSY_STATUS))
+			return aosp->busy_status;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_INT_STATUS))
+			return aosp->meeting_status;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_INT_PRIORITY))
+			return aosp->priority;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_INT_VISIBILITY))
+			return aosp->sensitivity;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_INT_IS_RECURRING))
+			return aosp->rrule_id;
+		else
+			ERR("Can't find field(%s)", field);
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_NORMAL_LOCATION:
+		nosl = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_LOCATION_INT_EVENTID))
+			return nosl->index;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_LOCATION_INT_DTSTART_TYPE))
+			return nosl->dtstart_type;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_LOCATION_INT_DTEND_TYPE))
+			return nosl->dtend_type;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_LOCATION_INT_CALENDAR_ID))
+			return nosl->calendar_id;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_LOCATION_INT_BUSY_STATUS))
+			return nosl->busy_status;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_LOCATION_INT_STATUS))
+			return nosl->meeting_status;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_LOCATION_INT_PRIORITY))
+			return nosl->priority;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_LOCATION_INT_VISIBILITY))
+			return nosl->sensitivity;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_LOCATION_INT_IS_RECURRING))
+			return nosl->rrule_id;
+		else
+			ERR("Can't find field(%s)", field);
+
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_ALLDAY_LOCATION:
+		aosl = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_EVENTID))
+			return aosl->index;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_DTSTART_TYPE))
+			return aosl->dtstart_type;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_DTSTART_YEAR))
+			return aosl->dtstart_year;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_DTSTART_MONTH))
+			return aosl->dtstart_month;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_DTSTART_MDAY))
+			return aosl->dtstart_mday;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_DTEND_TYPE))
+			return aosl->dtend_type;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_DTEND_YEAR))
+			return aosl->dtend_year;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_DTEND_MONTH))
+			return aosl->dtend_month;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_DTEND_MDAY))
+			return aosl->dtend_mday;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_CALENDAR_ID))
+			return aosl->calendar_id;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_BUSY_STATUS))
+			return aosl->busy_status;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_STATUS))
+			return aosl->meeting_status;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_PRIORITY))
+			return aosl->priority;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_VISIBILITY))
+			return aosl->sensitivity;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_IS_RECURRING))
+			return aosl->rrule_id;
+		else
+			ERR("Can't find field(%s)", field);
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_NORMAL_ALARM:
+		nosa = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_ALARM_INT_EVENTID))
+			return nosa->index;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_ALARM_INT_DTSTART_TYPE))
+			return nosa->dtstart_type;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_ALARM_INT_DTEND_TYPE))
+			return nosa->dtend_type;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_ALARM_INT_CALENDAR_ID))
+			return nosa->calendar_id;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_ALARM_INT_ALARM_ID))
+			return nosa->alarm_id;
+		else
+			ERR("Can't find field(%s)", field);
+		break;
+
 	default:
 		break;
 
@@ -728,153 +1074,20 @@ API int calendar_svc_struct_get_int(cal_struct *event, const char *field)
 	return 0;
 }
 
-API time_t calendar_svc_struct_get_time (cal_struct *event, const char *field, int timezone_flag)
-{
-	time_t ret_time = 0;
-	cal_sch_full_t * sch_rec = NULL;
-
-	retv_if(NULL == event, CAL_ERR_ARG_NULL);
-	retv_if(NULL == field, CAL_ERR_ARG_NULL);
-	retv_if(NULL == event->user_data, CAL_ERR_ARG_INVALID);
-
-	switch(event->event_type)
-	{
-	case CAL_STRUCT_TYPE_SCHEDULE:
-	case CAL_STRUCT_TYPE_TODO:
-		sch_rec = (cal_sch_full_t*)event->user_data;
-		if(sch_rec==NULL)
-		{
-			return CAL_ERR_ARG_NULL;
-		}
-
-		if(0 == strcmp(field,CAL_VALUE_GMT_START_DATE_TIME))
-		{
-			ret_time = cals_mktime(&(sch_rec->start_date_time));
-		}
-		else if(0 == strcmp(field,CAL_VALUE_GMT_END_DATE_TIME))
-		{
-			ret_time = cals_mktime(&(sch_rec->end_date_time));
-		}
-		else if(0 == strcmp(field,CAL_VALUE_GMT_REPEAT_END_DATE))
-		{
-			ret_time = cals_mktime(&(sch_rec->repeat_end_date));
-		}
-		else if(0 == strcmp(field,CAL_VALUE_GMT_LAST_MODIFIED_TIME))
-		{
-			ret_time = cals_mktime(&(sch_rec->last_modified_time));
-		}
-		else if(0 == strcmp(field,CAL_VALUE_GMT_CREATED_DATE_TIME))
-		{
-			ret_time = cals_mktime(&(sch_rec->created_date_time));
-		}
-		else if(0 == strcmp(field,CAL_VALUE_GMT_COMPLETED_DATE_TIME))
-		{
-			ret_time = cals_mktime(&(sch_rec->completed_date_time));
-		}
-		else
-		{
-		}
-		break;
-
-	case CAL_STRUCT_TYPE_CALENDAR:
-		return 0;
-		break;
-
-	default:
-		return 0;
-		break;
-	}
-
-	if(timezone_flag != CAL_TZ_FLAG_GMT && sch_rec->all_day_event==false)
-	{
-		time_t temp = 0;
-		calendar_svc_util_gmt_to_local(ret_time,&temp);
-		ret_time = temp;
-	}
-
-	return ret_time;
-}
-
-API struct tm* calendar_svc_struct_get_tm(cal_struct* record, const char *field, int timezone_flag)
-{
-	struct tm* ret_tm = 0;
-	cal_sch_full_t * sch_rec = NULL;
-
-	retv_if(NULL == record, NULL);
-	retv_if(NULL == field, NULL);
-	retv_if(NULL == record->user_data, NULL);
-
-	switch(record->event_type)
-	{
-	case CAL_STRUCT_TYPE_SCHEDULE:
-	case CAL_STRUCT_TYPE_TODO:
-		sch_rec = (cal_sch_full_t*)record->user_data;
-		if(sch_rec==NULL)
-		{
-			return NULL;
-		}
-
-		if(0 == strcmp(field,CAL_VALUE_GMT_START_DATE_TIME))
-		{
-			ret_tm = &(sch_rec->start_date_time);
-		}
-		else if(0 == strcmp(field,CAL_VALUE_GMT_END_DATE_TIME))
-		{
-			ret_tm = &(sch_rec->end_date_time);
-		}
-		else if(0 == strcmp(field,CAL_VALUE_GMT_REPEAT_END_DATE))
-		{
-			ret_tm = &(sch_rec->repeat_end_date);
-		}
-		else if(0 == strcmp(field,CAL_VALUE_GMT_LAST_MODIFIED_TIME))
-		{
-			ret_tm = &(sch_rec->last_modified_time);
-		}
-		else if(0 == strcmp(field,CAL_VALUE_GMT_CREATED_DATE_TIME))
-		{
-			ret_tm = &(sch_rec->created_date_time);
-		}
-		else if(0 == strcmp(field,CAL_VALUE_GMT_COMPLETED_DATE_TIME))
-		{
-			ret_tm = &(sch_rec->completed_date_time);
-		}
-		else
-		{
-		}
-		break;
-
-	case CAL_STRUCT_TYPE_CALENDAR:
-		return NULL;
-		break;
-
-	default:
-		return NULL;
-		break;
-	}
-
-
-	if(timezone_flag != CAL_TZ_FLAG_GMT && NULL != ret_tm && sch_rec->all_day_event==false)
-	{
-		time_t temp = 0;
-		time_t input_tt = 0;
-
-		input_tt = cals_mktime(ret_tm);
-
-		calendar_svc_util_gmt_to_local(input_tt,&temp);
-		input_tt = temp;
-		return cals_tmtime(&input_tt);
-	}
-
-	//TMDUMP(*ret_tm);
-	return ret_tm;
-}
-
-
 API int calendar_svc_struct_set_int (cal_struct *event, const char *field, int intval)
 {
 	cal_sch_full_t * sch_rec = NULL;
 	calendar_t * cal_rec = NULL;
 	cal_timezone_t *tz_rec = NULL;
+	cals_struct_period_normal_onoff *nof = NULL;
+	cals_struct_period_allday_onoff *aof = NULL;
+	cals_struct_period_normal_basic *nbs = NULL;
+	cals_struct_period_allday_basic *abs = NULL;
+	cals_struct_period_normal_osp *nosp = NULL;
+	cals_struct_period_allday_osp *aosp = NULL;
+	cals_struct_period_normal_location *nosl = NULL;
+	cals_struct_period_allday_location *aosl = NULL;
+	cals_struct_period_normal_alarm *nosa = NULL;
 
 	retv_if(NULL == event, CAL_ERR_ARG_NULL);
 	retv_if(NULL == field, CAL_ERR_ARG_NULL);
@@ -891,35 +1104,6 @@ API int calendar_svc_struct_set_int (cal_struct *event, const char *field, int i
 		else if(0 == strcmp(field,CAL_VALUE_INT_ACCOUNT_ID))
 		{
 			sch_rec->account_id = intval;
-		}
-		else if(0 == strcmp(field, CAL_VALUE_INT_CATEGORY))
-		{
-			sch_rec->sch_category = intval;
-		}
-		else if(0 == strcmp(field, CAL_VALUE_INT_ALL_DAY_EVENT))
-		{
-			sch_rec->all_day_event = !!(intval);
-		}
-		else if(0 == strcmp(field,CAL_VALUE_INT_REPEAT_TERM))
-		{
-			sch_rec->repeat_term = intval;
-		}
-		else if(0 == strcmp(field,CAL_VALUE_INT_REPEAT_INTERVAL))
-		{
-			sch_rec->repeat_interval = intval;
-		}
-		else if(0 == strcmp(field,CAL_VALUE_INT_REPEAT_UNTIL_TYPE))
-		{
-			sch_rec->repeat_until_type = intval;
-		}
-		else if(0 == strcmp(field,CAL_VALUE_INT_REPEAT_OCCURRENCES))
-		{
-			sch_rec->repeat_occurrences = intval;
-			sch_rec->repeat_end_date.tm_year = BASE_TIME_YEAR;
-		}
-		else if(0 == strcmp(field,CAL_VALUE_INT_DAY_DATE))
-		{
-			sch_rec->day_date = intval;
 		}
 		else if(0 == strcmp(field,CAL_VALUE_INT_FILE_ID))
 		{
@@ -957,14 +1141,6 @@ API int calendar_svc_struct_set_int (cal_struct *event, const char *field, int i
 		{
 			sch_rec->dst = intval;
 		}
-		else if(0 == strcmp(field,CAL_VALUE_INT_SUN_MOON))
-		{
-			sch_rec->sun_moon = intval;
-		}
-		else if(0 == strcmp(field,CAL_VALUE_INT_WEEK_START))
-		{
-			sch_rec->week_start = intval;
-		}
 		else if(0 == strcmp(field, CAL_VALUE_INT_ORIGINAL_EVENT_ID))
 		{
 			sch_rec->original_event_id = intval;
@@ -997,6 +1173,46 @@ API int calendar_svc_struct_set_int (cal_struct *event, const char *field, int i
 		{
 			sch_rec->progress = intval;
 		}
+		else if(0 == strcmp(field, CALS_VALUE_INT_DTSTART_TYPE))
+			sch_rec->dtstart_type = intval;
+		else if(0 == strcmp(field, CALS_VALUE_INT_DTSTART_YEAR))
+			sch_rec->dtstart_year = intval;
+		else if(0 == strcmp(field, CALS_VALUE_INT_DTSTART_MONTH))
+			sch_rec->dtstart_month = intval;
+		else if(0 == strcmp(field, CALS_VALUE_INT_DTSTART_MDAY))
+			sch_rec->dtstart_mday = intval;
+		else if(0 == strcmp(field, CALS_VALUE_INT_DTEND_TYPE))
+			sch_rec->dtend_type = intval;
+		else if(0 == strcmp(field, CALS_VALUE_INT_DTEND_YEAR))
+			sch_rec->dtend_year = intval;
+		else if(0 == strcmp(field, CALS_VALUE_INT_DTEND_MONTH))
+			sch_rec->dtend_month = intval;
+		else if(0 == strcmp(field, CALS_VALUE_INT_DTEND_MDAY))
+			sch_rec->dtend_mday = intval;
+		else if(0 == strcmp(field, CALS_VALUE_INT_RRULE_FREQ))
+			sch_rec->freq = intval;
+		else if(0 == strcmp(field, CALS_VALUE_INT_RRULE_RANGE_TYPE))
+			sch_rec->range_type = intval;
+		else if(0 == strcmp(field, CALS_VALUE_INT_RRULE_UNTIL_TYPE))
+			sch_rec->until_type = intval;
+		else if(0 == strcmp(field, CALS_VALUE_INT_RRULE_UNTIL_YEAR))
+			sch_rec->until_year = intval;
+		else if(0 == strcmp(field, CALS_VALUE_INT_RRULE_UNTIL_MONTH))
+			sch_rec->until_month = intval;
+		else if(0 == strcmp(field, CALS_VALUE_INT_RRULE_UNTIL_MDAY))
+			sch_rec->until_mday = intval;
+		else if(0 == strcmp(field, CALS_VALUE_INT_RRULE_COUNT))
+			sch_rec->count = intval;
+		else if(0 == strcmp(field, CALS_VALUE_INT_RRULE_INTERVAL))
+			sch_rec->interval = intval;
+		else if(0 == strcmp(field, CALS_VALUE_INT_RRULE_WKST))
+			sch_rec->wkst = intval;
+		/* deprecated start >>>>>>>>>>>>>>>>>>> */
+		else if(0 == strcmp(field,"index"))
+		{
+			sch_rec->index = intval;
+		}
+		/* <<<<<<<<<<<<<<<<<<<< deprecated end */
 		else
 		{
 			ERR("Invalid field(%d, %s)", event->event_type, field);
@@ -1183,6 +1399,231 @@ API int calendar_svc_struct_set_int (cal_struct *event, const char *field, int i
 			return CAL_ERR_ARG_INVALID;
 		}
 		break;
+	case CALS_STRUCT_TYPE_PERIOD_NORMAL_ONOFF:
+		nof = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_ONOFF_INT_EVENTID))
+			nof->index = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_ONOFF_INT_DTSTART_TYPE))
+			nof->dtstart_type = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_ONOFF_INT_DTEND_TYPE))
+			nof->dtend_type = intval;
+		else {
+			ERR("Invalid field(%d, %s)", event->event_type, field);
+			return CAL_ERR_ARG_INVALID;
+		}
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_ALLDAY_ONOFF:
+		aof = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_ONOFF_INT_EVENTID))
+			aof->index = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_ONOFF_INT_DTSTART_TYPE))
+			aof->dtstart_type = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_ONOFF_INT_DTSTART_YEAR))
+			aof->dtstart_year = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_ONOFF_INT_DTSTART_MONTH))
+			aof->dtstart_month = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_ONOFF_INT_DTSTART_MDAY))
+			aof->dtstart_mday = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_ONOFF_INT_DTEND_TYPE))
+			aof->dtend_type = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_ONOFF_INT_DTEND_YEAR))
+			aof->dtend_year = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_ONOFF_INT_DTEND_MONTH))
+			aof->dtend_month = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_ONOFF_INT_DTEND_MDAY))
+			aof->dtend_mday = intval;
+		else {
+			ERR("Invalid field(%d, %s)", event->event_type, field);
+			return CAL_ERR_ARG_INVALID;
+		}
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_NORMAL_BASIC:
+		nbs = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_BASIC_INT_EVENTID))
+			nbs->index = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_BASIC_INT_DTSTART_TYPE))
+			nbs->dtstart_type = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_BASIC_INT_DTEND_TYPE))
+			nbs->dtend_type = intval;
+		else {
+			ERR("Invalid field(%d, %s)", event->event_type, field);
+			return CAL_ERR_ARG_INVALID;
+		}
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_ALLDAY_BASIC:
+		abs = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_BASIC_INT_EVENTID))
+			abs->index = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_BASIC_INT_DTSTART_TYPE))
+			abs->dtstart_type = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_BASIC_INT_DTSTART_YEAR))
+			abs->dtstart_year = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_BASIC_INT_DTSTART_MONTH))
+			abs->dtstart_month = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_BASIC_INT_DTSTART_MDAY))
+			abs->dtstart_mday = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_BASIC_INT_DTEND_TYPE))
+			abs->dtend_type = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_BASIC_INT_DTEND_YEAR))
+			abs->dtend_year = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_BASIC_INT_DTEND_MONTH))
+			abs->dtend_month = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_BASIC_INT_DTEND_MDAY))
+			abs->dtend_mday = intval;
+		else {
+			ERR("Invalid field(%d, %s)", event->event_type, field);
+			return CAL_ERR_ARG_INVALID;
+		}
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_NORMAL_OSP:
+		nosp = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_OSP_INT_EVENTID))
+			nosp->index = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_OSP_INT_DTSTART_TYPE))
+			nosp->dtstart_type = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_OSP_INT_DTEND_TYPE))
+			nosp->dtend_type = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_OSP_INT_CALENDAR_ID))
+			nosp->calendar_id = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_OSP_INT_BUSY_STATUS))
+			nosp->busy_status = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_OSP_INT_STATUS))
+			nosp->meeting_status = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_OSP_INT_PRIORITY))
+			nosp->priority = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_OSP_INT_VISIBILITY))
+			nosp->sensitivity = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_OSP_INT_IS_RECURRING))
+			nosp->rrule_id = intval;
+		else {
+			ERR("Invalid field(%d, %s)", event->event_type, field);
+			return CAL_ERR_ARG_INVALID;
+		}
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_ALLDAY_OSP:
+		aosp = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_INT_EVENTID))
+			aosp->index = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_INT_DTSTART_TYPE))
+			aosp->dtstart_type = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_INT_DTSTART_YEAR))
+			aosp->dtstart_year = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_INT_DTSTART_MONTH))
+			aosp->dtstart_month = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_INT_DTSTART_MDAY))
+			aosp->dtstart_mday = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_INT_DTEND_TYPE))
+			aosp->dtend_type = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_INT_DTEND_YEAR))
+			aosp->dtend_year = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_INT_DTEND_MONTH))
+			aosp->dtend_month = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_INT_DTEND_MDAY))
+			aosp->dtend_mday = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_INT_CALENDAR_ID))
+			aosp->calendar_id = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_INT_BUSY_STATUS))
+			aosp->busy_status = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_INT_STATUS))
+			aosp->meeting_status = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_INT_PRIORITY))
+			aosp->priority = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_INT_VISIBILITY))
+			aosp->sensitivity = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_INT_IS_RECURRING))
+			aosp->rrule_id = intval;
+		else {
+			ERR("Invalid field(%d, %s)", event->event_type, field);
+			return CAL_ERR_ARG_INVALID;
+		}
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_NORMAL_LOCATION:
+		nosl = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_LOCATION_INT_EVENTID))
+			nosl->index = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_LOCATION_INT_DTSTART_TYPE))
+			nosl->dtstart_type = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_LOCATION_INT_DTEND_TYPE))
+			nosl->dtend_type = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_LOCATION_INT_CALENDAR_ID))
+			nosl->calendar_id = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_LOCATION_INT_BUSY_STATUS))
+			nosl->busy_status = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_LOCATION_INT_STATUS))
+			nosl->meeting_status = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_LOCATION_INT_PRIORITY))
+			nosl->priority = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_LOCATION_INT_VISIBILITY))
+			nosl->sensitivity = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_LOCATION_INT_IS_RECURRING))
+			nosl->rrule_id = intval;
+		else {
+			ERR("Invalid field(%d, %s)", event->event_type, field);
+			return CAL_ERR_ARG_INVALID;
+		}
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_ALLDAY_LOCATION:
+		aosl = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_EVENTID))
+			aosl->index = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_DTSTART_TYPE))
+			aosl->dtstart_type = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_DTSTART_YEAR))
+			aosl->dtstart_year = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_DTSTART_MONTH))
+			aosl->dtstart_month = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_DTSTART_MDAY))
+			aosl->dtstart_mday = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_DTEND_TYPE))
+			aosl->dtend_type = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_DTEND_YEAR))
+			aosl->dtend_year = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_DTEND_MONTH))
+			aosl->dtend_month = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_DTEND_MDAY))
+			aosl->dtend_mday = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_CALENDAR_ID))
+			aosl->calendar_id = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_BUSY_STATUS))
+			aosl->busy_status = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_STATUS))
+			aosl->meeting_status = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_PRIORITY))
+			aosl->priority = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_VISIBILITY))
+			aosl->sensitivity = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_IS_RECURRING))
+			aosl->rrule_id = intval;
+		else {
+			ERR("Invalid field(%d, %s)", event->event_type, field);
+			return CAL_ERR_ARG_INVALID;
+		}
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_NORMAL_ALARM:
+		nosa = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_ALARM_INT_EVENTID))
+			nosa->index = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_ALARM_INT_DTSTART_TYPE))
+			nosa->dtstart_type = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_ALARM_INT_DTEND_TYPE))
+			nosa->dtend_type = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_ALARM_INT_CALENDAR_ID))
+			nosa->calendar_id = intval;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_ALARM_INT_ALARM_ID))
+			nosa->alarm_id = intval;
+		else {
+			ERR("Invalid field(%d, %s)", event->event_type, field);
+			return CAL_ERR_ARG_INVALID;
+		}
+
 	default:
 		ERR("Invalid field(%d, %s)", event->event_type, field);
 		return CAL_ERR_ARG_INVALID;
@@ -1198,7 +1639,14 @@ API int calendar_svc_struct_set_str (cal_struct *event, const char *field, const
 	cal_sch_full_t *sch_rec = NULL;
 	calendar_t *cal_rec = NULL;
 	cal_timezone_t *tz_rec = NULL;
-	int str_len = strlen(strval)+1;
+	cals_struct_period_normal_basic *nbs = NULL;
+	cals_struct_period_allday_basic *abs = NULL;
+	cals_struct_period_normal_osp *nosp = NULL;
+	cals_struct_period_allday_osp *aosp = NULL;
+	cals_struct_period_normal_location *nosl = NULL;
+	cals_struct_period_allday_location *aosl = NULL;
+
+	retvm_if(strval == NULL, CAL_ERR_FAIL, "Invalid argument: value is NULL");
 
 	switch(event->event_type)
 	{
@@ -1208,159 +1656,127 @@ API int calendar_svc_struct_set_str (cal_struct *event, const char *field, const
 		if(0 == strcmp(field,CAL_VALUE_TXT_SUMMARY))
 		{
 			CAL_FREE(sch_rec->summary);
-
-			sch_rec->summary = (char*)malloc(str_len);
-			retex_if(NULL == sch_rec->summary,,"[ERROR]calendar_svc_struct_set_str:Failed to malloc!\n");
-			memset(sch_rec->summary,0x00,str_len);
-
-			strcpy(sch_rec->summary,strval);
+			sch_rec->summary = strdup(strval);
 		}
 		else if(0 == strcmp(field,CAL_VALUE_TXT_DESCRIPTION))
 		{
 			CAL_FREE(sch_rec->description);
-
-			sch_rec->description = (char*)malloc(str_len);
-			retex_if(NULL == sch_rec->description,,"[ERROR]calendar_svc_struct_set_str:Failed to malloc!\n");
-			memset(sch_rec->description,0x00,str_len);
-
-			strcpy(sch_rec->description,strval);
+			sch_rec->description = strdup(strval);
 		}
 		else if(0 == strcmp(field, CAL_VALUE_TXT_LOCATION))
 		{
 			CAL_FREE(sch_rec->location);
-
-
-			sch_rec->location = (char*)malloc(str_len);
-			retex_if(NULL == sch_rec->location,,"[ERROR]calendar_svc_struct_set_str:Failed to malloc!\n");
-			memset(sch_rec->location,0x00,str_len);
-
-			strcpy(sch_rec->location,strval);
+			sch_rec->location = strdup(strval);
 		}
-		else if(0 == strcmp(field,CAL_VALUE_TXT_WEEK_FLAG))
+		else if(0 == strcmp(field, CAL_VALUE_TXT_CATEGORIES))
 		{
-			CAL_FREE(sch_rec->week_flag);
-
-			sch_rec->week_flag = (char*)malloc(str_len);
-			retex_if(NULL == sch_rec->week_flag,,"[ERROR]calendar_svc_struct_set_str:Failed to malloc!\n");
-			memset(sch_rec->week_flag,0x00,str_len);
-
-			strcpy(sch_rec->week_flag,strval);
+			CAL_FREE(sch_rec->categories);
+			sch_rec->categories = strdup(strval);
+		}
+		else if(0 == strcmp(field, CAL_VALUE_TXT_EXDATE))
+		{
+			CAL_FREE(sch_rec->exdate);
+			sch_rec->exdate = strdup(strval);
 		}
 		else if(0 == strcmp(field,CAL_VALUE_TXT_UID))
 		{
 			CAL_FREE(sch_rec->uid);
-
-			sch_rec->uid = (char*)malloc(str_len);
-			retex_if(NULL == sch_rec->uid,,"[ERROR]calendar_svc_struct_set_str:Failed to malloc!\n");
-			memset(sch_rec->uid,0x00,str_len);
-
-			strcpy(sch_rec->uid,strval);
+			sch_rec->uid = strdup(strval);
 		}
 		else if(0 == strcmp(field,CAL_VALUE_TXT_ORGANIZER_NAME))
 		{
 			CAL_FREE(sch_rec->organizer_name);
-
-
-			sch_rec->organizer_name = (char*)malloc(str_len);
-			retex_if(NULL == sch_rec->organizer_name,,"[ERROR]calendar_svc_struct_set_str:Failed to malloc!\n");
-			memset(sch_rec->organizer_name,0x00,str_len);
-
-			strcpy(sch_rec->organizer_name,strval);
+			sch_rec->organizer_name = strdup(strval);
 		}
 		else if(0 == strcmp(field,CAL_VALUE_TXT_ORGANIZER_EMAIL  ))
 		{
 			CAL_FREE(sch_rec->organizer_email);
-
-			sch_rec->organizer_email = (char*)malloc(str_len);
-			retex_if(NULL == sch_rec->organizer_email,,"[ERROR]calendar_svc_struct_set_str:Failed to malloc!\n");
-			memset(sch_rec->organizer_email,0x00,str_len);
-
-			strcpy(sch_rec->organizer_email,strval);
+			sch_rec->organizer_email = strdup(strval);
 		}
 		else if(0 == strcmp(field,CAL_VALUE_TXT_GCAL_ID ))
 		{
 			CAL_FREE(sch_rec->gcal_id);
-
-
-			sch_rec->gcal_id = (char*)malloc(str_len);
-			retex_if(NULL == sch_rec->gcal_id,,"[ERROR]calendar_svc_struct_set_str:Failed to malloc!\n");
-			memset(sch_rec->gcal_id,0x00,str_len);
-
-			strcpy(sch_rec->gcal_id,strval);
+			sch_rec->gcal_id = strdup(strval);
 		}
 		else if(0 == strcmp(field,CAL_VALUE_TXT_UPDATED))
 		{
 			CAL_FREE(sch_rec->updated);
-
-
-			sch_rec->updated = (char*)malloc(str_len);
-			retex_if(NULL == sch_rec->updated,,"[ERROR]calendar_svc_struct_set_str:Failed to malloc!\n");
-			memset(sch_rec->updated,0x00,str_len);
-
-			strcpy(sch_rec->updated,strval);
+			sch_rec->updated = strdup(strval);
 		}
 		else if(0 == strcmp(field,CAL_VALUE_TXT_LOCATION_SUMMARY))
 		{
 			CAL_FREE(sch_rec->location_summary);
-
-
-			sch_rec->location_summary = (char*)malloc(str_len);
-			retex_if(NULL == sch_rec->location_summary,,"[ERROR]calendar_svc_struct_set_str:Failed to malloc!\n");
-			memset(sch_rec->location_summary,0x00,str_len);
-
-			strcpy(sch_rec->location_summary,strval);
+			sch_rec->location_summary = strdup(strval);
 		}
 		else if(0 == strcmp(field, CAL_VALUE_TXT_ETAG))
 		{
 			CAL_FREE(sch_rec->etag);
-
-			sch_rec->etag = (char*)malloc(str_len);
-			retex_if(NULL == sch_rec->etag,,"[ERROR]calendar_svc_struct_set_str:Failed to malloc!\n");
-			memset(sch_rec->etag,0x00,str_len);
-
-			strcpy(sch_rec->etag,strval);
+			sch_rec->etag = strdup(strval);
 		}
 		else if(0 == strcmp(field,CAL_VALUE_TXT_EDIT_URL))
 		{
 			CAL_FREE(sch_rec->edit_uri);
-
-			sch_rec->edit_uri = (char*)malloc(str_len);
-			retex_if(NULL == sch_rec->edit_uri,,"[ERROR]calendar_svc_struct_set_str:Failed to malloc!\n");
-			memset(sch_rec->edit_uri,0x00,str_len);
-
-			strcpy(sch_rec->edit_uri,strval);
+			sch_rec->edit_uri = strdup(strval);
 		}
 		else if(0 == strcmp(field,CAL_VALUE_TXT_GEDERID))
 		{
 			CAL_FREE(sch_rec->gevent_id);
-
-			sch_rec->gevent_id = (char*)malloc(str_len);
-			retex_if(NULL == sch_rec->gevent_id,,"[ERROR]calendar_svc_struct_set_str:Failed to malloc!\n");
-			memset(sch_rec->gevent_id,0x00,str_len);
-
-			strcpy(sch_rec->gevent_id,strval);
+			sch_rec->gevent_id = strdup(strval);
 		}
-		else if(0 == strcmp(field,CAL_VALUE_TXT_TZ_NAME))
+		else if(0 == strcmp(field, CALS_VALUE_TXT_DTSTART_TZID))
 		{
-			CAL_FREE(sch_rec->tz_name);
-
-
-			sch_rec->tz_name = (char*)malloc(str_len);
-			retex_if(NULL == sch_rec->tz_name,,"[ERROR]calendar_svc_struct_set_str:Failed to malloc!\n");
-			memset(sch_rec->tz_name,0x00,str_len);
-
-			strcpy(sch_rec->tz_name,strval);
+			CAL_FREE(sch_rec->dtstart_tzid);
+			sch_rec->dtstart_tzid = strdup(strval);
 		}
-		else if(0 == strcmp(field,CAL_VALUE_TXT_TZ_CITY_NAME))
+		else if(0 == strcmp(field, CALS_VALUE_TXT_DTEND_TZID))
 		{
-			CAL_FREE(sch_rec->tz_city_name);
-
-
-			sch_rec->tz_city_name = (char*)malloc(str_len);
-			retex_if(NULL == sch_rec->tz_city_name,,"[ERROR]calendar_svc_struct_set_str:Failed to malloc!\n");
-			memset(sch_rec->tz_city_name,0x00,str_len);
-
-			strcpy(sch_rec->tz_city_name,strval);
+			CAL_FREE(sch_rec->dtend_tzid);
+			sch_rec->dtend_tzid = strdup(strval);
+		}
+		else if(0 == strcmp(field, CALS_VALUE_TXT_RRULE_BYSECOND))
+		{
+			CAL_FREE(sch_rec->bysecond);
+			sch_rec->bysecond = strdup(strval);
+		}
+		else if(0 == strcmp(field, CALS_VALUE_TXT_RRULE_BYMINUTE))
+		{
+			CAL_FREE(sch_rec->byminute);
+			sch_rec->byminute = strdup(strval);
+		}
+		else if(0 == strcmp(field, CALS_VALUE_TXT_RRULE_BYHOUR))
+		{
+			CAL_FREE(sch_rec->byhour);
+			sch_rec->byhour = strdup(strval);
+		}
+		else if(0 == strcmp(field, CALS_VALUE_TXT_RRULE_BYDAY))
+		{
+			CAL_FREE(sch_rec->byday);
+			sch_rec->byday = strdup(strval);
+		}
+		else if(0 == strcmp(field, CALS_VALUE_TXT_RRULE_BYMONTHDAY))
+		{
+			CAL_FREE(sch_rec->bymonthday);
+			sch_rec->bymonthday = strdup(strval);
+		}
+		else if(0 == strcmp(field, CALS_VALUE_TXT_RRULE_BYYEARDAY))
+		{
+			CAL_FREE(sch_rec->byyearday);
+			sch_rec->byyearday = strdup(strval);
+		}
+		else if(0 == strcmp(field, CALS_VALUE_TXT_RRULE_BYWEEKNO))
+		{
+			CAL_FREE(sch_rec->byweekno);
+			sch_rec->byweekno = strdup(strval);
+		}
+		else if(0 == strcmp(field, CALS_VALUE_TXT_RRULE_BYMONTH))
+		{
+			CAL_FREE(sch_rec->bymonth);
+			sch_rec->bymonth = strdup(strval);
+		}
+		else if(0 == strcmp(field, CALS_VALUE_TXT_RRULE_BYSETPOS))
+		{
+			CAL_FREE(sch_rec->bysetpos);
+			sch_rec->bysetpos = strdup(strval);
 		}
 		else
 		{
@@ -1374,119 +1790,57 @@ API int calendar_svc_struct_set_str (cal_struct *event, const char *field, const
 		if(0 == strcmp(field,CAL_TABLE_TXT_CALENDAR_ID))
 		{
 			CAL_FREE(cal_rec->calendar_id);
-
-			cal_rec->calendar_id = (char*)malloc(str_len);
-			retex_if(NULL == cal_rec->calendar_id,,"[ERROR]calendar_svc_struct_set_str:Failed to malloc!\n");
-			memset(cal_rec->calendar_id,0x00,str_len);
-
-			strcpy(cal_rec->calendar_id,strval);
+			cal_rec->calendar_id = strdup(strval);
 		}
 		else if(0 == strcmp(field,CAL_TABLE_TXT_UID))
 		{
 			CAL_FREE(cal_rec->uid);
-
-
-			cal_rec->uid = (char*)malloc(str_len);
-			retex_if(NULL == cal_rec->uid,,"[ERROR]calendar_svc_struct_set_str:Failed to malloc!\n");
-			memset(cal_rec->uid,0x00,str_len);
-
-			strcpy(cal_rec->uid,strval);
+			cal_rec->uid = strdup(strval);
 		}
 		else if(0 == strcmp(field,CAL_TABLE_TXT_LINK))
 		{
 			CAL_FREE(cal_rec->link);
-
-
-			cal_rec->link = (char*)malloc(str_len);
-			retex_if(NULL == cal_rec->link,,"[ERROR]calendar_svc_struct_set_str:Failed to malloc!\n");
-			memset(cal_rec->link,0x00,str_len);
-
-			strcpy(cal_rec->link,strval);
+			cal_rec->link = strdup(strval);
 		}
 		else if(0 == strcmp(field,CAL_TABLE_TXT_NAME))
 		{
 			CAL_FREE(cal_rec->name);
-
-
-			cal_rec->name = (char*)malloc(str_len);
-			retex_if(NULL == cal_rec->name,,"[ERROR]calendar_svc_struct_set_str:Failed to malloc!\n");
-			memset(cal_rec->name,0x00,str_len);
-
-			strcpy(cal_rec->name,strval);
+			cal_rec->name = strdup(strval);
 		}
 		else if(0 == strcmp(field,CAL_TABLE_TXT_DESCRIPTION))
 		{
 			CAL_FREE(cal_rec->description);
-
-
-			cal_rec->description = (char*)malloc(str_len);
-			retex_if(NULL == cal_rec->description,,"[ERROR]calendar_svc_struct_set_str:Failed to malloc!\n");
-			memset(cal_rec->description,0x00,str_len);
-
-			strcpy(cal_rec->description,strval);
+			cal_rec->description = strdup(strval);
 		}
 		else if(0 == strcmp(field,CAL_TABLE_TXT_AUTHOR))
 		{
 			CAL_FREE(cal_rec->author);
-
-			cal_rec->author = (char*)malloc(str_len);
-			retex_if(NULL == cal_rec->author,,"[ERROR]calendar_svc_struct_set_str:Failed to malloc!\n");
-			memset(cal_rec->author,0x00,str_len);
-
-			strcpy(cal_rec->author,strval);
+			cal_rec->author = strdup(strval);
 		}
 		else if(0 == strcmp(field,CAL_TABLE_TXT_COLOR))
 		{
 			CAL_FREE(cal_rec->color);
-
-
-			cal_rec->color = (char*)malloc(str_len);
-			retex_if(NULL == cal_rec->color,,"[ERROR]calendar_svc_struct_set_str:Failed to malloc!\n");
-			memset(cal_rec->color,0x00,str_len);
-
-			strcpy(cal_rec->color,strval);
+			cal_rec->color = strdup(strval);
 		}
 		else if(0 == strcmp(field,CAL_TABLE_TXT_LOCATION))
 		{
 			CAL_FREE(cal_rec->location);
-
-			cal_rec->location = (char*)malloc(str_len);
-			retex_if(NULL == cal_rec->location,,"[ERROR]calendar_svc_struct_set_str:Failed to malloc!\n");
-			memset(cal_rec->location,0x00,str_len);
-
-			strcpy(cal_rec->location,strval);
+			cal_rec->location  = strdup(strval);
 		}
 		else if(0 == strcmp(field,CAL_TABLE_TXT_TIME_ZONE_LABEL))
 		{
 			CAL_FREE(cal_rec->timezone_label);
-
-			cal_rec->timezone_label = (char*)malloc(str_len);
-			retex_if(NULL == cal_rec->timezone_label,,"[ERROR]calendar_svc_struct_set_str:Failed to malloc!\n");
-			memset(cal_rec->timezone_label,0x00,str_len);
-
-			strcpy(cal_rec->timezone_label,strval);
+			cal_rec->timezone_label = strdup(strval);
 		}
 		else if(0 == strcmp(field,CAL_TABLE_TXT_USER_LOCATION))
 		{
 			CAL_FREE(cal_rec->user_location);
-
-
-			cal_rec->user_location = (char*)malloc(str_len);
-			retex_if(NULL == cal_rec->user_location,,"[ERROR]calendar_svc_struct_set_str:Failed to malloc!\n");
-			memset(cal_rec->user_location,0x00,str_len);
-
-			strcpy(cal_rec->user_location,strval);
+			cal_rec->user_location = strdup(strval);
 		}
 		else if(0 == strcmp(field,CAL_TABLE_TXT_WEATHER))
 		{
 			CAL_FREE(cal_rec->weather);
-
-
-			cal_rec->weather = (char*)malloc(str_len);
-			retex_if(NULL == cal_rec->weather,,"[ERROR]calendar_svc_struct_set_str:Failed to malloc!\n");
-			memset(cal_rec->weather,0x00,str_len);
-
-			strcpy(cal_rec->weather,strval);
+			cal_rec->weather = strdup(strval);
 		}
 		else
 		{
@@ -1499,23 +1853,110 @@ API int calendar_svc_struct_set_str (cal_struct *event, const char *field, const
 		if(0 == strcmp(field,CAL_TZ_VALUE_TXT_STD_NAME))
 		{
 			CAL_FREE(tz_rec->standard_name);
-
-
-			tz_rec->standard_name = (char*)malloc(str_len);
-			retex_if(NULL == tz_rec->standard_name,,"[ERROR]calendar_svc_struct_set_str:Failed to malloc!\n");
-			memset(tz_rec->standard_name,0x00,str_len);
-
-			strcpy(tz_rec->standard_name,strval);
+			tz_rec->standard_name = strdup(strval);
 		}
 		else if(0 == strcmp(field,CAL_TZ_VALUE_TXT_DST_NAME))
 		{
 			CAL_FREE(tz_rec->day_light_name);
+			tz_rec->day_light_name = strdup(strval);
+		}
+		break;
 
-			tz_rec->day_light_name = (char*)malloc(str_len);
-			retex_if(NULL == tz_rec->day_light_name,,"[ERROR]calendar_svc_struct_set_str:Failed to malloc!\n");
-			memset(tz_rec->day_light_name,0x00,str_len);
+	case CALS_STRUCT_TYPE_PERIOD_NORMAL_ONOFF:
+		ERR("No field in CALS_LIST_PERIOD_NORMAL_ONOFF");
+		break;
 
-			strcpy(tz_rec->day_light_name,strval);
+	case CALS_STRUCT_TYPE_PERIOD_ALLDAY_ONOFF:
+		ERR("No field in CALS_LIST_PERIOD_ALLDAY_ONOFF");
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_NORMAL_BASIC:
+		nbs = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_BASIC_TXT_SUMMARY)) {
+			CAL_FREE(nbs->summary);
+			nbs->summary = strdup(strval);
+		} else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_BASIC_TXT_LOCATION)) {
+			CAL_FREE(nbs->location);
+			nbs->location = strdup(strval);
+		}else {
+			ERR("Can not find the field!(%s)",field);
+		}
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_ALLDAY_BASIC:
+		abs = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_BASIC_TXT_SUMMARY)) {
+			CAL_FREE(abs->summary);
+			abs->summary = strdup(strval);
+		} else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_BASIC_TXT_LOCATION)) {
+			CAL_FREE(abs->location);
+			abs->location = strdup(strval);
+		}else {
+			ERR("Can not find the field!(%s)",field);
+		}
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_NORMAL_OSP:
+		nosp = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_OSP_TXT_SUMMARY)) {
+			CAL_FREE(nosp->summary);
+			nosp->summary = strdup(strval);
+		} else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_OSP_TXT_LOCATION)) {
+			CAL_FREE(nosp->location);
+			nosp->location = strdup(strval);
+		} else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_OSP_TXT_DESCRIPTION)) {
+			CAL_FREE(nosp->description);
+			nosp->description = strdup(strval);
+		}else {
+			ERR("Can not find the field!(%s)",field);
+		}
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_ALLDAY_OSP:
+		nosp = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_TXT_SUMMARY)) {
+			CAL_FREE(aosp->summary);
+			aosp->summary = strdup(strval);
+		} else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_TXT_LOCATION)) {
+			CAL_FREE(aosp->location);
+			aosp->location = strdup(strval);
+		} else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_OSP_TXT_DESCRIPTION)) {
+			CAL_FREE(aosp->description);
+			aosp->description = strdup(strval);
+		} else {
+			ERR("Can not find the field!(%s)", field);
+		}
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_NORMAL_LOCATION:
+		nosl = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_LOCATION_TXT_SUMMARY)) {
+			CAL_FREE(nosp->summary);
+			nosl->summary = strdup(strval);
+		} else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_LOCATION_TXT_LOCATION)) {
+			CAL_FREE(nosp->location);
+			nosl->location = strdup(strval);
+		} else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_LOCATION_TXT_DESCRIPTION)) {
+			CAL_FREE(nosp->description);
+			nosl->description = strdup(strval);
+		}else {
+			ERR("Can not find the field!(%s)",field);
+		}
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_ALLDAY_LOCATION:
+		nosl = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_TXT_SUMMARY)) {
+			CAL_FREE(aosp->summary);
+			aosl->summary = strdup(strval);
+		} else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_TXT_LOCATION)) {
+			CAL_FREE(aosp->location);
+			aosl->location = strdup(strval);
+		} else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_TXT_DESCRIPTION)) {
+			CAL_FREE(aosp->description);
+			aosl->description = strdup(strval);
+		} else {
+			ERR("Can not find the field!(%s)", field);
 		}
 		break;
 
@@ -1532,151 +1973,12 @@ CATCH:
 
 }
 
-API int calendar_svc_struct_set_time (cal_struct *event, const char *field,int timezone_flag, time_t time)
-{
-	cal_sch_full_t *sch_rec = NULL;
-
-	retv_if(NULL == event, CAL_ERR_ARG_NULL);
-	retv_if(NULL == field, CAL_ERR_ARG_NULL);
-
-	if(timezone_flag != CAL_TZ_FLAG_GMT)
-	{
-		time_t temp = 0;
-		calendar_svc_util_local_to_gmt(time,&temp);
-		time = temp;
-	}
-
-	switch(event->event_type)
-	{
-	case CAL_STRUCT_TYPE_SCHEDULE:
-	case CAL_STRUCT_TYPE_TODO:
-
-		sch_rec = (cal_sch_full_t*)event->user_data;
-		if(sch_rec==NULL)
-		{
-			return CAL_ERR_ARG_NULL;
-		}
-		if(0 == strcmp(field,CAL_VALUE_GMT_START_DATE_TIME))
-		{
-			cal_db_service_copy_struct_tm((struct tm*)cals_tmtime(&time),&(sch_rec->start_date_time));
-		}
-		else if(0 == strcmp(field,CAL_VALUE_GMT_END_DATE_TIME))
-		{
-			cal_db_service_copy_struct_tm((struct tm*)cals_tmtime(&time),&(sch_rec->end_date_time));
-		}
-		else if(0 == strcmp(field,CAL_VALUE_GMT_REPEAT_END_DATE))
-		{
-			cal_db_service_copy_struct_tm((struct tm*)cals_tmtime(&time),&(sch_rec->repeat_end_date));
-		}
-		else if(0 == strcmp(field,CAL_VALUE_GMT_LAST_MODIFIED_TIME))
-		{
-			cal_db_service_copy_struct_tm((struct tm*)cals_tmtime(&time),&(sch_rec->last_modified_time));
-		}
-		else if(0 == strcmp(field,CAL_VALUE_GMT_CREATED_DATE_TIME))
-		{
-			cal_db_service_copy_struct_tm((struct tm*)cals_tmtime(&time),&(sch_rec->created_date_time));
-		}
-		else if(0 == strcmp(field,CAL_VALUE_GMT_COMPLETED_DATE_TIME))
-		{
-			cal_db_service_copy_struct_tm((struct tm*)cals_tmtime(&time),&(sch_rec->completed_date_time));
-		}
-		else
-		{
-		}
-
-		break;
-
-	case CAL_STRUCT_TYPE_CALENDAR:
-
-		break;
-
-	default:
-		break;
-	}
-
-	return CAL_SUCCESS;
-}
-
-
-API int calendar_svc_struct_set_tm(cal_struct* record, const char *field, int timezone_flag,struct tm* time)
-{
-	cal_sch_full_t * sch_rec = NULL;
-	struct tm input_tm ={0};
-
-	retv_if(NULL == record, CAL_ERR_ARG_NULL);
-	retv_if(NULL == field, CAL_ERR_ARG_NULL);
-
-	if(timezone_flag != CAL_TZ_FLAG_GMT)
-	{
-		time_t temp = 0;
-		time_t input_tt = 0;
-
-		input_tt = cals_mktime(time);
-		calendar_svc_util_local_to_gmt(input_tt,&temp);
-		input_tt = temp;
-		cals_tmtime_r(&input_tt,&input_tm);
-	}
-	else
-		memcpy(&input_tm,time,sizeof(struct tm));
-
-	switch(record->event_type)
-	{
-	case CAL_STRUCT_TYPE_SCHEDULE:
-	case CAL_STRUCT_TYPE_TODO:
-
-		sch_rec = (cal_sch_full_t*)record->user_data;
-		if(sch_rec==NULL)
-		{
-			return CAL_ERR_ARG_NULL;
-		}
-		if(0 == strcmp(field,CAL_VALUE_GMT_START_DATE_TIME))
-		{
-			cal_db_service_copy_struct_tm(&input_tm,&(sch_rec->start_date_time));
-			TMDUMP(input_tm);
-		}
-		else if(0 == strcmp(field,CAL_VALUE_GMT_END_DATE_TIME))
-		{
-			cal_db_service_copy_struct_tm(&input_tm,&(sch_rec->end_date_time));
-			TMDUMP(input_tm);
-		}
-		else if(0 == strcmp(field,CAL_VALUE_GMT_REPEAT_END_DATE))
-		{
-			cal_db_service_copy_struct_tm(&input_tm,&(sch_rec->repeat_end_date));
-		}
-		else if(0 == strcmp(field,CAL_VALUE_GMT_LAST_MODIFIED_TIME))
-		{
-			cal_db_service_copy_struct_tm(&input_tm,&(sch_rec->last_modified_time));
-		}
-		else if(0 == strcmp(field,CAL_VALUE_GMT_CREATED_DATE_TIME))
-		{
-			cal_db_service_copy_struct_tm(&input_tm,&(sch_rec->created_date_time));
-		}
-		else if(0 == strcmp(field,CAL_VALUE_GMT_COMPLETED_DATE_TIME))
-		{
-			cal_db_service_copy_struct_tm(&input_tm,&(sch_rec->completed_date_time));
-		}
-		else
-		{
-		}
-
-		break;
-
-	case CAL_STRUCT_TYPE_CALENDAR:
-
-		break;
-
-	default:
-		break;
-	}
-
-	return CAL_SUCCESS;
-}
-
-
 API double calendar_svc_struct_get_double(cal_struct* record, const char *field)
 {
 	double ret_val = 0.0;
 	cal_sch_full_t *sch_rec = NULL;
+	cals_struct_period_normal_location *nosl = NULL;
+	cals_struct_period_allday_location *aosl = NULL;
 
 	retv_if(NULL == record, 0.0);
 	retv_if(NULL == field, 0.0);
@@ -1693,6 +1995,27 @@ API double calendar_svc_struct_get_double(cal_struct* record, const char *field)
 		else
 			ERR("Unknown field(%s)", field);
 		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_NORMAL_LOCATION:
+		nosl = record->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_LOCATION_DBL_LATITUDE))
+			ret_val = nosl->latitude;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_LOCATION_DBL_LONGITUDE))
+			ret_val = nosl->longitude;
+		else
+			ERR("Unknown field(%s)", field);
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_ALLDAY_LOCATION:
+		aosl = record->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_DBL_LATITUDE))
+			ret_val = aosl->latitude;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_DBL_LONGITUDE))
+			ret_val = aosl->longitude;
+		else
+			ERR("Unknown field(%s)", field);
+		break;
+
 	default:
 		ERR("Unknown event type(%d)", record->event_type);
 		break;
@@ -1704,6 +2027,8 @@ API double calendar_svc_struct_get_double(cal_struct* record, const char *field)
 API int calendar_svc_struct_set_double(cal_struct* record, const char *field,double value)
 {
 	cal_sch_full_t * sch_rec = NULL;
+	cals_struct_period_normal_location *nosl = NULL;
+	cals_struct_period_allday_location *aosl = NULL;
 
 	retv_if(NULL == record, CAL_ERR_ARG_NULL);
 	retv_if(NULL == field, CAL_ERR_ARG_NULL);
@@ -1723,6 +2048,25 @@ API int calendar_svc_struct_set_double(cal_struct* record, const char *field,dou
 			return CAL_ERR_ARG_INVALID;
 		}
 		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_NORMAL_LOCATION:
+		nosl = record->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_LOCATION_DBL_LATITUDE))
+			nosl->latitude = value;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_LOCATION_DBL_LONGITUDE))
+			nosl->longitude = value;
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_ALLDAY_LOCATION:
+		aosl = record->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_DBL_LATITUDE))
+			aosl->latitude = value;
+		else if (!strcmp(field, CALS_LIST_PERIOD_ALLDAY_LOCATION_DBL_LONGITUDE))
+			aosl->longitude = value;
+		else
+			ERR("Unknown field(%s)", field);
+		break;
+
 	default:
 		ERR("Unknown event type(%d)", record->event_type);
 		return CAL_ERR_ARG_INVALID;
@@ -1744,12 +2088,8 @@ API int calendar_svc_struct_get_list (cal_struct *event, const char *field, GLis
 	switch(event->event_type) {
 	case CAL_STRUCT_TYPE_SCHEDULE:
 		sch_rec = (cal_sch_full_t*)event->user_data;
-		if(0 == strcmp(field, CAL_VALUE_LST_MEETING_CATEGORY))
-			*retlist = sch_rec->meeting_category;
-		else if(0 == strcmp(field,CAL_VALUE_LST_ATTENDEE_LIST))
+		if(0 == strcmp(field,CAL_VALUE_LST_ATTENDEE_LIST))
 			*retlist = sch_rec->attendee_list;
-		else if(0 == strcmp(field, CAL_VALUE_LST_EXCEPTION_DATE))
-			*retlist = sch_rec->exception_date_list;
 		else if(0 == strcmp(field, CAL_VALUE_LST_ALARM))
 			*retlist = sch_rec->alarm_list;
 		else {
@@ -1758,6 +2098,16 @@ API int calendar_svc_struct_get_list (cal_struct *event, const char *field, GLis
 		}
 		break;
 	case CAL_STRUCT_TYPE_TODO:
+		sch_rec = (cal_sch_full_t*)event->user_data;
+		if(0 == strcmp(field,CAL_VALUE_LST_ATTENDEE_LIST))
+			*retlist = sch_rec->attendee_list;
+		else if(0 == strcmp(field, CAL_VALUE_LST_ALARM))
+			*retlist = sch_rec->alarm_list;
+		else {
+			ERR("Unknown field(%s)", field);
+			return CAL_ERR_ARG_INVALID;
+		}
+		break;
 	case CAL_STRUCT_TYPE_CALENDAR:
 	default:
 		ERR("Unknown event type(%d)", event->event_type);
@@ -1795,26 +2145,13 @@ API int calendar_svc_struct_store_list (cal_struct *event, const char *field, GL
 	switch(event->event_type) {
 	case CAL_STRUCT_TYPE_SCHEDULE:
 		sch_rec = (cal_sch_full_t*)event->user_data;
-		if(0 == strcmp(field,CAL_VALUE_LST_MEETING_CATEGORY))
-		{
-			if(list == NULL)
-				_cals_struct_remove_list(field,sch_rec->meeting_category);
 
-			sch_rec->meeting_category = list;
-		}
-		else if(0 == strcmp(field,CAL_VALUE_LST_ATTENDEE_LIST))
+		if(0 == strcmp(field,CAL_VALUE_LST_ATTENDEE_LIST))
 		{
 			if(list == NULL)
 				_cals_struct_remove_list(field,sch_rec->attendee_list);
 
 			sch_rec->attendee_list = list;
-		}
-		else if(0 == strcmp(field,CAL_VALUE_LST_EXCEPTION_DATE))
-		{
-			if(list == NULL)
-				_cals_struct_remove_list(field,sch_rec->exception_date_list);
-
-			sch_rec->exception_date_list = list;
 		}
 		else if(0 == strcmp(field,CAL_VALUE_LST_ALARM))
 		{
@@ -1822,13 +2159,38 @@ API int calendar_svc_struct_store_list (cal_struct *event, const char *field, GL
 				_cals_struct_remove_list(field,sch_rec->alarm_list);
 
 			sch_rec->alarm_list = list;
+		} else {
+			ERR("%s is invalid field for event type schedule");
+			return CAL_ERR_ARG_INVALID;
+		}
+		break;
+
+	case CAL_STRUCT_TYPE_TODO:
+		sch_rec = (cal_sch_full_t*)event->user_data;
+
+		if(0 == strcmp(field,CAL_VALUE_LST_ATTENDEE_LIST))
+		{
+			if(list == NULL)
+				_cals_struct_remove_list(field,sch_rec->attendee_list);
+
+			sch_rec->attendee_list = list;
+		}
+		else if(0 == strcmp(field,CAL_VALUE_LST_ALARM))
+		{
+			if(list == NULL)
+				_cals_struct_remove_list(field,sch_rec->alarm_list);
+
+			sch_rec->alarm_list = list;
+		} else {
+			ERR("%s is invalid field for todo type schedule");
+			return CAL_ERR_ARG_INVALID;
 		}
 		break;
 
 	case CAL_STRUCT_TYPE_CALENDAR:
-	case CAL_STRUCT_TYPE_TODO:
 	default:
-		break;
+		ERR("Invalid schedule type(%d)", event->event_type);
+		return CAL_ERR_ARG_INVALID;
 	}
 
 	return CAL_SUCCESS;
@@ -1846,29 +2208,13 @@ API cal_value* calendar_svc_value_new (const char *filed)
 
 	memset(value,0x00,sizeof(cal_value));
 
-	if(0 == strcmp(CAL_VALUE_LST_MEETING_CATEGORY,filed))
-	{
-		value->v_type = CAL_EVENT_CATEGORY;
-		value->user_data = (cal_category_info_t*)malloc(sizeof(cal_category_info_t));
-		retex_if(NULL == value->user_data,,"[ERROR]calendar_svc_value_new:Fail to malloc!\n");
-
-		memset(value->user_data,0,sizeof(cal_category_info_t));
-	}
-	else if(0 == strcmp(CAL_VALUE_LST_ATTENDEE_LIST,filed))
+	if(0 == strcmp(CAL_VALUE_LST_ATTENDEE_LIST,filed))
 	{
 		value->v_type = CAL_EVENT_PATICIPANT;
 		value->user_data = (cal_participant_info_t*)malloc(sizeof(cal_participant_info_t));
 		retex_if(NULL == value->user_data,,"[ERROR]calendar_svc_value_new:Fail to malloc!\n");
 
 		memset(value->user_data,0,sizeof(cal_participant_info_t));
-	}
-	else if(0 == strcmp(CAL_VALUE_LST_EXCEPTION_DATE,filed))
-	{
-		value->v_type = CAL_EVENT_RECURRENCY;
-		value->user_data = (cal_exception_info_t*)malloc(sizeof(cal_exception_info_t));
-		retex_if(NULL == value->user_data,,"[ERROR]calendar_svc_value_new:Fail to malloc!\n");
-
-		memset(value->user_data,0,sizeof(cal_exception_info_t));
 	}
 	else if(0 == strcmp(CAL_VALUE_LST_ALARM,filed))
 	{
@@ -1912,45 +2258,6 @@ static int calendar_svc_free_participant(cal_participant_info_t* value)
 	return CAL_SUCCESS;
 }
 
-static int calendar_svc_free_category(cal_category_info_t* value)
-{
-	CALS_FN_CALL;
-	if(NULL == value)
-	{
-		return CAL_SUCCESS;
-	}
-
-	CAL_FREE(value->category_name);
-	CAL_FREE(value);
-
-
-	return CAL_SUCCESS;
-}
-
-static int calendar_svc_free_exception_info(cal_exception_info_t* value)
-{
-	CALS_FN_CALL;
-
-	int error_code = 0;
-
-	if(NULL == value)
-	{
-		return CAL_SUCCESS;
-	}
-
-	if(NULL != value->exception_record)
-	{
-		cal_db_service_free_full_record(value->exception_record,&error_code);
-		free(value->exception_record);
-	}
-
-	CAL_FREE(value);
-
-
-	return CAL_SUCCESS;
-}
-
-
 static int calendar_svc_free_alarm_info(cal_alarm_info_t* value)
 {
 	CALS_FN_CALL;
@@ -1964,8 +2271,6 @@ static int calendar_svc_free_alarm_info(cal_alarm_info_t* value)
 	return CAL_SUCCESS;
 }
 
-
-
 API int calendar_svc_value_free (cal_value **value)
 {
 	CALS_FN_CALL;
@@ -1974,20 +2279,14 @@ API int calendar_svc_value_free (cal_value **value)
 
 	switch((*value)->v_type)
 	{
-	case CAL_EVENT_CATEGORY:
-		calendar_svc_free_category((cal_category_info_t*)(*value)->user_data);
-		break;
-
 	case CAL_EVENT_PATICIPANT:
 		calendar_svc_free_participant((cal_participant_info_t*)(*value)->user_data);
 		break;
 
-	case CAL_EVENT_RECURRENCY:
-		calendar_svc_free_exception_info((cal_exception_info_t*)(*value)->user_data);
-		break;
 	case CAL_EVENT_ALARM:
 		calendar_svc_free_alarm_info((cal_alarm_info_t*)(*value)->user_data);
 		break;
+
 	default:
 		break;
 	}
@@ -2006,30 +2305,16 @@ CATCH:
 
 API int calendar_svc_value_set_int (cal_value *value, const char *field, int intval)
 {
-	//CALS_FN_CALL();
-	retex_if(NULL == value || NULL == value->user_data || NULL == field,,"[ERROR]calendar_svc_value_free:Invalid parameter!\n");
-
-	cal_category_info_t *category = NULL;
 	cal_participant_info_t *participant = NULL;
-	cal_exception_info_t *exception = NULL;
 	cal_alarm_info_t *alarm_info = NULL;
 
+	if (!value || !value->user_data || !field || !*field) {
+		ERR("Invalid parameter");
+		return CAL_ERR_ARG_INVALID;
+	}
 
 	switch(value->v_type)
 	{
-	case CAL_EVENT_CATEGORY:
-
-		category = (cal_category_info_t*)value->user_data;
-
-		if(0 == strcmp(field,CAL_VALUE_INT_MEETING_CATEGORY_DETAIL_ID))
-		{
-			category->event_id = intval;
-		}
-		else
-		{
-		}
-		break;
-
 	case CAL_EVENT_PATICIPANT:
 
 		participant = (cal_participant_info_t*)value->user_data;
@@ -2060,13 +2345,8 @@ API int calendar_svc_value_set_int (cal_value *value, const char *field, int int
 		}
 		else
 		{
-		}
-		break;
-	case CAL_EVENT_RECURRENCY:
-		exception = (cal_exception_info_t*)value->user_data;
-		if(0 == strcmp(field,CAL_VALUE_INT_EXCEPTION_DATE_ID))
-		{
-			exception->event_id = intval;
+			ERR("Invalid field (%s)", field);
+			return CAL_ERR_ARG_INVALID;
 		}
 		break;
 	case CAL_EVENT_ALARM:
@@ -2087,25 +2367,73 @@ API int calendar_svc_value_set_int (cal_value *value, const char *field, int int
 		{
 			alarm_info->alarm_id = intval;
 		}
+		else
+		{
+			ERR("Invalid field (%s)", field);
+			return CAL_ERR_ARG_INVALID;
+		}
+		break;
 
 	default:
-		break;
+		ERR("Invalid value type (%d)", value->v_type);
+		return CAL_ERR_ARG_INVALID;
 	}
 
 	return CAL_SUCCESS;
+}
 
-CATCH:
+API int calendar_svc_value_set_lli(cal_value *value, const char *field, long long int llival)
+{
+	cal_alarm_info_t *alarm_info;
 
-	return CAL_ERR_FAIL;
+	if (!field || !*field)
+		return CAL_ERR_ARG_NULL;
 
+	switch(value->v_type)
+	{
+	case CAL_EVENT_ALARM:
+		alarm_info = (cal_alarm_info_t *)value->user_data;
+		if (!strcmp(field, CAL_VALUE_LLI_ALARMS_TIME))
+			alarm_info->alarm_time = llival;
+		else {
+			ERR("Invalid field (%s) in alarm value", field);
+			return CAL_ERR_ARG_INVALID;
+		}
+		break;
+	default:
+		ERR("Invalid value type (%d)", value->v_type);
+		return CAL_ERR_ARG_INVALID;
+	}
+
+	return CAL_SUCCESS;
+}
+
+API long long int calendar_svc_value_get_lli(cal_value *value, const char *field)
+{
+	cal_alarm_info_t *alarm_info;
+
+	switch(value->v_type)
+	{
+	case CAL_EVENT_ALARM:
+		alarm_info = (cal_alarm_info_t*)value->user_data;
+		if(!strcmp(field,CAL_VALUE_LLI_ALARMS_TIME))
+			return alarm_info->alarm_time;
+		else {
+			ERR("Invalid field (%s) in alarm value", field);
+			return CAL_ERR_ARG_INVALID;
+		}
+		break;
+	default:
+		ERR("Invalid value type (%d)", value->v_type);
+		return CAL_ERR_ARG_INVALID;
+	}
+	return CAL_SUCCESS;
 }
 
 API int calendar_svc_value_set_str (cal_value *value, const char *field, const char *strval)
 {
-	//CALS_FN_CALL();
 	retex_if(NULL == value || NULL == value->user_data || NULL == field || NULL == strval,,"[ERROR]calendar_svc_value_free:Invalid parameter!\n");
 
-	cal_category_info_t* category = NULL;
 	cal_participant_info_t* participant = NULL;
 	cal_alarm_info_t *alarm_info = NULL;
 
@@ -2113,26 +2441,6 @@ API int calendar_svc_value_set_str (cal_value *value, const char *field, const c
 
 	switch(value->v_type)
 	{
-	case CAL_EVENT_CATEGORY:
-
-		category = (cal_category_info_t*)value->user_data;
-
-		if(0 == strcmp(field,CAL_VALUE_TXT_MEETING_CATEGORY_DETAIL_NAME))
-		{
-			CAL_FREE(category->category_name);
-
-			category->category_name = (char*)malloc(str_len);
-			retex_if(NULL == category->category_name,,"[ERROR]calendar_svc_value_set_str:Failed to malloc!\n");
-
-			memset(category->category_name ,0x00,str_len);
-
-			strcpy(category->category_name,strval);
-		}
-		else
-		{
-		}
-		break;
-
 	case CAL_EVENT_PATICIPANT:
 
 		participant = (cal_participant_info_t*)value->user_data;
@@ -2268,28 +2576,16 @@ CATCH:
 
 API int calendar_svc_value_get_int (cal_value *value, const char *field)
 {
-	CALS_FN_CALL;
-	retex_if(NULL == value || NULL == value->user_data || NULL == field,,"[ERROR]calendar_svc_value_free:Invalid parameter!\n");
-
-	cal_category_info_t* category = NULL;
 	cal_participant_info_t* participant = NULL;
-	cal_exception_info_t * exception = NULL;
 	cal_alarm_info_t* alarm_info = NULL;
+
+	if (!value || !value->user_data || !field || !*field) {
+		ERR("Invalid parameter");
+		return 0;
+	}
+
 	switch(value->v_type)
 	{
-	case CAL_EVENT_CATEGORY:
-
-		category = (cal_category_info_t*)value->user_data;
-
-		if(0 == strcmp(field,CAL_VALUE_INT_MEETING_CATEGORY_DETAIL_ID))
-		{
-			return(category->event_id);
-		}
-		else
-		{
-		}
-		break;
-
 	case CAL_EVENT_PATICIPANT:
 
 		participant = (cal_participant_info_t*)value->user_data;
@@ -2318,13 +2614,6 @@ API int calendar_svc_value_get_int (cal_value *value, const char *field)
 		{
 		}
 		break;
-	case CAL_EVENT_RECURRENCY:
-		exception = (cal_exception_info_t*)value->user_data;
-		if(0 == strcmp(field,CAL_VALUE_INT_EXCEPTION_DATE_ID))
-		{
-			return exception->event_id;
-		}
-		break;
 	case CAL_EVENT_ALARM:
 		alarm_info = (cal_alarm_info_t*)value->user_data;
 		if(0 == strcmp(field,CAL_VALUE_INT_ALARMS_TICK))
@@ -2348,34 +2637,22 @@ API int calendar_svc_value_get_int (cal_value *value, const char *field)
 		break;
 	}
 
-	return CAL_SUCCESS;
-
-CATCH:
-
-	return CAL_ERR_FAIL;
-
+	return 0;
 }
 
 API char * calendar_svc_value_get_str (cal_value *value, const char *field)
 {
 	CALS_FN_CALL;
-	cal_category_info_t* category = NULL;
 	cal_participant_info_t* participant = NULL;
 	cal_alarm_info_t * alarm_info = NULL;
 
-	retex_if(NULL == value || NULL == value->user_data || NULL == field,,"[ERROR]calendar_svc_value_free:Invalid parameter!\n");
+	if (!value || !value->user_data || !field || !*field) {
+		ERR("Invalid parameter");
+		return NULL;
+	}
 
 	switch(value->v_type)
 	{
-	case CAL_EVENT_CATEGORY:
-		category = (cal_category_info_t*)value->user_data;
-
-		if(0 == strcmp(field,CAL_VALUE_TXT_MEETING_CATEGORY_DETAIL_NAME))
-		{
-			return category->category_name;
-		}
-		break;
-
 	case CAL_EVENT_PATICIPANT:
 
 		participant = (cal_participant_info_t*)value->user_data;
@@ -2426,217 +2703,196 @@ API char * calendar_svc_value_get_str (cal_value *value, const char *field)
 		break;
 	}
 
-CATCH:
-
 	return NULL;
-
 }
 
-
-API time_t calendar_svc_value_get_time (cal_value *value, const char *field,int timezone_flag)
+API long long int calendar_svc_struct_get_lli(cal_struct *event, const char *field)
 {
-	CALS_FN_CALL;
-	time_t ret_time = 0;
+	cal_sch_full_t *sch_rec = NULL;
+	cals_struct_period_normal_onoff *nof = NULL;
+	cals_struct_period_normal_basic *nbs = NULL;
+	cals_struct_period_normal_osp *nosp = NULL;
+	cals_struct_period_normal_location *nosl = NULL;
+	cals_struct_period_normal_alarm *nosa = NULL;
 
-	retv_if(NULL == value, CAL_ERR_ARG_NULL);
-	retv_if(NULL == value->user_data, CAL_ERR_ARG_INVALID);
-	retv_if(NULL == field, CAL_ERR_ARG_NULL);
+	retv_if(NULL == event || NULL == event->user_data, 0);
+	retv_if(NULL == field, 0);
 
-	switch(value->v_type)
+	switch(event->event_type)
 	{
-	case CAL_EVENT_RECURRENCY:
-		if(0 == strcmp(field,CAL_VALUE_GMT_EXCEPTION_DATE_TIME))
-		{
-			cal_exception_info_t *exception_info = value->user_data;
-			ret_time = cals_mktime(&(exception_info->exception_start_time));
-		}
-		else
-		{
-		}
-		break;
-	case CAL_EVENT_ALARM:
-		if(0 == strcmp(field,CAL_VALUE_GMT_ALARMS_TIME))
-		{
-			cal_alarm_info_t *alarm_info = value->user_data;
-			ret_time = cals_mktime(&(alarm_info->alarm_time));
-		}
-		else
-		{
-		}
+	case CAL_STRUCT_TYPE_SCHEDULE:
+	case CAL_STRUCT_TYPE_TODO:
+		sch_rec = (cal_sch_full_t*)event->user_data;
 
+		if (0 == strcmp(field, CALS_VALUE_LLI_DTSTART_UTIME))
+			return sch_rec->dtstart_utime;
+		else if (0 == strcmp(field, CALS_VALUE_LLI_DTEND_UTIME))
+			return sch_rec->dtend_utime;
+		else if (0 == strcmp(field, CALS_VALUE_LLI_LASTMOD))
+			return sch_rec->last_mod;
+		else if (0 == strcmp(field, CALS_VALUE_LLI_RRULE_UNTIL_UTIME))
+			return sch_rec->until_utime;
+		else if(0 == strcmp(field,CAL_VALUE_LLI_CREATED_TIME))
+			return sch_rec->created_time;
+		else if(0 == strcmp(field,CAL_VALUE_LLI_COMPLETED_TIME))
+			return sch_rec->completed_time;
+		else
+			ERR("Can not find the field(%s)",field);
+		break;
+
+	case CAL_STRUCT_TYPE_CALENDAR:
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_NORMAL_ONOFF:
+		nof = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_ONOFF_LLI_DTSTART_UTIME))
+			return nof->dtstart_utime;
+		else
+			ERR("Can't find field(%s)", field);
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_NORMAL_BASIC:
+		nbs = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_BASIC_LLI_DTSTART_UTIME))
+			return nbs->dtstart_utime;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_BASIC_LLI_DTEND_UTIME))
+			return nbs->dtend_utime;
+		else
+			ERR("Can't find field(%s)", field);
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_NORMAL_OSP:
+		nosp = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_OSP_LLI_DTSTART_UTIME))
+			return nosp->dtstart_utime;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_OSP_LLI_DTEND_UTIME))
+			return nosp->dtend_utime;
+		else
+			ERR("Can't find field(%s)", field);
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_NORMAL_LOCATION:
+		nosl = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_LOCATION_LLI_DTSTART_UTIME))
+			return nosl->dtstart_utime;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_LOCATION_LLI_DTEND_UTIME))
+			return nosl->dtend_utime;
+		else
+			ERR("Can't find field(%s)", field);
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_NORMAL_ALARM:
+		nosa = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_ALARM_LLI_DTSTART_UTIME))
+			return nosa->dtstart_utime;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_ALARM_LLI_DTEND_UTIME))
+			return nosa->dtend_utime;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_ALARM_LLI_ALARM_UTIME))
+			return nosa->alarm_utime;
+		else
+			ERR("Can't find field(%s)", field);
 		break;
 
 	default:
 		break;
 	}
-
-	if(timezone_flag != CAL_TZ_FLAG_GMT)
-	{
-		time_t temp = 0;
-		calendar_svc_util_gmt_to_local(ret_time,&temp);
-		ret_time = temp;
-	}
-
-	return ret_time;
+	return 0;
 }
 
-API struct tm* calendar_svc_value_get_tm (cal_value *value, const char *field,int timezone_flag)
+API int calendar_svc_struct_set_lli(cal_struct *event, const char *field, long long int value)
 {
-	CALS_FN_CALL;
-	struct tm* ret_tm = 0;
+	cal_sch_full_t *sch_rec = NULL;
+	cals_struct_period_normal_onoff *nof = NULL;
+	cals_struct_period_normal_basic *nbs = NULL;
+	cals_struct_period_normal_osp *nosp = NULL;
+	cals_struct_period_normal_location *nosl = NULL;
+	cals_struct_period_normal_alarm *nosa = NULL;
 
-	retv_if(NULL == value, NULL);
-	retv_if(NULL == value->user_data, NULL);
-	retv_if(NULL == field, NULL);
+	retv_if(NULL == event || NULL == event->user_data, CAL_ERR_ARG_NULL);
 
-	switch(value->v_type)
+	switch(event->event_type)
 	{
-	case CAL_EVENT_RECURRENCY:
-		if(0 == strcmp(field,CAL_VALUE_GMT_EXCEPTION_DATE_TIME))
-		{
-			cal_exception_info_t *exception_info = value->user_data;
-			ret_tm = &(exception_info->exception_start_time);
-		}
+	case CAL_STRUCT_TYPE_SCHEDULE:
+	case CAL_STRUCT_TYPE_TODO:
+
+		sch_rec = (cal_sch_full_t*)event->user_data;
+
+		if (0 == strcmp(field, CALS_VALUE_LLI_DTSTART_UTIME))
+			sch_rec->dtstart_utime = value;
+		else if (0 == strcmp(field, CALS_VALUE_LLI_DTEND_UTIME))
+			sch_rec->dtend_utime = value;
+		else if (0 == strcmp(field, CALS_VALUE_LLI_LASTMOD))
+			sch_rec->last_mod = value;
+		else if (0 == strcmp(field, CALS_VALUE_LLI_RRULE_UNTIL_UTIME))
+			sch_rec->until_utime = value;
+		else if(0 == strcmp(field,CAL_VALUE_LLI_CREATED_TIME))
+			sch_rec->created_time = value;
+		else if(0 == strcmp(field,CAL_VALUE_LLI_COMPLETED_TIME))
+			sch_rec->completed_time = value;
 		else
-		{
-		}
-		break;
-	case CAL_EVENT_ALARM:
-		if(0 == strcmp(field,CAL_VALUE_GMT_ALARMS_TIME))
-		{
-			cal_alarm_info_t *alarm_info = value->user_data;
-			ret_tm = &(alarm_info->alarm_time);
-		}
-		else
-		{
-		}
+			return CAL_ERR_ARG_INVALID;
 		break;
 
-	default:
+	case CAL_STRUCT_TYPE_CALENDAR:
 		break;
-	}
 
-	if(timezone_flag != CAL_TZ_FLAG_GMT && NULL != ret_tm)
-	{
-		time_t temp = 0;
-		time_t input_tt = 0;
-
-		input_tt = cals_mktime(ret_tm);
-
-		calendar_svc_util_gmt_to_local(input_tt,&temp);
-		input_tt = temp;
-		return cals_tmtime(&input_tt);
-	}
-
-	return ret_tm;
-}
-
-
-
-API int calendar_svc_value_set_time (cal_value *value, const char *field,int timezone_flag, time_t time)
-{
-	CALS_FN_CALL;
-
-	retv_if(NULL == value, CAL_ERR_ARG_NULL);
-	retv_if(NULL == value->user_data, CAL_ERR_ARG_INVALID);
-	retv_if(NULL == field, CAL_ERR_ARG_NULL);
-
-	if(timezone_flag != CAL_TZ_FLAG_GMT)
-	{
-		time_t temp = 0;
-		calendar_svc_util_local_to_gmt(time,&temp);
-		time = temp;
-	}
-
-	switch(value->v_type)
-	{
-	case CAL_EVENT_RECURRENCY:
-		if(0 == strcmp(field,CAL_VALUE_GMT_EXCEPTION_DATE_TIME))
-		{
-			cal_exception_info_t *exception_info = value->user_data;
-			cal_db_service_copy_struct_tm((struct tm*)cals_tmtime(&time),&(exception_info->exception_start_time));
-
-			return CAL_SUCCESS;
-		}
-		else
-		{
-
-		}
-		break;
-	case CAL_EVENT_ALARM:
-		if(0 == strcmp(field,CAL_VALUE_GMT_ALARMS_TIME))
-		{
-			cal_alarm_info_t *alarm_info = value->user_data;
-			cal_db_service_copy_struct_tm((struct tm*)cals_tmtime(&time),&(alarm_info->alarm_time));
-
-			return CAL_SUCCESS;
-		}
-		else
-		{
-
+	case CALS_STRUCT_TYPE_PERIOD_NORMAL_ONOFF:
+		nof = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_ONOFF_LLI_DTSTART_UTIME))
+			nof->dtstart_utime = value;
+		else {
+			ERR("Can't find field(%s)", field);
+			return CAL_ERR_ARG_INVALID;
 		}
 		break;
 
-	default:
-		break;
-	}
-
-	return CAL_SUCCESS;
-}
-
-
-
-API int calendar_svc_value_set_tm (cal_value *value, const char *field,int timezone_flag, struct tm* time)
-{
-	CALS_FN_CALL;
-	struct tm input_tm ={0};
-
-	retv_if(NULL == value, CAL_ERR_ARG_NULL);
-	retv_if(NULL == value->user_data, CAL_ERR_ARG_INVALID);
-	retv_if(NULL == field, CAL_ERR_ARG_NULL);
-
-	if(timezone_flag != CAL_TZ_FLAG_GMT)
-	{
-		time_t temp = 0;
-		time_t input_tt = 0;
-
-		input_tt = cals_mktime(time);
-		calendar_svc_util_local_to_gmt(input_tt,&temp);
-		input_tt = temp;
-		cals_tmtime_r(&input_tt,&input_tm);
-	}
-	else
-		memcpy(&input_tm,time,sizeof(struct tm));
-
-
-	switch(value->v_type)
-	{
-	case CAL_EVENT_RECURRENCY:
-		if(0 == strcmp(field,CAL_VALUE_GMT_EXCEPTION_DATE_TIME))
-		{
-			cal_exception_info_t *exception_info = value->user_data;
-			//cal_db_service_copy_struct_tm((struct tm*)&input_tm,&(exception_info->exception_start_time));
-			memcpy(&(exception_info->exception_start_time),&input_tm,sizeof(struct tm));
-			DBG("%d-%d-%d",exception_info->exception_start_time.tm_year,exception_info->exception_start_time.tm_mon,exception_info->exception_start_time.tm_mday);
-			return CAL_SUCCESS;
-		}
-		else
-		{
-
+	case CALS_STRUCT_TYPE_PERIOD_NORMAL_BASIC:
+		nbs = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_BASIC_LLI_DTSTART_UTIME))
+			nbs->dtstart_utime = value;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_BASIC_LLI_DTEND_UTIME))
+			nbs->dtend_utime = value;
+		else {
+			ERR("Can't find field(%s)", field);
+			return CAL_ERR_ARG_INVALID;
 		}
 		break;
-	case CAL_EVENT_ALARM:
-		if(0 == strcmp(field,CAL_VALUE_GMT_ALARMS_TIME))
-		{
-			cal_alarm_info_t *alarm_info = value->user_data;
-			//cal_db_service_copy_struct_tm((struct tm*)&input_tm,&(exception_info->exception_start_time));
-			memcpy(&(alarm_info->alarm_time),&input_tm,sizeof(struct tm));
-			DBG("%d-%d-%d",alarm_info->alarm_time.tm_year,alarm_info->alarm_time.tm_mon,alarm_info->alarm_time.tm_mday);
-			return CAL_SUCCESS;
-		}
-		else
-		{
 
+	case CALS_STRUCT_TYPE_PERIOD_NORMAL_OSP:
+		nosp = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_OSP_LLI_DTSTART_UTIME))
+			nosp->dtstart_utime = value;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_OSP_LLI_DTEND_UTIME))
+			nosp->dtend_utime = value;
+		else {
+			ERR("Can't find field(%s)", field);
+			return CAL_ERR_ARG_INVALID;
+		}
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_NORMAL_LOCATION:
+		nosl = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_LOCATION_LLI_DTSTART_UTIME))
+			nosl->dtstart_utime = value;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_LOCATION_LLI_DTEND_UTIME))
+			nosl->dtend_utime = value;
+		else {
+			ERR("Can't find field(%s)", field);
+			return CAL_ERR_ARG_INVALID;
+		}
+		break;
+
+	case CALS_STRUCT_TYPE_PERIOD_NORMAL_ALARM:
+		nosa = event->user_data;
+		if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_ALARM_LLI_DTSTART_UTIME))
+			nosa->dtstart_utime = value;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_ALARM_LLI_DTEND_UTIME))
+			nosa->dtend_utime = value;
+		else if (!strcmp(field, CALS_LIST_PERIOD_NORMAL_ALARM_LLI_ALARM_UTIME))
+			nosa->alarm_utime = value;
+		else {
+			ERR("Can't find field(%s)", field);
+			return CAL_ERR_ARG_INVALID;
 		}
 		break;
 
@@ -2646,3 +2902,5 @@ API int calendar_svc_value_set_tm (cal_value *value, const char *field,int timez
 
 	return CAL_SUCCESS;
 }
+
+

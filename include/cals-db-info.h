@@ -28,12 +28,15 @@
 #define CALS_SECURITY_DIR_DEFAULT_PERMISSION 0770
 
 #define CALS_TABLE_SCHEDULE "schedule_table"
-#define CALS_TABLE_ALARM "cal_alarm_table"
+#define CALS_TABLE_ALARM "alarm_table"
 #define CALS_TABLE_CALENDAR "calendar_table"
-#define CALS_TABLE_RECURRENCY_LOG "recurrency_log_table"
 #define CALS_TABLE_PARTICIPANT "cal_participant_table"
-#define CALS_TABLE_MEETING_CATEGORY "cal_meeting_category_table"
 #define CALS_TABLE_TIMEZONE "timezone_table"
+#define CALS_TABLE_VERSION "version_table"
+#define CALS_TABLE_DELETED "deleted_table"
+#define CALS_TABLE_RRULE "rrule_table"
+#define CALS_TABLE_NORMAL_INSTANCE "normal_instance_table"
+#define CALS_TABLE_ALLDAY_INSTANCE "allday_instance_table"
 
 #endif /* __CALENDAR_SVC_DB_INFO_H__ */
 

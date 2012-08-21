@@ -25,7 +25,7 @@
 #include "calendar-svc-provider.h"
 
 /* Definition */
-#define CAL_INVALID_INDEX				(-1)
+#define CALS_INVALID_ID				(-1)
 
 #define CAL_SCH_SUMMARY_LEN_MAX			1024//256			/**< Summary string length of Schedule */
 #define CAL_SCH_DESCRIPTION_LEN_MAX		4096			    /**< Description string length of Schedule */
@@ -65,12 +65,23 @@ typedef enum
 	CAL_STRUCT_TYPE_TIMEZONE,
 	CAL_STRUCT_TYPE_SCHEDULE_LIST,
 	CAL_STRUCT_TYPE_TODO_LIST,
-}cal_struct_type;
+	CAL_STRUCT_TYPE_UPDATED_LIST,
+	CALS_STRUCT_TYPE_PERIOD_NORMAL_ONOFF,
+	CALS_STRUCT_TYPE_PERIOD_ALLDAY_ONOFF,
+	CALS_STRUCT_TYPE_PERIOD_NORMAL_BASIC,
+	CALS_STRUCT_TYPE_PERIOD_ALLDAY_BASIC,
+	CALS_STRUCT_TYPE_PERIOD_NORMAL_OSP,
+	CALS_STRUCT_TYPE_PERIOD_ALLDAY_OSP,
+	CALS_STRUCT_TYPE_PERIOD_NORMAL_LOCATION,
+	CALS_STRUCT_TYPE_PERIOD_ALLDAY_LOCATION,
+	CALS_STRUCT_TYPE_PERIOD_NORMAL_ALARM,
+	CALS_STRUCT_TYPE_PERIOD_ALLDAY_ALARM
+
+} cal_struct_type;
 
 typedef enum
 {
 	CAL_EVENT_PATICIPANT = 0,	/**< CAL_STRUCT_PARTICIPANT */
-	CAL_EVENT_CATEGORY,		/**< CAL_STRUCT_CATEFORY */
 	CAL_EVENT_RECURRENCY,	/**< CAL_STRUCT_RECURRENCY */
 	CAL_EVENT_DELETE,		/**< CAL_STRUCT_DELETE */
 	CAL_EVENT_SYNC_STATUS,	/**< CAL_STRUCT_SYNC_STATUS */
@@ -80,33 +91,49 @@ typedef enum
 
 } cal_data_type_t;
 
-struct _cal_struct{
+
+#define CAL_STRUCT_UPDATED "updated"     /**< CAL_STRUCT_UPDATED */
+
+typedef struct _updated {
+	int type;
+	int id;
+	int ver;
+	struct _updated *next;
+} cals_updated;
+
+typedef struct {
+	cals_updated *head;
+	cals_updated *cursor;
+} cals_updated_info;
+
+struct _cal_struct {
 	cal_struct_type event_type;
 	void* user_data;
 };
 
-struct _cal_value{
+struct _cal_value {
 	cal_data_type_t v_type;
 	void* user_data;
 };
 
-struct _cal_iter{
+struct _cal_iter {
 	int i_type;
 	sqlite3_stmt *stmt;
 	int is_patched;
+	cals_updated_info *info;
 };
 
 typedef struct
 {
 	int localtime_offset;
 	int local_dst_offset;
-	char local_tz_name[50];
+	char local_tz_id[50];
 	struct tm start_local_dst_date_time;
 	struct tm start_local_std_date_time;
 
 	int temptime_offset;
 	int temp_dst_offset;
-	char temp_tz_name[50];
+	char temp_tz_id[50];
 	struct tm start_temp_dst_date_time;
 	struct tm start_temp_std_date_time;
 
@@ -116,7 +143,7 @@ typedef struct
 
 typedef enum
 {
-	CALS_NOTI_TYPE_EVENT,
+	CALS_NOTI_TYPE_EVENT = 0x0,
 	CALS_NOTI_TYPE_TODO,
 	CALS_NOTI_TYPE_CALENDAR,
 }cals_noti_type;
@@ -165,12 +192,11 @@ typedef enum
  */
 typedef enum
 {
-	CAL_EVENT_NONE=0,			/**< None type */
-	CAL_EVENT_SCHEDULE_TYPE,	/**< schedule event type */
-	CAL_EVENT_TODO_TYPE,		/**< task event type */
-	CAL_EVENT_MEMO_TYPE,		/**< memo event type */
-	CAL_EVENT_MAX_TYPE,		/**< max type */
-} cal_event_type_t;
+	CALS_SCH_TYPE_NONE=0,			/**< None type */
+	CALS_SCH_TYPE_EVENT,	/**< schedule event type */
+	CALS_SCH_TYPE_TODO,		/**< task event type */
+	CALS_SCH_TYPE_MAX,		/**< max type */
+} cals_sch_type;
 
 
 /**
@@ -223,87 +249,6 @@ typedef enum
 	CAL_STARTING_DAY_MONDAY		/**< starting day is monday */
 } cal_starting_day_type_t;
 
-
-typedef enum
-{
-	CAL_TIME_ZONE_GMT_L11,
-	CAL_TIME_ZONE_GMT_L10,
-	CAL_TIME_ZONE_GMT_L9,
-	CAL_TIME_ZONE_GMT_L8,
-	CAL_TIME_ZONE_GMT_L7,
-	CAL_TIME_ZONE_GMT_L6,
-	CAL_TIME_ZONE_GMT_L5,
-	CAL_TIME_ZONE_GMT_L45,
-	CAL_TIME_ZONE_GMT_L4,
-	CAL_TIME_ZONE_GMT_L35,
-	CAL_TIME_ZONE_GMT_L3,
-	CAL_TIME_ZONE_GMT_L2,
-	CAL_TIME_ZONE_GMT_L1,
-	CAL_TIME_ZONE_GMT_0,
-	CAL_TIME_ZONE_GMT_1,
-	CAL_TIME_ZONE_GMT_2,
-	CAL_TIME_ZONE_GMT_3,
-	CAL_TIME_ZONE_GMT_35,
-	CAL_TIME_ZONE_GMT_4,
-	CAL_TIME_ZONE_GMT_45,
-	CAL_TIME_ZONE_GMT_5,
-	CAL_TIME_ZONE_GMT_55,
-	CAL_TIME_ZONE_GMT_575,
-	CAL_TIME_ZONE_GMT_6,
-	CAL_TIME_ZONE_GMT_65,
-	CAL_TIME_ZONE_GMT_7,
-	CAL_TIME_ZONE_GMT_8,
-	CAL_TIME_ZONE_GMT_9,
-	CAL_TIME_ZONE_GMT_95,
-	CAL_TIME_ZONE_GMT_10,
-	CAL_TIME_ZONE_GMT_11,
-	CAL_TIME_ZONE_GMT_12,
-	CAL_TIME_ZONE_GMT_13,
-
-	CAL_TIME_ZONE_COUNT_MAX
-}cal_time_zone_t;
-
-/**
- * This structure stores the information whether there is an event on specific month
- * event_info description.
- * 0 : none.
- * 1 : event start or one day's event.
- * 2 : event not start and not end date , if 3 more days event than, 12223
- * 3 : event end
- * 4 : repeated event's start & end date is duplicated.
- */
-typedef struct
-{
-	int index;							/**< index of event */
-	cal_sch_category_t cal_type; 							/**< category type */
-	int all_day_event;					/***< this event is all day event or not */
-	struct tm start_date_time[MAX_REPEAT_OF_A_WEEK];
-	struct tm end_date_time[MAX_REPEAT_OF_A_WEEK];
-	int repeat_event_count;
-	//int			event_info[ DAY_OF_A_WEEK ]; 	/**< event info in a month 0-none */
-}cal_weekly_event_info_t;
-
-/**
- * This structure stores the information whether there is an event on specific month.
- */
-typedef struct
-{
-	int year;						/**< Specifies a year */
-	int month;						/**< Specifies a month */
-	bool exist[CAL_DAY_CNT_MAX];	/**< There can be an event or not on specific date */
-}cal_event_info_t;					/* Event data info for calendar */
-
-/**
- * This structure stores the information whether there is an event on specific month.
- */
-typedef struct
-{
-	int year;						/**< Specifies a year */
-	int month;						/**< Specifies a month */
-	int index;						/**< index of event */
-	int event_info[CAL_DAY_CNT_MAX]; /**< event info in a month 0-none, 1-has */
-}cal_monthly_event_info_t;
-
 /**
  * This structure defines schedule information.
  */
@@ -311,27 +256,14 @@ typedef struct
 {
 	int index;				/**< Record index */
 	int account_id;			/**< Account_id */
-	cal_event_type_t cal_type;			/**< Calendar event type */
-	cal_sch_category_t sch_category;		/**< Category of schedule */
+	cals_sch_type cal_type;			/**< Calendar event type */
 
 	char *summary;			/**< Summary, appointment, task: subject, birthday:Name */
 	char *description;		/**< Description,appointment, task: description, anniversary,holiday:occasion*/
 	char *location;			/**< Location */
-	GList *meeting_category;	/**< collection of categories */
-	bool all_day_event;		/**< All day event flag */
-	struct tm start_date_time;	/**< schedule:start time, anniv,holiday,birthday,memo,todo: date */
-	struct tm end_date_time;		/**< end time */
+	char *categories;
+	char *exdate;
 	GList *alarm_list;
-	cal_repeat_term_t repeat_term;		/**< Repeat term */
-	int repeat_interval;	/**< Interval of repeat term */
-	int repeat_until_type;	/**< repeat until type */
-	int repeat_occurrences;	/**< occurrences of repeat */
-	struct tm repeat_end_date;	/**< End date for repeat */
-	cal_date_type_t sun_moon;			/**< Using sun or lunar calendar */
-	cal_starting_day_type_t week_start;			/**< Start day of a week */
-	char *week_flag;//[DAY_OF_A_WEEK + 1]; /**< Indicate which day is select in a week */
-	int day_date;			/**< 0- for weekday(sun,mon,etc.), 1- for specific day(1,2.. Etc) */
-	struct tm last_modified_time;	/**< for PC Sync */
 	bool missed;				/**< Miss alarm flag */
 	cals_status_t task_status;		/**< current task status */
 	cal_priority_t priority;		/**< Priority */
@@ -347,7 +279,6 @@ typedef struct
 	char *organizer_email;	/**< ACS, G : Email of organizer */
 	calendar_type_t calendar_type;		/**< ACS, G : Type(all,phone,google) of calendar */
 	char *gcal_id;			/**< G : Server id of calendar */
-	bool deleted;			/**< G : Flag for deleted */
 	char *updated;			/**< G : Updated time stamp */
 	int location_type;		/**< G : Location type */
 	char *location_summary;	/**< G : A simple string value that can be used as a representation of this location */
@@ -361,54 +292,48 @@ typedef struct
 	int original_event_id;        /**< original event id for recurrency exception */
 	double latitude;
 	double longitude;
-	char *tz_name;
-	char *tz_city_name;
-	int is_deleted;
 	int email_id;
 	int availability;
-	struct tm created_date_time; /**< created time */
-	struct tm completed_date_time; /**< completed time */
+	long long int created_time;
+	long long int completed_time;
 	int progress;
+	int is_deleted; /**< for sync */
+	int dtstart_type;
+	long long int dtstart_utime;
+	int dtstart_year;
+	int dtstart_month;
+	int dtstart_mday;
+	char *dtstart_tzid;
+	int dtend_type;
+	long long int dtend_utime;
+	int dtend_year;
+	int dtend_month;
+	int dtend_mday;
+	char *dtend_tzid;
+	int duration;
+	long long int last_mod;
+	int rrule_id;
+	int freq;
+	int range_type;
+	int until_type;
+	long long int until_utime;
+	int until_year;
+	int until_month;
+	int until_mday;
+	int count;
+	int interval;
+	char *bysecond;
+	char *byminute;
+	char *byhour;
+	char *byday;
+	char *bymonthday;
+	char *byyearday;
+	char *byweekno;
+	char *bymonth;
+	char *bysetpos;
+	int wkst;
 }cal_sch_full_t;
 
-
-/**
- * This structure defines schedule information.
- */
-typedef struct
-{
-	int index;				/**< Record index */
-	cal_event_type_t cal_type;			/**< Calendar event type */
-	cal_sch_category_t sch_category;		/**< Category of schedule */
-
-	char *summary; /**< Summary, appointment, task: subject, birthday:Name */
-	char *description; /**< Description,appointment, task: description, anniversary,holiday:occasion*/
-	char *location; /**< Location */
-
-	bool all_day_event;		/**< All day event flag */
-	struct tm start_date_time;	/**< schedule:start time, anniv,holiday,birthday,memo,todo: date */
-	struct tm end_date_time;		/**< end time */
-	struct tm alarm_time;			/**< alarm time */
-	int remind_tick;		/**< Alarms before remindTick */
-	cal_sch_remind_tick_unit_t	remind_tick_unit;	/**< Remind tick unit */
-	int alarm_id;			/**< Alarm id */
-
-	cal_repeat_term_t repeat_term;		/**< Repeat term */
-	int repeat_interval;	/**< Interval of repeat term */
-	int repeat_until_type;	/**< Repeat until type */
-	struct tm repeat_end_date;	/**< End date for repeat */
-	cal_date_type_t sun_moon;			/**< Using sun or lunar calendar */
-	cal_starting_day_type_t week_start;			/**< Start day of a week */
-	char *week_flag; /**< Indicate which day is select in a week */
-	int day_date;			/**< 0- for weekday(sun,mon,etc.), 1- for specific day(1,2.. Etc) */
-	bool missed;				/**< Miss alarm flag */
-
-	int participant_id;		/**<contact id for participant*/
-	calendar_type_t calendar_type;		/**<one type of calendar */
-	cal_time_zone_t timezone;			/**< timezone of task */
-	int dst;					/**< dst of event */
-	int is_deleted;
-}cal_sch_t;
 
 /**
  * This structure defines participant information of a meetting.
@@ -439,26 +364,6 @@ typedef struct
 }cal_participant_info_t;
 
 /**
- * This structure defines category information of a meetting.
- */
-typedef struct
-{
-	int event_id;
-	char *category_name;
-}cal_category_info_t;
-
-/**
- * This structure defines exception information of recurrence event.
- */
-typedef struct
-{
-	cal_sch_full_t *exception_record;
-	struct tm exception_start_time;
-	int is_modified;
-	int event_id;
-}cal_exception_info_t;
-
-/**
  * This structure defines exception information of alarm.
  */
 typedef struct
@@ -470,7 +375,7 @@ typedef struct
 
 	/* audio */
 	/* -- trigger */
-	struct tm alarm_time;
+	long long int alarm_time;
 	int remind_tick;
 	cal_sch_remind_tick_unit_t	remind_tick_unit;
 	/* --attach */
@@ -483,53 +388,6 @@ typedef struct
 	/* email */
 
 }cal_alarm_info_t;
-
-
-/**
- * This structure stores record and its repeat type.
- * repeat_type  / include original data / include repeated data / repeated schedule or not
- *     1              o                x                 o
- *     2              o                o                 o
- *     3              x                o                 o
- *     4              o                x                 x (just one day event )
- *     5              o                x                 x ( more than two days )
- */
-typedef struct
-{
-	cal_sch_t record;						/**< event record */
-	cal_event_type_t repeat_type;				/**< repeat type as above, 1-5 */
-}cal_period_record_t;
-
-/**
- * @enum cal_search_repeat_term_t
- * This enumeration defines Repeat term.
- */
-typedef enum
-{
-	CAL_SEARCH_REPEAT_INVALID = -1,	/**< Invalid Repeat */
-	CAL_SEARCH_REPEAT_NONE = 0,	/**< never Repeat */
-	CAL_SEARCH_REPEAT_EVERY_DAY,	/**< Repeats every day */
-	CAL_SEARCH_REPEAT_EVERY_WEEK,	/**< Repeats every week */
-	CAL_SEARCH_REPEAT_EVERY_MONTH,	/**< Repeats every month */
-	CAL_SEARCH_REPEAT_EVERY_YEAR,	/**< Repeats every year */
-	CAL_SEARCH_REPEAT_EVERY_WEEKDAYS, /**< Repeats every weekdays *//* same with CAL_REPEAT_EVERY_WEEK, but week_flag="0111110", day_date=1, sun_moon=0, week_start=0 */
-	CAL_SEARCH_REPEAT_EVERY_MONTH_DAY, /**< Repeats every month's week days *//* same with CAL_REPEAT_EVERY_MONTH, but week_flag="1000000"~"0000001", day_date=0, sun_moon=0, week_start=0 */
-	CAL_SEARCH_REPEAT_EVERY_YEAR_DAY, /**< Repeats every year's month week days *//* same with CAL_REPEAT_EVERY_YEAR, but week_flag="1000000"~"0000001", day_date=0, sun_moon=0, week_start=0 */
-} cal_search_repeat_term_t;
-
-
-typedef struct
-{
-	int index;  														/**< Record index */
-	char summary[CAL_SCH_SUMMARY_LEN_MAX + 1];		/**< Summary, appointment, task: subject, birthday:Name */
-	char description[CAL_SCH_DESCRIPTION_LEN_MAX + 1];				/**< Description,appointment, task: description, anniversary,holiday:occasion*/
-	struct tm start_date_time; 											/**< schedule:start time, anniv,holiday,birthday,memo,todo: date */
-	struct tm end_date_time; 											/**< end time */
-	int alarmed; 													/**< Indicates whether an alarm is to be activated for the event */
-	struct tm alarm_time; 												/**< alarm time */
-	cal_search_repeat_term_t eventRecurrence;  							/**< Recurrent interval of this event. */
-}cal_record_search_field;
-
 
 //This is the calendar schema
 typedef struct
@@ -607,6 +465,150 @@ typedef struct
 	int day_light_start_hour;
 	int day_light_bias;
 } cal_timezone_t;
+
+typedef struct
+{
+	int index;
+	int dtstart_type;
+	long long int dtstart_utime;
+	int dtend_type;
+	long long int dtend_utime;
+} cals_struct_period_normal_onoff;
+
+typedef struct
+{
+	int index;
+	int dtstart_type;
+	int dtstart_year;
+	int dtstart_month;
+	int dtstart_mday;
+	int dtend_type;
+	int dtend_year;
+	int dtend_month;
+	int dtend_mday;
+} cals_struct_period_allday_onoff;
+
+typedef struct
+{
+	int index;
+	int dtstart_type;
+	long long int dtstart_utime;
+	int dtend_type;
+	long long int dtend_utime;
+	char *summary;
+	char *location;
+} cals_struct_period_normal_basic;
+
+typedef struct
+{
+	int index;
+	int dtstart_type;
+	int dtstart_year;
+	int dtstart_month;
+	int dtstart_mday;
+	int dtend_type;
+	int dtend_year;
+	int dtend_month;
+	int dtend_mday;
+	char *summary;
+	char *location;
+} cals_struct_period_allday_basic;
+
+typedef struct
+{
+	int index;
+	int calendar_id;
+	int dtstart_type;
+	long long int dtstart_utime;
+	int dtend_type;
+	long long int dtend_utime;
+	char *summary;
+	char *description;
+	char *location;
+	int busy_status;
+	int meeting_status;
+	int priority;
+	int sensitivity;
+	int rrule_id;
+} cals_struct_period_normal_osp;
+
+typedef struct
+{
+	int index;
+	int calendar_id;
+	int dtstart_type;
+	int dtstart_year;
+	int dtstart_month;
+	int dtstart_mday;
+	int dtend_type;
+	int dtend_year;
+	int dtend_month;
+	int dtend_mday;
+	char *summary;
+	char *description;
+	char *location;
+	int busy_status;
+	int meeting_status;
+	int priority;
+	int sensitivity;
+	int rrule_id;
+} cals_struct_period_allday_osp;
+
+typedef struct
+{
+	int index;
+	int calendar_id;
+	int dtstart_type;
+	long long int dtstart_utime;
+	int dtend_type;
+	long long int dtend_utime;
+	char *summary;
+	char *description;
+	char *location;
+	int busy_status;
+	int meeting_status;
+	int priority;
+	int sensitivity;
+	int rrule_id;
+	double latitude;
+	double longitude;
+} cals_struct_period_normal_location;
+
+typedef struct
+{
+	int index;
+	int calendar_id;
+	int dtstart_type;
+	int dtstart_year;
+	int dtstart_month;
+	int dtstart_mday;
+	int dtend_type;
+	int dtend_year;
+	int dtend_month;
+	int dtend_mday;
+	char *summary;
+	char *description;
+	char *location;
+	int busy_status;
+	int meeting_status;
+	int priority;
+	int sensitivity;
+	int rrule_id;
+	double latitude;
+	double longitude;
+} cals_struct_period_allday_location;
+
+typedef struct
+{
+	int index;
+	int calendar_id;
+	int dtstart_type;
+	long long int dtstart_utime;
+	int dtend_type;
+	long long int dtend_utime;
+	long long int alarm_utime;
+	int alarm_id;
+}cals_struct_period_normal_alarm;
 
 /**
  * @}

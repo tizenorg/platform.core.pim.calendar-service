@@ -21,23 +21,11 @@ CREATE TABLE schedule_table
 id INTEGER PRIMARY KEY AUTOINCREMENT,
 account_id INTEGER,
 type INTEGER,
-category INTEGER,
 summary TEXT,
 description TEXT,
 location TEXT,
-all_day_event INTEGER,
-start_date_time INTEGER,
-end_date_time INTEGER,
-repeat_item INTEGER,
-repeat_interval INTEGER,
-repeat_until_type INTEGER,
-repeat_occurrences INTEGER,
-repeat_end_date INTEGER,
-sun_moon INTEGER,
-week_start INTEGER,
-week_flag TEXT,
-day_date INTEGER,
-last_modified_time INTEGER,
+categories TEXT,
+exdate TEXT,
 missed INTEGER,
 task_status INTEGER,
 priority INTEGER,
@@ -52,7 +40,6 @@ organizer_name TEXT,
 organizer_email TEXT,
 meeting_status INTEGER,
 gcal_id TEXT,
-deleted INTEGER,
 updated TEXT,
 location_type INTEGER,
 location_summary TEXT,
@@ -65,20 +52,67 @@ dst INTEGER,
 original_event_id INTEGER,
 latitude DOUBLE,
 longitude DOUBLE,
-is_deleted INTEGER,
-tz_name TEXT,
-tz_city_name TEXT,
 email_id INTEGER,
 availability INTEGER,
-created_date_time INTEGER,
-completed_date_time INTEGER,
-progress INTEGER
+created_time INTEGER,
+completed_time INTEGER,
+progress INTEGER,
+changed_ver INTEGER,
+created_ver INTEGER,
+is_deleted INTEGER DEFAULT 0,
+dtstart_type INTEGER,
+dtstart_utime INTEGER,
+dtstart_datetime TEXT,
+dtstart_tzid TEXT,
+dtend_type INTEGER,
+dtend_utime INTEGER,
+dtend_datetime TEXT,
+dtend_tzid TEXT,
+last_mod INTEGER,
+rrule_id INTEGER DEFAULT 0
 );
-CREATE INDEX sch_idx1 ON schedule_table(type, category);
+CREATE INDEX sch_idx1 ON schedule_table(type);
 CREATE TRIGGER trg_sch_del AFTER DELETE ON schedule_table
  BEGIN
-   DELETE FROM cal_alarm_table WHERE event_id = old.id;
+   DELETE FROM alarm_table WHERE event_id = old.id;
  END;
+
+CREATE TABLE rrule_table
+(
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+event_id INTEGER,
+freq INTEGER DEFAULT 0,
+range_type INTEGER,
+until_type INTEGER,
+until_utime INTEGER,
+until_datetime TEXT,
+count INTEGER,
+interval INTEGER,
+bysecond TEXT,
+byminute TEXT,
+byhour TEXT,
+byday TEXT,
+bymonthday TEXT,
+byyearday TEXT,
+byweekno TEXT,
+bymonth TEXT,
+bysetpos TEXT,
+wkst INTEGER
+);
+
+CREATE TABLE normal_instance_table
+(
+event_id INTEGER,
+dtstart_utime INTEGER,
+dtend_utime INTEGER
+);
+
+CREATE TABLE allday_instance_table
+(
+event_id INTEGER,
+dtstart_datetime TEXT,
+dtend_datetime TEXT
+);
 
 CREATE TABLE cal_participant_table
 (
@@ -95,22 +129,6 @@ attendee_group TEXT,
 attendee_delegator_uri TEXT,
 attendee_delegate_uri TEXT,
 attendee_uid TEXT
-);
-
-CREATE TABLE cal_meeting_category_table
-(
-event_id INTEGER,
-category_name TEXT
-);
-
-CREATE TABLE recurrency_log_table
-(
-uid TEXT,
-start_date_time INTEGER,
-end_date_time INTEGER,
-event_id INTEGER,
-exception_event_id INTEGER,
-updated INTEGER
 );
 
 CREATE TABLE calendar_table
@@ -175,7 +193,7 @@ day_light_start_hour INTEGER,
 day_light_bias INTEGER
 );
 
-CREATE TABLE cal_alarm_table
+CREATE TABLE alarm_table
 (
 event_id INTEGER,
 alarm_time INTEGER,
@@ -187,4 +205,20 @@ alarm_type INTEGER,
 alarm_id INTEGER
 );
 
-INSERT INTO calendar_table VALUES(0,0,0,0,'default calendar',0,0,'76.198.86.255',0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,-1,0,3);
+CREATE TABLE deleted_table
+(
+schedule_id INTEGER,
+schedule_type INTEGER,
+calendar_id INTEGER,
+deleted_ver INTEGER
+);
+CREATE INDEX deleted_schedule_ver_idx ON deleted_table(deleted_ver);
+
+CREATE TABLE version_table
+(
+ver INTEGER PRIMARY KEY
+);
+INSERT INTO version_table VALUES(0);
+
+INSERT INTO calendar_table VALUES(0,0,0,0,'Default event calendar',0,0,'224.167.79.255',0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,-1,0,3);
+INSERT INTO calendar_table VALUES(0,0,0,0,'Default todo calendar',0,0,'224.167.79.255',0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,-1,0,3);

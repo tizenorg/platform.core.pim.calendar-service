@@ -114,6 +114,7 @@ sqlite3_stmt* cals_query_prepare(char *query)
 	int ret = -1;
 	sqlite3_stmt *stmt = NULL;
 
+	retvm_if(NULL == query, NULL, "Invalid query");
 	retvm_if(NULL == calendar_db_handle, NULL, "Database is not opended");
 	//CALS_DBG("prepare query : %s", query);
 
@@ -155,7 +156,6 @@ int cals_stmt_step(sqlite3_stmt *stmt)
 	}
 	return ret;
 }
-
 
 int cals_escape_like_pattern(const char *src, char * const dest, int dest_size)
 {

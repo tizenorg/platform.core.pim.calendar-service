@@ -31,16 +31,6 @@
 #include "cals-typedef.h"
 
 /**
- *  This function initialize schedule record.
- *
- * @return		This function returns initialized record.
- * @param[out]	sch_record	Points the field information for schedule table' s record.
- * @param[out]	error_code	Points the error code.
- * @exception	None.
- */
-bool cal_db_service_init_schedule_record(cal_sch_t *sch_record, int *error_code);
-
-/**
  *  This function free full schedule record.
  *
  * @return		This function returns initialized record.
@@ -61,8 +51,6 @@ bool cal_db_service_free_full_record(cal_sch_full_t *sch_full_record, int *error
  * @exception	CAL_ERR_DB_NOT_OPENED, CAL_ERR_ARG_INVALID, CAL_ERR_DB_FAILED
  */
 bool cal_db_service_get_participant_info_by_index(const int panticipant_index, GList** record_list, int *error_code);
-
-bool cal_db_service_get_meeting_category_info_by_index(const int event_id, GList** record_list, int *error_code);
 
 /**
  *  This function get record by index base on table type.
@@ -87,16 +75,10 @@ bool cal_db_service_get_record_full_field_by_index(const int index, cal_sch_full
  */
 int cal_service_add_participant_info(const int participant_id, const cal_participant_info_t* current_record);
 
-int cal_service_add_exception_info(int event_id, cal_exception_info_t *exception_info, const cal_sch_full_t *sch_record);
-
-int cal_db_service_get_month_event (int account_id, time_t startdate, time_t enddate,int is_repeat, sqlite3_stmt** stmt);
-
 int cals_insert_timezone(cal_timezone_t *timezone_info);
 int cals_update_timezone(cal_timezone_t *timezone_info);
 
-bool cal_db_service_get_recurrency_exception(const int event_id, GList **exception_list, int *error_code);
-
-int __cal_service_delete_all_records(const int account_id, const cal_event_type_t record_type);
+int __cal_service_delete_all_records(const int account_id, const cals_sch_type record_type);
 
 /**
  * @}

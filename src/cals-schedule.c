@@ -23,123 +23,77 @@
 #include "cals-sqlite.h"
 #include "cals-db-info.h"
 #include "cals-db.h"
-#include "cals-tz-utils.h"
 #include "cals-utils.h"
 #include "cals-alarm.h"
 #include "cals-schedule.h"
+#include "cals-instance.h"
+#include "cals-time.h"
 
-
-static void _cals_adjust_time(cal_sch_full_t *current_record,
-	time_t *start, time_t *end, time_t *repeat_end)
-{
-	TMDUMP(current_record->start_date_time);
-
-	if ((current_record->all_day_event == true) &&
-			((current_record->start_date_time.tm_hour != 0) ||
-			 (current_record->start_date_time.tm_min !=0)) )
-	{
-		*start = cals_mktime(&(current_record->start_date_time));
-		CALS_DBG("%d",*start);
-		calendar_svc_util_gmt_to_local(*start, start);
-		CALS_DBG("%d",*start);
-		*end = cals_mktime(&(current_record->end_date_time));
-
-		if(current_record->all_day_event == true &&
-				current_record->end_date_time.tm_hour == 0 &&
-				current_record->end_date_time.tm_min == 0)
-			*end = *end - 1;
-
-		CALS_DBG("%d",*end);
-		calendar_svc_util_gmt_to_local(*end, end);
-		CALS_DBG("%d",*end);
-		*repeat_end = cals_mktime(&(current_record->repeat_end_date));
-
-		calendar_svc_util_gmt_to_local(*repeat_end, repeat_end);
-	}
-	else
-	{
-		*start = cals_mktime(&(current_record->start_date_time));
-		*end = cals_mktime(&(current_record->end_date_time));
-		*repeat_end = cals_mktime(&(current_record->repeat_end_date));
-	}
-
-}
+int _cals_clear_instances(int id);
 
 static inline int _cals_insert_schedule(cal_sch_full_t *record)
 {
 	int ret = -1;
 	char query[CALS_SQL_MAX_LEN] = {0};
+	char dtstart_datetime[32] = {0};
+	char dtend_datetime[32] = {0};
 	sqlite3_stmt *stmt = NULL;
-	time_t conv_start_time;
-	time_t conv_end_time;
-	time_t conv_repeat_end_time;
-	time_t conv_last_modified_time;
-	time_t conv_created_date_time;
-	time_t conv_completed_date_time;
-	time_t t = time(NULL);
-	tzset();
-	struct tm * ptm = NULL;
-	struct tm ttm;
 
 	retv_if(NULL == record, CAL_ERR_ARG_NULL);
 
-	ptm = gmtime_r(&t,&ttm);
-	retvm_if(NULL == ptm, CAL_ERR_TIME_FAILED, "gmtime_r() Failed(%d)", errno);
-
-	memcpy(&record->last_modified_time, &ttm, sizeof(struct tm));
-
-	conv_last_modified_time = cals_mktime(&(record->last_modified_time));
-
-	_cals_adjust_time(record, &conv_start_time, &conv_end_time, &conv_repeat_end_time);
-	conv_created_date_time = cals_mktime(&(record->created_date_time));
-	conv_completed_date_time = cals_mktime(&(record->completed_date_time));
+	int input_ver = cals_get_next_ver();
 
 	ret = snprintf(query, sizeof(query),
-		"INSERT INTO %s( "
-			"account_id, type, category, "
-			"summary, description, location, all_day_event, "
-			"start_date_time, end_date_time, repeat_item, repeat_interval, "
-			"repeat_until_type, repeat_occurrences, repeat_end_date, sun_moon, week_start, "
-			"week_flag, day_date, last_modified_time, missed, "
+		"INSERT INTO %s ("
+			"account_id, type, "
+			"created_ver, changed_ver, "
+			"summary, description, location, categories, exdate, "
+			"missed, "
 			"task_status, priority, timezone, file_id, "
 			"contact_id, busy_status, sensitivity, uid, "
 			"calendar_type, organizer_name, organizer_email, meeting_status, "
-			"gcal_id, deleted, updated, location_type, "
+			"gcal_id, updated, location_type, "
 			"location_summary, etag, calendar_id, sync_status, "
 			"edit_uri, gevent_id, dst, original_event_id, "
-			"latitude, longitude, is_deleted, tz_name, "
-			"tz_city_name, email_id, availability, "
-			"created_date_time, completed_date_time, progress) "
-		"VALUES( "
-			"%d, %d, %d, "
-			"?, ?, ?, %d, "
-			"%ld, %ld, %d, %d, "
-			"%d, %d, %ld, %d, %d, "
-			"?, %d, %ld, %d, "
+			"latitude, longitude, "
+			"email_id, availability, "
+			"created_time, completed_time, progress, "
+			"dtstart_type, dtstart_utime, dtstart_datetime, dtstart_tzid, "
+			"dtend_type, dtend_utime, dtend_datetime, dtend_tzid, "
+			"last_mod, rrule_id "
+			") VALUES ( "
+			"%d, %d, "
+			"%d, %d, "
+			"?, ?, ?, ?, ?, "
+			"%d, "
 			"%d, %d, %d, %d, "
 			"%d, %d, %d, ?, "
 			"%d, ?, ?, %d, "
-			"?, %d, ?, %d, "
+			"?, ?, %d, "
 			"?, ?, %d, %d, "
 			"?, ?, %d, %d, "
-			"%lf, %lf, %d, ?, "
-			"?, %d, %d, "
-			"%ld, %ld, %d)",
+			"%lf, %lf, "
+			"%d, %d, "
+			"strftime('%%s', 'now'), %lld, %d, "
+			"%d, %lld, ?, ?, "
+			"%d, %lld, ?, ?, "
+			"strftime('%%s', 'now'), %d ) ",
 			CALS_TABLE_SCHEDULE,
-			record->account_id, record->cal_type, record->sch_category,
-			record->all_day_event,
-			conv_start_time, conv_end_time, record->repeat_term, record->repeat_interval,
-			record->repeat_until_type, record->repeat_occurrences, conv_repeat_end_time, record->sun_moon, record->week_start,
-			record->day_date,	(long int)conv_last_modified_time, record->missed,
-			record->task_status,	record->priority,	record->timezone, record->file_id,
+			record->account_id, record->cal_type,
+			input_ver, input_ver,
+			record->missed,
+			record->task_status, record->priority,	record->timezone, record->file_id,
 			record->contact_id, record->busy_status, record->sensitivity,
 			record->calendar_type, record->meeting_status,
-			record->deleted, record->location_type,
-			record->calendar_id,	record->sync_status,
+			record->location_type,
+			record->calendar_id, record->sync_status,
 			record->dst, record->original_event_id,
-			record->latitude, record->longitude, record->is_deleted,
-			record->email_id,	record->availability,
-			conv_created_date_time, conv_completed_date_time, record->progress);
+			record->latitude, record->longitude,
+			record->email_id, record->availability,
+			record->completed_time, record->progress,
+			record->dtstart_type, record->dtstart_utime,
+			record->dtend_type, record->dtend_utime,
+			record->rrule_id);
 
 	stmt = cals_query_prepare(query);
 	retvm_if(NULL == stmt, CAL_ERR_DB_FAILED, "cals_query_prepare() Failed");
@@ -158,8 +112,12 @@ static inline int _cals_insert_schedule(cal_sch_full_t *record)
 		cals_stmt_bind_text(stmt, count, record->location);
 	count++;
 
-	if (record->week_flag)
-		cals_stmt_bind_text(stmt, count, record->week_flag);
+	if (record->categories)
+		cals_stmt_bind_text(stmt, count, record->categories);
+	count++;
+
+	if (record->exdate)
+		cals_stmt_bind_text(stmt, count, record->exdate);
 	count++;
 
 	if (record->uid)
@@ -198,12 +156,22 @@ static inline int _cals_insert_schedule(cal_sch_full_t *record)
 		cals_stmt_bind_text(stmt, count, record->gevent_id);
 	count++;
 
-	if (record->tz_name)
-		cals_stmt_bind_text(stmt, count, record->tz_name);
+	snprintf(dtstart_datetime, sizeof(dtstart_datetime), "%04d%02d%02dT000000",
+			record->dtstart_year, record->dtstart_month, record->dtstart_mday);
+	cals_stmt_bind_text(stmt, count, dtstart_datetime);
 	count++;
 
-	if (record->tz_city_name)
-		cals_stmt_bind_text(stmt, count, record->tz_city_name);
+	if (record->dtstart_tzid)
+		cals_stmt_bind_text(stmt, count, record->dtstart_tzid);
+	count++;
+
+	snprintf(dtend_datetime, sizeof(dtend_datetime), "%04d%02d%02dT235959",
+			record->dtend_year, record->dtend_month, record->dtend_mday);
+	cals_stmt_bind_text(stmt, count, dtend_datetime);
+	count++;
+
+	if (record->dtend_tzid)
+		cals_stmt_bind_text(stmt, count, record->dtend_tzid);
 	count++;
 
 	ret = cals_stmt_step(stmt);
@@ -217,21 +185,104 @@ static inline int _cals_insert_schedule(cal_sch_full_t *record)
 	return cals_last_insert_id();
 }
 
-int _cals_add_meeting_category_info(const int event_id, const cal_category_info_t *current_record)
+static inline int _cals_insert_rrule_id(int index, cal_sch_full_t *record)
+{
+	CALS_FN_CALL;
+	int ret = -1;
+	char query[CALS_SQL_MAX_LEN] = {0};
+
+	retv_if(NULL == record, CAL_ERR_ARG_NULL);
+
+	ret = snprintf(query, sizeof(query),
+			"UPDATE %s SET "
+			"rrule_id = %d "
+			"WHERE id = %d ",
+			CALS_TABLE_SCHEDULE,
+			record->rrule_id,
+			index);
+DBG("query(%s)", query);
+	ret = cals_query_exec(query);
+	if (ret) {
+		ERR("cals_query_exec() failed (%d)", ret);
+		return ret;
+	}
+	return CAL_SUCCESS;
+}
+
+static inline int _cals_insert_rrule(int index, cal_sch_full_t *record)
 {
 	int ret;
-	sqlite3_stmt *stmt;
-	char sql_value[CALS_SQL_MAX_LEN];
+	int cnt;
+	char query[CALS_SQL_MAX_LEN] = {0};
+	char until_datetime[32] = {0};
+	sqlite3_stmt *stmt = NULL;
 
-	retv_if(NULL == current_record, CAL_ERR_ARG_NULL);
+	snprintf(query, sizeof(query),
+			"INSERT INTO %s ( "
+			"event_id, freq, range_type, "
+			"until_type, until_utime, until_datetime, "
+			"count, interval, "
+			"bysecond, byminute, byhour, byday, "
+			"bymonthday, byyearday, byweekno, bymonth, "
+			"bysetpos, wkst "
+			") VALUES ( "
+			"%d, %d, %d, "
+			"%d, %lld, ?, "
+			"%d, %d, "
+			"?, ?, ?, ?, "
+			"?, ?, ?, ?, "
+			"?, %d "
+			") ",
+			CALS_TABLE_RRULE,
+			index, record->freq, record->range_type,
+			record->until_type, record->until_utime,
+			record->count, record->interval,
+			record->wkst);
 
-	sprintf(sql_value, "INSERT INTO %s(event_id, category_name) "
-			"VALUES(%d, ?)", CALS_TABLE_MEETING_CATEGORY, event_id);
+	stmt = cals_query_prepare(query);
+	retvm_if(stmt == NULL, CAL_ERR_DB_FAILED, "Failed to query prepare");
 
-	stmt = cals_query_prepare(sql_value);
-	retvm_if(NULL == stmt, CAL_ERR_DB_FAILED, "cals_query_prepare() Failed");
+	cnt = 1;
+	snprintf(until_datetime, sizeof(until_datetime), "%04d%02d%02dT235959",
+			record->until_year, record->until_month, record->until_mday);
+	cals_stmt_bind_text(stmt, cnt, until_datetime);
+	cnt++;
 
-	cals_stmt_bind_text(stmt, 1, current_record->category_name);
+	if (record->bysecond)
+		cals_stmt_bind_text(stmt, cnt, record->bysecond);
+	cnt++;
+
+	if (record->byminute)
+		cals_stmt_bind_text(stmt, cnt, record->byminute);
+	cnt++;
+
+	if (record->byhour)
+		cals_stmt_bind_text(stmt, cnt, record->byhour);
+	cnt++;
+
+	if (record->byday)
+		cals_stmt_bind_text(stmt, cnt, record->byday);
+	cnt++;
+
+	if (record->bymonthday)
+		cals_stmt_bind_text(stmt, cnt, record->bymonthday);
+	cnt++;
+
+	if (record->byyearday)
+		cals_stmt_bind_text(stmt, cnt, record->byyearday);
+	cnt++;
+
+	if (record->byweekno)
+		cals_stmt_bind_text(stmt, cnt, record->byweekno);
+	cnt++;
+
+	if (record->bymonth)
+		cals_stmt_bind_text(stmt, cnt, record->bymonth);
+	cnt++;
+
+	if (record->bysetpos)
+		cals_stmt_bind_text(stmt, cnt, record->bysetpos);
+	cnt++;
 
 	ret = cals_stmt_step(stmt);
 	if (CAL_SUCCESS != ret) {
@@ -241,157 +292,8 @@ int _cals_add_meeting_category_info(const int event_id, const cal_category_info_
 	}
 	sqlite3_finalize(stmt);
 
-	return CAL_SUCCESS;
+	return cals_last_insert_id();
 }
-
-static inline int _cals_check_date_validity(struct tm *day)
-{
-	int month_day_count = 0;
-
-	retvm_if(NULL == day, CAL_FALSE, "day is NULL");
-
-	month_day_count = cal_db_service_get_day_count_in_month(day->tm_year, day->tm_mon);
-
-	if ((day->tm_mday < 1) ||
-			(day->tm_mday > month_day_count) ||
-			(day->tm_mon < CAL_MONTH_CNT_MIN - 1 ) ||
-			(day->tm_mon > CAL_MONTH_CNT_MAX - 1) ||
-			(day->tm_year < CAL_YEAR_MIN - BENCHMARK_YEAR ) ||
-			(day->tm_year > CAL_YEAR_MAX - BENCHMARK_YEAR))
-	{
-		day->tm_year = 137;
-		day->tm_mon = 11;
-		day->tm_mday = 31;
-		return CAL_TRUE;
-	}
-	else
-	{
-		return CAL_TRUE;
-	}
-}
-
-static inline int _cals_sch_check_validity(cal_sch_full_t *sch_record)
-{
-	struct tm end_date_time = {0};
-	struct tm start_date = {0};
-	struct tm tmp_start_date_time = {0};
-	struct tm tmp_end_date_time = {0};
-
-	time_t temp_start_time_seconds = 0;
-	time_t temp_end_time_seconds = 0;
-	time_t temp_repeat_until_seconds = 0;
-
-	if(sch_record->cal_type != CAL_EVENT_SCHEDULE_TYPE)
-		return CAL_SUCCESS;
-
-	if((sch_record->repeat_term != CAL_REPEAT_NONE) && ((
-		(sch_record->repeat_occurrences) != 0 &&
-		(sch_record->repeat_end_date.tm_year == BASE_TIME_YEAR)) || (sch_record->repeat_until_type == CALS_REPEAT_UNTIL_TYPE_NONE)))
-	{
-		cal_db_service_set_repeat_end_date(sch_record);
-	}
-
-	if (!_cals_check_date_validity(&sch_record->start_date_time))
-	{
-		//ERR("start_date_time is invalied: %s-%s-%s",sch_record->start_date_time.tm_year,
-		//sch_record->start_date_time.tm_mon,
-		//sch_record->start_date_time.tm_mday);
-		return CAL_ERR_EVENT_START_DATE;
-	}
-
-	if (!_cals_check_date_validity(&sch_record->end_date_time))
-	{
-		//ERR("end_date_time is invalied: %s-%s-%s",sch_record->end_date_time.tm_year,
-		//								 sch_record->end_date_time.tm_mon,
-		//								 sch_record->end_date_time.tm_mday);
-		return CAL_ERR_EVENT_END_DATE;
-	}
-
-
-	if (!_cals_check_date_validity(&sch_record->repeat_end_date))
-	{
-		//ERR("repeat_end_date is invalied: %s-%s-%s",sch_record->repeat_end_date.tm_year,
-		//								 sch_record->repeat_end_date.tm_mon,
-		//								 sch_record->repeat_end_date.tm_mday);
-		return CAL_ERR_EVENT_REPEAT_END_DATE;
-	}
-
-	start_date.tm_year	= sch_record->start_date_time.tm_year;
-	start_date.tm_mon	= sch_record->start_date_time.tm_mon;
-	start_date.tm_mday	= sch_record->start_date_time.tm_mday;
-
-	memcpy( &tmp_start_date_time, &sch_record->start_date_time, sizeof(struct tm) );
-	memcpy( &tmp_end_date_time, &sch_record->end_date_time, sizeof(struct tm) );
-
-	temp_start_time_seconds = timegm(&tmp_start_date_time);
-	temp_end_time_seconds = timegm(&tmp_end_date_time);
-	temp_repeat_until_seconds = timegm(&sch_record->repeat_end_date);
-
-	if( temp_start_time_seconds > temp_end_time_seconds )
-	{
-		return CAL_ERR_EVENT_DURATION;
-	}
-
-	switch(sch_record->repeat_term)
-	{
-	case CAL_REPEAT_EVERY_DAY:
-		if( temp_end_time_seconds - temp_start_time_seconds > (sch_record->repeat_interval*ONE_DAY_SECONDS))
-			return CAL_ERR_EVENT_REPEAT_DURATION_TOO_SHORT;
-		break;
-		/*	case CAL_REPEAT_EVERY_WEEKDAYS:
-			if( temp_end_time_seconds - temp_start_time_seconds > (sch_record->repeat_interval*ONE_DAY_SECONDS))
-			{
-		 *error_code = CAL_ERR_EVENT_REPEAT_DURATION_TOO_SHORT;
-		 return false;
-		 }
-		 break;
-		 case CAL_REPEAT_EVERY_WEEKENDS:
-		 if( temp_end_time_seconds - temp_start_time_seconds > (sch_record->repeat_interval*ONE_DAY_SECONDS))
-		 {
-		 *error_code = CAL_ERR_EVENT_REPEAT_DURATION_TOO_SHORT;
-		 return false;
-		 }
-		 break;*/
-	case CAL_REPEAT_EVERY_WEEK:
-		//if( temp_end_time_seconds - temp_start_time_seconds > (sch_record->repeat_interval*ONE_WEEK_SECONDS))
-		//{
-		//	*error_code = CAL_ERR_EVENT_REPEAT_DURATION_TOO_SHORT;
-		//	return false;
-		//}
-		break;
-	case CAL_REPEAT_EVERY_MONTH:
-		if( temp_end_time_seconds - temp_start_time_seconds > (sch_record->repeat_interval*ONE_MONTH_SECONDS))
-			return CAL_ERR_EVENT_REPEAT_DURATION_TOO_SHORT;
-		break;
-	case CAL_REPEAT_EVERY_YEAR:
-		if( temp_end_time_seconds - temp_start_time_seconds > (sch_record->repeat_interval*ONE_YEAR_SECONDS))
-			return CAL_ERR_EVENT_REPEAT_DURATION_TOO_SHORT;
-		break;
-	case CAL_REPEAT_NONE:
-	default:
-		break;
-	}
-
-	end_date_time.tm_year = sch_record->repeat_end_date.tm_year;
-	end_date_time.tm_mon = sch_record->repeat_end_date.tm_mon;
-	end_date_time.tm_mday = sch_record->repeat_end_date.tm_mday;
-	end_date_time.tm_hour = sch_record->repeat_end_date.tm_hour;
-	end_date_time.tm_min = sch_record->repeat_end_date.tm_min;
-	end_date_time.tm_sec = 59;
-
-	// If Repeat end date is earlier than end date
-	if ( sch_record->repeat_term != CAL_REPEAT_NONE )
-	{
-		memcpy(&tmp_end_date_time, &sch_record->end_date_time, sizeof(struct tm));
-		//if( timegm(&tmp_end_date_time) > timegm(&end_date_time) )
-		//{
-		//	*error_code = CAL_ERR_REPEAT_DURATION;
-		//	return false;
-		//}
-	}
-	return CAL_SUCCESS;
-}
-
 
 int cals_insert_schedule(cal_sch_full_t *sch_record)
 {
@@ -399,44 +301,10 @@ int cals_insert_schedule(cal_sch_full_t *sch_record)
 	int index = 0;
 	cal_value *cvalue = NULL;
 	bool is_success = false;
+	struct cals_time st;
+	struct cals_time et;
 
 	retvm_if(NULL == sch_record, CAL_ERR_ARG_INVALID, "sch_record is NULL");
-
-	ret = _cals_sch_check_validity(sch_record);
-	retvm_if(CAL_SUCCESS != ret, ret, "_cals_sch_check_validity() is Failed(%d)", ret);
-
-	switch(sch_record->sch_category)
-	{
-	case CAL_SCH_NONE:
-		retvm_if(CAL_EVENT_TODO_TYPE != sch_record->cal_type, CAL_ERR_ARG_INVALID,
-			"Invalid type(category = %d, component type = %d)", sch_record->sch_category, sch_record->cal_type);
-		break;
-	case CAL_SCH_APPOINTMENT:
-		retvm_if(CAL_EVENT_SCHEDULE_TYPE != sch_record->cal_type, CAL_ERR_ARG_INVALID,
-			"Invalid type(category = %d, component type = %d)", sch_record->sch_category, sch_record->cal_type);
-		break;
-	case CAL_SCH_SPECIAL_OCCASION:
-		retvm_if(CAL_EVENT_SCHEDULE_TYPE != sch_record->cal_type, CAL_ERR_ARG_INVALID,
-			"Invalid type(category = %d, component type = %d)", sch_record->sch_category, sch_record->cal_type);
-		sch_record->all_day_event = 1;
-		break;
-	case CAL_SCH_BIRTHDAY:
-		retvm_if(CAL_EVENT_SCHEDULE_TYPE != sch_record->cal_type, CAL_ERR_ARG_INVALID,
-			"Invalid type(category = %d, component type = %d)", sch_record->sch_category, sch_record->cal_type);
-		sch_record->all_day_event = 1;
-		break;
-	case CAL_SCH_HOLIDAY:
-		retvm_if(CAL_EVENT_SCHEDULE_TYPE != sch_record->cal_type, CAL_ERR_ARG_INVALID,
-			"Invalid type(category = %d, component type = %d)", sch_record->sch_category, sch_record->cal_type);
-		sch_record->all_day_event = 1;
-		break;
-	case CAL_SCH_IMPORTANT:
-	case CAL_SCH_PRIVATE:
-	case CAL_SCH_BUSSINESS:
-	default:
-		ERR("Invalid type(category = %d, component type = %d)", sch_record->sch_category, sch_record->cal_type);
-		return CAL_ERR_ARG_INVALID;
-	}
 
 	sch_record->missed = 0;
 
@@ -450,6 +318,42 @@ int cals_insert_schedule(cal_sch_full_t *sch_record)
 		return ret;
 	}
 	index = ret;
+
+	if (sch_record->freq != CALS_FREQ_ONCE) {
+		ret = _cals_insert_rrule(index, sch_record);
+		if (ret < CAL_SUCCESS) {
+			ERR("Failed in _cals_insert_rrule(%d)\n", ret);
+			cals_end_trans(false);
+			return ret;
+		}
+		sch_record->rrule_id = ret;
+		DBG("added rrule_id(%d)", ret);
+		ret = _cals_insert_rrule_id(index, sch_record);
+		if (ret != CAL_SUCCESS) {
+			ERR("Failed in _cals_insert_rrule_id(%d)\n", ret);
+		}
+		DBG("ended add");
+	}
+
+	st.type = sch_record->dtstart_type;
+	if (st.type == CALS_TIME_UTIME)
+		st.utime = sch_record->dtstart_utime;
+	else {
+		st.year = sch_record->dtstart_year;
+		st.month = sch_record->dtstart_month;
+		st.mday = sch_record->dtstart_mday;
+	}
+
+	et.type = sch_record->dtend_type;
+	if (et.type == CALS_TIME_UTIME)
+		et.utime = sch_record->dtend_utime;
+	else {
+		et.year = sch_record->dtend_year;
+		et.month = sch_record->dtend_month;
+		et.mday = sch_record->dtend_mday;
+	}
+
+	cals_instance_insert(index, &st, &et, sch_record);
 
 	if (sch_record->attendee_list)
 	{
@@ -472,42 +376,6 @@ int cals_insert_schedule(cal_sch_full_t *sch_record)
 		}
 	}
 
-	if (sch_record->meeting_category)
-	{
-		GList *list = g_list_first(sch_record->meeting_category);
-		cal_category_info_t *category_info = NULL;
-
-		while(list)
-		{
-			cvalue = list->data;
-			if(cvalue)
-			{
-				category_info = cvalue->user_data;
-				ret = _cals_add_meeting_category_info(index, category_info);
-				warn_if(CAL_SUCCESS != ret, "_cals_add_meeting_category_info() Failed(%d)", ret);
-			}
-			list = g_list_next(list);
-		}
-	}
-
-	if (sch_record->exception_date_list)
-	{
-		GList *list = g_list_first(sch_record->exception_date_list);
-		cal_exception_info_t *exception_info = NULL;
-
-		while(list)
-		{
-			cvalue = list->data;
-			if(cvalue)
-			{
-				exception_info = cvalue->user_data;
-				ret = cal_service_add_exception_info(index, exception_info, sch_record);
-				warn_if(CAL_SUCCESS != ret, "cal_service_add_exception_info() Failed(%d)", ret);
-			}
-			list = g_list_next(list);
-		}
-	}
-
 	if (sch_record->alarm_list)
 	{
 		GList *list = sch_record->alarm_list;
@@ -519,11 +387,11 @@ int cals_insert_schedule(cal_sch_full_t *sch_record)
 			if (cvalue)
 			{
 				alarm_info = cvalue->user_data;
-				if(alarm_info->is_deleted==0)
+				if(alarm_info->is_deleted == 0)
 				{
-					if (alarm_info->remind_tick != CAL_INVALID_INDEX)
+					if (alarm_info->remind_tick != CALS_INVALID_ID)
 					{
-						ret = cals_alarm_add(index, alarm_info, &sch_record->start_date_time);
+						ret = cals_alarm_add(index, alarm_info, &st);
 						warn_if(CAL_SUCCESS != ret, "cals_alarm_add() Failed(%d)", ret);
 					}
 				}
@@ -535,29 +403,14 @@ int cals_insert_schedule(cal_sch_full_t *sch_record)
 	cals_end_trans(true);
 	sch_record->index = index;
 
-	if(sch_record->cal_type == CAL_EVENT_SCHEDULE_TYPE)
+	if(sch_record->cal_type == CALS_SCH_TYPE_EVENT)
 		is_success= cals_notify(CALS_NOTI_TYPE_EVENT);
 	else
 		is_success= cals_notify(CALS_NOTI_TYPE_TODO);
-	warn_if(is_success != true, "cals_notify() Failed");
+	warn_if(is_success != CAL_SUCCESS, "cals_notify() Failed");
 
 	return index;
 }
-
-
-static int _cals_delete_meeting_category_info(const int index)
-{
-	int ret;
-	char query[CALS_SQL_MIN_LEN];
-
-	sprintf(query, "DELETE FROM %s WHERE event_id = %d;", CALS_TABLE_MEETING_CATEGORY, index);
-
-	ret = cals_query_exec(query);
-	retvm_if(CAL_SUCCESS != ret, ret, "cals_query_exec() Failed(%d)", ret);
-
-	return CAL_SUCCESS;
-}
-
 
 static int _cals_delete_participant_info(const int index)
 {
@@ -573,67 +426,27 @@ static int _cals_delete_participant_info(const int index)
 }
 
 
-static int _cals_delete_recurrency_log(const int event_id)
-{
-	int ret;
-	char query[CALS_SQL_MIN_LEN] = {0};
-
-	sprintf(query, "DELETE FROM %s WHERE event_id = %d", CALS_TABLE_RECURRENCY_LOG, event_id);
-
-	ret = cals_query_exec(query);
-	retvm_if(CAL_SUCCESS != ret, ret, "cals_query_exec() Failed(%d)", ret);
-
-	return CAL_SUCCESS;
-}
-
-
 static inline int _cals_update_schedule(const int index, cal_sch_full_t *current_record)
 {
 	int ret = -1;
-	char sql_value[CALS_SQL_MAX_LEN] = {0};
+	char query[CALS_SQL_MAX_LEN] = {0};
+	char dtstart_datetime[32] = {0};
+	char dtend_datetime[32] = {0};
 	sqlite3_stmt *stmt = NULL;
-	time_t conv_start_time;
-	time_t conv_end_time;
-	time_t conv_repeat_end_time;
-	time_t conv_created_date_time;
-	time_t conv_completed_date_time;
-	time_t t = time(NULL);
-	tzset();
-	struct tm * ptm = NULL;
-	struct tm ttm;
 
 	retv_if(NULL == current_record, CAL_ERR_ARG_NULL);
-
-	ptm = gmtime_r(&t, &ttm);
-	retvm_if(NULL == ptm, CAL_ERR_TIME_FAILED, "gmtime_r() Failed(%d)", errno);
-	memcpy(&current_record->last_modified_time, &ttm, sizeof(struct tm));
-
-	_cals_adjust_time(current_record,&conv_start_time,&conv_end_time,&conv_repeat_end_time);
-	conv_created_date_time = cals_mktime(&(current_record->created_date_time));
-	conv_completed_date_time = cals_mktime(&(current_record->completed_date_time));
 
 	if (CAL_SYNC_STATUS_UPDATED != current_record->sync_status)
 		current_record->sync_status = CAL_SYNC_STATUS_UPDATED;
 
-	snprintf(sql_value, sizeof(sql_value), "UPDATE %s set "
+	snprintf(query, sizeof(query), "UPDATE %s SET "
+			"changed_ver = %d,"
 			"type = %d,"
-			"category = %d,"
 			"summary = ?,"
 			"description = ?,"
 			"location = ?,"
-			"all_day_event = %d,"
-			"start_date_time = %ld,"
-			"end_date_time = %ld,"
-			"repeat_item = %d,"
-			"repeat_interval = %d,"
-			"repeat_until_type = %d,"
-			"repeat_occurrences = %d,"
-			"repeat_end_date = %ld,"
-			"sun_moon = %d,"
-			"week_start = %d,"
-			"week_flag = ?,"
-			"day_date = %d,"
-			"last_modified_time = %ld,"
+			"categories = ?,"
+			"exdate = ?,"
 			"missed = %d,"
 			"task_status = %d,"
 			"priority = %d,"
@@ -648,7 +461,6 @@ static inline int _cals_update_schedule(const int index, cal_sch_full_t *current
 			"organizer_email = ?, "
 			"meeting_status = %d, "
 			"gcal_id = ?, "
-			"deleted = %d, "
 			"updated = ?, "
 			"location_type = %d, "
 			"location_summary = ?, "
@@ -661,30 +473,23 @@ static inline int _cals_update_schedule(const int index, cal_sch_full_t *current
 			"original_event_id = %d,"
 			"latitude = %lf,"
 			"longitude = %lf,"
-			"is_deleted = %d,"
-			"tz_name = ?,"
-			"tz_city_name = ?,"
 			"email_id = %d,"
 			"availability = %d,"
-			"created_date_time = %ld,"
-			"completed_date_time = %ld,"
-			"progress = %d "
+			"completed_time = %lld,"
+			"progress = %d, "
+			"dtstart_type = %d, "
+			"dtstart_utime = %lld, "
+			"dtstart_datetime = ?, "
+			"dtstart_tzid = ?, "
+			"dtend_type = %d, "
+			"dtend_utime = %lld, "
+			"dtend_datetime = ?, "
+			"dtend_tzid = ?, "
+			"last_mod = strftime('%%s', 'now')"
 			"WHERE id = %d;",
 		CALS_TABLE_SCHEDULE,
+		cals_get_next_ver(),
 		current_record->cal_type,
-		current_record->sch_category,
-		current_record->all_day_event,
-		(long int)conv_start_time,
-		(long int)conv_end_time,
-		current_record->repeat_term,
-		current_record->repeat_interval,
-		current_record->repeat_until_type,
-		current_record->repeat_occurrences,
-		(long int)conv_repeat_end_time,
-		current_record->sun_moon,
-		current_record->week_start,
-		current_record->day_date,
-		(long int)cals_mktime(&(current_record->last_modified_time)),
 		current_record->missed,
 		current_record->task_status,
 		current_record->priority,
@@ -695,7 +500,6 @@ static inline int _cals_update_schedule(const int index, cal_sch_full_t *current
 		current_record->sensitivity,
 		current_record->calendar_type,
 		current_record->meeting_status,
-		current_record->deleted,
 		current_record->location_type,
 		current_record->calendar_id,
 		current_record->sync_status,
@@ -703,15 +507,17 @@ static inline int _cals_update_schedule(const int index, cal_sch_full_t *current
 		current_record->original_event_id,
 		current_record->latitude,
 		current_record->longitude,
-		current_record->is_deleted,
 		current_record->email_id,
 		current_record->availability,
-		(long int)conv_created_date_time,
-		(long int)conv_completed_date_time,
+		current_record->completed_time,
 		current_record->progress,
+		current_record->dtstart_type,
+		current_record->dtstart_utime,
+		current_record->dtend_type,
+		current_record->dtend_utime,
 		index);
 
-	stmt = cals_query_prepare(sql_value);
+	stmt = cals_query_prepare(query);
 	retvm_if(NULL == stmt, CAL_ERR_DB_FAILED, "cals_query_prepare() Failed");
 
 	int count = 1;
@@ -728,8 +534,12 @@ static inline int _cals_update_schedule(const int index, cal_sch_full_t *current
 		cals_stmt_bind_text(stmt, count, current_record->location);
 	count++;
 
-	if (current_record->week_flag)
-		cals_stmt_bind_text(stmt, count, current_record->week_flag);
+	if (current_record->categories)
+		cals_stmt_bind_text(stmt, count, current_record->categories);
+	count++;
+
+	if (current_record->exdate)
+		cals_stmt_bind_text(stmt, count, current_record->exdate);
 	count++;
 
 	if (current_record->uid)
@@ -768,12 +578,26 @@ static inline int _cals_update_schedule(const int index, cal_sch_full_t *current
 		cals_stmt_bind_text(stmt, count, current_record->gevent_id);
 	count++;
 
-	if (current_record->tz_name)
-		cals_stmt_bind_text(stmt, count, current_record->tz_name);
+	snprintf(dtstart_datetime, sizeof(dtstart_datetime), "%04d%02d%02d",
+			current_record->dtstart_year,
+			current_record->dtstart_month,
+			current_record->dtstart_mday);
+	cals_stmt_bind_text(stmt, count, dtstart_datetime);
 	count++;
 
-	if (current_record->tz_city_name)
-		cals_stmt_bind_text(stmt, count, current_record->tz_city_name);
+	if (current_record->dtstart_tzid)
+		cals_stmt_bind_text(stmt, count, current_record->dtstart_tzid);
+	count++;
+
+	snprintf(dtend_datetime, sizeof(dtend_datetime), "%04d%02d%02d",
+			current_record->dtend_year,
+			current_record->dtend_month,
+			current_record->dtend_mday);
+	cals_stmt_bind_text(stmt, count, dtend_datetime);
+	count++;
+
+	if (current_record->dtend_tzid)
+		cals_stmt_bind_text(stmt, count, current_record->dtend_tzid);
 	count++;
 
 	ret = cals_stmt_step(stmt);
@@ -787,6 +611,99 @@ static inline int _cals_update_schedule(const int index, cal_sch_full_t *current
 	return CAL_SUCCESS;
 }
 
+static inline int _cals_update_rrule(const int index, cal_sch_full_t *record)
+{
+	int ret;
+	int cnt;
+	char query[CALS_SQL_MAX_LEN] = {0};
+	char until_datetime[32] = {0};
+	sqlite3_stmt *stmt = NULL;
+
+	retv_if(record == NULL, CAL_ERR_ARG_NULL);
+
+	snprintf(query, sizeof(query), "UPDATE %s set "
+			"range_type = %d, "
+			"until_type = %d, "
+			"until_utime = %lld, "
+			"until_datetime = ?, "
+			"count = %d, "
+			"interval = %d, "
+			"bysecond = ?, "
+			"byminute = ?, "
+			"byhour = ?, "
+			"byday = ?, "
+			"bymonthday = ?, "
+			"byyearday = ?, "
+			"byweekno = ?, "
+			"bymonth = ?, "
+			"bysetpos = ?, "
+			"wkst = %d "
+			"WHERE event_id = %d",
+			CALS_TABLE_RRULE,
+			record->range_type,
+			record->until_type,
+			record->until_utime,
+			record->count,
+			record->interval,
+			record->wkst,
+			index);
+	stmt = cals_query_prepare(query);
+	retvm_if(stmt == NULL, CAL_ERR_DB_FAILED, "Failed query prepare");
+
+	cnt = 1;
+	snprintf(until_datetime, sizeof(until_datetime), "%04d%02d%02dT235959",
+			record->until_year, record->until_month, record->until_mday);
+	cals_stmt_bind_text(stmt, cnt, until_datetime);
+	cnt++;
+
+	if (record->bysecond)
+		cals_stmt_bind_text(stmt, cnt, record->bysecond);
+	cnt++;
+
+	if (record->byminute)
+		cals_stmt_bind_text(stmt, cnt, record->byminute);
+	cnt++;
+
+	if (record->byhour)
+		cals_stmt_bind_text(stmt, cnt, record->byhour);
+	cnt++;
+
+	if (record->byday)
+		cals_stmt_bind_text(stmt, cnt, record->byday);
+	cnt++;
+
+	if (record->bymonthday)
+		cals_stmt_bind_text(stmt, cnt, record->bymonthday);
+	cnt++;
+
+	if (record->byyearday)
+		cals_stmt_bind_text(stmt, cnt, record->byyearday);
+	cnt++;
+
+	if (record->byweekno)
+		cals_stmt_bind_text(stmt, cnt, record->byweekno);
+	cnt++;
+
+	if (record->bymonth)
+		cals_stmt_bind_text(stmt, cnt, record->bymonth);
+	cnt++;
+
+	if (record->bysetpos)
+		cals_stmt_bind_text(stmt, cnt, record->bysetpos);
+	cnt++;
+
+	ret = cals_stmt_step(stmt);
+	if (CAL_SUCCESS != ret) {
+		sqlite3_finalize(stmt);
+		ERR("sqlite3_step() Failed(%d)", ret);
+		return ret;
+	}
+	sqlite3_finalize(stmt);
+
+	return CAL_SUCCESS;
+}
+
+
 int cals_update_schedule(const int index, cal_sch_full_t *sch_record)
 {
 	bool is_success = false;
@@ -797,11 +714,11 @@ int cals_update_schedule(const int index, cal_sch_full_t *sch_record)
 
 	sch_record->missed = 0;
 
-	ret = _cals_sch_check_validity(sch_record);
-	retvm_if(CAL_SUCCESS != ret, ret, "_cals_sch_check_validity() is Failed(%d)", ret);
-
 	ret = _cals_update_schedule(index, sch_record);
 	retvm_if(CAL_SUCCESS != ret, ret, "_cals_update_schedule() Failed(%d)", ret);
+
+	ret = _cals_update_rrule(index, sch_record);
+	retvm_if(CAL_SUCCESS != ret, ret, "Failed in update rrule(%d)", ret);
 
 	_cals_delete_participant_info(index);
 	if (sch_record->attendee_list)
@@ -823,46 +740,13 @@ int cals_update_schedule(const int index, cal_sch_full_t *sch_record)
 		}
 	}
 
-	_cals_delete_meeting_category_info(index);
-	if (sch_record->meeting_category)
-	{
-		GList *list = g_list_first(sch_record->meeting_category);
-		cal_category_info_t* category_info = NULL;
-
-		while (list)
-		{
-			cvalue = (cal_value *)list->data;
-			category_info = (cal_category_info_t*)cvalue->user_data;
-			ret = _cals_add_meeting_category_info(index,category_info);
-			warn_if(CAL_SUCCESS != ret, "_cals_add_meeting_category_info() Failed(%d)", ret);
-			list = g_list_next(list);
-		}
-	}
-
-	_cals_delete_recurrency_log(index);
-	if (sch_record->exception_date_list)
-	{
-		GList *list = g_list_first(sch_record->exception_date_list);
-		cal_exception_info_t* exception_info = NULL;
-
-		while(list)
-		{
-			cvalue = (cal_value *)list->data;
-			if(cvalue)
-			{
-				exception_info = (cal_exception_info_t*)cvalue->user_data;
-				ret = cal_service_add_exception_info(index, exception_info, sch_record);
-				warn_if(CAL_SUCCESS != ret, "cal_service_add_exception_info() Failed(%d)", ret);
-			}
-			list = g_list_next(list);
-		}
-	}
-
+	/* delete registered alarm */
 	cals_alarm_remove(CALS_ALARM_REMOVE_BY_EVENT_ID, index);
 	if (sch_record->alarm_list)
 	{
 		GList *list = sch_record->alarm_list;
 		cal_alarm_info_t *alarm_info = NULL;
+		struct cals_time dtstart;
 
 		while (list)
 		{
@@ -870,8 +754,13 @@ int cals_update_schedule(const int index, cal_sch_full_t *sch_record)
 			alarm_info = (cal_alarm_info_t*)cvalue->user_data;
 
 			if (alarm_info->is_deleted==0) {
-				if (alarm_info->remind_tick != CAL_INVALID_INDEX) {
-					ret = cals_alarm_add(index, alarm_info, &sch_record->start_date_time);
+				if (alarm_info->remind_tick != CALS_INVALID_ID) {
+					dtstart.type = sch_record->dtstart_type;
+					dtstart.utime = sch_record->dtstart_utime;
+					dtstart.year = sch_record->dtstart_year;
+					dtstart.month = sch_record->dtstart_month;
+					dtstart.mday = sch_record->dtstart_mday;
+					ret = cals_alarm_add(index, alarm_info, &dtstart);
 					warn_if(CAL_SUCCESS != ret, "cals_alarm_add() Failed(%d)", ret);
 				}
 			}
@@ -880,124 +769,259 @@ int cals_update_schedule(const int index, cal_sch_full_t *sch_record)
 		}
 	}
 
-	if(sch_record->cal_type == CAL_EVENT_SCHEDULE_TYPE)
-		is_success= cals_notify(CALS_NOTI_TYPE_EVENT);
-	else
-		is_success= cals_notify(CALS_NOTI_TYPE_TODO);
+	/* TODO: re register alarm */
 
-	return CAL_SUCCESS;
-}
-
-
-static inline int _cals_update_recurrency_log(const int exception_event_id)
-{
-	int ret;
-	char query[CALS_SQL_MIN_LEN];
-
-	sprintf(query, "UPDATE %s SET exception_event_id=-1 WHERE exception_event_id=%d",
-			CALS_TABLE_RECURRENCY_LOG, exception_event_id);
-
-	ret = cals_query_exec(query);
-	retvm_if(CAL_SUCCESS != ret, ret, "cals_query_exec() Failed(%d)", ret);
-
-	return CAL_SUCCESS;
-}
-
-
-int cals_delete_schedule(const int index)
-{
-	bool is_success = false;
-	sqlite3_stmt *stmt = NULL;
-	int ret = 0;
-	char sql_value[CALS_SQL_MAX_LEN] = {0};
-	calendar_type_t type = CAL_PHONE_CALENDAR;
-	int original_event_id = CAL_INVALID_INDEX;
-	int repeat_item = 0;
-	time_t current_time = time(NULL);
-	int child_index = 0;
-	int cal_type = 0;
-
-	sprintf(sql_value, "SELECT calendar_type,original_event_id,repeat_item "
-		"FROM %s WHERE id=%d AND is_deleted = 0", CALS_TABLE_SCHEDULE, index);
-
-	stmt = cals_query_prepare(sql_value);
-	retvm_if(NULL == stmt, CAL_ERR_DB_FAILED, "cals_query_prepare() Failed");
-
-	ret = cals_stmt_step(stmt);
-	if (CAL_TRUE == ret) {
-		type = sqlite3_column_int(stmt, 0);
-
-		original_event_id = sqlite3_column_int(stmt, 1);
-		repeat_item = sqlite3_column_int(stmt, 2);
-	} else if (CAL_SUCCESS != ret) {
-		sqlite3_finalize(stmt);
-		ERR("cals_stmt_step() Failed(%d)", ret);
+	/* clear instance */
+	ret = _cals_clear_instances(index);
+	if (ret) {
+		ERR("_cals_clear_instances failed (%d)", ret);
 		return ret;
 	}
-	sqlite3_finalize(stmt);
-	stmt = NULL;
 
-	if(original_event_id != CAL_INVALID_INDEX) {
-		_cals_update_recurrency_log(index);
-	} else if(repeat_item != 0) {
-		//select child list
-		sprintf(sql_value, "SELECT id, type FROM %s WHERE original_event_id=%d AND is_deleted = 0",
-			CALS_TABLE_SCHEDULE, index);
+	/* insert instance */
+	struct cals_time st;
+	struct cals_time et;
 
-		stmt = cals_query_prepare(sql_value);
-		retvm_if(NULL == stmt, CAL_ERR_DB_FAILED, "cals_query_prepare() Failed");
-
-		while (CAL_TRUE == cals_stmt_step(stmt))
-		{
-			child_index =sqlite3_column_int(stmt, 0);
-			cal_type = sqlite3_column_int(stmt,1);
-
-			memset(sql_value,'\0',CALS_SQL_MAX_LEN);
-			sprintf(sql_value, "UPDATE %s SET is_deleted = 1,sync_status = %d,last_modified_time = %ld WHERE id = %d",
-					CALS_TABLE_SCHEDULE, CAL_SYNC_STATUS_DELETED, (long int)current_time, child_index);
-
-			ret = cals_query_exec(sql_value);
-			if (CAL_SUCCESS != ret) {
-				sqlite3_finalize(stmt);
-				ERR("cals_query_exec() Failed(%d)", ret);
-				return ret;
-			}
-
-			ret = cals_alarm_remove(CALS_ALARM_REMOVE_BY_EVENT_ID, child_index);
-			if (CAL_SUCCESS != ret) {
-				sqlite3_finalize(stmt);
-				ERR("cals_alarm_remove() Failed(%d)", ret);
-				return ret;
-			}
-		}
-		sqlite3_finalize(stmt);
+	st.type = sch_record->dtstart_type;
+	if (st.type == CALS_TIME_UTIME)
+		st.utime = sch_record->dtstart_utime;
+	else {
+		st.year = sch_record->dtstart_year;
+		st.month = sch_record->dtstart_month;
+		st.mday = sch_record->dtstart_mday;
 	}
 
-	//delete original event
-	sprintf(sql_value, "UPDATE %s SET is_deleted = 1,sync_status = %d,last_modified_time = %ld WHERE id = %d;",
-			CALS_TABLE_SCHEDULE, CAL_SYNC_STATUS_DELETED,(long int)current_time, index);
+	et.type = sch_record->dtend_type;
+	if (et.type == CALS_TIME_UTIME)
+		et.utime = sch_record->dtend_utime;
+	else {
+		et.year = sch_record->dtend_year;
+		et.month = sch_record->dtend_month;
+		et.mday = sch_record->dtend_mday;
+	}
 
-	ret = cals_query_exec(sql_value);
-	retvm_if(CAL_SUCCESS != ret, ret, "cals_query_exec() Failed(%d)", ret);
+	cals_instance_insert(index, &st, &et, sch_record);
 
-	ret = cals_alarm_remove(CALS_ALARM_REMOVE_BY_EVENT_ID, index);
-	retvm_if(CAL_SUCCESS != ret, ret, "cals_alarm_remove() Failed(%d)", ret);
-
-	_cals_delete_recurrency_log(index);
-	_cals_delete_participant_info(index);
-	_cals_delete_meeting_category_info(index);
-
-	if(cal_type == CAL_EVENT_SCHEDULE_TYPE)
+	/* set notify */
+	if(sch_record->cal_type == CALS_SCH_TYPE_EVENT)
 		is_success= cals_notify(CALS_NOTI_TYPE_EVENT);
 	else
 		is_success= cals_notify(CALS_NOTI_TYPE_TODO);
-	warn_if(is_success != true, , "cals_notify() Failed");
 
 	return CAL_SUCCESS;
 }
 
+int _get_sch_basic_info(int id, int *cal_id, int *sch_type, int *acc_id)
+{
+	int r;
+	sqlite3_stmt *stmt;
+	char query[CALS_SQL_MAX_LEN];
 
-int cals_rearrage_schedule_field(const char *src, char *dest, int dest_size)
+	snprintf(query, sizeof(query), "SELECT calendar_id, type, "
+			"account_id FROM %s WHERE id = %d",
+			CALS_TABLE_SCHEDULE, id);
+
+	stmt = cals_query_prepare(query);
+
+	if (!stmt) {
+		ERR("cals_query_prepare failed");
+		return CAL_ERR_DB_FAILED;
+	}
+
+	r = cals_stmt_step(stmt);
+
+	if (r < 0) {
+		sqlite3_finalize(stmt);
+		ERR("cals_stmt_step failed (%d)", r);
+		return r;
+	}
+
+	if (r == CAL_SUCCESS) {
+		ERR("cals_stmt_step return no data");
+		sqlite3_finalize(stmt);
+		return CAL_ERR_NO_DATA;
+	}
+
+	*cal_id = sqlite3_column_int(stmt, 0);
+	*sch_type = sqlite3_column_int(stmt, 1);
+	*acc_id = sqlite3_column_int(stmt, 2);
+
+	sqlite3_finalize(stmt);
+
+	return CAL_SUCCESS;
+}
+
+int _cals_update_deleted_table(int id)
+{
+	int r;
+	char query[CALS_SQL_MAX_LEN];
+
+	snprintf(query, sizeof(query), "INSERT INTO %s "
+				"SELECT id, type, calendar_id, %d FROM %s "
+				"WHERE id = %d",
+				CALS_TABLE_DELETED,
+				cals_get_next_ver(), CALS_TABLE_SCHEDULE,
+				id);
+
+	r = cals_query_exec(query);
+	if (r) {
+		ERR("cals_query_exec() failed (%d)", r);
+		return r;
+	}
+	return CAL_SUCCESS;
+}
+
+int _cals_delete_schedule(int id)
+{
+	int r;
+	char query[CALS_SQL_MAX_LEN];
+
+	snprintf(query, sizeof(query), "DELETE FROM %s WHERE id = %d",
+			CALS_TABLE_SCHEDULE, id);
+
+	r = cals_query_exec(query);
+	if (r) {
+		ERR("cals_query_exec() failed (%d)", r);
+		return r;
+	}
+	return CAL_SUCCESS;
+}
+
+int _cals_clear_instances(int id)
+{
+	int r;
+	char query[CALS_SQL_MAX_LEN];
+
+	snprintf(query, sizeof(query), "DELETE FROM %s WHERE event_id = %d ",
+			CALS_TABLE_NORMAL_INSTANCE, id);
+
+	r = cals_query_exec(query);
+	if (r) {
+		ERR("cals_query_exec() failed (%d)", r);
+		return r;
+	}
+
+	snprintf(query, sizeof(query), "DELETE FROM %s WHERE event_id = %d ",
+			CALS_TABLE_ALLDAY_INSTANCE, id);
+
+	r = cals_query_exec(query);
+	if (r) {
+		ERR("cals_query_exec() failed (%d)", r);
+		return r;
+	}
+
+	return CAL_SUCCESS;
+}
+
+int _cals_delete_rrule(int id)
+{
+	int r;
+	char query[CALS_SQL_MAX_LEN];
+
+	snprintf(query, sizeof(query), "DELETE FROM %s WHERE event_id = %d",
+			CALS_TABLE_RRULE, id);
+
+	r = cals_query_exec(query);
+	if (r) {
+		ERR("cals_query_exec() failed (%d)", r);
+		return r;
+	}
+
+	return CAL_SUCCESS;
+}
+
+int _cals_mark_delete_schedule(int id)
+{
+	int r;
+	char query[CALS_SQL_MAX_LEN];
+
+	snprintf(query, sizeof(query), "UPDATE %s "
+			"SET is_deleted = 1, changed_ver = %d, "
+			"last_mod = strftime('%%s','now') WHERE id = %d",
+			CALS_TABLE_SCHEDULE, cals_get_next_ver(), id);
+
+	r = cals_query_exec(query);
+	if (r) {
+		ERR("cals_query_exec() failed (%d)", r);
+		return r;
+	}
+
+	return CAL_SUCCESS;
+}
+
+int cals_delete_schedule(int id)
+{
+	int r;
+	int cal_id;
+	int sch_type;
+	int acc_id;
+
+	r = _get_sch_basic_info(id, &cal_id, &sch_type, &acc_id);
+	if (r) {
+		ERR("_get_sch_basic_info failed (%d)", r);
+		return r;
+	}
+
+	if (acc_id == LOCAL_ACCOUNT_ID) {
+		_cals_update_deleted_table(id);
+		if (r) {
+			ERR("_cals_update_deleted_table failed (%d)", r);
+			return r;
+		}
+		r = _cals_delete_schedule(id);
+		if (r) {
+			ERR("_cals_delete_schedule failed (%d)", r);
+			return r;
+		}
+		_cals_delete_participant_info(id);
+		if (r) {
+			ERR("_cals_delete_participant_info failed (%d)", r);
+			return r;
+		}
+		_cals_delete_rrule(id);
+		if (r) {
+			ERR("_cals_delete_rrule failed (%d)", r);
+			return r;
+		}
+	}
+	else {
+		r = _cals_mark_delete_schedule(id);
+		if (r) {
+			ERR("_cals_mark_delete_schedule failed (%d)", r);
+			return r;
+		}
+	}
+
+	r = _cals_clear_instances(id);
+	if (r) {
+		ERR("_cals_clear_instances failed (%d)", r);
+		return r;
+	}
+
+	r = _cals_delete_rrule(id);
+	if (r) {
+		ERR("_cals_delete_rrule (%d)", r);
+		return r;
+	}
+
+	r = cals_alarm_remove(CALS_ALARM_REMOVE_BY_EVENT_ID, id);
+	if (r) {
+		ERR("cals_alarm_remove() failed(%d)", r);
+		return r;
+	}
+
+	if(sch_type == CALS_SCH_TYPE_EVENT)
+		r = cals_notify(CALS_NOTI_TYPE_EVENT);
+	else
+		r = cals_notify(CALS_NOTI_TYPE_TODO);
+
+	if (r)
+		WARN("cals_notify failed (%d)", r);
+
+	return CAL_SUCCESS;
+}
+
+int cals_rearrange_schedule_field(const char *src, char *dest, int dest_size)
 {
 	int ret = 0;
 	if (strstr(src, CAL_VALUE_INT_INDEX))
@@ -1009,9 +1033,6 @@ int cals_rearrage_schedule_field(const char *src, char *dest, int dest_size)
 	if (strstr(src,CAL_VALUE_INT_TYPE))
 		ret += snprintf(dest+ret, dest_size-ret, ",%s", CAL_VALUE_INT_TYPE);
 
-	if (strstr(src,CAL_VALUE_INT_CATEGORY))
-		ret += snprintf(dest+ret, dest_size-ret, ",%s", CAL_VALUE_INT_CATEGORY);
-
 	if (strstr(src,CAL_VALUE_TXT_SUMMARY))
 		ret += snprintf(dest+ret, dest_size-ret, ",%s", CAL_VALUE_TXT_SUMMARY);
 
@@ -1021,41 +1042,8 @@ int cals_rearrage_schedule_field(const char *src, char *dest, int dest_size)
 	if (strstr(src,CAL_VALUE_TXT_LOCATION))
 		ret += snprintf(dest+ret, dest_size-ret, ",%s", CAL_VALUE_TXT_LOCATION);
 
-	if(strstr(src,CAL_VALUE_INT_ALL_DAY_EVENT))
-		ret += snprintf(dest+ret, dest_size-ret, ",%s", CAL_VALUE_INT_ALL_DAY_EVENT);
-
-	if(strstr(src,CAL_VALUE_GMT_START_DATE_TIME))
-		ret += snprintf(dest+ret, dest_size-ret, ",%s", CAL_VALUE_GMT_START_DATE_TIME);
-
-	if(strstr(src, CAL_VALUE_GMT_END_DATE_TIME))
-		ret += snprintf(dest+ret, dest_size-ret, ",%s", CAL_VALUE_GMT_END_DATE_TIME);
-
-	if(strstr(src, CAL_VALUE_INT_REPEAT_TERM))
-		ret += snprintf(dest+ret, dest_size-ret, ",%s", CAL_VALUE_INT_REPEAT_TERM);
-
-	if(strstr(src, CAL_VALUE_INT_REPEAT_INTERVAL))
-		ret += snprintf(dest+ret, dest_size-ret, ",%s", CAL_VALUE_INT_REPEAT_INTERVAL);
-
-	if(strstr(src, CAL_VALUE_INT_REPEAT_OCCURRENCES))
-		ret += snprintf(dest+ret, dest_size-ret, ",%s", CAL_VALUE_INT_REPEAT_OCCURRENCES);
-
-	if(strstr(src,CAL_VALUE_GMT_REPEAT_END_DATE))
-		ret += snprintf(dest+ret, dest_size-ret, ",%s", CAL_VALUE_GMT_REPEAT_END_DATE);
-
-	if(strstr(src,CAL_VALUE_INT_SUN_MOON))
-		ret += snprintf(dest+ret, dest_size-ret, ",%s", CAL_VALUE_INT_SUN_MOON);
-
-	if(strstr(src,CAL_VALUE_INT_WEEK_START))
-		ret += snprintf(dest+ret, dest_size-ret, ",%s", CAL_VALUE_INT_WEEK_START);
-
-	if(strstr(src,CAL_VALUE_TXT_WEEK_FLAG))
-		ret += snprintf(dest+ret, dest_size-ret, ",%s", CAL_VALUE_TXT_WEEK_FLAG);
-
-	if(strstr(src,CAL_VALUE_INT_DAY_DATE))
-		ret += snprintf(dest+ret, dest_size-ret, ",%s", CAL_VALUE_INT_DAY_DATE);
-
-	if(strstr(src,CAL_VALUE_GMT_LAST_MODIFIED_TIME))
-		ret += snprintf(dest+ret, dest_size-ret, ",%s", CAL_VALUE_GMT_LAST_MODIFIED_TIME);
+	if (strstr(src, CAL_VALUE_TXT_CATEGORIES))
+		ret += snprintf(dest+ret, dest_size-ret, ",%s", CAL_VALUE_TXT_CATEGORIES);
 
 	if(strstr(src,CAL_VALUE_INT_MISSED))
 		ret += snprintf(dest+ret, dest_size-ret, ",%s", CAL_VALUE_INT_MISSED);
@@ -1138,29 +1126,23 @@ int cals_rearrage_schedule_field(const char *src, char *dest, int dest_size)
 	if(strstr(src,CAL_VALUE_DBL_LONGITUDE))
 		ret += snprintf(dest+ret, dest_size-ret, ",%s", CAL_VALUE_DBL_LONGITUDE);
 
-	if(strstr(src,CAL_VALUE_INT_IS_DELETED))
-		ret += snprintf(dest+ret, dest_size-ret, ",%s", CAL_VALUE_INT_IS_DELETED);
-
-	if(strstr(src,CAL_VALUE_TXT_TZ_NAME))
-		ret += snprintf(dest+ret, dest_size-ret, ",%s", CAL_VALUE_TXT_TZ_NAME);
-
-	if(strstr(src,CAL_VALUE_TXT_TZ_CITY_NAME))
-		ret += snprintf(dest+ret, dest_size-ret, ",%s", CAL_VALUE_TXT_TZ_CITY_NAME);
-
 	if(strstr(src,CAL_VALUE_INT_EMAIL_ID))
 		ret += snprintf(dest+ret, dest_size-ret, ",%s", CAL_VALUE_INT_EMAIL_ID);
 
 	if(strstr(src,CAL_VALUE_INT_AVAILABILITY))
 		ret += snprintf(dest+ret, dest_size-ret, ",%s", CAL_VALUE_INT_AVAILABILITY);
 
-	if(strstr(src,CAL_VALUE_GMT_CREATED_DATE_TIME))
-		ret += snprintf(dest+ret, dest_size-ret, ",%s", CAL_VALUE_GMT_CREATED_DATE_TIME);
+	if(strstr(src,CAL_VALUE_LLI_CREATED_TIME))
+		ret += snprintf(dest+ret, dest_size-ret, ",%s", CAL_VALUE_LLI_CREATED_TIME);
 
-	if(strstr(src,CAL_VALUE_GMT_COMPLETED_DATE_TIME))
-		ret += snprintf(dest+ret, dest_size-ret, ",%s", CAL_VALUE_GMT_COMPLETED_DATE_TIME);
+	if(strstr(src,CAL_VALUE_LLI_COMPLETED_TIME))
+		ret += snprintf(dest+ret, dest_size-ret, ",%s", CAL_VALUE_LLI_COMPLETED_TIME);
 
 	if(strstr(src,CAL_VALUE_INT_PROGRESS))
 		ret += snprintf(dest+ret, dest_size-ret, ",%s", CAL_VALUE_INT_PROGRESS);
+
+	if(strstr(src,CAL_VALUE_INT_IS_DELETED))
+		ret += snprintf(dest+ret, dest_size-ret, ",%s", CAL_VALUE_INT_IS_DELETED);
 
 	return CAL_SUCCESS;
 }
@@ -1169,7 +1151,6 @@ int cals_stmt_get_filted_schedule(sqlite3_stmt *stmt,
 		cal_sch_full_t *sch_record, const char *select_field)
 {
 	int count = 0;
-	int ivalue = 0;
 	const unsigned char *temp;
 	const char *start, *result;
 
@@ -1193,11 +1174,6 @@ int cals_stmt_get_filted_schedule(sqlite3_stmt *stmt,
 		start = result;
 	}
 
-	if((result = strstr(start,CAL_VALUE_INT_CATEGORY))) {
-		sch_record->sch_category = sqlite3_column_int(stmt, count++);
-		start = result;
-	}
-
 	if((result = strstr(start,CAL_VALUE_TXT_SUMMARY))) {
 		temp = sqlite3_column_text(stmt, count++);
 		sch_record->summary = SAFE_STRDUP(temp);
@@ -1216,76 +1192,17 @@ int cals_stmt_get_filted_schedule(sqlite3_stmt *stmt,
 		start = result;
 	}
 
-	if((result = strstr(start,CAL_VALUE_INT_ALL_DAY_EVENT))) {
-		sch_record->all_day_event = sqlite3_column_int(stmt, count++);
-		start = result;
-	}
-
-	if((result = strstr(start,CAL_VALUE_GMT_START_DATE_TIME))) {
-		ivalue = sqlite3_column_int(stmt, count++);
-		cal_db_service_copy_struct_tm((struct tm*)cals_tmtime((time_t*)&ivalue ),&(sch_record->start_date_time));
-		start = result;
-	}
-
-	if((result = strstr(start, CAL_VALUE_GMT_END_DATE_TIME))) {
-		ivalue = sqlite3_column_int(stmt, count++);
-		cal_db_service_copy_struct_tm((struct tm*)cals_tmtime((time_t*)&ivalue),&(sch_record->end_date_time));
-		start = result;
-	}
-
-	if((result = strstr(start, CAL_VALUE_INT_REPEAT_TERM))) {
-		sch_record->repeat_term = sqlite3_column_int(stmt, count++);
-		start = result;
-	}
-
-	if((result = strstr(start, CAL_VALUE_INT_REPEAT_INTERVAL))) {
-		sch_record->repeat_interval = sqlite3_column_int(stmt, count++);
-		start = result;
-	}
-
-	if((result = strstr(start, CAL_VALUE_INT_REPEAT_UNTIL_TYPE))) {
-		sch_record->repeat_until_type = sqlite3_column_int(stmt, count++);
-		start = result;
-	}
-
-	if((result = strstr(start, CAL_VALUE_INT_REPEAT_OCCURRENCES))) {
-		sch_record->repeat_occurrences = sqlite3_column_int(stmt, count++);
-		start = result;
-	}
-
-	if((result = strstr(start,CAL_VALUE_GMT_REPEAT_END_DATE))) {
-		ivalue = sqlite3_column_int(stmt, count++);
-		cal_db_service_copy_struct_tm((struct tm*)cals_tmtime((time_t*)&ivalue),&(sch_record->repeat_end_date));
-		start = result;
-	}
-
-	if((result = strstr(start,CAL_VALUE_INT_SUN_MOON))) {
-		sch_record->sun_moon = sqlite3_column_int(stmt, count++);
-		start = result;
-	}
-
-	if((result = strstr(start,CAL_VALUE_INT_WEEK_START))) {
-		sch_record->week_start = sqlite3_column_int(stmt, count++);
-		start = result;
-	}
-
-	if((result = strstr(start,CAL_VALUE_TXT_WEEK_FLAG))) {
+	if((result = strstr(start, CAL_VALUE_TXT_CATEGORIES))) {
 		temp = sqlite3_column_text(stmt, count++);
-		sch_record->week_flag = SAFE_STRDUP(temp);
+		sch_record->categories = SAFE_STRDUP(temp);
 		start = result;
 	}
 
-	if((result = strstr(start,CAL_VALUE_INT_DAY_DATE))) {
-		sch_record->day_date = sqlite3_column_int(stmt, count++);
+	if((result = strstr(start, CAL_VALUE_TXT_EXDATE))) {
+		temp = sqlite3_column_text(stmt, count++);
+		sch_record->exdate = SAFE_STRDUP(temp);
 		start = result;
 	}
-
-	if((result = strstr(start,CAL_VALUE_GMT_LAST_MODIFIED_TIME))) {
-		ivalue = sqlite3_column_int(stmt, count++);
-		cal_db_service_copy_struct_tm((struct tm*)cals_tmtime((time_t*)&ivalue),&(sch_record->last_modified_time));
-		start = result;
-	}
-
 	if((result = strstr(start,CAL_VALUE_INT_MISSED))) {
 		sch_record->missed = sqlite3_column_int(stmt, count++);
 		start = result;
@@ -1365,11 +1282,6 @@ int cals_stmt_get_filted_schedule(sqlite3_stmt *stmt,
 		start = result;
 	}
 
-	if((result = strstr(start,CAL_VALUE_INT_DELETED))) {
-		sch_record->deleted = sqlite3_column_int(stmt, count++);
-		start = result;
-	}
-
 	if((result = strstr(start,CAL_VALUE_TXT_UPDATED))) {
 		temp = sqlite3_column_text(stmt, count++);
 		sch_record->updated = SAFE_STRDUP(temp);
@@ -1435,23 +1347,6 @@ int cals_stmt_get_filted_schedule(sqlite3_stmt *stmt,
 		start = result;
 	}
 
-	if((result = strstr(start,CAL_VALUE_INT_IS_DELETED))) {
-		sch_record->is_deleted = sqlite3_column_int(stmt, count++);
-		start = result;
-	}
-
-	if((result = strstr(start,CAL_VALUE_TXT_TZ_NAME))) {
-		temp = sqlite3_column_text(stmt, count++);
-		sch_record->tz_name = SAFE_STRDUP(temp);
-		start = result;
-	}
-
-	if((result = strstr(start,CAL_VALUE_TXT_TZ_CITY_NAME))) {
-		temp = sqlite3_column_text(stmt, count++);
-		sch_record->tz_city_name = SAFE_STRDUP(temp);
-		start = result;
-	}
-
 	if((result = strstr(start,CAL_VALUE_INT_EMAIL_ID))) {
 		sch_record->email_id = sqlite3_column_int(stmt, count++);
 		start = result;
@@ -1462,15 +1357,13 @@ int cals_stmt_get_filted_schedule(sqlite3_stmt *stmt,
 		start = result;
 	}
 
-	if((result = strstr(start,CAL_VALUE_GMT_CREATED_DATE_TIME))) {
-		ivalue = sqlite3_column_int(stmt, count++);
-		cal_db_service_copy_struct_tm((struct tm*)cals_tmtime((time_t*)&ivalue ),&(sch_record->created_date_time));
+	if((result = strstr(start,CAL_VALUE_LLI_CREATED_TIME))) {
+		sch_record->created_time = sqlite3_column_int64(stmt, count++);
 		start = result;
 	}
 
-	if((result = strstr(start,CAL_VALUE_GMT_COMPLETED_DATE_TIME))) {
-		ivalue = sqlite3_column_int(stmt, count++);
-		cal_db_service_copy_struct_tm((struct tm*)cals_tmtime((time_t*)&ivalue ),&(sch_record->completed_date_time));
+	if((result = strstr(start,CAL_VALUE_LLI_COMPLETED_TIME))) {
+		sch_record->completed_time = sqlite3_column_int64(stmt, count++);
 		start = result;
 	}
 
@@ -1479,6 +1372,10 @@ int cals_stmt_get_filted_schedule(sqlite3_stmt *stmt,
 		start = result;
 	}
 
+	if((result = strstr(start,CAL_VALUE_INT_IS_DELETED))) {
+		sch_record->is_deleted = sqlite3_column_int(stmt, count++);
+		start = result;
+	}
 
 	return CAL_SUCCESS;
 }
@@ -1487,45 +1384,29 @@ int cals_stmt_get_filted_schedule(sqlite3_stmt *stmt,
 void cals_stmt_get_full_schedule(sqlite3_stmt *stmt,cal_sch_full_t *sch_record, bool is_utc)
 {
 	int count = 0;
-	long int tmp_time = 0;
+	char *dtstart_datetime;
+	char *dtend_datetime;
+	char buf[8] = {0};
 	const unsigned char *temp;
 
 	sch_record->index = sqlite3_column_int(stmt, count++);
 	sch_record->account_id = sqlite3_column_int(stmt, count++);
 	sch_record->cal_type = sqlite3_column_int(stmt, count++);
-	sch_record->sch_category = sqlite3_column_int(stmt, count++);
+
 	temp = sqlite3_column_text(stmt, count++);
 	sch_record->summary = SAFE_STRDUP(temp);
+
 	temp = sqlite3_column_text(stmt, count++);
 	sch_record->description = SAFE_STRDUP(temp);
+
 	temp = sqlite3_column_text(stmt, count++);
 	sch_record->location = SAFE_STRDUP(temp);
-	sch_record->all_day_event = sqlite3_column_int(stmt, count++);
-
-	tmp_time = sqlite3_column_int(stmt, count++);
-	cal_db_service_copy_struct_tm((struct tm*)cals_tmtime(&tmp_time),&(sch_record->start_date_time));
-
-	tmp_time = sqlite3_column_int(stmt, count++);
-	cal_db_service_copy_struct_tm((struct tm*)cals_tmtime(&tmp_time),&(sch_record->end_date_time));
-
-	sch_record->repeat_term = sqlite3_column_int(stmt, count++);
-	sch_record->repeat_interval = sqlite3_column_int(stmt, count++);
-	sch_record->repeat_until_type = sqlite3_column_int(stmt, count++);
-	sch_record->repeat_occurrences = sqlite3_column_int(stmt, count++);
-
-	tmp_time = sqlite3_column_int(stmt, count++);
-	cal_db_service_copy_struct_tm((struct tm*)cals_tmtime(&tmp_time),&(sch_record->repeat_end_date));
-
-	sch_record->sun_moon = sqlite3_column_int(stmt, count++);
-	sch_record->week_start = sqlite3_column_int(stmt, count++);
 
 	temp = sqlite3_column_text(stmt, count++);
-	sch_record->week_flag = SAFE_STRDUP(temp);
+	sch_record->categories = SAFE_STRDUP(temp);
 
-	sch_record->day_date = sqlite3_column_int(stmt, count++);
-
-	tmp_time = sqlite3_column_int(stmt, count++);
-	cal_db_service_copy_struct_tm((struct tm*)cals_tmtime(&tmp_time), &(sch_record->last_modified_time));
+	temp = sqlite3_column_text(stmt, count++);
+	sch_record->exdate = SAFE_STRDUP(temp);
 
 	sch_record->missed = sqlite3_column_int(stmt, count++);
 	sch_record->task_status = sqlite3_column_int(stmt, count++);
@@ -1551,8 +1432,6 @@ void cals_stmt_get_full_schedule(sqlite3_stmt *stmt,cal_sch_full_t *sch_record, 
 
 	temp = sqlite3_column_text(stmt, count++);
 	sch_record->gcal_id = SAFE_STRDUP(temp);
-
-	sch_record->deleted = sqlite3_column_int(stmt, count++);
 
 	temp = sqlite3_column_text(stmt, count++);
 	sch_record->updated = SAFE_STRDUP(temp);
@@ -1581,24 +1460,226 @@ void cals_stmt_get_full_schedule(sqlite3_stmt *stmt,cal_sch_full_t *sch_record, 
 
 	sch_record->latitude = sqlite3_column_double(stmt,count++);
 	sch_record->longitude = sqlite3_column_double(stmt,count++);
-	sch_record->deleted = sqlite3_column_int(stmt, count++);
-
-	temp = sqlite3_column_text(stmt, count++);
-	sch_record->tz_name = SAFE_STRDUP(temp);
-
-	temp = sqlite3_column_text(stmt, count++);
-	sch_record->tz_city_name = SAFE_STRDUP(temp);
 
 	sch_record->email_id = sqlite3_column_int(stmt, count++);
 
 	sch_record->availability = sqlite3_column_int(stmt, count++);
 
-	tmp_time = sqlite3_column_int(stmt, count++);
-	cal_db_service_copy_struct_tm((struct tm*)cals_tmtime(&tmp_time),&(sch_record->created_date_time));
+	sch_record->created_time = sqlite3_column_int64(stmt, count++);
 
-	tmp_time = sqlite3_column_int(stmt, count++);
-	cal_db_service_copy_struct_tm((struct tm*)cals_tmtime(&tmp_time),&(sch_record->completed_date_time));
+	sch_record->completed_time = sqlite3_column_int64(stmt, count++);
 
 	sch_record->progress = sqlite3_column_int(stmt,count++);
+
+
+	sqlite3_column_int(stmt,count++);
+	sqlite3_column_int(stmt,count++);
+	sch_record->is_deleted = sqlite3_column_int(stmt,count++);
+
+	sch_record->dtstart_type = sqlite3_column_int(stmt,count++);
+	sch_record->dtstart_utime = sqlite3_column_int64(stmt,count++);
+	temp = sqlite3_column_text(stmt, count++);
+	if (temp) {
+		dtstart_datetime = SAFE_STRDUP(temp);
+		snprintf(buf, strlen("YYYY") + 1, "%s", &dtstart_datetime[0]);
+		sch_record->dtstart_year =  atoi(buf);
+		snprintf(buf, strlen("MM") + 1, "%s", &dtstart_datetime[4]);
+		sch_record->dtstart_month = atoi(buf);
+		snprintf(buf, strlen("DD") + 1, "%s", &dtstart_datetime[6]);
+		sch_record->dtstart_mday = atoi(buf);
+		if (dtstart_datetime) free(dtstart_datetime);
+	}
+	temp = sqlite3_column_text(stmt, count++);
+	sch_record->dtstart_tzid = SAFE_STRDUP(temp);
+
+	sch_record->dtend_type = sqlite3_column_int(stmt, count++);
+	sch_record->dtend_utime = sqlite3_column_int64(stmt, count++);
+	temp = sqlite3_column_text(stmt, count++);
+	if (temp) {
+		dtend_datetime = SAFE_STRDUP(temp);
+		snprintf(buf, strlen("YYYY") + 1, "%s", &dtend_datetime[0]);
+		sch_record->dtend_year =  atoi(buf);
+		snprintf(buf, strlen("MM") + 1, "%s", &dtend_datetime[4]);
+		sch_record->dtend_month = atoi(buf);
+		snprintf(buf, strlen("DD") + 1, "%s", &dtend_datetime[6]);
+		sch_record->dtend_mday = atoi(buf);
+		if (dtend_datetime) free(dtend_datetime);
+	}
+	temp = sqlite3_column_text(stmt, count++);
+	sch_record->dtend_tzid = SAFE_STRDUP(temp);
+
+	sch_record->last_mod = sqlite3_column_int64(stmt,count++);
+	sch_record->rrule_id = sqlite3_column_int(stmt,count++);
+}
+
+void cals_stmt_fill_rrule(sqlite3_stmt *stmt,cal_sch_full_t *sch_record)
+{
+	char *until_datetime;
+	char buf[8] = {0};
+	const unsigned char *temp;
+	int count = 0;
+
+	sch_record->rrule_id = sqlite3_column_int(stmt,count++);
+	sqlite3_column_int(stmt,count++); // event_id
+	sch_record->freq = sqlite3_column_int(stmt,count++);
+	sch_record->range_type = sqlite3_column_int(stmt,count++);
+	sch_record->until_type = sqlite3_column_int(stmt,count++);
+	sch_record->until_utime = sqlite3_column_int64(stmt, count++);
+
+	temp = sqlite3_column_text(stmt, count++);
+	if (temp) {
+		until_datetime = SAFE_STRDUP(temp);
+		snprintf(buf, strlen("YYYY") + 1, "%s", &until_datetime[0]);
+		sch_record->until_year =  atoi(buf);
+		snprintf(buf, strlen("MM") + 1, "%s", &until_datetime[4]);
+		sch_record->until_month = atoi(buf);
+		snprintf(buf, strlen("DD") + 1, "%s", &until_datetime[6]);
+		sch_record->until_mday = atoi(buf);
+		if (until_datetime) free(until_datetime);
+	}
+
+	sch_record->count = sqlite3_column_int(stmt,count++);
+	sch_record->interval = sqlite3_column_int(stmt,count++);
+
+	temp = sqlite3_column_text(stmt, count++);
+	sch_record->bysecond = SAFE_STRDUP(temp);
+
+	temp = sqlite3_column_text(stmt, count++);
+	sch_record->byminute = SAFE_STRDUP(temp);
+
+	temp = sqlite3_column_text(stmt, count++);
+	sch_record->byhour = SAFE_STRDUP(temp);
+
+	temp = sqlite3_column_text(stmt, count++);
+	sch_record->byday = SAFE_STRDUP(temp);
+
+	temp = sqlite3_column_text(stmt, count++);
+	sch_record->bymonthday = SAFE_STRDUP(temp);
+
+	temp = sqlite3_column_text(stmt, count++);
+	sch_record->byyearday = SAFE_STRDUP(temp);
+
+	temp = sqlite3_column_text(stmt, count++);
+	sch_record->byweekno = SAFE_STRDUP(temp);
+
+	temp = sqlite3_column_text(stmt, count++);
+	sch_record->bymonth = SAFE_STRDUP(temp);
+
+	temp = sqlite3_column_text(stmt, count++);
+	sch_record->bysetpos = SAFE_STRDUP(temp);
+
+	sch_record->wkst = sqlite3_column_int(stmt,count++);
+}
+
+inline char *cals_strcat(char * const dest, const char *src, int bufsize)
+{
+	return strncat(dest, src, bufsize - strlen(dest) -1);
+}
+
+void _cals_sch_search_get_cond(int fields, char * const buf, int bufsize)
+{
+	int first;
+
+	first = 1;
+
+	if (fields & CALS_SEARCH_FIELD_SUMMARY) {
+		if (first)
+			first = 0;
+		else
+			cals_strcat(buf, "OR ", bufsize);
+		cals_strcat(buf, "A.summary LIKE ('%%' || :key || '%%') ", bufsize);
+	}
+
+	if (fields & CALS_SEARCH_FIELD_DESCRIPTION) {
+		if (first)
+			first = 0;
+		else
+			cals_strcat(buf, "OR ", bufsize);
+		cals_strcat(buf, "A.description LIKE ('%%' || :key || '%%') ", bufsize);
+	}
+
+	if (fields & CALS_SEARCH_FIELD_LOCATION) {
+		if (first)
+			first = 0;
+		else
+			cals_strcat(buf, "OR ", bufsize);
+		cals_strcat(buf, "A.location LIKE ('%%' || :key || '%%') ", bufsize);
+	}
+
+	if (fields & CALS_SEARCH_FIELD_ATTENDEE) {
+		if (first)
+			first = 0;
+		else
+			cals_strcat(buf, "OR ", bufsize);
+		cals_strcat(buf, "B.attendee_name LIKE ('%%' || :key || '%%') ", bufsize);
+	}
+
+	return;
+}
+
+int cals_sch_search(cals_sch_type sch_type, int fields, const char *keyword, cal_iter **iter)
+{
+	cal_iter *it;
+	sqlite3_stmt *stmt;
+	char query[CALS_SQL_MAX_LEN] = {0};
+	char cond[CALS_SQL_MIN_LEN] = {0};
+
+	_cals_sch_search_get_cond(fields, cond, sizeof(cond));
+	snprintf(query, sizeof(query), "SELECT A.* "
+			"FROM %s A LEFT JOIN %s B ON A.id = B.event_id "
+			"JOIN %s C ON A.calendar_id = C.ROWID "
+			"WHERE A.type = %d AND (%s) AND C.visibility = 1",
+			CALS_TABLE_SCHEDULE, CALS_TABLE_PARTICIPANT, CALS_TABLE_CALENDAR, sch_type, cond);
+	DBG("QUERY [%s]", query);
+
+	stmt = cals_query_prepare(query);
+	retvm_if (!stmt, CAL_ERR_DB_FAILED, "cals_query_prepare() failed");
+
+	sqlite3_bind_text(stmt, sqlite3_bind_parameter_index(stmt, ":key"), keyword, strlen(keyword), SQLITE_TRANSIENT);
+
+	it = calloc(1, sizeof(cal_iter));
+	if (!it) {
+		sqlite3_finalize(stmt);
+		ERR("calloc() failed(%d)", errno);
+		return CAL_ERR_OUT_OF_MEMORY;
+	}
+
+	it->i_type = CAL_STRUCT_TYPE_SCHEDULE;
+	it->stmt = stmt;
+	*iter = it;
+
+	return CAL_SUCCESS;
+}
+
+API int calendar_svc_smartsearch_excl(const char *keyword, int offset, int limit, cal_iter **iter)
+{
+	cal_iter *it;
+	sqlite3_stmt *stmt;
+	char query[CALS_SQL_MAX_LEN] = {0};
+	char buf[1024] = {0};
+
+	snprintf(query, sizeof(query), "SELECT A.* "
+			"FROM %s A LEFT JOIN %s B ON A.calendar_id = B.ROWID "
+			"WHERE A.summary LIKE ('%%' || :key || '%%') AND B.visibility = 1 LIMIT %d OFFSET %d",
+			CALS_TABLE_SCHEDULE, CALS_TABLE_CALENDAR, limit, offset);
+
+	stmt = cals_query_prepare(query);
+	retvm_if (!stmt, CAL_ERR_DB_FAILED, "cals_query_prepare() failed");
+
+	cals_escape_like_pattern(keyword, buf, sizeof(buf));
+	sqlite3_bind_text(stmt, sqlite3_bind_parameter_index(stmt, ":key"), buf, strlen(buf), SQLITE_TRANSIENT);
+
+	it = calloc(1, sizeof(cal_iter));
+	if (!it) {
+		sqlite3_finalize(stmt);
+		ERR("calloc() failed(%d)", errno);
+		return CAL_ERR_OUT_OF_MEMORY;
+	}
+
+	it->i_type = CAL_STRUCT_TYPE_SCHEDULE;
+	it->stmt = stmt;
+	*iter = it;
+
+	return CAL_SUCCESS;
 }
 

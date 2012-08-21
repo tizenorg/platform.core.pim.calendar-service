@@ -1,4 +1,4 @@
-CC = gcc
+C = gcc
 
 REQUIRED_PKG = calendar-service
 CFLAGS = -g -Wall
@@ -8,7 +8,7 @@ ifdef REQUIRED_PKG
 	LDFLAGS += `pkg-config --libs $(REQUIRED_PKG)`
 endif
 
-SRCS = calendar-test.c schedule-test.c
+SRCS = recur-add.c eve-add.c recur-add.c eve-see.c
 TIMESRC = timetest.c
 OBJECTS = $(SRCS:.c=.o)
 TIMEOBJ = $(TIMESRC:.c=.o)

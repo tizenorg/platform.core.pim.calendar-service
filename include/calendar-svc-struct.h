@@ -66,7 +66,7 @@ typedef struct _cal_value cal_value;
 /**
  * cal_struct is an opaque type, it must be used via accessor functions.
  * @ingroup common
- * @see calendar_svc_find_event_list(), calendar_svc_get_updated_event_list()
+ * @see calendar_svc_find_event_list(), calendar_svc_event_get_changes()
  *      calendar_svc_get_event_by_period(), calendar_svc_iter_get_info(),
  *      calendar_svc_iter_next(), calendar_svc_iter_remove()
  */
@@ -184,15 +184,14 @@ typedef struct _cal_iter cal_iter;
       cal_struct *event=NULL;
       cal_value *attendee1=NULL,*attendee2=NULL;
       GList *attendee_list=NULL;
-      time_t cur_time = 0;
       cal_iter *iter=NULL;
       int ret = 0;
       int index = 0;
+	  int version = 0;
 
-      cur_time = time(NULL);
       calendar_svc_connect();
 
-      calendar_svc_get_updated_event_list(0, cur_time,&iter);
+      calendar_svc_event_get_changes(0, version, &iter);
       ret = calendar_svc_iter_next(iter);
       while(CAL_SUCCESS == ret)
       {

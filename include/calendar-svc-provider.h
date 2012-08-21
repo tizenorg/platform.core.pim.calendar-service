@@ -19,6 +19,11 @@
 #ifndef __CALENDAR_SVC_H__
 #define __CALENDAR_SVC_H__
 
+#ifndef DEPRECATED
+#define DEPRECATED __attribute__ ((deprecated))
+#endif
+
+
 /**
  * @defgroup CALENDAR_SVC  Calendar Service
  */
@@ -41,6 +46,8 @@
  */
 
 #include <glib.h>
+#include <stdbool.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -56,21 +63,6 @@ extern "C" {
  */
 
 /**
- * This enumeration defines schedule category.
- */
-typedef enum
-{
-	CAL_SCH_NONE=0,				/**< None type */
-	CAL_SCH_APPOINTMENT,		   /**< appointment category */
-	CAL_SCH_IMPORTANT,			/**< important category */
-	CAL_SCH_SPECIAL_OCCASION,	/**< anniversary category */
-	CAL_SCH_BIRTHDAY,			   /**< birthday category */
-	CAL_SCH_HOLIDAY,			   /**< holiday category */
-	CAL_SCH_PRIVATE,			/**< private category */
-	CAL_SCH_BUSSINESS,			/**< bussiness category */
-} cal_sch_category_t;
-
-/**
  * This enumeration date type, sun or lunar.
  */
 typedef enum
@@ -84,13 +76,13 @@ typedef enum
  * Ex. remindTick = 1, remindTickUnit = CAL_SCH_TIME_UNIT_MIN, Organizer alarms
  * 1 minute before schedule starting time.
  */
-typedef enum
+typedef enum /* use with *60 */
 {
 	CAL_SCH_TIME_UNIT_OFF = -1, /**< off */
-	CAL_SCH_TIME_UNIT_MIN = 0,	/**< Minute */
-	CAL_SCH_TIME_UNIT_HOUR,		/**< Hour */
-	CAL_SCH_TIME_UNIT_DAY,		/**< Day */
-	CAL_SCH_TIME_UNIT_WEEK,		/**< Week */
+	CAL_SCH_TIME_UNIT_MIN = 1, /**< Minute */
+	CAL_SCH_TIME_UNIT_HOUR = 60, /**< Hour 60 * 60 */
+	CAL_SCH_TIME_UNIT_DAY = 1440, /**< Day 60 * 60 *24 */
+	CAL_SCH_TIME_UNIT_WEEK = 10080, /**< Week DAY * 7 */
 	CAL_SCH_TIME_UNIT_MONTH,	/**< Month - will be removed*/
 	CAL_SCH_TIME_UNIT_SPECIFIC  /**< using alarm time */
 } cal_sch_remind_tick_unit_t;
@@ -116,8 +108,8 @@ typedef enum
 typedef enum
 {
 	CALS_REPEAT_UNTIL_TYPE_NONE = 0,  /**< Repeat endlessly */
-	CALS_REPEAT_UNTIL_TYPE_DATETIME,  /**< Repeat until the date-time which the CAL_VALUE_GMT_REPEAT_END_DATE indicates */
 	CALS_REPEAT_UNTIL_TYPE_COUNT,     /**< Repeat number of times, which the CAL_VALUE_INT_REPEAT_OCCURRENCES indicates */
+	CALS_REPEAT_UNTIL_TYPE_DATETIME,  /**< Repeat until the date-time which the CAL_VALUE_GMT_REPEAT_END_DATE indicates */
 } cal_repeat_until_type_t;
 
 /**
@@ -241,6 +233,11 @@ typedef enum
 
 
 /**
+ * Deprecated.
+ */
+#define EVENT_ATTENDEE_PENDING_AT_STATUS EVENT_ATTENDEE_NEEDS_ACTION_AT_STATUS
+
+/**
  * This enumeration defines event attendee's type .
  */
 typedef enum
@@ -258,25 +255,35 @@ typedef enum
  */
 typedef enum
 {
-	EVENT_PRIORITY_LOW =0,
+	EVENT_PRIORITY_LOW = 0,
 	EVENT_PRIORITY_NORMAL,
 	EVENT_PRIORITY_HIGH,
 } cal_priority_type_t;
+
+enum {
+	CALS_TODO_PRIORITY_NONE = 0x01,
+	CALS_TODO_PRIORITY_HIGH = 0x02,
+	CALS_TODO_PRIORITY_MID = 0x04,
+	CALS_TODO_PRIORITY_LOW = 0x08,
+};
 
 /**
  * This enumeration defines status.
  * (related with CAL_VALUE_INT_TASK_STATUS)
  */
+
+#define CALS_STATUS_NONE CALS_EVENT_STATUS_NONE
 typedef enum
 {
-	CALS_STATUS_NONE =0,
-	CALS_EVENT_STATUS_TENTATIVE,
-	CALS_EVENT_STATUS_CONFIRMED,
-	CALS_EVENT_STATUS_CANCELLED,
-	CALS_TODO_STATUS_NEEDS_ACTION,
-	CALS_TODO_STATUS_COMPLETED,
-	CALS_TODO_STATUS_IN_PROCESS,
-	CALS_TODO_STATUS_CANCELLED,
+	CALS_EVENT_STATUS_NONE = 0x0001,
+	CALS_EVENT_STATUS_TENTATIVE = 0x0002,
+	CALS_EVENT_STATUS_CONFIRMED = 0x0004,
+	CALS_EVENT_STATUS_CANCELLED = 0x0008,
+	CALS_TODO_STATUS_NONE = 0x0100,
+	CALS_TODO_STATUS_NEEDS_ACTION = 0x0200,
+	CALS_TODO_STATUS_IN_PROCESS = 0x0400,
+	CALS_TODO_STATUS_CANCELLED = 0x0800,
+	CALS_TODO_STATUS_COMPLETED = 0x1000,
 } cals_status_t;
 
 /**
@@ -291,6 +298,16 @@ typedef enum
 } cals_calendar_store_type;
 
 /**
+ * This enumeration defines todo list ordering type.
+ */
+typedef enum
+{
+	CALS_TODO_LIST_ORDER_END_DATE = 0,
+	CALS_TODO_LIST_ORDER_PRIORITY,
+	CALS_TODO_LIST_ORDER_STATUS,
+} cals_todo_list_order_t;
+
+/**
  * This enumeration defines calendar sensitivity.
  * (related with CAL_VALUE_INT_SENSITIVITY)
  */
@@ -301,6 +318,26 @@ typedef enum
 	CALS_SENSITIVITY_CONFIDENTIAL,
 } cals_sensitivity_t;
 
+/**
+ * This enumeration defines updated type
+ * (related with CALS_STRUCT_UPDATED_INT_TYPE)
+ */
+enum cals_updated_type {
+	CALS_UPDATED_TYPE_INSERTED = 0x0,
+	CALS_UPDATED_TYPE_MODIFIED,
+	CALS_UPDATED_TYPE_DELETED,
+};
+
+/**
+ * Flags to specify what fields will be searched by search API
+ */
+enum SEARCHFIELD {
+	CALS_SEARCH_FIELD_NONE = 0,
+	CALS_SEARCH_FIELD_SUMMARY = 1<<0,
+	CALS_SEARCH_FIELD_DESCRIPTION = 1<<2,
+	CALS_SEARCH_FIELD_LOCATION = 1<<3,
+	CALS_SEARCH_FIELD_ATTENDEE = 1<<4,
+};
 
 /**
  * @}
@@ -313,10 +350,20 @@ typedef enum
  * 		calendar_svc_struct_new's argument
  */
 #define CAL_STRUCT_TYPE					  /**< CAL_STRUCT_TYPE */
-#define CAL_STRUCT_CALENDAR "calendar" 		/**< CAL_STRUCT_CALENDAR */
-#define CAL_STRUCT_SCHEDULE "schedule" 		/**< CAL_STRUCT_SCHEDULE */
-#define CAL_STRUCT_TODO		"todo" 		  	/**< CAL_STRUCT_TASK */
+#define CAL_STRUCT_CALENDAR "calendar"		/**< CAL_STRUCT_CALENDAR */
+#define CAL_STRUCT_SCHEDULE "schedule"		/**< CAL_STRUCT_SCHEDULE */
+#define CAL_STRUCT_TODO		"todo"			/**< CAL_STRUCT_TASK */
 #define CAL_STRUCT_TIMEZONE	"timezone"		/**< CAL_STRUCT_TIMEZONE */
+#define CAL_STRUCT_UPDATED "updated"     /**< CAL_STRUCT_UPDATED */
+#define CALS_STRUCT_PERIOD_NORMAL_ONOFF "period_normal_onoff"
+#define CALS_STRUCT_PERIOD_ALLDAY_ONOFF "period_allday_onoff"
+#define CALS_STRUCT_PERIOD_NORMAL_BASIC "period_normal_basic"
+#define CALS_STRUCT_PERIOD_ALLDAY_BASIC "period_allday_basic"
+#define CALS_STRUCT_PERIOD_NORMAL_OSP "period_normal_osp"
+#define CALS_STRUCT_PERIOD_ALLDAY_OSP "period_allday_osp"
+#define CALS_STRUCT_PERIOD_NORMAL_LOCATION "period_normal_location"
+#define CALS_STRUCT_PERIOD_ALLDAY_LOCATION "period_allday_location"
+#define CALS_STRUCT_PERIOD_NORMAL_ALARM "period_normal_alarm"
 
 // id for all data read
 #define ALL_ACCOUNT_ID 0
@@ -329,7 +376,15 @@ typedef enum
 #define LOCAL_ACCOUNT_ID -1
 #define LOCAL_ALL_CALENDAR -1
 
+/* start deprecated */
 #define DEFAULT_CALENDAR_ID 1
+/* end deprecated, replace DEFAULT_EVENT_CALENDAR_ID */
+
+#define DEFAULT_EVENT_CALENDAR_ID 1
+#define DEFAULT_TODO_CALENDAR_ID 2
+
+// added val 2012.07.30
+#define CALS_TODO_NO_DUE_DATE INT64_MAX
 
 /**
  * @}
@@ -339,7 +394,7 @@ typedef enum
  * @addtogroup common
  * @{
  * brief
- *		calendar_svc_value_xxx()'s argument
+ *		calendar_svc_struct_xxx()'s argument
  */
 #define CAL_TABLE_INT_INDEX "index"
 #define CAL_TABLE_TXT_CALENDAR_ID "calendar_id"
@@ -392,28 +447,31 @@ typedef enum
  * @addtogroup common
  * @{
  * brief
- * 		calendar_svc_value_xxx()'s argument
+ * 		calendar_svc_struct_xxx()'s argument
+ */
+#define CALS_STRUCT_UPDATED_INT_VERSION "version"                /**< Version of schedule */
+#define CALS_STRUCT_UPDATED_INT_TYPE "updated_type"      /**< Type of schedule update #cals_updated_type */
+#define CALS_STRUCT_UPDATED_INT_ID "updated_id"      /**< id of updated schedule */
+/**
+ * @}
+ */
+
+
+
+/**
+ * @addtogroup common
+ * @{
+ * brief
+ * 		calendar_svc_struct_xxx()'s argument
  */
 #define CAL_VALUE_INT_INDEX				  "id"					/**< Record index */
 #define CAL_VALUE_INT_ACCOUNT_ID			  "account_id"			/**< account id */
 #define CAL_VALUE_INT_TYPE				  "type"				/**< Calendar component type */
-#define CAL_VALUE_INT_CATEGORY			  "category"			/**< Category of schedule #cal_sch_category_t */
+#define CAL_VALUE_TXT_CATEGORIES "categories" /**< Category of schedule */
+#define CAL_VALUE_TXT_EXDATE "exdate" /**< Exdate */
 #define CAL_VALUE_TXT_SUMMARY				  "summary"				/**< Summary, appointment, task: subject, birthday:Name */
 #define CAL_VALUE_TXT_DESCRIPTION			  "description"			/**< Description,appointment, task: description, anniversary,holiday:occasion*/
 #define CAL_VALUE_TXT_LOCATION				  "location"				/**< Location */
-#define CAL_VALUE_INT_ALL_DAY_EVENT			  "all_day_event"		/**< All day event flag */
-#define CAL_VALUE_GMT_START_DATE_TIME		  "start_date_time"		/**< schedule:start time, anniv,holiday,birthday,memo,todo: date */
-#define CAL_VALUE_GMT_END_DATE_TIME			  "end_date_time"		/**< end time */
-#define CAL_VALUE_INT_REPEAT_TERM			  "repeat_item"			/**< Repeat term */
-#define CAL_VALUE_INT_REPEAT_INTERVAL		  "repeat_interval"		/**< Interval of repeat term */
-#define CAL_VALUE_INT_REPEAT_UNTIL_TYPE		  "repeat_until_type"	/**< Repeat until type */
-#define CAL_VALUE_INT_REPEAT_OCCURRENCES	  "repeat_occurrences"	  /**< occurrences of repeat */
-#define CAL_VALUE_GMT_REPEAT_END_DATE		  "repeat_end_date"		/**< End date for repeat */
-#define CAL_VALUE_INT_SUN_MOON				  "sun_moon"				/**< Using sun or lunar calendar */
-#define CAL_VALUE_INT_WEEK_START			  "week_start"			/**< Start day of a week */
-#define CAL_VALUE_TXT_WEEK_FLAG				  "week_flag"			/**< 1001000(sun,wed) Indicate which day is select in a week */
-#define CAL_VALUE_INT_DAY_DATE				  "day_date"				/**< 0- for weekday(sun,mon,etc.), 1- for specific day(1,2.. Etc) */
-#define CAL_VALUE_GMT_LAST_MODIFIED_TIME	  "last_modified_time"	/**< for PC Sync */
 #define CAL_VALUE_INT_MISSED				  "missed"				  /**< Miss alarm flag */
 #define CAL_VALUE_INT_TASK_STATUS			  "task_status"			/**< current task status #cals_status_t */
 #define CAL_VALUE_INT_PRIORITY				  "priority"				/**< Priority */
@@ -442,14 +500,14 @@ typedef enum
 #define CAL_VALUE_INT_CALENDAR_INDEX      "calendar_index"   /**< specific calendar id - will be remove */
 #define CAL_VALUE_DBL_LATITUDE         "latitude"      /**< latitude */
 #define CAL_VALUE_DBL_LONGITUDE        "longitude"     /**< longitude */
-#define CAL_VALUE_INT_IS_DELETED        "is_deleted"     /**< readonly */
-#define CAL_VALUE_TXT_TZ_NAME	        "tz_name"      /**< tz file name */
-#define CAL_VALUE_TXT_TZ_CITY_NAME	      "tz_city_name"    /**< tz city name */
 #define CAL_VALUE_INT_EMAIL_ID				  "email_id"			/**< email id */
 #define CAL_VALUE_INT_AVAILABILITY			  "availability"
-#define CAL_VALUE_GMT_CREATED_DATE_TIME "created_date_time"
-#define CAL_VALUE_GMT_COMPLETED_DATE_TIME "completed_date_time"
+#define CAL_VALUE_LLI_CREATED_TIME "created_time"
+#define CAL_VALUE_LLI_COMPLETED_TIME "completed_time"
 #define CAL_VALUE_INT_PROGRESS "progress"
+#define CAL_VALUE_INT_IS_DELETED "is_deleted"/**< In deleting action, this is set 1 and will be deleted after sync */
+
+#define CAL_VALUE_INT_CAL_TYPE				  "cal_type" /**< deprecated */
 
 /**
  * @}
@@ -463,11 +521,11 @@ typedef enum
  * 		attendee cal_value's detail field
  */
 #define CAL_VALUE_LST_ATTENDEE_LIST         "attendee_list"     /**< attendee's detail information set */
-#define CAL_VALUE_TXT_ATTENDEE_DETAIL_NAME		 	"attendee_name"			/**< attendee_name */
+#define CAL_VALUE_TXT_ATTENDEE_DETAIL_NAME			"attendee_name"			/**< attendee_name */
 #define CAL_VALUE_TXT_ATTENDEE_DETAIL_EMAIL		  "attendee_email"			/**< attendee_email */
 #define CAL_VALUE_TXT_ATTENDEE_DETAIL_NUMBER		"attendee_number"			/**< attendee_email */
-#define CAL_VALUE_INT_ATTENDEE_DETAIL_STATUS	 	"attendee_status"			/**< #cal_event_attendee_status_type_t */
-#define CAL_VALUE_INT_ATTENDEE_DETAIL_TYPE		 	"attendee_type"			/**< #cal_event_attendee_type_t */
+#define CAL_VALUE_INT_ATTENDEE_DETAIL_STATUS		"attendee_status"			/**< #cal_event_attendee_status_type_t */
+#define CAL_VALUE_INT_ATTENDEE_DETAIL_TYPE			"attendee_type"			/**< #cal_event_attendee_type_t */
 #define CAL_VALUE_INT_ATTENDEE_DETAIL_CT_INDEX		"attendee_ct_index"		/**< contact db index for reference */
 #define CAL_VALUE_INT_ATTENDEE_ROLE					"attendee_role" /**< #cal_event_attendee_role_type_t */
 #define CAL_VALUE_INT_ATTENDEE_RSVP					"attendee_rsvp"
@@ -480,51 +538,14 @@ typedef enum
  * @}
  */
 
-/**
- * @addtogroup common
- * @{
- * brief
- * 		meeting category cal_value's detail field
- */
-#define CAL_VALUE_LST_MEETING_CATEGORY        "meeting_category"  /**< attendee's detail information set */
-#define CAL_VALUE_INT_MEETING_CATEGORY_DETAIL_ID   "event_id"			     /**< attendee_name */
-#define CAL_VALUE_TXT_MEETING_CATEGORY_DETAIL_NAME  "category_name"			  /**< attendee_email */
-
-/**
- * @}
- */
-
-
-/**
- * @addtogroup common
- * @{
- * brief
- * 		exception event date
- */
-#define CAL_VALUE_LST_EXCEPTION_DATE         "exception_date"    /**< exception's detail information set */
-#define CAL_VALUE_GMT_EXCEPTION_DATE_TIME       "exception_date_time"	/**< exception event's start date */
-#define CAL_VALUE_INT_EXCEPTION_DATE_ID        "exception_event_id"	/**< if occasion update case, it has valid id(not -1) */
-
-/**
- * @}
- */
-
-
-
-/**
- * @addtogroup common
- * @{
- * brief
- * 		exception event date
- */
 #define CAL_VALUE_LST_ALARM			        "alarm"    /**< exception's detail information set */
-#define CAL_VALUE_GMT_ALARMS_TIME		 	  		"alarm_time"			/**< alarm time */
-#define CAL_VALUE_INT_ALARMS_TICK		 	  		"remind_tick"			/**< Alarms before remindTick */
-#define CAL_VALUE_INT_ALARMS_TICK_UNIT	 	  		"remind_tick_unit"	/**< Remind tick unit */
-#define CAL_VALUE_TXT_ALARMS_TONE		 	  		"alarm_tone"			/**< Alert Sound File Name */
+#define CAL_VALUE_LLI_ALARMS_TIME					"alarm_time"			/**< alarm time */
+#define CAL_VALUE_INT_ALARMS_TICK					"remind_tick"			/**< Alarms before remindTick */
+#define CAL_VALUE_INT_ALARMS_TICK_UNIT				"remind_tick_unit"	/**< Remind tick unit */
+#define CAL_VALUE_TXT_ALARMS_TONE					"alarm_tone"			/**< Alert Sound File Name */
 #define CAL_VALUE_TXT_ALARMS_DESCRIPTION "alarm_description"			/**< Alert description */
-#define CAL_VALUE_INT_ALARMS_TYPE		 	  		"alarm_type"			/**< Alert type(see 'cal_alert_type_t') */
-#define CAL_VALUE_INT_ALARMS_ID			 	  		"alarm_id"				/**< Alarm id */
+#define CAL_VALUE_INT_ALARMS_TYPE					"alarm_type"			/**< Alert type(see 'cal_alert_type_t') */
+#define CAL_VALUE_INT_ALARMS_ID						"alarm_id"				/**< Alarm id */
 
 /**
  * @}
@@ -541,22 +562,6 @@ typedef enum
 
 #define CAL_VALUE_INT_DETAIL_DELETE     "is_deleted" /**< delete setting in detail list*/
 
-/**
- * @}
- */
-
-
-/**
- * @addtogroup common
- * @{
- * brief
- *   api param
- */
-#define CAL_VALUE_CUSTOM                     /**< custom field value(MIME Type will be Support) */
-#define CAL_VALUE_ALL_FIELD         "all_field_list"   /**< event's all data field return */
-#define CAL_VALUE_MAIN_FILED         "main_field_list"  /**< event's major data field return(summay,description,status,etc..) */
-#define CAL_VALUE_LIST_FILED         "list_field_list"  /**< event's sub data field for list view(summary,start/end date/all day,repeat) */
-#define CAL_VALUE_MONTH_FILED         "month_field_list" /**< event's sub data field for month view check */
 /**
  * @}
  */
@@ -690,11 +695,15 @@ int calendar_svc_close(void);
 int calendar_svc_begin_trans(void);
 
 /**
- * @fn int calendar_svc_end_trans(void);
- * This function finish db transaction,it is coninient for user do many operaion once.
+ * @fn int calendar_svc_end_trans(bool is_success);
+ * This function finishes database transaction of calendar service.
+ * If it returns error, the transaction has been rollbacked.
+ * When transction is success, it returns the last contacts version.
  *
  * @ingroup service_management
- * @return This function returns CAL_SUCCESS or error code on failure.
+ * @param[in] is_success Commit changes if #true. Otherwise, no changes will be made on the database.
+ * @return CAL_SUCCESS or the last calendar version(when success) on success,
+ *         Negative value(#cal_error) on error
  * @exception None.
  * @remarks None.
  * @pre database connected and calendar_svc_begin_trans() is called.
@@ -712,7 +721,7 @@ int calendar_svc_begin_trans(void);
     	//..do some operation to database
 
     	// end transaction
-		calendar_svc_end_trans();
+		calendar_svc_end_trans(true);
 
     	//close database
     	calendar_svc_close();
@@ -721,7 +730,7 @@ int calendar_svc_begin_trans(void);
  * @endcode
  * @see calendar_svc_begin_trans().
  */
-int calendar_svc_end_trans(void);
+int calendar_svc_end_trans(bool is_success);
 
 
 /**
@@ -945,44 +954,9 @@ int calendar_svc_update(cal_struct *record);
 int calendar_svc_delete(const char *data_type,int index);
 
 /**
- * @fn int calendar_svc_event_delete_by_period(int account_id,time_t start_time,time_t end_time);
- * This function delete records from database,it is convenient for user to delete records set once.
- *
- * @ingroup event_management
- * @return This function returns CAL_SUCCESS or error code on failure.
- * @param[in] account_id account db index
- * @param[in] start_time timestamp
- * @param[in] end_time  timestamp
- * @return This function returns CAL_SUCCESS or error code on failure.
- * @exception None.
- * @remarks None.
- * @pre database connected
- * @post none
- * @code
-   #include <calendar-svc-provider.h>
-   void sample_code()
-   {
-	  time_t start_time = time(NULL);
-	  time_t end_time = start_time + 10000;
-
-   	  //connect to database
-   	  calendar_svc_connect();
-
-	  //delete the records whose lase modified time is between start_time and end_time
-   	  calendar_svc_event_delete_by_period(0,start_time,end_time);
-
-	  //close database
-   	  calendar_svc_close();
-   }
- * @endcode
- * @see detail_management module
- * @see
- */
-int calendar_svc_event_delete_by_period(int account_id,time_t start_time,time_t end_time);
-
-/**
  * @fn int calendar_svc_delete_all(int account_id,const char *data_type);
  * This function delete all records from database,it is convenient for user to delete all of records.
+ * local account deletes data immediately but the others set is_deleted parameter 1.
  *
  * @ingroup event_management
  * @return This function returns CAL_SUCCESS or error code on failure.
@@ -1009,12 +983,12 @@ int calendar_svc_event_delete_by_period(int account_id,time_t start_time,time_t 
  * @endcode
  * @see detail_management module
  */
-
 int calendar_svc_delete_all(int account_id,const char *data_type);
 
 /**
  * @fn int calendar_svc_delete_account(int account_id);
  * This function delete all records from database,it is convenient for user to delete all of records according to account.
+ * local account deletes data immediately but the others set is_deleted parameter 1.
  *
  * @ingroup event_management
  * @return This function returns CAL_SUCCESS or error code on failure.
@@ -1045,12 +1019,12 @@ int calendar_svc_delete_account(int account_id);
 
 
 /**
- * @fn int calendar_svc_clean_after_sync(int account_id);
+ * @fn int calendar_svc_clean_after_sync(int calendar_id);
  * This function clean deleted(marked) all records from database,which is used to remove data from database after sync operation.
  *
  * @ingroup event_management
  * @return This function returns CAL_SUCCESS or error code on failure.
- * @param[in] account_id account db index
+ * @param[in] account_id calendar id
  * @return This function returns CAL_SUCCESS or error code on failure.
  * @exception None.
  * @remarks None.
@@ -1073,7 +1047,7 @@ int calendar_svc_delete_account(int account_id);
  * @see detail_management module
  */
 
-int calendar_svc_clean_after_sync(int account_id);
+int calendar_svc_clean_after_sync(int calendar_id);
 
 /**
  * @fn int calendar_svc_get(const char *data_type,int index,const char *field_list, cal_struct **record);
@@ -1148,6 +1122,10 @@ int calendar_svc_get(const char *data_type,int index,const char *field_list, cal
  */
 int calendar_svc_get_count(int account_id,int calendar_id,const char *data_type);
 
+int calendar_svc_calendar_get_count(int account_id);
+int calendar_svc_event_get_count(int calendar_id);
+int calendar_svc_todo_get_count(int calendar_id);
+
 /**
  * @fn int calendar_svc_get_all(int account_id,int calendar_id,const char *data_type, cal_iter **iter);
  * This function get all records from database,it is convenient for user to get all of the reocrds once.
@@ -1186,57 +1164,14 @@ int calendar_svc_get_count(int account_id,int calendar_id,const char *data_type)
  */
 int calendar_svc_get_all(int account_id,int calendar_id,const char *data_type, cal_iter **iter);
 
-
 /**
- * @fn int calendar_svc_get_list(int account_id,int calendar_id,const char *data_type,const char *field_type,int offset,int count, cal_iter **iter)
- * This function get all records from database,but, this api support data filter for performance.
+ * @fn int calendar_svc_event_get_changes(int calendar_id, int version, cal_iter **iter);
+ * This function provides the iterator to get all changes later than the version.
  *
  * @ingroup event_management
  * @return This function returns CAL_SUCCESS or error code on failure.
- * @param[in] account_id account db index
- * @param[in] calendar_id calendar id(will be support phase 2)
- * @param[in] data_type data_type(CAL_STRUCT_CALENDAR or CAL_STRUCT_SCHEDULE)
- * @param[in] sub field type(CAL_VALUE_ALL_FIELD or CAL_VALUE_MAIN_FILED,CAL_VALUE_LIST_FILED,CAL_VALUE_MONTH_FILED)
- * @param[in] offset start item list index
- * @param[in] count return data count(limit count)
- * @param[out] iter calendar data
- * @return This function returns CAL_SUCCESS or error code on failure.
- * @exception None.
- * @remarks event should .
- * @pre database connected
- * @post call calendar_svc_iter_remove() when leave
- * @code
-   #include <calendar-svc-provider.h>
-   void sample_code()
-   {
-   	  cal_iter *iter = NULL;
-
-   	  //connect to database
-   	  calendar_svc_connect();
-
-   	  //get all records
-   	  calendar_svc_get_list(ALL_VISIBILITY_ACCOUNT,ALL_CALENDAR_ID,CAL_STRUCT_SCHEDULE,CAL_VALUE_LIST_FILED,0,10, &iter);
-
-	  //free
-   	  calendar_svc_iter_remove(&iter);
-
-	  //close database
-   	  calendar_svc_close();
-   }
- * @endcode
- * @see detail_management module
- */
-int calendar_svc_get_list(int account_id,int calendar_id,const char *data_type,const char *field_type,int offset,int count, cal_iter **iter);
-
-
-/**
- * @fn int calendar_svc_get_updated_event_list(int account_id,time_t timestamp, cal_iter **iter);
- * This function get update records from database by time statmp,it is convenient for user to decide which records need to sync.
- *
- * @ingroup event_management
- * @return This function returns CAL_SUCCESS or error code on failure.
- * @param[in] account_id account db index
- * @param[in] timestamp updated timestamp
+ * @param[in] calendar_id calendar ID
+ * @param[in] version version number
  * @param[out] iter interation struct for list travel
  * @return This function returns CAL_SUCCESS or error code on failure.
  * @exception None.
@@ -1245,38 +1180,44 @@ int calendar_svc_get_list(int account_id,int calendar_id,const char *data_type,c
  * @post none
  * @code
    #include <calendar-svc-provider.h>
+   #include <stdio.h>
    void sample_code()
    {
-   	  cal_iter *iter = NULL;
-   	  time timestamp = time(NULL) - 10000;
+      int ret;
+      cal_struct *cs;
+      cal_iter *it;
+      int id, type, ver;
 
-	  //connect to database
-   	  calendar_svc_connect();
+      calendar_svc_event_get_changes(1, 0, &it);
 
-	  //get events updated after timestamp
-   	  calendar_svc_get_updated_event_list(0,timestamp, &iter);
-
-   	  //free
-   	  calendar_svc_iter_remove(&iter);
-
-	  //close database
-   	  calendar_svc_close();
+      while (calendar_svc_iter_next(it) == CAL_SUCCESS) {
+         cs = NULL;
+         ret = calendar_svc_iter_get_info(it, &cs);
+         if (ret != CAL_SUCCESS) {
+            printf("calendar_svc_iter_get_info failed (%d)\n", ret);
+            return -1;
+         }
+         id = calendar_svc_struct_get_int(cs, CALS_STRUCT_UPDATED_INT_ID);
+         type = calendar_svc_struct_get_int(cs, CALS_STRUCT_UPDATED_INT_TYPE);
+         ver = calendar_svc_struct_get_int(cs, CALS_STRUCT_UPDATED_INT_VERSION);
+         printf("type = %d id = %d ver = %d\n", id, type, ver);
+         calendar_svc_struct_free(&cs);
+      }
+      calendar_svc_iter_remove(&it);
    }
  * @endcode
  * @see detail_management module
  */
-int calendar_svc_get_updated_event_list(int account_id,time_t timestamp, cal_iter **iter);
-
+int calendar_svc_event_get_changes(int calendar_id, int version, cal_iter **iter);
 
 /**
- * @fn int calendar_svc_get_event_list_by_period(int account_id,time_t start_time,time_t end_time,cal_iter **iter);
- * This function get update records from database by time statmp,it is convenient for user to get records according to time.
+ * @fn int calendar_svc_todo_get_changes(int calendar_id, int version, cal_iter **iter);
+ * This function provides the iterator to get all changes later than the version.
  *
  * @ingroup event_management
  * @return This function returns CAL_SUCCESS or error code on failure.
- * @param[in] account_id account db index(0 for all event
- * @param[in] start_time timestamp
- * @param[in] end_time  timestamp
+ * @param[in] calendar_id calendar ID
+ * @param[in] version version number
  * @param[out] iter interation struct for list travel
  * @return This function returns CAL_SUCCESS or error code on failure.
  * @exception None.
@@ -1285,39 +1226,35 @@ int calendar_svc_get_updated_event_list(int account_id,time_t timestamp, cal_ite
  * @post none
  * @code
    #include <calendar-svc-provider.h>
+   #include <stdio.h>
    void sample_code()
    {
-   	  cal_iter *iter = NULL;
-   	  time start_time = time(NULL);
-   	  time end_time = start_time + 10000;
+      int ret;
+      cal_struct *cs;
+      cal_iter *it;
+      int id, type, ver;
 
-	  //connect to database
-   	  calendar_svc_connect();
+      calendar_svc_todo_get_changes(1, 0, &it);
 
-	  //get events
-   	  calendar_svc_get_event_list_by_period(0,start_time,end_time,&iter);
-
-   	  //free
-   	  calendar_svc_iter_remove(&iter);
-
-	  //close database
-   	  calendar_svc_close();
+      while (calendar_svc_iter_next(it) == CAL_SUCCESS) {
+         cs = NULL;
+         ret = calendar_svc_iter_get_info(it, &cs);
+         if (ret != CAL_SUCCESS) {
+            printf("calendar_svc_iter_get_info failed (%d)\n", ret);
+            return -1;
+         }
+         id = calendar_svc_struct_get_int(cs, CALS_STRUCT_UPDATED_INT_ID);
+         type = calendar_svc_struct_get_int(cs, CALS_STRUCT_UPDATED_INT_TYPE);
+         ver = calendar_svc_struct_get_int(cs, CALS_STRUCT_UPDATED_INT_VERSION);
+         printf("type = %d id = %d ver = %d\n", id, type, ver);
+         calendar_svc_struct_free(&cs);
+      }
+      calendar_svc_iter_remove(&it);
    }
  * @endcode
  * @see detail_management module
  */
-int calendar_svc_get_event_list_by_period(int account_id,
-										time_t start_time,
-										time_t end_time,
-										cal_iter **iter);
-
-
-int calendar_svc_get_event_list_by_tm_period (int account_id,
-                          int calendar_id,
-                        struct tm* startdate,
-                        struct tm* enddate,
-                        cal_iter **iter);
-
+int calendar_svc_todo_get_changes(int calendar_id, int version, cal_iter **iter);
 
 int calendar_svc_convert_id_to_uid(const char *data_type,int index,char **uid);
 
@@ -1437,68 +1374,6 @@ int calendar_svc_iter_next(cal_iter *iter);
  * @see detail_management module
  */
 int calendar_svc_iter_remove(cal_iter **iter);
-
-/**
- * @fn int calendar_svc_util_next_valid_event_tm ( cal_struct * event,struct tm* start_tm,struct tm* end_tm,struct tm* next_valid_start_tm,struct tm* next_valid_end_tm );
- * This function gets next valid event(it should be recurrence event) by period,user can get next valid event't time through calling it.
- *
- * @ingroup event_management
- * @param[in] event point of event struct
- * @param[in] start_time start point of valid time period
- * @param[in] end_time end point of valid time period
- * @param[out] next_valid_start_time next valid start time in period
- * @param[out] next_valid_end_time next valid end time in period
- * @return This function returns CAL_SUCCESS or error code on failure.
- * @remarks none
- * @pre the event must be recurrence event
- * @post none
- * @code
-   #include <calendar_svc_provider.h>
-   #include <time.h>
-   void sample_code()
-   {
-   		cal_struct* event = NULL;
-   		index = 1;
-   		time_t start_time = time(NULL);
-   		time_t end_time = start_time + 1000000;
-   		time_t next_valid_start_time = 0;
-   		time_t next_valid_end_time = 0;
-   		struct tm stm,etm;
-   		struct tm estm,eetm;
-
-		localtime_r(&start_time,&stm);
-		localtime_r(&end_time,&etm);
-
-   		//connect to database
-   		calendar_svc_connect();
-
-		//get the record
-		calendar_svc_get("schedule",NULL,index,&event);
-
-		//get the next valid event time
-		memset(&estm,0x00,sizeof(struct tm));
-		memset(&eetm,0x00,sizeof(struct tm));
-		while(calendar_svc_util_next_valid_event_tm(event,&stm,&etm,&estm,&eetm)==CAL_SUCCESS)
-		{
-			//using estm,eetm
-		}
-
-		//free the space
-		calendar_svc_struct_free(&event);
-
-   		//close database
-   		calendar_svc_close();
-
-   }
- * @endcode
- * @see none.
- */
-int calendar_svc_util_next_valid_event_tm ( cal_struct * event,
- struct tm* start_tm,
- struct tm* end_tm,
- struct tm* next_valid_start_tm,
- struct tm* next_valid_end_tm );
-
 
 /**
  * @defgroup detail_management detail_management
@@ -1650,49 +1525,6 @@ char *calendar_svc_struct_get_str(cal_struct* record, const char *field);
  * @see calendar_svc_struct_set_int().
  */
 int calendar_svc_struct_get_int(cal_struct* record, const char *field);
-
-
-/**
- * @fn struct tm* calendar_svc_struct_get_tm(cal_struct* record, const char* field, int timezone_flag);
- * This function gets time value of the calendar service value,it is convenient for user get the value needed without knowing the detail of the struct.
- *
- * @ingroup detail_management
- * @param[in] record Point to The calendar struct
- * @param[in] field The index of the integer value in calendar service value.
- * @param[in] timezone_flag #cal_timezone_flag time flag means 'time' value is local or gmt time(CAL_TZ_FLAG_GMT or CAL_TZ_FLAG_LOCAL)
- * @return Integer value, or 0 if no value is obtained
- * @remarks none
- * @pre cal_struct varibale is defined.
- * @post none
- * @code
- 	#include <calendar-svc-provider.h>
- 	#include <time.h>
- 	void sample_code()
- 	{
-		time_t last_modified_time = 0;
-		index = 1;
-		cal_struct* event = NULL;
-
- 		//connect to database
- 		calendar_svc_connect();
-
- 		//get the record
- 		calendar_svc_get("schedule",index,NULL,&event);
-
-		//get the time value
- 		last_modified_time = calendar_svc_struct_get_time(event,CAL_VALUE_GMT_LAST_MODIFIED_TIME,CAL_TZ_FLAG_GMT);
-
- 		//free space
-		calendar_svc_free(&event);
-
-		//close database
- 		calendar_svc_close();
- 	}
- * @endcode
- * @see calendar_svc_struct_set_time().
- */
-struct tm* calendar_svc_struct_get_tm(cal_struct* record, const char *field, int timezone_flag);
-
 
 
 /**
@@ -1866,51 +1698,6 @@ int calendar_svc_struct_set_int(cal_struct* record, const char *field, int intva
  */
 int calendar_svc_struct_set_str(cal_struct* record, const char *field, const char *strval);
 
-
-/**
- * @fn int calendar_svc_struct_set_tm(cal_struct* record, const char* field,int timezone_flag, struct tm* time);
- * This function sets time value of the calendar service value,it is convenient for user set the value without knowing the detail of the struct.
- *
- * @ingroup detail_management
- * @param[in] record Point to The calendar struct
- * @param[in] field The index of the integer value in calendar service value.
- * @param[in] timezone_flag #cal_timezone_flag time flag means 'time' value is local or gmt time(CAL_TZ_FLAG_GMT or CAL_TZ_FLAG_LOCAL)
- * @param[in] time time value in calendar service value.
- * @return Integer value, or 0 if no value is obtained
- * @remarks none.
- * @pre cal_struct variable is defined.
- * @post the corresponding value of cal_struct is set.
- * @code
- 	#include <calendar-svc-provider.h>
- 	#include <time.h>
- 	void sample_code()
- 	{
-		time_t last_modified_time = time(NULL);
-		index = 0;
-		cal_struct* event = NULL;
-
- 		//connect to database
- 		calendar_svc_connect();
-
-		//create a cal_struct variable
-		event = calendar_svc_struct_new("schedule");
-
-		//set the time value
- 		calendar_svc_set_time(event,CAL_VALUE_GMT_LAST_MODIFIED_TIME,CAL_TZ_FLAG_GMT,last_modified_time);
-
- 		//insert the record
- 		index = calendar_svc_insert(event);
-
-		//free the space
- 		calendar_svc_struct_free(&event);
-
-		//close database
- 		calendar_svc_close();
- 	}
- * @endcode
- * @see calendar_svc_struct_get_time().
- */
-int calendar_svc_struct_set_tm(cal_struct* record, const char *field, int timezone_flag,struct tm* time);
 
 /**
  * @fn int calendar_svc_struct_get_list(cal_struct* record, const char* field, GList** retlist);
@@ -2114,6 +1901,8 @@ int calendar_svc_value_free(cal_value** value);
  */
 int calendar_svc_value_set_int(cal_value* value, const char *field, int intval);
 
+int calendar_svc_value_set_lli (cal_value *value, const char *field, long long int llival);
+long long int calendar_svc_value_get_lli (cal_value *value, const char *field);
 /**
  * @fn int calendar_svc_value_set_str(cal_value* value, const char* field, const char *strval);
  * This function sets string value to the calendar service value,it is convenient for user set value of cal_value varible.
@@ -2158,50 +1947,6 @@ int calendar_svc_value_set_int(cal_value* value, const char *field, int intval);
 int calendar_svc_value_set_str(cal_value* value, const char *field, const char *strval);
 
 
-
-/**
- * @fn int calendar_svc_value_set_time(cal_value* value, const char* field,int timezone_flag, time_t time);
- * This function sets time value of the calendar service value,it is convenient for user set value of cal_value varible.
- *
- * @ingroup detail_management
- * @param[in] value The calendar service value
- * @param[in] field The index of the integer value in calendar service value.
- * @param[in] timezone_flag #cal_timezone_flag time flag means 'time' value is local or gmt time(CAL_TZ_FLAG_GMT or CAL_TZ_FLAG_LOCAL)
- * @param[in] time timestamp value in calendar service value.
- * @return	This function returns CAL_SUCCESS or error code on failure.
- * @remarks none.
- * @pre cal_value variable is defined.
- * @post none.
- * @code
- 	#include <calendar-svc-provider.h>
- 	void sample_code()
- 	{
-		GList* list = NULL;
-		index = 1;
-		cal_value* event = NULL;
-
- 		//connect to database
- 		calendar_svc_connect();
-
-		//create the event
- 		event = calendar_svc_value_new(CAL_VALUE_LST_EXCEPTION_DATE);
- 		calendar_svc_value_set_time(event,CAL_VALUE_GMT_EXCEPTION_DATE_TIME,CAL_TZ_FLAG_GMT,time(NULL));
-
-		//set the list
-		list = g_list_append(list,event);
-		calendar_svc_struct_store_list(event,CAL_VALUE_LST_EXCEPTION_DATE,list);
-
-		//free the space
- 		calendar_svc_value_free(&event);
-
-		//close database
- 		calendar_svc_close();
- 	}
- * @endcode
- * @see calendar_svc_value_get_time().
- */
-int calendar_svc_value_set_tm (cal_value *value, const char *field,int timezone_flag, struct tm* time);
-
 /**
  * @fn int calendar_svc_value_get_int(cal_value* value, const char* field);
  * This function gets Integer value of the calendar service value,it is convenient for user get value of cal_value varible.
@@ -2217,17 +1962,18 @@ int calendar_svc_value_set_tm (cal_value *value, const char *field,int timezone_
  	#include <calendar-svc-provider.h>
  	void sample_code()
  	{
- 		int event_id = 0;
+ 		int type = 0;
 		cal_value* event = NULL;
 
  		//connect to database
  		calendar_svc_connect();
 
 		//create the event
- 		event = calendar_svc_value_new("meeting_category");
+ 		event = calendar_svc_value_new(CAL_VALUE_LST_ATTENDEE_LIST);
 
-		//get the event_id value
- 		event_id = calendar_svc_value_get_int(event,"event_id");
+		//get the type value
+ 		type = calendar_svc_value_get_int(event,
+			CAL_VALUE_INT_ATTENDEE_DETAIL_TYPE);
 
 		//free the space
  		calendar_svc_value_free(&event);
@@ -2255,17 +2001,18 @@ int calendar_svc_value_get_int(cal_value* value, const char *field);
  	#include <calendar-svc-provider.h>
  	void sample_code()
  	{
- 		char* category_name = "money";
+ 		char* name = "money";
 		cal_value* event = NULL;
 
  		//connect to database
  		calendar_svc_connect();
 
 		//create the event
- 		event = calendar_svc_value_new("meeting_category");
+ 		event = calendar_svc_value_new(CAL_VALUE_LST_ATTENDEE_LIST);
 
 		//get the event_id value
- 		category_name = calendar_svc_value_get_str(event,"category_name");
+ 		name = calendar_svc_value_get_str(event,
+			CAL_VALUE_TXT_ATTENDEE_DETAIL_NAME);
 
 		//free the space
  		calendar_svc_value_free(&event);
@@ -2277,230 +2024,6 @@ int calendar_svc_value_get_int(cal_value* value, const char *field);
  * @see calendar_svc_value_set_str().
  */
 char *calendar_svc_value_get_str(cal_value* value, const char *field);
-
-
-
-/**
- * @fn time_t calendar_svc_value_get_time(cal_value* value, const char* field,int timezone_flag);
- * This function gets time value of the calendar service value,it is convenient for user get value of cal_value varible.
- *
- * @ingroup detail_management
- * @param[in] value The calendar service value
- * @param[in] field The index of the integer value in calendar service value.
- * @param[in] timezone_flag #cal_timezone_flag time flag means 'time' value is local or gmt time(CAL_TZ_FLAG_GMT or CAL_TZ_FLAG_LOCAL)
- * @return time time value in calendar service value.
- * @remarks none.
- * @pre cal_value variable is defined.
- * @post none.
- * @code
- 	#include <calendar-svc-provider.h>
- 	#include <time.t>
- 	void sample_code()
- 	{
- 		time_t exception_time = 0;
-		index = 1;
-		cal_value* event = NULL;
-
- 		//connect to database
- 		calendar_svc_connect();
-
-		//create the event
- 		event = calendar_svc_value_new(CAL_VALUE_LST_EXCEPTION_DATE);
- 		exception_time = calendar_svc_value_get_time(event,CAL_VALUE_GMT_EXCEPTION_DATE_TIME,CAL_TZ_FLAG_GMT);
-
-		//free the space
- 		calendar_svc_value_free(&event);
-
-		//close database
- 		calendar_svc_close();
- 	}
- * @endcode
- * @see calendar_svc_value_set_time().
- */
-struct tm* calendar_svc_value_get_tm (cal_value *value, const char *field,int timezone_flag);
-
-
-
-/**
- * @defgroup utilities utilities
- * @ingroup CALENDAR_SVC
- * @brief
- *		date/time, timzone utilities
- */
-
-/**
- * @fn int calendar_svc_util_convert_db_time (struct tm* fromTime,char* fromTz, struct tm *toTime, char *toTz);
- * This function gets local time by gmt0 time,it is convenient for user to convert time.
- */
-int calendar_svc_util_convert_db_time (struct tm* fromTime,char *fromTz, struct tm *toTime, char *toTz);
-
-
-/**
- * @fn int calendar_svc_util_gmt_to_local(time_t fromTime,time_t *toTime);
- * This function gets local time by gmt0 time,it is convenient for user to convert time.
- *
- * @ingroup utilities
- * @param[in] fromTime gmt0 time
- * @param[out] toTime local time
- * @return This function returns CAL_SUCCESS or error code on failure.
- * @remarks none
- * @pre none
- * @post none
- * @code
-   #include <calendar_svc_provider.h>
-   #include <time.h>
-   void sample_code()
-   {
-   		time_t fromTime = time(NULL);
-   		time_t toTime = 0;
-
-   		//connect to database
-   		calendar_svc_connect();
-
-    	//convert
-    	calendar_svc_util_gmt_to_local(fromTime,&toTime);
-
-   		//close to database
-   		calendar_svc_close();
-   }
- * @endcode
- * @see calendar_svc_util_local_to_gmt().
- */
-int calendar_svc_util_gmt_to_local(time_t fromTime,time_t *toTime);
-
-/**
- * @fn int calendar_svc_util_local_to_gmt(time_t fromTime,time_t *toTime);
- * This function gets gmt0 time by local time,it is convenient for user to convert time.
- *
- * @ingroup utilities
- * @param[in] fromTime local time
- * @param[out] toTime gmt0 time
- * @return This function returns CAL_SUCCESS or error code on failure.
- * @remarks none
- * @pre none
- * @post none
- * @code
-   #include <calendar_svc_provider.h>
-   #include <time.h>
-   void sample_code()
-   {
-   		time_t fromTime = time(NULL);
-   		time_t toTime = 0;
-
-   		//connect to database
-   		calendar_svc_connect();
-
-    	//convert
-    	calendar_svc_util_local_to_gmt(fromTime,&toTime);
-
-   		//close to database
-   		calendar_svc_close();
-   }
- * @endcode
- * @see calendar_svc_util_gmt_to_local().
- */
-int calendar_svc_util_local_to_gmt(time_t fromTime,time_t *toTime);
-
-
-/**
- * @fn int calendar_svc_util_save_vcs_by_index(const int index,char* full_file_path);
- * This function makes vcal file by record index,it is convenient for user to get vcal from the calendar record.
- *
- * @ingroup utilities
- * @param[in]	index	    event's index for vcal converting
- * @param[out]	full_file_path	Points the file path.
- * @return	 This function returns CAL_SUCCESS or error code on failure.
- * @remarks none
- * @pre none
- * @post none
- * @code
-	#include <calendar_svc_provider.h>
-	#include <time.h>
-	void sample_code()
-	{
-			char* full_file_path = "/opt/dbspace";
-			int index = 1;
-
-			//connect to database
-			calendar_svc_connect();
-
-			//convert
-			calendar_svc_util_save_vcs_by_index(index,full_file_path);
-
-			//close to database
-			calendar_svc_close();
-	}
- * @endcode
- * @see calendar_svc_util_register_vcs_file(),calendar_svc_util_convert_vcs_to_event().
- */
-int calendar_svc_util_save_vcs_by_index(const int index,char *full_file_path);
-
-/**
- * @fn int calendar_svc_util_register_vcs_file(const char * file_name);
- * This function registers vcal to calendar db,user can save vcal to database through calling it.
- *
- * @ingroup utilities
- * @param[in]	file_name	    vcalendar's file name
- * @return	 This function returns cid or error code on failure.
- * @remarks none
- * @pre the vcalendar exists
- * @post none
- * @code
-	#include <calendar_svc_provider.h>
-	void sample_code()
-	{
-			char* full_name = "/opt/dbspace/vcalendar_test.vcs";
-			int cal_id = 0;
-
-			//connect to database
-			calendar_svc_connect();
-
-			//convert
-			cal_id = calendar_svc_util_register_vcs_file(full_name);
-
-			//close to database
-			calendar_svc_close();
-	}
- * @endcode
- * @see calendar_svc_util_save_vcs_by_index(),calendar_svc_util_convert_vcs_to_event().
- */
-int calendar_svc_util_register_vcs_file(const char * file_name);
-
-/**
- * @fn int calendar_svc_util_convert_vcs_to_event (const char *raw_data,int data_size,cal_struct **record);
- * This function converts data (raw_data(vcal format) to cal_struct(event)),it is convenient for user to convert.
- *
- * @ingroup utilities
- * @param[in]	raw_data	    vcalendar event raw data
- * @param[in]	data_size	   raw_data buf size
- * @param[out] 	record    assigned record
- * @return	 This function returns CAL_SUCCESS or error code on failure.
- * @remarks none
- * @pre the vcalendar data is valid.
- * @post none
- * @code
-	#include <calendar_svc_provider.h>
-	void sample_code()
-	{
-			char raw_data[] = "";//raw data
-
-			//connect to database
-			calendar_svc_connect();
-
-			cal_struct* event = NULL;
-
-			//convert
-			calendar_svc_util_convert_vcs_to_event (raw_data,strlen(raw_data),&event);
-
-			calendar_svc_struct_free(&event);
-
-			//close to database
-			calendar_svc_close();
-	}
- * @endcode
- * @see calendar_svc_util_convert_event_to_vcs().
- */
-int calendar_svc_util_convert_vcs_to_event (const char *raw_data,int data_size,cal_struct **record);
 
 /**
  * @fn int calendar_svc_util_convert_event_to_vcs (cal_struct *record,char **raw_data,int *data_size);
@@ -2538,231 +2061,9 @@ int calendar_svc_util_convert_vcs_to_event (const char *raw_data,int data_size,c
 		calendar_svc_close();
 	}
  * @endcode
- * @see calendar_svc_util_convert_vcs_to_event().
  */
-int calendar_svc_util_convert_event_to_vcs (cal_struct *record,char **raw_data,int *data_size);
+DEPRECATED int calendar_svc_util_convert_event_to_vcs (cal_struct *record,char **raw_data,int *data_size);
 
-
-/**
- * @fn int calendar_svc_util_next_valid_event(cal_struct* event,time_t start_time,time_t end_time,time_t *next_valid_start_time,time_t *next_valid_end_time);
- * This function gets next valid event(it should be recurrence event) by period,user can get next valid event't time through calling it.
- *
- * @ingroup utilities
- * @param[in] event point of event struct
- * @param[in] start_time start point of valid time period
- * @param[in] end_time end point of valid time period
- * @param[out] next_valid_start_time next valid start time in period
- * @param[out] next_valid_end_time next valid end time in period
- * @return This function returns CAL_SUCCESS or error code on failure.
- * @remarks none
- * @pre the event must be recurrence event
- * @deprecated this api will be deprecated.
- * @post none
- * @code
-  #include <calendar_svc_provider.h>
-  #include <time.h>
-  void sample_code()
-  {
-  		cal_struct* event = NULL;
-  		index = 1;
-  		time_t start_time = time(NULL);
-  		time_t end_time = start_time + 1000000;
-  		time_t next_valid_start_time = 0;
-  		time_t next_valid_end_time = 0;
-
-  		//connect to database
-  		calendar_svc_connect();
-
-		//get the record
-		calendar_svc_get("schedule",NULL,index,&event);
-
-		//get the next valid event time
-		calendar_svc_util_next_valid_event(event,start_time,end_time,&next_valid_start_time,&next_valid_end_time);
-
-		//free the space
-		calendar_svc_struct_free(&event);
-
-  		//close database
-  		calendar_svc_close();
-
-  }
- * @endcode
- * @see none.
- */
-int calendar_svc_util_next_valid_event(cal_struct* event,time_t start_time,time_t end_time,
-                               time_t *next_valid_start_time,time_t *next_valid_end_time);
-
-/**
- * @fn time_t calendar_svc_value_get_time(cal_value* value, const char* field,int timezone_flag);
- * This function gets time value of the calendar service value,it is convenient for user get value of cal_value varible.
- *
- * @ingroup detail_management
- * @param[in] value The calendar service value
- * @param[in] field The index of the integer value in calendar service value.
- * @param[in] timezone_flag #cal_timezone_flag time flag means 'time' value is local or gmt time(CAL_TZ_FLAG_GMT or CAL_TZ_FLAG_LOCAL)
- * @return time time value in calendar service value.
- * @remarks none.
- * @pre cal_value variable is defined.
- * @deprecated this api will be deprecated.
- * @post none.
- * @code
- 	#include <calendar-svc-provider.h>
- 	#include <time.t>
- 	void sample_code()
- 	{
- 		time_t exception_time = 0;
-		index = 1;
-		cal_value* event = NULL;
-
- 		//connect to database
- 		calendar_svc_connect();
-
-		//create the event
- 		event = calendar_svc_value_new(CAL_VALUE_LST_EXCEPTION_DATE);
- 		exception_time = calendar_svc_value_get_time(event,CAL_VALUE_GMT_EXCEPTION_DATE_TIME,CAL_TZ_FLAG_GMT);
-
-		//free the space
- 		calendar_svc_value_free(&event);
-
-		//close database
- 		calendar_svc_close();
- 	}
- * @endcode
- * @see calendar_svc_value_set_time().
- */
-time_t calendar_svc_value_get_time(cal_value* value, const char *field,int timezone_flag);
-
-/**
- * @fn int calendar_svc_value_set_time(cal_value* value, const char* field,int timezone_flag, time_t time);
- * This function sets time value of the calendar service value,it is convenient for user set value of cal_value varible.
- *
- * @ingroup detail_management
- * @param[in] value The calendar service value
- * @param[in] field The index of the integer value in calendar service value.
- * @param[in] timezone_flag #cal_timezone_flag time flag means 'time' value is local or gmt time(CAL_TZ_FLAG_GMT or CAL_TZ_FLAG_LOCAL)
- * @param[in] time timestamp value in calendar service value.
- * @return	This function returns CAL_SUCCESS or error code on failure.
- * @remarks none.
- * @pre cal_value variable is defined.
- * @post none.
- * @deprecated this api will be deprecated.
- * @code
- 	#include <calendar-svc-provider.h>
- 	void sample_code()
- 	{
-		GList* list = NULL;
-		index = 1;
-		cal_value* event = NULL;
-
- 		//connect to database
- 		calendar_svc_connect();
-
-		//create the event
- 		event = calendar_svc_value_new(CAL_VALUE_LST_EXCEPTION_DATE);
- 		calendar_svc_value_set_time(event,CAL_VALUE_GMT_EXCEPTION_DATE_TIME,CAL_TZ_FLAG_GMT,time(NULL));
-
-		//set the list
-		list = g_list_append(list,event);
-		calendar_svc_struct_store_list(event,CAL_VALUE_LST_EXCEPTION_DATE,list);
-
-		//free the space
- 		calendar_svc_value_free(&event);
-
-		//close database
- 		calendar_svc_close();
- 	}
- * @endcode
- * @see calendar_svc_value_get_time().
- */
-int calendar_svc_value_set_time(cal_value* value, const char *field,int timezone_flag, time_t time);
-
-/**
- * @fn int calendar_svc_struct_set_time(cal_struct* record, const char* field,int timezone_flag, time_t time);
- * This function sets time value of the calendar service value,it is convenient for user set the value without knowing the detail of the struct.
- *
- * @ingroup detail_management
- * @param[in] record Point to The calendar struct
- * @param[in] field The index of the integer value in calendar service value.
- * @param[in] timezone_flag #cal_timezone_flag time flag means 'time' value is local or gmt time(CAL_TZ_FLAG_GMT or CAL_TZ_FLAG_LOCAL)
- * @param[in] time time value in calendar service value.
- * @return Integer value, or 0 if no value is obtained
- * @remarks none.
- * @pre cal_struct variable is defined.
- * @post the corresponding value of cal_struct is set.
- * @deprecated this api will be deprecated.
- * @code
- 	#include <calendar-svc-provider.h>
- 	#include <time.h>
- 	void sample_code()
- 	{
-		time_t last_modified_time = time(NULL);
-		index = 0;
-		cal_struct* event = NULL;
-
- 		//connect to database
- 		calendar_svc_connect();
-
-		//create a cal_struct variable
-		event = calendar_svc_struct_new("schedule");
-
-		//set the time value
- 		calendar_svc_set_time(event,CAL_VALUE_GMT_LAST_MODIFIED_TIME, CAL_TZ_FLAG_GMT, last_modified_time);
-
- 		//insert the record
- 		index = calendar_svc_insert(event);
-
-		//free the space
- 		calendar_svc_struct_free(&event);
-
-		//close database
- 		calendar_svc_close();
- 	}
- * @endcode
- * @see calendar_svc_struct_set_tm().
- */
-int calendar_svc_struct_set_time(cal_struct* record, const char *field,int timezone_flag, time_t time);
-
-/**
- * @fn time_t calendar_svc_struct_get_time(cal_struct* record, const char* field, int timezone_flag);
- * This function gets time value of the calendar service value,it is convenient for user get the value needed without knowing the detail of the struct.
- *
- * @ingroup detail_management
- * @param[in] record Point to The calendar struct
- * @param[in] field The index of the integer value in calendar service value.
- * @param[in] timezone_flag #cal_timezone_flag time flag means 'time' value is local or gmt time(CAL_TZ_FLAG_GMT or CAL_TZ_FLAG_LOCAL)
- * @return Integer value, or 0 if no value is obtained
- * @remarks none
- * @pre cal_struct varibale is defined.
- * @post none
- * @deprecated this api will be deprecated.
- * @code
- 	#include <calendar-svc-provider.h>
- 	#include <time.h>
- 	void sample_code()
- 	{
-		time_t last_modified_time = 0;
-		index = 1;
-		cal_struct* event = NULL;
-
- 		//connect to database
- 		calendar_svc_connect();
-
- 		//get the record
- 		calendar_svc_get("schedule",index,NULL,&event);
-
-		//get the time value
- 		last_modified_time = calendar_svc_struct_get_time(event,CAL_VALUE_GMT_LAST_MODIFIED_TIME);
-
- 		//free space
-		calendar_svc_free(&event);
-
-		//close database
- 		calendar_svc_close();
- 	}
- * @endcode
- * @see calendar_svc_struct_get_tm().
- */
-time_t calendar_svc_struct_get_time(cal_struct* record, const char *field, int timezone_flag);
 
 /**
  * @fn int calendar_svc_find_event_list(int account_id,const char* search_type,const void* search_value, cal_iter **iter);
@@ -2803,21 +2104,14 @@ time_t calendar_svc_struct_get_time(cal_struct* record, const char *field, int t
  */
 int calendar_svc_find_event_list(int account_id,const char *search_type,const void* search_value, cal_iter **iter);
 
-int calendar_svc_find_recurring_event_list (int account_id, cal_iter **iter);
-
-int calendar_svc_find_event_list_by_filter(int account_id, int filter_count, const char *search_type[], const void *search_value[], cal_iter **iter);
-
 /**
- * @fn int calendar_svc_find(int account_id,int calendar_id,const char *data_type,const char *search_type,const void *search_value, cal_iter **iter);
- * This function get records from database by search param,it is convenient for user to get records according to some condition.
+ * @fn int calendar_svc_event_search(int field, const char *keyword, cal_iter **iter);
+ * #calendar_svc_event_search searches events including the keyword in given fields.
  *
  * @ingroup event_management
  * @return This function returns CAL_SUCCESS or error code on failure.
- * @param[in] account_id account db index
- * @param[in] calendar_id calendar db index
- * @param[in] data_type struct type(CAL_STRUCT_SCHEDULE,CAL_STRUCT_CALENDAR,CAL_STRUCT_TIMEZONE,..)
- * @param[in] search_type event search type(eg. CAL_VALUE_SUMMARY or CAL_VALUE_DESCRIPTION,..)
- * @param[in] search_value event search value(eg. "weekly report", etc.. ), it can be integer value(eg. 1 or 2.. etc)
+ * @param[in] field fields where the keyword is searched.  #SEARCHFIELD
+ * @param[in] keyword keyword to be searched
  * @param[out] iter interation struct for list travel
  * @return This function returns CAL_SUCCESS or error code on failure.
  * @exception None.
@@ -2828,37 +2122,565 @@ int calendar_svc_find_event_list_by_filter(int account_id, int filter_count, con
   #include <calendar-svc-provider.h>
   void sample_code()
   {
-	cal_iter *iter = NULL;
+	int ret;
+	cal_struct *cs;
+	cal_iter *it;
+	char *summary;
+	char *desc;
+	int id;
 
-	//connect to database
 	calendar_svc_connect();
+	int search_field;
 
-	//find event whose summary including string like "party"
-	calendar_svc_find(LOCAL_ACCOUNT_ID,DEFAULT_CALENDAR_ID,CAL_STRUCT_SCHEDULE,"summary","party", &iter);
+	search_field = CALS_SEARCH_FIELD_NONE;
+	search_field |= CALS_SEARCH_FIELD_SUMMARY;
+	search_field |= CALS_SEARCH_FIELD_DESCRIPTION;
+	search_field |= CALS_SEARCH_FIELD_LOCATION;
+	search_field |= CALS_SEARCH_FIELD_ATTENDEE;
 
-	//free
-	calendar_svc_iter_remove(&iter);
+	ret = calendar_svc_event_search(search_field, "Hello", &it);
+	if (ret < 0)
+		return -1;
 
-	//close database
+	while (calendar_svc_iter_next(it) == CAL_SUCCESS) {
+		cs = NULL;
+		ret = calendar_svc_iter_get_info(it, &cs);
+		if (ret != CAL_SUCCESS) {
+			printf("calendar_svc_iter_get_info failed (%d)\n", ret);
+			return -1;
+		}
+
+		id = calendar_svc_struct_get_int(cs, CAL_VALUE_INT_INDEX);
+		summary = calendar_svc_struct_get_str(cs, CAL_VALUE_TXT_SUMMARY);
+		desc = calendar_svc_struct_get_str(cs, CAL_VALUE_TXT_DESCRIPTION);
+		printf("type = %d id = %s desc = %s\n", id, summary, desc);
+		calendar_svc_struct_free(&cs);
+	}
+
+	calendar_svc_iter_remove(&it);
+
 	calendar_svc_close();
+
+	return 0;
   }
  * @endcode
  * @see detail_management module
- * @deprecated it will replacement calendar_svc_find_list
  */
-int calendar_svc_find(int account_id,int calendar_id,const char *data_type,const char *search_type,const void *search_value, cal_iter **iter);
-
+int calendar_svc_event_search(int field, const char *keyword, cal_iter **iter);
 
 /**
- * @fn int calendar_svc_search_list(int account_id,int calendar_id,const char *data_type,const char *search_type,const void *search_value,int offset,int count, cal_iter **iter);
- * This function get records from database by search param,it is convenient for user to get records according to some condition.
+ * @fn int calendar_svc_smartsearch_excl(const char *keyword, int offset, int limit, cal_iter **iter)
+ * Search events by keyword with database offset and limit option.
+ * This function is provided for Smartsearch application exclusively.
+ *
+ * @ingroup event_management
+ * @return CAL_SUCCESS or negative error code on failure.
+ * @param[in] field fields where the keyword is searched, #SEARCHFIELD
+ * @param[in] keyword keyword to be searched
+ * @param[in] offset offset to omit some searching results
+ * @param[in] limit limit of the number of results. If negative, no limit is applied.
+ * @param[out] iter interation struct for list travel
+ * @return This function returns CAL_SUCCESS or error code on failure.
+ * @exception None.
+ * @remarks None.
+ * @pre database connected
+ * @post none
+ * @see detail_management module
+ */
+int calendar_svc_smartsearch_excl(const char *keyword, int offset, int limit, cal_iter **iter);
 
- * @deprecated it will replacement calendar_svc_find_list
- **/
-int calendar_svc_search_list(int account_id,int calendar_id,const char *data_type,const char *search_type,const void *search_value,
-								 int offset,int count, cal_iter **iter);
+/**
+ * @fn int calendar_svc_todo_search(int field, const char *keyword, cal_iter **iter);
+ * #calendar_svc_event_search searches TO-DOs including the keyword in given fields.
+ *
+ * @ingroup event_management
+ * @return This function returns CAL_SUCCESS or error code on failure.
+ * @param[in] field fields where the keyword is searched, #SEARCHFIELD
+ * @param[in] keyword keyword to be searched
+ * @param[out] iter interation struct for list travel
+ * @return This function returns CAL_SUCCESS or error code on failure.
+ * @exception None.
+ * @remarks None.
+ * @pre database connected
+ * @post none
+ * @code
+  #include <calendar-svc-provider.h>
+  void sample_code()
+  {
+	int ret;
+	cal_struct *cs;
+	cal_iter *it;
+	char *summary;
+	char *desc;
+	int id;
 
+	calendar_svc_connect();
+	int search_field;
 
+	search_field = CALS_SEARCH_FIELD_NONE;
+	search_field |= CALS_SEARCH_FIELD_SUMMARY;
+	search_field |= CALS_SEARCH_FIELD_DESCRIPTION;
+	search_field |= CALS_SEARCH_FIELD_LOCATION;
+	search_field |= CALS_SEARCH_FIELD_ATTENDEE;
+
+	ret = calendar_svc_todo_search(search_field, "Hello", &it);
+	if (ret < 0)
+		return -1;
+
+	while (calendar_svc_iter_next(it) == CAL_SUCCESS) {
+		cs = NULL;
+		ret = calendar_svc_iter_get_info(it, &cs);
+		if (ret != CAL_SUCCESS) {
+			printf("calendar_svc_iter_get_info failed (%d)\n", ret);
+			return -1;
+		}
+
+		id = calendar_svc_struct_get_int(cs, CAL_VALUE_INT_INDEX);
+		summary = calendar_svc_struct_get_str(cs, CAL_VALUE_TXT_SUMMARY);
+		desc = calendar_svc_struct_get_str(cs, CAL_VALUE_TXT_DESCRIPTION);
+		printf("type = %d id = %s desc = %s\n", id, summary, desc);
+		calendar_svc_struct_free(&cs);
+	}
+
+	calendar_svc_iter_remove(&it);
+
+	calendar_svc_close();
+
+	return 0;
+  }
+ * @endcode
+ * @see detail_management module
+ */
+int calendar_svc_todo_search(int field, const char *keyword, cal_iter **iter);
+
+/**
+ * @fn int calendar_svc_read_schedules(const char *stream, GList **schedules);
+ * This function reads schedules and provides schedule list.
+ *
+ * @ingroup event management
+ * @param[in] stream vcalendar(ver1.0) icalendar(ver2.0) stream
+ * @param[out] schedules schedule list which data is cal_struct
+ * @return This function returns CAL_SUCCESS or error code on failure.
+ * @remarks none
+ * @pre none
+ * @post none
+ * @code
+	#include <stdio.h>
+	#include <stdlib.h>
+	#include <calendar-svc-provider.h>
+
+	void sample_code()
+	{
+		int ret, len = 0;
+		char *vals;
+		char *stream = NULL;
+		char buf[1024];
+		time_t tt;
+		cal_struct *cs = NULL;
+		GList *l, *schedules = NULL;
+		buf_size = 1024;
+		FILE *file;
+
+		file = fopen(path, "r");
+		if (file == NULL) {
+			printf("failed to open\n");
+			return -1;
+		}
+		stream = malloc(1024);
+		while (fgets(buf, sizeof(buf), file)) {
+			if (len + sizeof(buf) < buf_size) {
+				len += snprintf(stream + len, strlen(buf) +1, "%s", buf);
+
+			} else {
+				char *new_stream;
+				buf_size *= 2;
+				new_stream = realloc(stream, buf_size);
+				if (new_stream) {
+					stream = new_stream;
+				} else {
+					free(stream);
+					fclose(file);
+					printf("out of memory\n");
+					return NULL;
+				}
+				len += snprintf(stream + len, strlen(buf) +1, "%s", buf);
+			}
+		}
+		fclose(file);
+
+		ret = calendar_svc_read_schedules(stream, &schedules);
+		if (ret < 0) {
+			printf("Failed to read schedules(errno:%d)\n", ret);
+			return -1;
+		}
+
+		if (schedules == NULL) {
+			printf("No schedules\n");
+			return -1;
+		}
+
+		l = schedules;
+		while (l) {
+			cs = l->data;
+			if (cs == NULL) {
+				l = g_list_next(l);
+				continue;
+			}
+			vals = NULL;
+			vals = calendar_svc_struct_get_str(cs, CAL_VALUE_TXT_SUMMARY);
+			printf("summary:%s\n", vals);
+
+			l = g_list_next(l);
+		}
+		if (stream) free(stream);
+		return 0;
+	}
+ * @endcode
+ * @see calendar_svc_write_schedules().
+ */
+int calendar_svc_read_schedules(const char *stream, GList **schedules);
+
+/**
+ * @fn int calendar_svc_calendar_import(const char *path, int calendar_id);
+ * This function import vcalendar(ver 1.0), icalendar(ver 2.0) to calendar DB.
+ *
+ * @ingroup event management
+ * @param[in] path file path
+ * @param[out] calendar_id calendar id
+ * @return This function returns CAL_SUCCESS or error code on failure.
+ * @remarks none
+ * @pre none
+ * @post none
+ * @code
+	#include <stdio.h>
+	#include <stdlib.h>
+	#include <calendar-svc-provider.h>
+
+	int sample_code())
+	{
+		int r;
+		int calendar_id = 1;
+		char *path = "/opt/media/test.ics";
+
+    	calendar_svc_connect();
+		ret = calendar_svc_calendar_import(path, calendar_id);
+		if (ret != CAL_SUCCESS) {
+			printf("Failed to import path(%s) to id(%d)\n", path, calendar_id);
+			return -1;
+		}
+    	calendar_svc_close();
+		return 0;
+	}
+ * @endcode
+ * @see calendar_svc_calendar_export().
+ */
+int calendar_svc_calendar_import(const char *path, int calendar_id);
+
+/**
+ * @fn int calendar_svc_write_schedules(GList *schedules, char **stream);
+ * This function writes schedules to stream.
+ *
+ * @ingroup event management
+ * @param[in] schedules schedule list which data is cal_struct
+ * @param[out] stream vcalendar(ver1.0) icalendar(ver2.0) stream
+ * @return This function returns CAL_SUCCESS or error code on failure.
+ * @remarks none
+ * @pre none
+ * @post none
+ * @code
+	#include <stdio.h>
+	#include <stdlib.h>
+	#include <calendar-svc-provider.h>
+
+	int main(int argc, char **argv)
+	{
+		int ret;
+		char *stream;
+		GList *schedules = NULL;
+		cal_struct *cs = NULL;
+
+		cs = calendar_svc_struct_new(CAL_STRUCT_CALENDAR);
+		if (cs == NULL) {
+			printf("Failed to calloc\n");
+			return-1;
+		}
+		calendar_svc_struct_set_str(cs, CAL_VALUE_TXT_SUMMARY, "title");
+		// set data in cs...
+
+		schedules = g_list_append(schedules, cs);
+
+		ret = calendar_svc_write_schedules(schedules, &stream);
+		if (ret != CAL_SUCCESS) {
+			printf("Failed to read schedules(errno:%d)\n", ret);
+			return -1;
+		}
+
+		if (stream == NULL) {
+			printf("stream is NULL\n");
+			return -1;
+		}
+
+		if (stream) free(stream);
+		return 0;
+	}
+ * @endcode
+ * @see calendar_svc_read_schedules().
+ */
+int calendar_svc_write_schedules(GList *schedules, char **stream);
+
+/**
+ * @fn int calendar_svc_calendar_export(int calendar_id, const char *path);
+ * This function export calendar DB to file.
+ *
+ * @ingroup event management
+ * @param[in] calendar_id calendar id
+ * @param[out] path file path
+ * @return This function returns CAL_SUCCESS or error code on failure.
+ * @remarks none
+ * @pre none
+ * @post none
+ * @code
+	#include <stdio.h>
+	#include <stdlib.h>
+	#include <calendar-svc-provider.h>
+
+	int sample_code())
+	{
+		int r;
+		int calendar_id = 1;
+		char *path = "/opt/media/test.ics";
+
+    	calendar_svc_connect();
+		r = calendar_svc_calendar_export(calendar_id, path);
+		if (r != CAL_SUCCESS) {
+			printf("Failed to export schedules\n");
+			return -1;
+		}
+
+    	calendar_svc_close();
+		return 0;
+	}
+ * @endcode
+ * @see calendar_svc_calendar_import().
+ */
+int calendar_svc_calendar_export(int calendar_id, const char *path);
+
+#define CALS_VALUE_INT_DTSTART_TYPE "dtstart_type"
+#define CALS_VALUE_LLI_DTSTART_UTIME "dtstart_utime"
+#define CALS_VALUE_INT_DTSTART_YEAR "dtstart_year"
+#define CALS_VALUE_INT_DTSTART_MONTH "dtstart_month"
+#define CALS_VALUE_INT_DTSTART_MDAY "dtstart_mday"
+#define CALS_VALUE_TXT_DTSTART_TZID "dtstart_tzid"
+#define CALS_VALUE_INT_DTEND_TYPE "dtend_type"
+#define CALS_VALUE_LLI_DTEND_UTIME "dtend_utime"
+#define CALS_VALUE_INT_DTEND_YEAR "dtend_year"
+#define CALS_VALUE_INT_DTEND_MONTH "dtend_month"
+#define CALS_VALUE_INT_DTEND_MDAY "dtend_mday"
+#define CALS_VALUE_TXT_DTEND_TZID "dtend_tzid"
+#define CALS_VALUE_LLI_LASTMOD "last_mod"
+
+#define CALS_VALUE_INT_RRULE_FREQ "freq"
+#define CALS_VALUE_INT_RRULE_ID "rrule_id"
+#define CALS_VALUE_INT_RRULE_RANGE_TYPE "range_type"	//endless, until, count
+#define CALS_VALUE_INT_RRULE_UNTIL_TYPE "until_type"	//until by utc, until by local date
+#define CALS_VALUE_LLI_RRULE_UNTIL_UTIME "until_utime"  //unix time
+#define CALS_VALUE_INT_RRULE_UNTIL_YEAR "until_year"
+#define CALS_VALUE_INT_RRULE_UNTIL_MONTH "until_month"
+#define CALS_VALUE_INT_RRULE_UNTIL_MDAY "until_mday"
+#define CALS_VALUE_INT_RRULE_COUNT "count"
+#define CALS_VALUE_INT_RRULE_INTERVAL "interval"
+#define CALS_VALUE_TXT_RRULE_BYSECOND "bysecond"
+#define CALS_VALUE_TXT_RRULE_BYMINUTE "byminute"
+#define CALS_VALUE_TXT_RRULE_BYHOUR "byhour"
+#define CALS_VALUE_TXT_RRULE_BYDAY "byday"
+#define CALS_VALUE_TXT_RRULE_BYMONTHDAY "bymonthday"
+#define CALS_VALUE_TXT_RRULE_BYYEARDAY "byyearday"
+#define CALS_VALUE_TXT_RRULE_BYWEEKNO "byweekno"
+#define CALS_VALUE_TXT_RRULE_BYMONTH "bymonth"
+#define CALS_VALUE_TXT_RRULE_BYSETPOS "bysetpos"
+#define CALS_VALUE_INT_RRULE_WKST "wkst"
+
+/* 0x00 ~0x06 used cal_struct_type */
+enum {
+	CALS_LIST_PERIOD_NORMAL_ONOFF = 0x07,
+	CALS_LIST_PERIOD_ALLDAY_ONOFF,
+	CALS_LIST_PERIOD_NORMAL_BASIC,
+	CALS_LIST_PERIOD_ALLDAY_BASIC,
+	CALS_LIST_PERIOD_NORMAL_OSP = 0x100,
+	CALS_LIST_PERIOD_ALLDAY_OSP,
+	CALS_LIST_PERIOD_NORMAL_LOCATION,
+	CALS_LIST_PERIOD_ALLDAY_LOCATION,
+	CALS_LIST_PERIOD_NORMAL_ALARM,
+	CALS_LIST_PERIOD_ALLDAY_ALARM,
+};
+
+#define CALS_LIST_PERIOD_NORMAL_ONOFF_INT_EVENTID CAL_VALUE_INT_INDEX
+#define CALS_LIST_PERIOD_NORMAL_ONOFF_INT_DTSTART_TYPE CALS_VALUE_INT_DTSTART_TYPE
+#define CALS_LIST_PERIOD_NORMAL_ONOFF_LLI_DTSTART_UTIME CALS_VALUE_LLI_DTSTART_UTIME
+#define CALS_LIST_PERIOD_NORMAL_ONOFF_INT_DTEND_TYPE CALS_VALUE_INT_DTEND_TYPE
+#define CALS_LIST_PERIOD_NORMAL_ONOFF_LLI_DTEND_UTIME CALS_VALUE_LLI_DTEND_UTIME
+
+#define CALS_LIST_PERIOD_ALLDAY_ONOFF_INT_EVENTID CAL_VALUE_INT_INDEX
+#define CALS_LIST_PERIOD_ALLDAY_ONOFF_INT_DTSTART_TYPE CALS_VALUE_INT_DTSTART_TYPE
+#define CALS_LIST_PERIOD_ALLDAY_ONOFF_INT_DTSTART_YEAR CALS_VALUE_INT_DTSTART_YEAR
+#define CALS_LIST_PERIOD_ALLDAY_ONOFF_INT_DTSTART_MONTH CALS_VALUE_INT_DTSTART_MONTH
+#define CALS_LIST_PERIOD_ALLDAY_ONOFF_INT_DTSTART_MDAY CALS_VALUE_INT_DTSTART_MDAY
+#define CALS_LIST_PERIOD_ALLDAY_ONOFF_INT_DTEND_TYPE CALS_VALUE_INT_DTEND_TYPE
+#define CALS_LIST_PERIOD_ALLDAY_ONOFF_INT_DTEND_YEAR CALS_VALUE_INT_DTEND_YEAR
+#define CALS_LIST_PERIOD_ALLDAY_ONOFF_INT_DTEND_MONTH CALS_VALUE_INT_DTEND_MONTH
+#define CALS_LIST_PERIOD_ALLDAY_ONOFF_INT_DTEND_MDAY CALS_VALUE_INT_DTEND_MDAY
+
+#define CALS_LIST_PERIOD_NORMAL_BASIC_INT_EVENTID CAL_VALUE_INT_INDEX
+#define CALS_LIST_PERIOD_NORMAL_BASIC_INT_DTSTART_TYPE CALS_VALUE_INT_DTSTART_TYPE
+#define CALS_LIST_PERIOD_NORMAL_BASIC_LLI_DTSTART_UTIME CALS_VALUE_LLI_DTSTART_UTIME
+#define CALS_LIST_PERIOD_NORMAL_BASIC_INT_DTEND_TYPE CALS_VALUE_INT_DTEND_TYPE
+#define CALS_LIST_PERIOD_NORMAL_BASIC_LLI_DTEND_UTIME CALS_VALUE_LLI_DTEND_UTIME
+#define CALS_LIST_PERIOD_NORMAL_BASIC_TXT_SUMMARY CAL_VALUE_TXT_SUMMARY
+#define CALS_LIST_PERIOD_NORMAL_BASIC_TXT_LOCATION CAL_VALUE_TXT_LOCATION
+
+#define CALS_LIST_PERIOD_ALLDAY_BASIC_INT_EVENTID CAL_VALUE_INT_INDEX
+#define CALS_LIST_PERIOD_ALLDAY_BASIC_INT_DTSTART_TYPE CALS_VALUE_INT_DTSTART_TYPE
+#define CALS_LIST_PERIOD_ALLDAY_BASIC_INT_DTSTART_YEAR CALS_VALUE_INT_DTSTART_YEAR
+#define CALS_LIST_PERIOD_ALLDAY_BASIC_INT_DTSTART_MONTH CALS_VALUE_INT_DTSTART_MONTH
+#define CALS_LIST_PERIOD_ALLDAY_BASIC_INT_DTSTART_MDAY CALS_VALUE_INT_DTSTART_MDAY
+#define CALS_LIST_PERIOD_ALLDAY_BASIC_INT_DTEND_TYPE CALS_VALUE_INT_DTEND_TYPE
+#define CALS_LIST_PERIOD_ALLDAY_BASIC_INT_DTEND_YEAR CALS_VALUE_INT_DTEND_YEAR
+#define CALS_LIST_PERIOD_ALLDAY_BASIC_INT_DTEND_MONTH CALS_VALUE_INT_DTEND_MONTH
+#define CALS_LIST_PERIOD_ALLDAY_BASIC_INT_DTEND_MDAY CALS_VALUE_INT_DTEND_MDAY
+#define CALS_LIST_PERIOD_ALLDAY_BASIC_TXT_SUMMARY CAL_VALUE_TXT_SUMMARY
+#define CALS_LIST_PERIOD_ALLDAY_BASIC_TXT_LOCATION CAL_VALUE_TXT_LOCATION
+
+#define CALS_LIST_PERIOD_NORMAL_OSP_INT_EVENTID CAL_VALUE_INT_INDEX
+#define CALS_LIST_PERIOD_NORMAL_OSP_INT_DTSTART_TYPE CALS_VALUE_INT_DTSTART_TYPE
+#define CALS_LIST_PERIOD_NORMAL_OSP_LLI_DTSTART_UTIME CALS_VALUE_LLI_DTSTART_UTIME
+#define CALS_LIST_PERIOD_NORMAL_OSP_INT_DTEND_TYPE CALS_VALUE_INT_DTEND_TYPE
+#define CALS_LIST_PERIOD_NORMAL_OSP_LLI_DTEND_UTIME CALS_VALUE_LLI_DTEND_UTIME
+#define CALS_LIST_PERIOD_NORMAL_OSP_TXT_SUMMARY CAL_VALUE_TXT_SUMMARY
+#define CALS_LIST_PERIOD_NORMAL_OSP_TXT_LOCATION CAL_VALUE_TXT_LOCATION
+#define CALS_LIST_PERIOD_NORMAL_OSP_INT_CALENDAR_ID CAL_VALUE_INT_CALENDAR_ID
+#define CALS_LIST_PERIOD_NORMAL_OSP_TXT_DESCRIPTION CAL_VALUE_TXT_DESCRIPTION
+#define CALS_LIST_PERIOD_NORMAL_OSP_INT_BUSY_STATUS CAL_VALUE_INT_BUSY_STATUS
+#define CALS_LIST_PERIOD_NORMAL_OSP_INT_STATUS CAL_VALUE_INT_MEETING_STATUS
+#define CALS_LIST_PERIOD_NORMAL_OSP_INT_PRIORITY CAL_VALUE_INT_PRIORITY
+#define CALS_LIST_PERIOD_NORMAL_OSP_INT_VISIBILITY CAL_VALUE_INT_SENSITIVITY
+#define CALS_LIST_PERIOD_NORMAL_OSP_INT_IS_RECURRING CALS_VALUE_INT_RRULE_ID
+
+#define CALS_LIST_PERIOD_ALLDAY_OSP_INT_EVENTID CAL_VALUE_INT_INDEX
+#define CALS_LIST_PERIOD_ALLDAY_OSP_INT_DTSTART_TYPE CALS_VALUE_INT_DTSTART_TYPE
+#define CALS_LIST_PERIOD_ALLDAY_OSP_INT_DTSTART_YEAR CALS_VALUE_INT_DTSTART_YEAR
+#define CALS_LIST_PERIOD_ALLDAY_OSP_INT_DTSTART_MONTH CALS_VALUE_INT_DTSTART_MONTH
+#define CALS_LIST_PERIOD_ALLDAY_OSP_INT_DTSTART_MDAY CALS_VALUE_INT_DTSTART_MDAY
+#define CALS_LIST_PERIOD_ALLDAY_OSP_INT_DTEND_TYPE CALS_VALUE_INT_DTEND_TYPE
+#define CALS_LIST_PERIOD_ALLDAY_OSP_INT_DTEND_YEAR CALS_VALUE_INT_DTEND_YEAR
+#define CALS_LIST_PERIOD_ALLDAY_OSP_INT_DTEND_MONTH CALS_VALUE_INT_DTEND_MONTH
+#define CALS_LIST_PERIOD_ALLDAY_OSP_INT_DTEND_MDAY CALS_VALUE_INT_DTEND_MDAY
+#define CALS_LIST_PERIOD_ALLDAY_OSP_TXT_SUMMARY CAL_VALUE_TXT_SUMMARY
+#define CALS_LIST_PERIOD_ALLDAY_OSP_TXT_LOCATION CAL_VALUE_TXT_LOCATION
+#define CALS_LIST_PERIOD_ALLDAY_OSP_INT_CALENDAR_ID CAL_VALUE_INT_CALENDAR_ID
+#define CALS_LIST_PERIOD_ALLDAY_OSP_TXT_DESCRIPTION CAL_VALUE_TXT_DESCRIPTION
+#define CALS_LIST_PERIOD_ALLDAY_OSP_INT_BUSY_STATUS CAL_VALUE_INT_BUSY_STATUS
+#define CALS_LIST_PERIOD_ALLDAY_OSP_INT_STATUS CAL_VALUE_INT_MEETING_STATUS
+#define CALS_LIST_PERIOD_ALLDAY_OSP_INT_PRIORITY CAL_VALUE_INT_PRIORITY
+#define CALS_LIST_PERIOD_ALLDAY_OSP_INT_VISIBILITY CAL_VALUE_INT_SENSITIVITY
+#define CALS_LIST_PERIOD_ALLDAY_OSP_INT_IS_RECURRING CALS_VALUE_INT_RRULE_ID
+
+#define CALS_LIST_PERIOD_NORMAL_LOCATION_INT_EVENTID CAL_VALUE_INT_INDEX
+#define CALS_LIST_PERIOD_NORMAL_LOCATION_INT_DTSTART_TYPE CALS_VALUE_INT_DTSTART_TYPE
+#define CALS_LIST_PERIOD_NORMAL_LOCATION_LLI_DTSTART_UTIME CALS_VALUE_LLI_DTSTART_UTIME
+#define CALS_LIST_PERIOD_NORMAL_LOCATION_INT_DTEND_TYPE CALS_VALUE_INT_DTEND_TYPE
+#define CALS_LIST_PERIOD_NORMAL_LOCATION_LLI_DTEND_UTIME CALS_VALUE_LLI_DTEND_UTIME
+#define CALS_LIST_PERIOD_NORMAL_LOCATION_TXT_SUMMARY CAL_VALUE_TXT_SUMMARY
+#define CALS_LIST_PERIOD_NORMAL_LOCATION_TXT_LOCATION CAL_VALUE_TXT_LOCATION
+#define CALS_LIST_PERIOD_NORMAL_LOCATION_INT_CALENDAR_ID CAL_VALUE_INT_CALENDAR_ID
+#define CALS_LIST_PERIOD_NORMAL_LOCATION_TXT_DESCRIPTION CAL_VALUE_TXT_DESCRIPTION
+#define CALS_LIST_PERIOD_NORMAL_LOCATION_INT_BUSY_STATUS CAL_VALUE_INT_BUSY_STATUS
+#define CALS_LIST_PERIOD_NORMAL_LOCATION_INT_STATUS CAL_VALUE_INT_MEETING_STATUS
+#define CALS_LIST_PERIOD_NORMAL_LOCATION_INT_PRIORITY CAL_VALUE_INT_PRIORITY
+#define CALS_LIST_PERIOD_NORMAL_LOCATION_INT_VISIBILITY CAL_VALUE_INT_SENSITIVITY
+#define CALS_LIST_PERIOD_NORMAL_LOCATION_INT_IS_RECURRING CALS_VALUE_INT_RRULE_ID
+#define CALS_LIST_PERIOD_NORMAL_LOCATION_DBL_LATITUDE CAL_VALUE_DBL_LATITUDE
+#define CALS_LIST_PERIOD_NORMAL_LOCATION_DBL_LONGITUDE CAL_VALUE_DBL_LONGITUDE
+
+#define CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_EVENTID CAL_VALUE_INT_INDEX
+#define CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_DTSTART_TYPE CALS_VALUE_INT_DTSTART_TYPE
+#define CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_DTSTART_YEAR CALS_VALUE_INT_DTSTART_YEAR
+#define CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_DTSTART_MONTH CALS_VALUE_INT_DTSTART_MONTH
+#define CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_DTSTART_MDAY CALS_VALUE_INT_DTSTART_MDAY
+#define CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_DTEND_TYPE CALS_VALUE_INT_DTEND_TYPE
+#define CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_DTEND_YEAR CALS_VALUE_INT_DTEND_YEAR
+#define CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_DTEND_MONTH CALS_VALUE_INT_DTEND_MONTH
+#define CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_DTEND_MDAY CALS_VALUE_INT_DTEND_MDAY
+#define CALS_LIST_PERIOD_ALLDAY_LOCATION_TXT_SUMMARY CAL_VALUE_TXT_SUMMARY
+#define CALS_LIST_PERIOD_ALLDAY_LOCATION_TXT_LOCATION CAL_VALUE_TXT_LOCATION
+#define CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_CALENDAR_ID CAL_VALUE_INT_CALENDAR_ID
+#define CALS_LIST_PERIOD_ALLDAY_LOCATION_TXT_DESCRIPTION CAL_VALUE_TXT_DESCRIPTION
+#define CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_BUSY_STATUS CAL_VALUE_INT_BUSY_STATUS
+#define CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_STATUS CAL_VALUE_INT_MEETING_STATUS
+#define CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_PRIORITY CAL_VALUE_INT_PRIORITY
+#define CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_VISIBILITY CAL_VALUE_INT_SENSITIVITY
+#define CALS_LIST_PERIOD_ALLDAY_LOCATION_INT_IS_RECURRING CALS_VALUE_INT_RRULE_ID
+#define CALS_LIST_PERIOD_ALLDAY_LOCATION_DBL_LATITUDE CAL_VALUE_DBL_LATITUDE
+#define CALS_LIST_PERIOD_ALLDAY_LOCATION_DBL_LONGITUDE CAL_VALUE_DBL_LONGITUDE
+
+#define CALS_LIST_PERIOD_NORMAL_ALARM_INT_EVENTID CAL_VALUE_INT_INDEX
+#define CALS_LIST_PERIOD_NORMAL_ALARM_INT_CALENDAR_ID CAL_VALUE_INT_CALENDAR_ID
+#define CALS_LIST_PERIOD_NORMAL_ALARM_INT_DTSTART_TYPE CALS_VALUE_INT_DTSTART_TYPE
+#define CALS_LIST_PERIOD_NORMAL_ALARM_LLI_DTSTART_UTIME CALS_VALUE_LLI_DTSTART_UTIME
+#define CALS_LIST_PERIOD_NORMAL_ALARM_INT_DTEND_TYPE CALS_VALUE_INT_DTEND_TYPE
+#define CALS_LIST_PERIOD_NORMAL_ALARM_LLI_DTEND_UTIME CALS_VALUE_LLI_DTEND_UTIME
+#define CALS_LIST_PERIOD_NORMAL_ALARM_LLI_ALARM_UTIME CAL_VALUE_LLI_ALARMS_TIME
+#define CALS_LIST_PERIOD_NORMAL_ALARM_INT_ALARM_ID CAL_VALUE_INT_ALARMS_ID
+
+enum cals_day {
+	CALS_SUNDAY,
+	CALS_MONDAY,
+	CALS_TUESDAY,
+	CALS_WEDNESDAY,
+	CALS_THURSDAY,
+	CALS_FRIDAY,
+	CALS_SATURDAY,
+	CALS_NODAY,
+};
+
+enum cals_freq {
+	CALS_FREQ_ONCE = 0x0,
+	CALS_FREQ_YEARLY,
+	CALS_FREQ_MONTHLY,
+	CALS_FREQ_WEEKLY,
+	CALS_FREQ_DAILY,
+	CALS_FREQ_HOURLY,
+	CALS_FREQ_MINUTELY,
+	CALS_FREQ_SECONDLY,
+};
+
+enum cals_time_type {
+	CALS_TIME_UTIME,
+	CALS_TIME_LOCALTIME,
+};
+
+enum cals_range {
+	CALS_RANGE_UNTIL,
+	CALS_RANGE_COUNT,
+	CALS_RANGE_NONE,
+};
+
+int calendar_svc_event_get_normal_list_by_period(int calendar_id, int op_code,
+		long long int start, long long int end, cal_iter **iter);
+
+int calendar_svc_event_get_allday_list_by_period(int calendar_id, int op_code,
+		int dtstart_year, int dtstart_mon, int dtstart_day,
+		int dtend_year, int dtend_mon, int dtend_day, cal_iter **iter);
+
+int calendar_svc_struct_set_lli(cal_struct *record, const char *field, long long int llival);
+
+long long int calendar_svc_struct_get_lli(cal_struct *record, const char *field);
+
+int calendar_svc_todo_get_list_by_period(int calendar_id,
+		long long int due_from, long long int dueto, int priority, int status, cal_iter **iter);
+int calendar_svc_todo_get_count_by_period(int calendar_id,
+		long long int due_from, long long int dueto, int priority, int status, int *count);
+int calendar_svc_event_delete_normal_instance(int event_id, long long int dtstart_utime);
+int calendar_svc_event_delete_allday_instance(int event_id, int dtstart_year, int dtstart_month, int dtstart_mday);
 #ifdef __cplusplus
 }
 #endif

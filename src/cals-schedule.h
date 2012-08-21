@@ -30,12 +30,13 @@
 int cals_insert_schedule(cal_sch_full_t *sch_record);
 int cals_update_schedule(const int index, cal_sch_full_t *sch_record);
 int cals_delete_schedule(const int index);
+int cals_sch_search(cals_sch_type sch_type, int fields, const char *keyword, cal_iter **iter);
 
-int cals_rearrage_schedule_field(const char *src, char *dest, int dest_size);
+int cals_rearrange_schedule_field(const char *src, char *dest, int dest_size);
 
 int cals_stmt_get_filted_schedule(sqlite3_stmt *stmt,cal_sch_full_t *sch_record, const char *select_field);
 void cals_stmt_get_full_schedule(sqlite3_stmt *stmt,cal_sch_full_t *sch_record, bool is_utc);
-
+void cals_stmt_fill_rrule(sqlite3_stmt *stmt,cal_sch_full_t *sch_record);
 
 #endif /* __CALENDAR_SVC_SCHEDULE_H__ */
 

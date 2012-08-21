@@ -262,15 +262,16 @@ int cals_update_calendar(const calendar_t *calendar)
 	return CAL_SUCCESS;
 }
 
-int cals_delete_calendar(int index)
+int cals_delete_calendar(int calendar_id)
 {
 	int ret = 0;
-	char query[CALS_SQL_MAX_LEN] = {0};
+	char query[CALS_SQL_MIN_LEN] = {0};
 
 	ret = cals_begin_trans();
 	retvm_if(CAL_SUCCESS != ret, ret, "cals_begin_trans() Failed(%d)", ret);
 
-	sprintf(query,"DELETE FROM %s WHERE rowid = %d", CALS_TABLE_CALENDAR, index);
+	snprintf(query, sizeof(query), "DELETE FROM %s WHERE rowid = %d",
+			CALS_TABLE_CALENDAR, calendar_id);
 	ret = cals_query_exec(query);
 	if(CAL_SUCCESS != ret) {
 		ERR("cals_query_exec() Failed(%d)", ret);
@@ -278,18 +279,25 @@ int cals_delete_calendar(int index)
 		return ret;
 	}
 
-	time_t current_time = time(NULL);
-
-	sprintf(query,"UPDATE %s SET is_deleted = 1, sync_status = %d, last_modified_time = %ld WHERE calendar_id = %d",
-		CALS_TABLE_SCHEDULE, CAL_SYNC_STATUS_DELETED,(long int)current_time, index);
-
+	snprintf(query, sizeof(query), "DELETE FROM %s WHERE calendar_id = %d",
+		CALS_TABLE_SCHEDULE, calendar_id);
 	ret = cals_query_exec(query);
 	if (CAL_SUCCESS != ret) {
 		ERR("cals_query_exec() Failed(%d)", ret);
 		cals_end_trans(false);
 		return ret;
 	}
-	ret = cals_alarm_remove(CALS_ALARM_REMOVE_BY_CALENDAR_ID, index);
+
+	snprintf(query, sizeof(query), "DELETE FROM %s WHERE calendar_id = %d",
+		CALS_TABLE_DELETED, calendar_id);
+	ret = cals_query_exec(query);
+	if (CAL_SUCCESS != ret) {
+		ERR("cals_query_exec() Failed(%d)", ret);
+		cals_end_trans(false);
+		return ret;
+	}
+
+	ret = cals_alarm_remove(CALS_ALARM_REMOVE_BY_CALENDAR_ID, calendar_id);
 	if (CAL_SUCCESS != ret) {
 		ERR("cals_alarm_remove() Failed(%d)", ret);
 		cals_end_trans(false);

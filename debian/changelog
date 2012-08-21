@@ -1,7 +1,2109 @@
+libslp-calendar (0.1.13-36) unstable; urgency=low
+
+  * fixed: s1-6347.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-36
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Thu, 02 Aug 2012 22:22:13 +0900
+
+libslp-calendar (0.1.13-35) unstable; urgency=low
+
+  * fixed: s1-6577.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-35
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Wed, 01 Aug 2012 21:04:51 +0900
+
+libslp-calendar (0.1.13-34) unstable; urgency=low
+
+  * fixed: s1-6343.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-34
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Tue, 31 Jul 2012 20:01:00 +0900
+
+libslp-calendar (0.1.13-33) unstable; urgency=low
+
+  * added op code for location
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-33
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Tue, 31 Jul 2012 11:04:01 +0900
+
+libslp-calendar (0.1.13-32) unstable; urgency=low
+
+  * fixed s1-6157, 6184, 6213, 6499.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-32
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Mon, 30 Jul 2012 17:37:05 +0900
+
+libslp-calendar (0.1.13-31) unstable; urgency=low
+
+  * updated tag name.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-31
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Fri, 27 Jul 2012 10:27:17 +0900
+
+libslp-calendar (0.1.13-30) unstable; urgency=low
+
+  * fixed jira 6213.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-30
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Wed, 25 Jul 2012 13:09:20 +0900
+
+libslp-calendar (0.1.13-29) unstable; urgency=low
+
+  * modified jira issue. s1-6213.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-29
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Mon, 23 Jul 2012 17:44:42 +0900
+
+libslp-calendar (0.1.13-28) unstable; urgency=low
+
+  * added define before deprecated enum value.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-28
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Mon, 23 Jul 2012 13:32:18 +0900
+
+libslp-calendar (0.1.13-27) unstable; urgency=low
+
+  * updated changelog for obs.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-27
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Sat, 21 Jul 2012 10:40:l5 +0900
+
+libslp-calendar (0.1.13-26) unstable; urgency=low
+
+  * fixed todo condition query: time type was changed from long int to long long int.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-26
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Fri, 20 Jul 2012 15:31:09 +0900
+
+libslp-calendar (0.1.13-25) unstable; urgency=low
+
+  * updated changelog for obs.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-25
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Tue, 17 Jul 2012 17:44:14 +0900
+
+libslp-calendar (0.1.13-24) unstable; urgency=low
+
+  * fixed bug: stmt was not filled before step, added notify after deleting instance.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-24
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Mon, 16 Jul 2012 18:59:53 +0900
+
+libslp-calendar (0.1.13-23) unstable; urgency=low
+
+  * added api for get_todo_iter without period.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-23
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Mon, 16 Jul 2012 18:59:51 +0900
+
+libslp-calendar (0.1.13-22) unstable; urgency=low
+
+  * fixed updated deleted table in local calendar.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-22
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Tue, 10 Jul 2012 15:26:47 +0900
+
+libslp-calendar (0.1.13-21) unstable; urgency=low
+
+  * able to add db for past event, but not registered to alarmmgr.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-21
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Mon, 09 Jul 2012 17:45:22 +0900
+
+libslp-calendar (0.1.13-20) unstable; urgency=low
+
+  * fixed not showing repeat, alarm in db.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-20
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Thu, 05 Jul 2012 18:36:56 +0900
+
+libslp-calendar (0.1.13-19) unstable; urgency=low
+
+  * added type in instance struct.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-19
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Tue, 03 Jul 2012 15:26:31 +0900
+
+libslp-calendar (0.1.13-18) unstable; urgency=low
+
+  * updated until when once event.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-18
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Sun, 01 Jul 2012 21:40:19 +0900
+
+libslp-calendar (0.1.13-17) unstable; urgency=low
+
+  * 1. added instance table for allday and normal events. 2. added period search APIs 3. added test code.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-17
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Sun, 01 Jul 2012 16:31:43 +0900
+
+libslp-calendar (0.1.13-16) unstable; urgency=low
+
+  * clean deprecated code.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-16
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Wed, 20 Jun 2012 18:09:08 +0900
+
+libslp-calendar (0.1.13-15) unstable; urgency=low
+
+  * fixed bug: noty event.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-15
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Tue, 22 May 2012 16:39:46 +0900
+
+libslp-calendar (0.1.13-14) unstable; urgency=low
+
+  * fixed bug: change iter policy.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-14
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Fri, 18 May 2012 17:20:17 +0900
+
+libslp-calendar (0.1.13-13) unstable; urgency=low
+
+  * fixed bug: deleted sync.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-13
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Fri, 18 May 2012 14:50:38 +0900
+
+libslp-calendar (0.1.13-12) unstable; urgency=low
+
+  * fiex bug in get_changes.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-12
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Mon, 14 May 2012 17:18:56 +0900
+
+libslp-calendar (0.1.13-11) unstable; urgency=low
+
+  * fixed error query in get_changes.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-11
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Mon, 14 May 2012 15:28:57 +0900
+
+libslp-calendar (0.1.13-10) unstable; urgency=low
+
+  * fixed bug.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-10
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Thu, 10 May 2012 17:04:39 +0900
+
+libslp-calendar (0.1.13-9) unstable; urgency=low
+
+  * Add smartsearch API
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-9
+
+ -- Sunghyuk Lee <sunghyuk.lee@samsung.com>  Thu, 10 May 2012 16:08:08 +0900
+
+libslp-calendar (0.1.13-8) unstable; urgency=low
+
+  * added is_deleted and event, todo changes..
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-8
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Tue, 08 May 2012 20:13:09 +0900
+
+libslp-calendar (0.1.13-7) unstable; urgency=low
+
+  * fixed duplicated sting.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-7
+
+ -- Sunghyuk Lee <sunghyuk.lee@samsung.com>  Thu, 03 May 2012 16:46:34 +0900
+
+libslp-calendar (0.1.13-6) unstable; urgency=low
+
+  * modified import export vcs file apis.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-6
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Thu, 26 Apr 2012 21:43:50 +0900
+
+libslp-calendar (0.1.13-5) unstable; urgency=low
+
+  * Replace 1st paramter of calendar_svc_get_updated_schedules
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-5
+
+ -- Sunghyuk Lee <sunghyuk.lee@samsung.com>  Thu, 26 Apr 2012 13:38:30 +0900
+
+libslp-calendar (0.1.13-4) unstable; urgency=low
+
+  * updated changelog and modified api name write schedules.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-4
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Wed, 25 Apr 2012 10:29:17 +0900
+
+libslp-calendar (0.1.13-3) unstable; urgency=low
+
+  * added quotied printable, rrule for vcal.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-3
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Mon, 23 Apr 2012 10:33:02 +0900
+
+libslp-calendar (0.1.13-2) unstable; urgency=low
+
+  * Change calendar_svc_end_trans parameter
+  * Fix timezone data getting bug
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-2
+
+ -- Sunghyuk Lee <sunghyuk.lee@samsung.com>  Thu, 19 Apr 2012 20:14:15 +0900
+
+libslp-calendar (0.1.13-1) unstable; urgency=low
+
+  * Add calender versioning feature
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.13-1
+
+ -- Sunghyuk Lee <sunghyuk.lee@samsung.com>  Mon, 16 Apr 2012 16:14:42 +0900
+
+libslp-calendar (0.1.12-23) unstable; urgency=low
+
+  * Set the repeat end date unless its until_type is date-time (N_SE 505)
+  * Fix a crash caused by timezone vconf
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.12-23
+
+ -- Sunghyuk Lee <sunghyuk.lee@samsung.com>  Fri, 13 Apr 2012 09:24:22 +0900
+
+libslp-calendar (0.1.12-22) unstable; urgency=low
+
+  * Make the last modified time field read-only
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.12-22
+
+ -- Sunghyuk Lee <sunghyuk.lee@samsung.com>  Thu, 05 Apr 2012 10:16:16 +0900
+
+libslp-calendar (0.1.12-21) unstable; urgency=low
+
+  * modified alarm description error (located wrong column)
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.12-21
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Mon, 02 Apr 2012 17:24:25 +0900
+
+libslp-calendar (0.1.12-20) unstable; urgency=low
+
+  * Add repeat until type
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.12-20
+
+ -- Sunghyuk Lee <sunghyuk.lee@samsung.com>  Fri, 30 Mar 2012 18:47:39 +0900
+
+libslp-calendar (0.1.12-19) unstable; urgency=low
+
+  * modified todo and rrule crash.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.12-19
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Fri, 30 Mar 2012 10:05:05 +0900
+
+libslp-calendar (0.1.12-18) unstable; urgency=low
+
+  * Fix a bug on getting todo list and add order option
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.12-18
+
+ -- Sunghyuk Lee <sunghyuk.lee@samsung.com>  Thu, 29 Mar 2012 13:53:17 +0900
+
+libslp-calendar (0.1.12-17) unstable; urgency=low
+
+  * modified icalendar decoding code.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.12-17
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Wed, 21 Mar 2012 10:00:00 +0900
+
 libslp-calendar (0.1.12-16) unstable; urgency=low
 
-  * release
-  * Git: pkgs/l/libslp-calendar
+  * added calendar sensitivity enum values.
+  * Git: slp/pkgs/l/libslp-calendar
   * Tag: libslp-calendar_0.1.12-16
 
  -- Jeesun Kim <iamjs.kim@samsung.com>  Tue, 21 Feb 2012 10:00:00 +0900
+
+libslp-calendar (0.1.12-15) unstable; urgency=low
+
+  * fiexed query for edit.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.12-15
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Fri, 17 Feb 2012 13:00:00 +0900
+
+libslp-calendar (0.1.12-14) unstable; urgency=low
+
+  * added alarm_description.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.12-14
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Fri, 10 Feb 2012 16:00:00 +0900
+
+libslp-calendar (0.1.12-13) unstable; urgency=low
+
+  * revise
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.12-13
+
+ -- Youngjae Shin <yj99.shin@samsung.com>  Wed, 01 Feb 2012 10:16:13 +0900
+
+libslp-calendar (0.1.12-12) unstable; urgency=low
+
+  * change default calendar application pkg name
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.12-12
+
+ -- Youngjae Shin <yj99.shin@samsung.com>  Thu, 26 Jan 2012 09:07:42 +0900
+
+libslp-calendar (0.1.12-11) unstable; urgency=low
+
+  * fix bug
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.12-11
+
+ -- Youngjae Shin <yj99.shin@samsung.com>  Thu, 19 Jan 2012 11:33:45 +0900
+
+libslp-calendar (0.1.12-10) unstable; urgency=low
+
+  * revise noti
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.12-10
+
+ -- Youngjae Shin <yj99.shin@samsung.com>  Mon, 16 Jan 2012 11:15:38 +0900
+
+libslp-calendar (0.1.12-9) unstable; urgency=low
+
+  * add type for calendar
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.12-9
+
+ -- Youngjae Shin <yj99.shin@samsung.com>  Thu, 12 Jan 2012 17:04:34 +0900
+
+libslp-calendar (0.1.12-8) unstable; urgency=low
+
+  * clean up and change enum name
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.12-8
+
+ -- Youngjae Shin <yj99.shin@samsung.com>  Fri, 06 Jan 2012 15:01:13 +0900
+
+libslp-calendar (0.1.12-7) unstable; urgency=low
+
+  * fix bug
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.12-7
+
+ -- Youngjae Shin <yj99.shin@samsung.com>  Mon, 26 Dec 2011 18:44:07 +0900
+
+libslp-calendar (0.1.12-6) unstable; urgency=low
+
+  * fix bug
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.12-6
+
+ -- Youngjae Shin <yj99.shin@samsung.com>  Thu, 22 Dec 2011 10:26:12 +0900
+
+libslp-calendar (0.1.12-5) unstable; urgency=low
+
+  * fix bugs
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.12-5
+
+ -- Youngjae Shin <yj99.shin@samsung.com>  Wed, 14 Dec 2011 10:29:27 +0900
+
+libslp-calendar (0.1.12-4) unstable; urgency=low
+
+  * fix bugs
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.12-4
+
+ -- Youngjae Shin <yj99.shin@samsung.com>  Thu, 08 Dec 2011 18:12:54 +0900
+
+libslp-calendar (0.1.12-3) unstable; urgency=low
+
+  * fix bugs
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.12-3
+
+ -- Youngjae Shin <yj99.shin@samsung.com>  Thu, 08 Dec 2011 13:39:10 +0900
+
+libslp-calendar (0.1.12-2) unstable; urgency=low
+
+  * fix bugs
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.12-2
+
+ -- Youngjae Shin <yj99.shin@samsung.com>  Thu, 08 Dec 2011 11:05:37 +0900
+
+libslp-calendar (0.1.12-1) unstable; urgency=low
+
+  * revise alarm(support multi alarms)
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.12-1
+
+ -- Youngjae Shin <yj99.shin@samsung.com>  Mon, 05 Dec 2011 15:55:16 +0900
+
+libslp-calendar (0.1.11-4) unstable; urgency=low
+
+  * fix bug generated by "clean up"
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.11-4
+
+ -- Youngjae Shin <yj99.shin@samsung.com>  Tue, 22 Nov 2011 13:45:44 +0900
+
+libslp-calendar (0.1.11-3) unstable; urgency=low
+
+  * add old files for immigration
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.11-3
+
+ -- Youngjae Shin <yj99.shin@samsung.com>  Mon, 21 Nov 2011 14:50:38 +0900
+
+libslp-calendar (0.1.11-2) unstable; urgency=low
+
+  * fix bug generated by "clean up"
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.11-2
+
+ -- Youngjae Shin <yj99.shin@samsung.com>  Mon, 21 Nov 2011 14:16:53 +0900
+
+libslp-calendar (0.1.11-1) unstable; urgency=low
+
+  * clean up
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.11-1
+
+ -- Youngjae Shin <yj99.shin@samsung.com>  Sat, 19 Nov 2011 16:48:56 +0900
+
+libslp-calendar (0.1.10-35) unstable; urgency=low
+
+  * Fix bug : Update alarm info.
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-35
+
+ -- Taeho Kang <taeho84.kang@samsung.com>  Tue, 15 Nov 2011 10:59:02 +0900
+
+libslp-calendar (0.1.10-34) unstable; urgency=low
+
+  * code cleanup and fix bug of using heynoti
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-34
+
+ -- Youngjae Shin <yj99.shin@samsung.com>  Thu, 03 Nov 2011 20:46:44 +0900
+
+libslp-calendar (0.1.10-33) unstable; urgency=low
+
+  * Change lock timezone vconf
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-33
+
+ -- Taeho Kang <taeho84.kang@samsung.com>  Sat, 30 Oct 2011 14:34:34 +0900
+
+libslp-calendar (0.1.10-32) unstable; urgency=low
+
+  * fixed multiple alarm problem
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-32
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Sat, 29 Oct 2011 14:34:34 +0900
+
+libslp-calendar (0.1.10-31) unstable; urgency=low
+
+  * add calendar multivalue list remove function
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-31
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Wed, 26 Oct 2011 15:25:05 +0900
+
+libslp-calendar (0.1.10-30) unstable; urgency=low
+
+  * add calendar multivalue list remove function
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-30
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Tue, 18 Oct 2011 13:09:51 +0900
+
+libslp-calendar (0.1.10-29) unstable; urgency=low
+
+  * noti type add for calendarbook update, basic test passed
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-29
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Sat, 08 Oct 2011 14:23:39 +0900
+
+libslp-calendar (0.1.10-28) unstable; urgency=low
+
+  * vcalendar convert error fixed, basic test passed
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-28
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Fri, 30 Sep 2011 17:39:41 +0900
+
+libslp-calendar (0.1.10-27) unstable; urgency=low
+
+  * all day event exception handling error fixed, basic test passed
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-27
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Wed, 21 Sep 2011 15:28:50 +0900
+
+libslp-calendar (0.1.10-26) unstable; urgency=low
+
+  * prevent error fixed, basic test passed
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-26
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Mon, 19 Sep 2011 20:24:46 +0900
+
+libslp-calendar (0.1.10-25) unstable; urgency=low
+
+  * default calendar error fixed in edit view
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-25
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Fri, 16 Sep 2011 10:16:22 +0900
+
+libslp-calendar (0.1.10-24) unstable; urgency=low
+
+  * pkg update
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-24
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Thu, 08 Sep 2011 12:02:00 +0900
+
+libslp-calendar (0.1.10-23) unstable; urgency=low
+
+  * monthly event count return, delete flag passed to ui
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-23
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Thu, 08 Sep 2011 11:01:30 +0900
+
+libslp-calendar (0.1.10-22) unstable; urgency=low
+
+  * recurrence exception operation error fixed, basic test passed
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-22
+
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Wed, 07 Sep 2011 19:14:56 +0900
+
+libslp-calendar (0.1.10-21) unstable; urgency=low
+
+  * add get delete flag value,  basic test passed
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-21
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Wed, 07 Sep 2011 15:19:55 +0900
+
+libslp-calendar (0.1.10-20) unstable; urgency=low
+
+  * prevent error fixed,  basic test passed
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-20
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Tue, 06 Sep 2011 09:04:32 +0900
+
+libslp-calendar (0.1.10-19) unstable; urgency=low
+
+  * all day event time setting error fixed,  basic test passed
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-19
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Fri, 02 Sep 2011 16:02:08 +0900
+
+libslp-calendar (0.1.10-18) unstable; urgency=low
+
+  * delete error fixed(recurrence delete), TC passed, basic test passed
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-18
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Thu, 01 Sep 2011 18:00:32 +0900
+
+libslp-calendar (0.1.10-17) unstable; urgency=low
+
+  * delete error fixed(recurrence delete), TC passed, basic test passed
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-17
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Tue, 30 Aug 2011 16:58:05 +0900
+
+libslp-calendar (0.1.10-16) unstable; urgency=low
+
+  * release problem fixed(save error),vobject move to calendar-engine basic test passed
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-16
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Mon, 29 Aug 2011 14:01:22 +0900
+
+libslp-calendar (0.1.10-15) unstable; urgency=low
+
+  * change vcalendar encode type,   basic test passed
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-15
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Wed, 24 Aug 2011 16:49:56 +0900
+
+libslp-calendar (0.1.10-14) unstable; urgency=low
+
+  * vcalendar length error fixed(release issue) , add protection code(MACRO) , TC passed, basic test passed
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-14
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Tue, 23 Aug 2011 14:06:33 +0900
+
+libslp-calendar (0.1.10-13) unstable; urgency=low
+
+  * dts error fixed, add location field for get_list
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-13
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Wed, 17 Aug 2011 19:42:52 +0900
+
+libslp-calendar (0.1.10-12) unstable; urgency=low
+
+  * remove duplicated delete not
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-12
+
+ -- Taeho Kang <taeho84.kang@samsung.com>  Wed, 10 Aug 2011 22:00:38 +0900
+
+
+libslp-calendar (0.1.10-11) unstable; urgency=low
+
+  * remove dependency, pkg release
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-11
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Tue, 02 Aug 2011 16:04:16 +0900
+
+libslp-calendar (0.1.10-10) unstable; urgency=low
+
+  * add error check code
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-10
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Thu, 28 Jul 2011 18:05:21 +0900
+
+libslp-calendar (0.1.10-9) unstable; urgency=low
+
+  * prevent error fixed & api header rearrangement
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-9
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Tue, 26 Jul 2011 18:55:36 +0900
+
+libslp-calendar (0.1.10-8) unstable; urgency=low
+
+  * remove system()
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-8
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Wed, 20 Jul 2011 14:51:16 +0900
+
+libslp-calendar (0.1.10-7) unstable; urgency=low
+
+  * pkg update
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-7
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Mon, 18 Jul 2011 15:08:02 +0900
+
+libslp-calendar (0.1.10-6) unstable; urgency=low
+
+  * add exception handling for tz info search api
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-6
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Thu, 07 Jul 2011 11:33:11 +0900
+
+libslp-calendar (0.1.10-5) unstable; urgency=low
+
+  * add exception handling for tz info search api
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-5
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Thu, 07 Jul 2011 09:30:16 +0900
+
+libslp-calendar (0.1.10-4) unstable; urgency=low
+
+  * add tz info header
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-4
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Wed, 06 Jul 2011 18:55:50 +0900
+
+libslp-calendar (0.1.10-3) unstable; urgency=low
+
+  * pkg update(set tz info api error fixed)
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-3
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Wed, 06 Jul 2011 18:46:19 +0900
+
+libslp-calendar (0.1.10-2) unstable; urgency=low
+
+  * pkg update(sync b/s fixed)
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-2
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Wed, 06 Jul 2011 18:41:08 +0900
+
+libslp-calendar (0.1.10-1) unstable; urgency=low
+
+  * pkg update(Auto DST)
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.10-1
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Tue, 05 Jul 2011 15:15:08 +0900
+
+libslp-calendar (0.1.9-11) unstable; urgency=low
+
+  * Add calendar_id in get_list(), Add default calendar color in postinst
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.9-11
+
+ -- Taeho Kang <taeho84.kang@samsung.com>  Fri, 24 Jun 2011 13:59:26 +0900
+
+libslp-calendar (0.1.9-10) unstable; urgency=low
+
+  * vobject, task convert error fixed
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.9-10
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Wed, 22 Jun 2011 16:43:11 +0900
+
+libslp-calendar (0.1.9-9) unstable; urgency=low
+
+  * Modify repeat end date error condition
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.9-9
+
+ -- Taeho Kang <taeho84.kang@samsung.com>  Tue, 14 Jun 2011 17:02:59 +0900
+
+libslp-calendar (0.1.9-8) unstable; urgency=low
+
+  * Fix BS issue regarding meeting category
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.9-8
+
+ -- Taeho Kang <taeho84.kang@samsung.com>  Thu, 02 Jun 2011 09:26:55 +0900
+
+libslp-calendar (0.1.9-7) unstable; urgency=low
+
+  * search text api modification
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.9-7
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Tue, 24 May 2011 11:38:51 +0900
+
+libslp-calendar (0.1.9-6) unstable; urgency=low
+
+  * alarm error fixed
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.9-6
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Tue, 17 May 2011 16:07:47 +0900
+
+libslp-calendar (0.1.9-5) unstable; urgency=low
+
+  * alarm error fixed
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.9-5
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Mon, 16 May 2011 10:22:45 +0900
+
+libslp-calendar (0.1.9-4) unstable; urgency=low
+
+  * vobject convert error fixed
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.9-4
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Thu, 12 May 2011 17:27:36 +0900
+
+libslp-calendar (0.1.9-3) unstable; urgency=low
+
+  * add list update api
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.9-3
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Wed, 11 May 2011 12:23:01 +0900
+
+libslp-calendar (0.1.9-2) unstable; urgency=low
+
+  * Fix recurrence counting bug
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.9-2
+
+ -- Taeho Kang <taeho84.kang@samsung.com>  Mon, 02 May 2011 19:29:34 +0900
+
+libslp-calendar (0.1.9-1) unstable; urgency=low
+
+  * ui lockup issue fix
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.9-1
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Thu, 28 Apr 2011 18:43:44 +0900
+
+libslp-calendar (0.1.9-0) unstable; urgency=low
+
+  * voject-convert-error fixed
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.9-0
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Wed, 27 Apr 2011 18:49:49 +0900
+
+libslp-calendar (0.1.8-99) unstable; urgency=low
+
+  * month check error fixed
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-99
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Wed, 27 Apr 2011 14:10:32 +0900
+
+libslp-calendar (0.1.8-98) unstable; urgency=low
+
+  * Release 0.1.8-98
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-98
+
+ -- Taeho Kang <taeho84.kang@samsung.com>  Wed, 27 Apr 2011 10:15:42 +0900
+
+libslp-calendar (0.1.8-97) unstable; urgency=low
+
+  * Release 0.1.8-97
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-97
+
+ -- Taeho Kang <taeho84.kang@samsung.com>  Tue, 26 Apr 2011 14:44:56 +0900
+
+libslp-calendar (0.1.8-96) unstable; urgency=low
+
+  * Release 0.1.8-96
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-96
+
+ -- Taeho Kang <taeho84.kang@samsung.com>  Mon, 25 Apr 2011 15:06:23 +0900
+
+libslp-calendar (0.1.8-95) unstable; urgency=low
+
+  * Release 0.1.8-95
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-95
+
+ -- Taeho Kang <taeho84.kang@samsung.com>  Mon, 25 Apr 2011 14:48:51 +0900
+
+libslp-calendar (0.1.8-94) unstable; urgency=low
+
+  * Release 0.1.8-94
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-94
+
+ -- Taeho Kang <taeho84.kang@samsung.com>  Mon, 25 Apr 2011 11:26:42 +0900
+
+libslp-calendar (0.1.8-93) unstable; urgency=low
+
+  * Release 0.1.8-93
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-93
+
+ -- Heungjae Jeong <hj98.jeong@samsung.com>  Wed, 20 Apr 2011 20:09:05 +0900
+
+libslp-calendar (0.1.8-92) unstable; urgency=low
+
+  * Release 0.1.8-92
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-92
+
+ -- Taeho Kang <taeho84.kang@samsung.com>  Wed, 20 Apr 2011 10:56:39 +0900
+
+libslp-calendar (0.1.8-91) unstable; urgency=low
+
+  * Release 0.1.8-91
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-91
+
+ -- Taeho Kang <taeho84.kang@samsung.com>  Fri, 01 Apr 2011 08:52:50 +0900
+
+libslp-calendar (0.1.8-90) unstable; urgency=low
+
+  * Fix bug : alarm_init
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-90
+
+ -- Taeho Kang <taeho84.kang@samsung.com>  Tue, 22 Mar 2011 13:58:37 +0900
+
+libslp-calendar (0.1.8-89) unstable; urgency=low
+
+  * Fix bug : alarm_init
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-89
+
+ -- Taeho Kang <taeho84.kang@samsung.com>  Mon, 21 Mar 2011 17:19:09 +0900
+
+libslp-calendar (0.1.8-88) unstable; urgency=low
+
+  * Fix bug : alarm_init
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-88
+
+ -- Taeho Kang <taeho84.kang@samsung.com>  Wed, 16 Mar 2011 16:59:05 +0900
+
+libslp-calendar (0.1.8-87) unstable; urgency=low
+
+  * Fix bug : alarm_init
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-87
+
+ -- Taeho Kang <taeho84.kang@samsung.com>  Wed, 09 Mar 2011 14:49:36 +0900
+
+libslp-calendar (0.1.8-86) unstable; urgency=low
+
+  * timezone add
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-86
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Tue, 22 Feb 2011 12:52:22 +0900
+
+libslp-calendar (0.1.8-85) unstable; urgency=low
+
+  * prevent error fixed
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-85
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Wed, 16 Feb 2011 20:27:49 +0900
+
+libslp-calendar (0.1.8-84) unstable; urgency=low
+
+  * pkg update
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-84
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Wed, 16 Feb 2011 15:53:11 +0900
+
+libslp-calendar (0.1.8-83) unstable; urgency=low
+
+  * prevent error fixed, tz type add
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-83
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Tue, 15 Feb 2011 20:19:17 +0900
+
+libslp-calendar (0.1.8-82) unstable; urgency=low
+
+  * pc studio b/s error fix
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-82
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Wed, 02 Feb 2011 09:24:35 +0900
+
+libslp-calendar (0.1.8-81) unstable; urgency=low
+
+  * pkg update
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-81
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Thu, 27 Jan 2011 13:29:25 +0900
+
+libslp-calendar (0.1.8-80) unstable; urgency=low
+
+  * add account_id for calendar table
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-80
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Thu, 27 Jan 2011 13:23:26 +0900
+
+libslp-calendar (0.1.8-79) unstable; urgency=low
+
+  * add account_id for calendar table
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-79
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Thu, 27 Jan 2011 10:29:58 +0900
+
+libslp-calendar (0.1.8-78) unstable; urgency=low
+
+  * remove alarm fini api(active sync b/s issue fixed):
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-78
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Wed, 26 Jan 2011 14:55:30 +0900
+
+libslp-calendar (0.1.8-77) unstable; urgency=low
+
+  * setting b/s error fix - alarm fini api add
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-77
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Tue, 25 Jan 2011 18:13:26 +0900
+
+libslp-calendar (0.1.8-76) unstable; urgency=low
+
+  * tz name field added for timezone support
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-76
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Thu, 20 Jan 2011 20:13:28 +0900
+
+libslp-calendar (0.1.8-75) unstable; urgency=low
+
+  * priority field error fixed, max year value changed(2030->2037)
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-75
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Thu, 13 Jan 2011 11:50:39 +0900
+
+libslp-calendar (0.1.8-74) unstable; urgency=low
+
+  * alarm error fix
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-74
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Wed, 12 Jan 2011 11:00:50 +0900
+
+libslp-calendar (0.1.8-73) unstable; urgency=low
+
+  * TC make file modification
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-73
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Fri, 07 Jan 2011 11:31:23 +0900
+
+libslp-calendar (0.1.8-72) unstable; urgency=low
+
+  * delete account error fixed
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-72
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Thu, 06 Jan 2011 10:36:15 +0900
+
+libslp-calendar (0.1.8-71) unstable; urgency=low
+
+  * account id error fix
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-71
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Tue, 04 Jan 2011 14:50:31 +0900
+
+libslp-calendar (0.1.8-70) unstable; urgency=low
+
+  * alarm error fixed
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-70
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Wed, 29 Dec 2010 17:03:06 +0900
+
+libslp-calendar (0.1.8-69) unstable; urgency=low
+
+  * pkgs update
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-69
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Tue, 28 Dec 2010 16:09:41 +0900
+
+libslp-calendar (0.1.8-68) unstable; urgency=low
+
+  * fixed recurrence error
+  * Git: /slp/limo/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-68
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Tue, 28 Dec 2010 15:37:09 +0900
+
+libslp-calendar (0.1.8-67) unstable; urgency=low
+
+  * prepare limo contribution
+  * Git: /slp/limo/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-67
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Tue, 28 Dec 2010 15:22:15 +0900
+
+libslp-calendar (0.1.8-66) unstable; urgency=low
+
+  * prepare limo contribution
+  * Git: /slp/limo/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-66
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Mon, 27 Dec 2010 11:22:49 +0900
+
+libslp-calendar (0.1.8-65) unstable; urgency=low
+
+  * alarm enable
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-65
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Wed, 22 Dec 2010 14:39:24 +0900
+
+libslp-calendar (0.1.8-64) unstable; urgency=low
+
+  * fixed attendee's ct index return error
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-64
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Mon, 20 Dec 2010 21:28:49 +0900
+
+libslp-calendar (0.1.8-63) unstable; urgency=low
+
+  * vobject error fix, alarm type add
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-63
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Fri, 17 Dec 2010 18:18:42 +0900
+
+libslp-calendar (0.1.8-62) unstable; urgency=low
+
+  * postinst error fixed, default calendar added
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-62
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Wed, 15 Dec 2010 08:16:30 +0900
+
+libslp-calendar (0.1.8-61) unstable; urgency=low
+
+  * todo support
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-61
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Tue, 14 Dec 2010 10:03:15 +0900
+
+libslp-calendar (0.1.8-60) unstable; urgency=low
+
+  * pkg update
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-60
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Mon, 13 Dec 2010 11:14:11 +0900
+
+libslp-calendar (0.1.8-59) unstable; urgency=low
+
+  * pkg update
+  * Git: slp/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-59
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Thu, 09 Dec 2010 17:42:12 +0900
+
+libslp-calendar (0.1.8-58) unstable; urgency=low
+
+  * remove lucene dependency for limo
+  * Git: /slp/limo/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-58
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Thu, 09 Dec 2010 17:08:44 +0900
+
+libslp-calendar (0.1.8-57) unstable; urgency=low
+
+  * remove dependency for limo
+  * Git: /slp/limo/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-57
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Thu, 09 Dec 2010 16:53:23 +0900
+
+libslp-calendar (0.1.8-56) unstable; urgency=low
+
+  * pkg update for limo
+  * Git: /slp/limo/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-56
+
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Thu, 09 Dec 2010 16:42:02 +0900
+
+libslp-calendar (0.1.8-54) unstable; urgency=low
+
+  * pkg update
+  * Git: /slp/limo/pkgs/l/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-54
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Thu, 09 Dec 2010 14:34:03 +0900
+
+libslp-calendar (0.1.8-53) unstable; urgency=low
+
+  * removed vobject-service-dev in control
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-53
+
+ -- jeesun kim <iamjs.kim@samsung.com>  Fri, 10 Dec 2010 17:07:25 +0900
+
+libslp-calendar (0.1.8-52) unstable; urgency=low
+
+  * pkg update
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-52
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Thu, 02 Dec 2010 18:11:32 +0900
+
+libslp-calendar (0.1.8-51) unstable; urgency=low
+
+  * multi calendar index add
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-51
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Thu, 25 Nov 2010 17:52:53 +0900
+
+libslp-calendar (0.1.8-50) unstable; urgency=low
+
+  * pkg update
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-50
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Tue, 23 Nov 2010 23:14:37 +0900
+
+libslp-calendar (0.1.8-49) unstable; urgency=low
+
+  * pkg update(dependency add-alarm)
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-49
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Tue, 23 Nov 2010 22:42:03 +0900
+
+libslp-calendar (0.1.8-48) unstable; urgency=low
+
+  * repeat_end_date bug fix, multi account bug fix
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-48
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Tue, 23 Nov 2010 10:55:48 +0900
+
+libslp-calendar (0.1.8-47) unstable; urgency=low
+
+  * doxygen update
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-47
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Fri, 12 Nov 2010 15:56:09 +0900
+
+libslp-calendar (0.1.8-46) unstable; urgency=low
+
+  * doxygen update
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-46
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Fri, 12 Nov 2010 15:22:05 +0900
+
+libslp-calendar (0.1.8-45) unstable; urgency=low
+
+  * sqlite3 add(dependency add)
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-45
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Thu, 11 Nov 2010 14:58:20 +0900
+
+libslp-calendar (0.1.8-44) unstable; urgency=low
+
+  * dependency removed
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-44
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Thu, 11 Nov 2010 11:53:10 +0900
+
+libslp-calendar (0.1.8-43) unstable; urgency=low
+
+  * recurrence module performance improvement, multi calendar/account implementation
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-43
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Wed, 10 Nov 2010 20:13:06 +0900
+
+libslp-calendar (0.1.8-42) unstable; urgency=low
+
+  * cq b/s issue fixed, log message modification
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-42
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Tue, 09 Nov 2010 14:52:54 +0900
+
+libslp-calendar (0.1.8-41) unstable; urgency=low
+
+  * convert time_t -> tm update(for week day)
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-41
+
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Tue, 09 Nov 2010 12:41:12 +0900
+
+libslp-calendar (0.1.8-40) unstable; urgency=low
+
+  * pkg update
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-40
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Mon, 08 Nov 2010 14:30:46 +0900
+
+libslp-calendar (0.1.8-39) unstable; urgency=low
+
+  * remove unused code
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-39
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Mon, 08 Nov 2010 14:17:56 +0900
+
+libslp-calendar (0.1.8-38) unstable; urgency=low
+
+  * old api remove
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-38
+
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Mon, 08 Nov 2010 11:33:57 +0900
+
+libslp-calendar (0.1.8-37) unstable; urgency=low
+
+  * add time convert api, fixed time convert error
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-37
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Fri, 05 Nov 2010 09:43:32 +0900
+
+libslp-calendar (0.1.8-36) unstable; urgency=low
+
+  * get updated list error fixed, add status for updated type
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-36
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Fri, 29 Oct 2010 11:40:17 +0900
+
+libslp-calendar (0.1.8-35) unstable; urgency=low
+
+  * attendee update error fix, location error fix
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-35
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Tue, 26 Oct 2010 13:45:57 +0900
+
+libslp-calendar (0.1.8-34) unstable; urgency=low
+
+  * sync status error fixed
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-34
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Tue, 26 Oct 2010 09:33:01 +0900
+
+libslp-calendar (0.1.8-33) unstable; urgency=low
+
+  * change param type , bool -> int
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-33
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Fri, 22 Oct 2010 11:09:01 +0900
+
+libslp-calendar (0.1.8-32) unstable; urgency=low
+
+  * package update, timezone api added
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-32
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Thu, 21 Oct 2010 14:22:07 +0900
+
+libslp-calendar (0.1.8-31) unstable; urgency=low
+
+  * 2days event error fixed, alarm field error fixed
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-31
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Wed, 20 Oct 2010 11:38:14 +0900
+
+libslp-calendar (0.1.8-30) unstable; urgency=low
+
+  * db owner change(script error fixed)
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-30
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Mon, 18 Oct 2010 14:26:14 +0900
+
+libslp-calendar (0.1.8-29) unstable; urgency=low
+
+  * recurrent util bug fixed
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-29
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Sat, 16 Oct 2010 08:26:01 +0900
+
+libslp-calendar (0.1.8-28) unstable; urgency=low
+
+  * recurrent util bug fixed
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-28
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Sat, 16 Oct 2010 08:16:58 +0900
+
+libslp-calendar (0.1.8-27) unstable; urgency=low
+  * calendar.pc file modification for compile error
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-27
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Fri, 15 Oct 2010 10:17:08 +0900
+
+libslp-calendar (0.1.8-26) unstable; urgency=low
+
+  * support new calendar api, remove old api
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-26
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Thu, 14 Oct 2010 14:08:17 +0900
+
+libslp-calendar (0.1.8-14) unstable; urgency=low
+
+  * support new calendar api, remove old api
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-14
+
+ -- heungjae jeong <hj98.jeong@samsung.com>  Thu, 14 Oct 2010 14:03:40 +0900
+
+libslp-calendar (0.1.8-13) unstable; urgency=low
+
+  * added exception code in db.c
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-13
+
+ -- jeesun kim <iamjs.kim@samsung.com>  Mon, 02 Aug 2010 17:46:23 +0900
+
+libslp-calendar (0.1.8-12) unstable; urgency=low
+
+  * added event_t for sg
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-12
+
+ -- jeesun kim <iamjs.kim@samsung.com>  Fri, 30 Jul 2010 14:24:54 +0900
+
+libslp-calendar (0.1.8-11) unstable; urgency=low
+
+  * added new apis
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-11
+
+ -- jeesun kim <iamjs.kim@samsung.com>  Fri, 30 Jul 2010 11:32:53 +0900
+
+libslp-calendar (0.1.8-10) unstable; urgency=low
+
+  * modified eventAddDeletedOccur
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-10
+
+ -- jeesun kim <iamjs.kim@samsung.com>  Thu, 22 Jul 2010 10:09:24 +0900
+
+libslp-calendar (0.1.8-9) unstable; urgency=low
+
+  * added missing api(eventModLocation)
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-9
+
+ -- jeesun kim <iamjs.kim@samsung.com>  Mon, 19 Jul 2010 17:54:50 +0900
+
+libslp-calendar (0.1.8-8) unstable; urgency=low
+
+  * added omitted api
+  * Git: /git/slp/pkgs/libslp-calendar
+  * Tag: libslp-calendar_0.1.8-8
+
+ -- jeesun kim <iamjs.kim@samsung.com>  Fri, 16 Jul 2010 10:15:20 +0900
+
+libslp-calendar (0.1.8-7) unstable; urgency=low
+
+  * modified cmake to see internal header calenda.h
+  * Git: /git/slp2.0/slp2.0-pkgs/libslp-calendar-0
+  * Tag: libslp-calendar_0.1.8-7
+
+ -- jeesun kim <iamjs.kim@samsung.com>  Wed, 14 Jul 2010 17:53:18 +0900
+
+libslp-calendar (0.1.8-6) unstable; urgency=low
+
+  * modified comment for doxygen
+  * Git: /git/slp2.0/slp2.0-pkgs/libslp-calendar-0
+  * Tag: libslp-calendar_0.1.8-6
+
+ -- jeesun kim <iamjs.kim@samsung.com>  Wed, 14 Jul 2010 16:20:43 +0900
+
+libslp-calendar (0.1.8-5) unstable; urgency=low
+
+  * moved sglib to c file
+  * Git: /git/slp2.0/slp2.0-pkgs/libslp-calendar-0
+  * Tag: libslp-calendar_0.1.8-5
+
+ -- jeesun kim <iamjs.kim@samsung.com>  Tue, 13 Jul 2010 13:40:23 +0900
+
+libslp-calendar (0.1.8-4) unstable; urgency=low
+
+  * delete sglib define from event header
+  * Git: /git/slp2.0/slp2.0-pkgs/libslp-calendar-0
+  * Tag: libslp-calendar_0.1.8-4
+
+ -- jeesun kim <iamjs.kim@samsung.com>  Tue, 13 Jul 2010 11:01:05 +0900
+
+libslp-calendar (0.1.8-3) unstable; urgency=low
+
+  * modified "_"apis
+  * Git: /git/slp2.0/slp2.0-pkgs/libslp-calendar-0
+  * Tag: libslp-calendar_0.1.8-3
+
+ -- jeesun kim <iamjs.kim@samsung.com>  Tue, 06 Jul 2010 08:39:54 +0900
+
+libslp-calendar (0.1.8-2) unstable; urgency=low
+
+  * modified _* api
+  * Git: /git/slp2.0/slp2.0-pkgs/libslp-calendar-0
+  * Tag: libslp-calendar_0.1.8-2
+
+ -- jeesun kim <iamjs.kim@samsung.com>  Mon, 05 Jul 2010 20:20:37 +0900
+
+libslp-calendar (0.1.8-1) unstable; urgency=low
+
+  * modified dpkg option
+  * Git: /git/slp2.0/slp2.0-pkgs/libslp-calendar-0
+  * Tag: libslp-calendar_0.1.8-1
+
+ -- jeesun kim <iamjs.kim@samsung.com>  Mon, 05 Jul 2010 17:09:57 +0900
+
+libslp-calendar (0.1.2-79) unstable; urgency=low
+
+  * removed warning
+  * Git: /git/slp2.0/slp2.0-pkgs/libslp-calendar-0
+  * Tag: libslp-calendar_0.1.2-79
+
+ -- jeesun kim <iamjs.kim@samsung.com>  Thu, 24 Jun 2010 15:24:02 +0900
+
+libslp-calendar (0.1.2-78) unstable; urgency=low
+
+  * set hasUntill none 1 instead of zero
+  * Git: /git/slp2.0/slp2.0-pkgs/libslp-calendar-0
+  * Tag: libslp-calendar_0.1.2-78
+
+ -- Yongjun Wang <yj.wang@samsung.com>  Thu, 17 Jun 2010 13:47:57 +0800
+
+libslp-calendar (0.1.2-77) unstable; urgency=low
+
+  * dac at journal file
+  * Git: /git/slp2.0/slp2.0-pkgs/libslp-calendar-0
+  * Tag: libslp-calendar_0.1.2-77
+
+ -- jeesun kim <iamjs.kim@samsung.com>  Wed, 16 Jun 2010 10:04:10 +0900
+
+libslp-calendar (0.1.2-76) unstable; urgency=low
+
+  * modified VCal api
+  * Git: /git/slp2.0/slp2.0-pkgs/libslp-calendar-0
+  * Tag: libslp-calendar_0.1.2-76
+
+ -- jeesun kim <iamjs.kim@samsung.com>  Mon, 31 May 2010 19:44:06 +0900
+
+libslp-calendar (0.1.2-75) unstable; urgency=low
+
+  * fix the bug that synced calendar events can't be showed in month view
+  * Git: /git/slp2.0/slp2.0-pkgs/libslp-calendar-0
+  * Tag: libslp-calendar_0.1.2-75
+
+ -- Yongjun Wang <yj.wang@samsung.com>  Wed, 26 May 2010 15:42:43 +0800
+
+libslp-calendar (0.1.2-74) unstable; urgency=low
+
+  * fix the bug about calendar sync
+  * Git: /git/slp2.0/slp2.0-pkgs/libslp-calendar-0
+  * Tag: libslp-calendar_0.1.2-74
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Sun, 23 May 2010 10:34:46 +0900
+
+libslp-calendar (0.1.2-73) unstable; urgency=low
+
+  * fix the bug about calendar sync
+
+ -- Yongjun Wang <yj.wang@samsung.com>  Fri, 21 May 2010 10:55:28 +0800
+
+libslp-calendar (0.1.2-72) unstable; urgency=low
+
+  * fix the bug about birthday event sync
+
+ -- Yongjun Wang <yj.wang@samsung.com>  Fri, 21 May 2010 10:33:31 +0800
+
+libslp-calendar (0.1.2-71) unstable; urgency=low
+
+  * fix the bug of repeat end date
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Fri, 21 May 2010 09:56:56 +0800
+
+libslp-calendar (0.1.2-70) unstable; urgency=low
+
+  * fix the bug about unitll date
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Wed, 19 May 2010 10:54:58 +0800
+
+libslp-calendar (0.1.2-69) unstable; urgency=low
+
+  * fix bug about untill date
+  * Git: /git/slp2.0/slp2.0-pkgs/libslp-calendar-0
+  * Tag: libslp-calendar_0.1.2-69
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Thu, 13 May 2010 16:53:16 +0800
+
+libslp-calendar (0.1.2-68) unstable; urgency=low
+
+  * fix vcalendar bug
+  * Git: /git/slp2.0/slp2.0-pkgs/libslp-calendar-0
+  * Tag: libslp-calendar_0.1.2-68
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Wed, 12 May 2010 21:39:11 +0900
+
+libslp-calendar (0.1.2-67) unstable; urgency=low
+
+  * revise calendar recurrence API
+  * Git: /git/slp2.0/slp2.0-pkgs/libslp-calendar-0
+  * Tag: libslp-calendar_0.1.2-67
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Wed, 12 May 2010 08:32:52 +0900
+
+libslp-calendar (0.1.2-66) unstable; urgency=low
+
+  * revise calendar recurrence API
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Mon, 10 May 2010 17:46:46 +0800
+
+libslp-calendar (0.1.2-65) unstable; urgency=low
+
+  * fix the bug about vcalendar recurrence
+  * Git: /git/slp2.0/slp2.0-pkgs/libslp-calendar-0
+  * Tag: libslp-calendar_0.1.2-65
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Thu, 06 May 2010 09:36:12 +0900
+
+libslp-calendar (0.1.2-64) unstable; urgency=low
+
+  * fix the bug that list view cannot show all the events
+  * Git: /git/slp2.0/slp2.0-pkgs/libslp-calendar-0
+  * Tag: libslp-calendar_0.1.2-64
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Wed, 28 Apr 2010 20:01:11 +0900
+
+libslp-calendar (0.1.2-63) unstable; urgency=low
+
+  * update changelog
+  * Git: /git/slp2.0/slp2.0-pkgs/libslp-calendar-0
+  * Tag: libslp-calendar_0.1.2-63
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Tue, 27 Apr 2010 07:59:59 +0900
+
+libslp-calendar (0.1.2-62) unstable; urgency=low
+
+  * fix bug of vcalendar_convert_vfile_to_record API
+  * Git: /git/slp2.0/slp2.0-pkgs/libslp-calendar-0
+  * Tag: libslp-calendar_0.1.2-62
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Sat, 24 Apr 2010 10:16:45 +0900
+
+libslp-calendar (0.1.2-61) unstable; urgency=low
+
+  * vCalendar support X-FUNAMBOL-ALLDAY
+  * Git: /git/slp2.0/slp2.0-pkgs/libslp-calendar-0
+  * Tag: libslp-calendar_0.1.2-61
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Mon, 19 Apr 2010 14:50:09 +0800
+
+libslp-calendar (0.1.2-60) unstable; urgency=low
+
+  * support Deleteing Repeat events
+  * Git: /git/slp2.0/slp2.0-pkgs/libslp-calendar-0
+  * Tag: libslp-calendar_0.1.2-60
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Sun, 18 Apr 2010 09:46:30 +0900
+
+libslp-calendar (0.1.2-59) unstable; urgency=low
+
+  * support Deleteing Repeat events
+  * Git: /git/slp2.0/slp2.0-pkgs/libslp-calendar-0
+  * Tag: libslp-calendar-0_0.1.2-59
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Sun, 18 Apr 2010 09:29:35 +0900
+
+libslp-calendar (0.1.2-58) unstable; urgency=low
+
+  * support Deleteing Repeat events
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Tue, 13 Apr 2010 14:33:07 +0800
+
+libslp-calendar (0.1.2-57) unstable; urgency=low
+
+  * support RRULE for vCalendar 1.0
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Mon, 12 Apr 2010 15:50:14 +0800
+
+libslp-calendar (0.1.2-56) unstable; urgency=low
+
+  * fix vCalendar bugs when event type is anniversary
+  * Git: /git/slp2.0/slp2.0-pkgs/libslp-calendar-0
+  * Tag: libslp-calendar-0_0.1.2-56
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Tue, 06 Apr 2010 15:13:42 +0800
+
+libslp-calendar (0.1.2-55) unstable; urgency=low
+
+  * add get day list function
+  * Git: /git/slp2.0/slp2.0-pkgs/libslp-calendar-0
+  * Tag: libslp-calendar-0_0.1.2-55
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Mon, 05 Apr 2010 21:17:06 +0900
+
+libslp-calendar (0.1.2-54) unstable; urgency=low
+
+  * add monthly recurrence check
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Tue, 30 Mar 2010 18:02:53 +0900
+
+libslp-calendar (0.1.2-53) unstable; urgency=low
+
+  * fix recurrece API bugs
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Thu, 25 Mar 2010 10:16:14 +0800
+
+libslp-calendar (0.1.2-52) unstable; urgency=low
+
+  * exception handle for vcalendar attendee
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Wed, 24 Mar 2010 10:40:58 +0800
+
+libslp-calendar (0.1.2-51) unstable; urgency=low
+
+  * modify calendar_get_data_by_alarmId and eventModDescription
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Fri, 19 Mar 2010 19:37:12 +0900
+
+libslp-calendar (0.1.2-50) unstable; urgency=low
+
+  * add globalMeetingId field in exception event table
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Thu, 18 Mar 2010 13:54:16 +0900
+
+libslp-calendar (0.1.2-49) unstable; urgency=low
+
+  * reflect modified sync_db APIs
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Mon, 15 Mar 2010 19:48:16 +0900
+
+libslp-calendar (0.1.2-48) unstable; urgency=low
+
+  * modify value of event category in calendar-engine's header
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Thu, 11 Mar 2010 18:01:13 +0900
+
+libslp-calendar (0.1.2-47) unstable; urgency=low
+
+  * fix the bug of eventAddException and _s API
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Thu, 11 Mar 2010 10:57:12 +0900
+
+libslp-calendar (0.1.2-46) unstable; urgency=low
+
+  * add calendar_insert_data_for_test_by_category API
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Tue, 09 Mar 2010 17:22:05 +0900
+
+libslp-calendar (0.1.2-45) unstable; urgency=low
+
+  * add calendar_get_all_data_list_by_category API
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Tue, 09 Mar 2010 16:02:57 +0900
+
+libslp-calendar (0.1.2-44) unstable; urgency=low
+
+  * add exception handling before using strdup
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Mon, 08 Mar 2010 10:16:07 +0900
+
+libslp-calendar (0.1.2-43) unstable; urgency=low
+
+  * add some APIs for "change calendar"
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Wed, 03 Mar 2010 19:54:49 +0900
+
+libslp-calendar (0.1.2-42) unstable; urgency=low
+
+  * change vcalendar file path to "/opt/share"
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Thu, 25 Feb 2010 08:48:04 +0900
+
+libslp-calendar (0.1.2-41) unstable; urgency=low
+
+  * change vcalendar file path to /opt/share/vcs"
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Tue, 23 Feb 2010 15:14:12 +0800
+
+libslp-calendar (0.1.2-40) unstable; urgency=low
+
+  * fix the defects about vcalendar file name duplicated
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Mon, 22 Feb 2010 16:54:04 +0800
+
+libslp-calendar (0.1.2-39) unstable; urgency=low
+
+  * apply sync-db for interacting with syncml
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Mon, 22 Feb 2010 14:46:26 +0900
+
+libslp-calendar (0.1.2-38) unstable; urgency=low
+
+  * add new include directory for calendar-engine-include-dev
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Mon, 22 Feb 2010 11:19:31 +0900
+
+libslp-calendar (0.1.2-37) unstable; urgency=low
+
+  * generate initial DB file in /opt/dbspace
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Fri, 19 Feb 2010 09:21:35 +0900
+
+libslp-calendar (0.1.2-36) unstable; urgency=low
+
+  * add calendar_insert_data_for_test API for DB test in process
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Thu, 18 Feb 2010 17:36:19 +0900
+
+libslp-calendar (0.1.2-35) unstable; urgency=low
+
+  * add completionDate field in event structure for task
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Thu, 18 Feb 2010 09:07:34 +0900
+
+libslp-calendar (0.1.2-34) unstable; urgency=low
+
+  * fix the bug(eventSetIsAllDayEvent)
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Wed, 17 Feb 2010 09:31:40 +0900
+
+libslp-calendar (0.1.2-33) unstable; urgency=low
+
+  * add isComplete field in Event
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Tue, 09 Feb 2010 12:14:23 +0900
+
+libslp-calendar (0.1.2-32) unstable; urgency=low
+
+  * add calendar_get_data_counts_by_category API
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Mon, 08 Feb 2010 19:53:32 +0900
+
+libslp-calendar (0.1.2-31) unstable; urgency=low
+
+  * add dbg-package
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Sat, 06 Feb 2010 17:03:59 +0900
+
+libslp-calendar (0.1.2-30) unstable; urgency=low
+
+  * fix the bug(calendar_free_all_data API) and apply autoincrement to primary key
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Thu, 04 Feb 2010 22:26:55 +0900
+
+libslp-calendar (0.1.2-29) unstable; urgency=low
+
+  * remove dummy node in linked-list
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Wed, 03 Feb 2010 23:37:42 +0900
+
+libslp-calendar (0.1.2-28) unstable; urgency=low
+
+  * fix the bug(calendar_update_data API)
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Wed, 03 Feb 2010 18:11:30 +0900
+
+libslp-calendar (0.1.2-27) unstable; urgency=low
+
+  * fix the bug(calendar_update_data API)
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Wed, 03 Feb 2010 18:05:54 +0900
+
+libslp-calendar (0.1.2-26) unstable; urgency=low
+
+  * add alarm id field to event table for alarm ring
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Wed, 03 Feb 2010 15:47:23 +0900
+
+libslp-calendar (0.1.2-25) unstable; urgency=low
+
+  * modify eventAddxxx() APIs and calendar_free_data API
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Wed, 03 Feb 2010 14:29:53 +0900
+
+libslp-calendar (0.1.2-24) unstable; urgency=low
+
+  * fix the bug(calendar_insert_data API)
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Tue, 02 Feb 2010 20:43:42 +0900
+
+libslp-calendar (0.1.2-23) unstable; urgency=low
+
+  * fix the bug(eventSetTimeZone API)
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Sun, 31 Jan 2010 14:17:00 +0900
+
+libslp-calendar (0.1.2-22) unstable; urgency=low
+
+  * reupload pkg because of build machine's problem
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Fri, 29 Jan 2010 20:01:34 +0900
+
+libslp-calendar (0.1.2-21) unstable; urgency=low
+
+  * add eventRemoveAllxxx APIs
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Fri, 29 Jan 2010 14:47:42 +0900
+
+libslp-calendar (0.1.2-20) unstable; urgency=low
+
+  * add notification API using dbus
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Fri, 29 Jan 2010 10:03:06 +0900
+
+libslp-calendar (0.1.2-19) unstable; urgency=low
+
+  * modify enum AttendeeStatus
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Thu, 28 Jan 2010 14:16:38 +0900
+
+libslp-calendar (0.1.2-18) unstable; urgency=low
+
+  * add removing string API(eventRemovexxx())
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Thu, 28 Jan 2010 10:22:41 +0900
+
+libslp-calendar (0.1.2-17) unstable; urgency=low
+
+  * modify calendar event API
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Wed, 27 Jan 2010 20:30:56 +0900
+
+libslp-calendar (0.1.2-16) unstable; urgency=low
+
+  * modify data structure of RecurDateList and DeletedOccurList
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Wed, 27 Jan 2010 14:09:17 +0900
+
+libslp-calendar (0.1.2-15) unstable; urgency=low
+
+  * remove prefix "SLP"
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Wed, 27 Jan 2010 13:31:38 +0900
+
+libslp-calendar (0.1.2-14) unstable; urgency=low
+
+  * add SLP_calendar_get_range_data_list_by_time API
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Tue, 26 Jan 2010 17:49:45 +0900
+
+libslp-calendar (0.1.2-13) unstable; urgency=low
+
+  * reinsert old data structure
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Tue, 26 Jan 2010 10:29:54 +0900
+
+libslp-calendar (0.1.2-12) unstable; urgency=low
+
+  * add doxygen
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Mon, 25 Jan 2010 22:36:46 +0900
+
+libslp-calendar (0.1.2-11) unstable; urgency=low
+
+  * add eventSetAttendeeList API
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Mon, 25 Jan 2010 13:53:42 +0900
+
+libslp-calendar (0.1.2-10) unstable; urgency=low
+
+  * add vcalendar APIs
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Sat, 23 Jan 2010 21:05:09 +0800
+
+libslp-calendar (0.1.2-9) unstable; urgency=low
+
+  * modify data structure and API for interacting with SEVEN
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Fri, 22 Jan 2010 23:27:15 +0900
+
+libslp-calendar (0.1.2-8) unstable; urgency=low
+
+  * use libslp-db-util-dev
+
+ -- Sangjung Woo <sangjung.woo@samsung.com>  Thu, 21 Jan 2010 09:09:25 +0900
+
+libslp-calendar (0.1.2-7) unstable; urgency=low
+
+  * change location of database(from /root to /opt/dbspace)
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Thu, 14 Jan 2010 09:06:31 +0900
+
+libslp-calendar (0.1.2-6) unstable; urgency=low
+
+  * modify for interaction with SEVEN
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Tue, 05 Jan 2010 14:58:53 +0900
+
+libslp-calendar (0.1.2-5) unstable; urgency=low
+
+  * fix the bug (H0100075687)
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Fri, 01 Jan 2010 13:39:38 +0900
+
+libslp-calendar (0.1.2-4) unstable; urgency=low
+
+  * remove SLP_alarm feature
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Thu, 24 Dec 2009 11:09:26 +0900
+
+libslp-calendar (0.1.2-3) unstable; urgency=low
+
+  * modify structure of source tree
+
+ -- Deokjin Kim <deokjin81.kim@samsung.com>  Thu, 10 Dec 2009 17:35:35 +0900
+
+libslp-calendar (0.1.2-2) unstable; urgency=low
+
+  * fix
+
+ -- Jihoon Kim <jihoon48.kim@samsung.com>  Fri, 20 Nov 2009 21:04:40 +0900
+
+libslp-calendar (0.1.2-1) unstable; urgency=low
+
+  * fix installing pkgconfi
+
+ -- Jihoon Kim <jihoon48.kim@samsung.com>  Fri, 20 Nov 2009 20:47:46 +0900
+
+libslp-calendar (0.1.2) unstable; urgency=low
+
+  * change control file
+
+ -- Jihoon Kim <jihoon48.kim@samsung.com>  Fri, 20 Nov 2009 19:50:13 +0900
+
+libx1-calendar (0.1.1) unstable; urgency=low
+
+  * rename X1 -> SLP
+
+ -- Jihoon Kim <jihoon48.kim@samsung.com>  Fri, 20 Nov 2009 19:27:38 +0900
+
+libx1-calendar (0.1.0) unstable; urgency=low
+
+  * Initial Release.
+
+ -- Jihoon Kim <jihoon48.kim@samsung.com>  Mon, 16 Nov 2009 15:40:49 +0900

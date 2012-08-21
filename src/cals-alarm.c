@@ -19,16 +19,17 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <alarm.h>
+#include <appsvc.h>
 
 #include "cals-internal.h"
 #include "cals-typedef.h"
 #include "cals-db-info.h"
 #include "cals-sqlite.h"
-#include "cals-tz-utils.h"
 #include "cals-utils.h"
 #include "cals-alarm.h"
+#include "cals-time.h"
 
-#define PKG_CALENDAR_APP "org.tizen.efl-calendar"
+#define PKG_CALENDAR_APP "org.tizen.calendar"
 
 int cals_alarm_remove(int type, int related_id)
 {
@@ -106,25 +107,28 @@ int cals_alarm_remove(int type, int related_id)
 	return CAL_SUCCESS;
 }
 
-static inline int _cals_alarm_add(const int event_id, cal_alarm_info_t *alarm_info)
+int _cals_alarm_add_to_db(const int event_id, cal_alarm_info_t *alarm_info)
 {
-	int rc = -1;
+	CALS_FN_CALL;
+	int r;
 	sqlite3_stmt *stmt = NULL;
-	char sql_value[CALS_SQL_MAX_LEN] = {0};
-	time_t conv_alarm_time;
+	char query[CALS_SQL_MAX_LEN] = {0};
 
-	conv_alarm_time = cals_mktime(&alarm_info->alarm_time);
-
-	sprintf(sql_value, "INSERT INTO %s(event_id,alarm_time,remind_tick,remind_tick_unit,alarm_tone,alarm_description,alarm_type,alarm_id) "
-			"VALUES(%d,%ld,%d,%d,?,?,%d,%d)", CALS_TABLE_ALARM,
+	sprintf(query, "INSERT INTO %s ("
+			"event_id, "
+			"alarm_time, remind_tick, remind_tick_unit, alarm_tone, "
+			"alarm_description, alarm_type, alarm_id "
+			") VALUES ( "
+			"%d, "
+			"%lld, %d, %d, ?, "
+			"?, %d, %d )",
+			CALS_TABLE_ALARM,
 			event_id,
-			conv_alarm_time,
-			alarm_info->remind_tick,
-			alarm_info->remind_tick_unit,
-			alarm_info->alarm_type,
-			alarm_info->alarm_id);
+			alarm_info->alarm_time, alarm_info->remind_tick, alarm_info->remind_tick_unit,
+			alarm_info->alarm_type, alarm_info->alarm_id);
 
-	stmt = cals_query_prepare(sql_value);
+	DBG("query(%s)\n", query);
+	stmt = cals_query_prepare(query);
 	retvm_if(NULL == stmt, CAL_ERR_DB_FAILED, "cals_query_prepare() Failed");
 
 	if (alarm_info->alarm_tone)
@@ -133,111 +137,146 @@ static inline int _cals_alarm_add(const int event_id, cal_alarm_info_t *alarm_in
 	if (alarm_info->alarm_description)
 		cals_stmt_bind_text(stmt, 2, alarm_info->alarm_description);
 
-	rc = cals_stmt_step(stmt);
-	if (CAL_SUCCESS != rc) {
-		sqlite3_finalize(stmt);
-		ERR("cals_stmt_step() Failed(%d)", rc);
-		return rc;
-	}
-
+	r = cals_stmt_step(stmt);
 	sqlite3_finalize(stmt);
+
+	if (CAL_SUCCESS != r) {
+		ERR("cals_stmt_step() Failed(%d)", r);
+		return r;
+	}
 
 	return CAL_SUCCESS;
 }
 
-int cals_alarm_add(int event_id, cal_alarm_info_t *alarm_info, struct tm *start_date_time)
+static long long int _cals_get_interval(cal_alarm_info_t *alarm_info, struct cals_time *start_time)
 {
-	CALS_FN_CALL;
-	int ret = 0;
-	alarm_id_t alarm_id;
-	alarm_date_t alarm_date = {0};
-	alarm_entry_t *aet = NULL;
-	struct tm time;
-	time_t base_tt, alarm_tt;
+	long long int iv, diff;
+	int sec;
+	struct cals_time at;
 
-	if(alarm_info->remind_tick_unit == CAL_SCH_TIME_UNIT_OFF)
-		return CAL_INVALID_INDEX;
+	if (alarm_info->remind_tick_unit == CAL_SCH_TIME_UNIT_SPECIFIC) {
+		at.type = CALS_TIME_UTIME;
+		at.utime = alarm_info->alarm_time;
+		return cals_time_diff_with_now(&at);
+	}
 
-	//update the alarm time
-	aet = alarmmgr_create_alarm();
-	retvm_if(NULL == aet, CAL_ERR_ALARMMGR_FAILED, "alarmmgr_create_alarm() Failed");
+	switch (alarm_info->remind_tick_unit) {
+	case CAL_SCH_TIME_UNIT_MIN:
+		sec = 60;
+		break;
+	case CAL_SCH_TIME_UNIT_HOUR:
+		sec = 3600;
+		break;
+	case CAL_SCH_TIME_UNIT_DAY:
+		sec = ONE_DAY_SECONDS;
+		break;
+	case CAL_SCH_TIME_UNIT_WEEK:
+		sec = ONE_WEEK_SECONDS;
+		break;
+	case CAL_SCH_TIME_UNIT_MONTH:
+		sec = ONE_MONTH_SECONDS;
+		break;
+	case CAL_SCH_TIME_UNIT_OFF:
+	default:
+		return 0;
+	}
 
-	//calculate time
-	if(alarm_info->remind_tick_unit == CAL_SCH_TIME_UNIT_SPECIFIC)	{
-		base_tt = cals_mktime(&alarm_info->alarm_time);
+	sec = sec * alarm_info->remind_tick;
+	if (start_time->type == CALS_TIME_UTIME) {
+		alarm_info->alarm_time = start_time->utime - sec;
+
 	} else {
-		int sec = 0;
+		alarm_info->alarm_time = cals_time_convert_to_lli(start_time) - sec;
 
-		switch (alarm_info->remind_tick_unit) {
-		case CAL_SCH_TIME_UNIT_MIN:
-			sec = 60;
-			break;
-		case CAL_SCH_TIME_UNIT_HOUR:
-			sec = 3600;
-			break;
-		case CAL_SCH_TIME_UNIT_DAY:
-			sec = ONE_DAY_SECONDS;
-			break;
-		case CAL_SCH_TIME_UNIT_WEEK:
-			sec = ONE_WEEK_SECONDS;
-			break;
-		case CAL_SCH_TIME_UNIT_MONTH:
-			sec = ONE_MONTH_SECONDS;
-			break;
-		case CAL_SCH_TIME_UNIT_OFF:
-		default:
-			alarmmgr_free_alarm(aet);
-			return CAL_INVALID_INDEX;
-		}
-
-		sec = sec * alarm_info->remind_tick;
-
-		base_tt = cals_mktime(start_date_time) - sec;
 	}
 
-	calendar_svc_util_gmt_to_local(base_tt,&alarm_tt);
-	cals_tmtime_r(&alarm_tt,&time);
-	TMDUMP(time);
+	diff =  cals_time_diff_with_now(start_time);
+	iv = diff - (long long int)sec;
+	DBG("tick(%d) tick unit(%d) "
+			",so sets (%lld) = diff(%lld) - sec(%lld)",
+			alarm_info->remind_tick, alarm_info->remind_tick_unit,
+			iv, diff, (long long int)sec);
 
-	alarm_date.year = time.tm_year + 1900;
-	alarm_date.month = time.tm_mon + 1;
-	alarm_date.day = time.tm_mday;
-	alarm_date.hour = time.tm_hour;
-	alarm_date.min = time.tm_min;
-	alarm_date.sec = time.tm_sec;
+	return iv;
+}
 
-	ret = alarmmgr_set_time(aet, alarm_date);
-	if (ret < 0) {
-		alarmmgr_free_alarm(aet);
-		ERR("alarmmgr_set_time() Failed(%d)", ret);
+bundle *_get_appsvc(const char *pkg)
+{
+	int r;
+	bundle *b;
+
+	b = bundle_create();
+	if (!b) {
+		ERR("bundle_create failed");
+		return NULL;
+	}
+
+	r = appsvc_set_pkgname(b, pkg);
+	appsvc_set_operation(b, APPSVC_OPERATION_DEFAULT);
+	if (r) {
+		bundle_free(b);
+		ERR("appsvc_set_pkgname failed (%d)", r);
+		return NULL;
+	}
+
+	return b;
+}
+
+int _cals_alarm_add_to_alarmmgr(struct cals_time *start_time, cal_alarm_info_t *alarm_info)
+{
+	int ret;
+	long long int iv;
+	bundle *b;
+	alarm_id_t alarm_id = 0;
+
+	iv = _cals_get_interval(alarm_info, start_time);
+	if (iv < 0) {
+		DBG("Tried to register past event, so passed registration");
+		return 0;
+
+	} else if (iv == 0) {
+		DBG("Set no alarm");
+		return 0;
+	}
+
+	b = _get_appsvc(PKG_CALENDAR_APP);
+	if (!b) {
+		ERR("_get_appsvc failed");
+		return CAL_ERR_FAIL;
+	}
+
+	ret = alarmmgr_add_alarm_appsvc(ALARM_TYPE_DEFAULT, (long int)iv, 0, b, &alarm_id);
+	bundle_free(b);
+
+	if (ret) {
+		ERR("alarmmgr_add_alarm_appsvc failed (%d)", ret);
 		return CAL_ERR_ALARMMGR_FAILED;
 	}
-
-	ret = alarmmgr_set_repeat_mode(aet, 0, 0);
-	if (ret < 0) {
-		alarmmgr_free_alarm(aet);
-		ERR("alarmmgr_set_repeat_mode() Failed(%d)", ret);
-		return CAL_ERR_ALARMMGR_FAILED;
-	}
-
-	ret = alarmmgr_set_type(aet, ALARM_TYPE_DEFAULT);
-	if (ret < 0) {
-		alarmmgr_free_alarm(aet);
-		ERR("alarmmgr_set_type() Failed(%d)", ret);
-		return CAL_ERR_ALARMMGR_FAILED;
-	}
-
-	ret = alarmmgr_add_alarm_with_localtime(aet, PKG_CALENDAR_APP, &alarm_id);
-	if (ret < 0) {
-		alarmmgr_free_alarm(aet);
-		ERR("alarmmgr_add_alarm_with_localtime() Failed(%d)", ret);
-		return CAL_ERR_ALARMMGR_FAILED;
-	}
-
-	alarmmgr_free_alarm(aet);
+	DBG("Set alarm id(%d)", alarm_id);
 	alarm_info->alarm_id = alarm_id;
 
-	_cals_alarm_add(event_id, alarm_info);
+	return 0;
+}
+
+int cals_alarm_add(int event_id, cal_alarm_info_t *alarm_info, struct cals_time *start_time)
+{
+	CALS_FN_CALL;
+	int ret;
+
+	if(alarm_info->remind_tick_unit == CAL_SCH_TIME_UNIT_OFF)
+		return CAL_SUCCESS;
+
+	ret = _cals_alarm_add_to_alarmmgr(start_time, alarm_info);
+	if (ret) {
+		ERR("Failed to register alarm");
+		return CAL_ERR_FAIL;
+	}
+
+	ret = _cals_alarm_add_to_db(event_id, alarm_info);
+	if (ret) {
+		ERR("Failed to add alarm to db");
+		return CAL_ERR_FAIL;
+	}
 
 	return CAL_SUCCESS;
 }
@@ -247,7 +286,7 @@ int cals_alarm_get_event_id(int alarm_id)
 {
 	char query[CALS_SQL_MIN_LEN];
 
-	sprintf(query, "SELECT event_id FROM cal_alarm_table WHERE alarm_id=%d", alarm_id);
+	sprintf(query, "SELECT event_id FROM %s WHERE alarm_id=%d", CALS_TABLE_ALARM, alarm_id);
 
 	return cals_query_get_first_int_result(query);
 }
@@ -311,10 +350,8 @@ int cals_get_alarm_info(const int event_id, GList **alarm_list)
 
 		alarm_info->event_id = sqlite3_column_int(stmt, 0);
 
-		long int temp = 0;
-		temp = sqlite3_column_int(stmt, 1);
-		cal_db_service_copy_struct_tm((struct tm*)cals_tmtime(&temp),&(alarm_info->alarm_time));
-		alarm_info->remind_tick = sqlite3_column_int(stmt,2);
+		alarm_info->alarm_time = sqlite3_column_int64(stmt, 1);
+		alarm_info->remind_tick = sqlite3_column_int(stmt, 2);
 		alarm_info->remind_tick_unit = sqlite3_column_int(stmt, 3);
 		alarm_info->alarm_tone = SAFE_STRDUP(sqlite3_column_text(stmt, 4));
 		alarm_info->alarm_description = SAFE_STRDUP(sqlite3_column_text(stmt, 5));
@@ -331,5 +368,4 @@ int cals_get_alarm_info(const int event_id, GList **alarm_list)
 
 	return CAL_SUCCESS;
 }
-
 

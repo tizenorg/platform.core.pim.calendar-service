@@ -40,6 +40,7 @@
 #define DLOG(prio, fmt, arg...) \
   do { SLOG(prio, LOG_TAG, fmt, ##arg); } while(0);
 #define INFO(fmt, arg...) SLOGI(fmt, ##arg)
+#define WARN(fmt, arg...) SLOGW("%s:%d " fmt, __FUNCTION__, __LINE__, ##arg)
 #define ERR(fmt, arg...) SLOGE("%s:%d " fmt, __FUNCTION__, __LINE__, ##arg)
 #define DBG(fmt, arg...) SLOGD("%s:" fmt, __FUNCTION__, ##arg)
 
@@ -62,7 +63,7 @@
 
 #define warn_if(expr, fmt, arg...) do { \
 	if (expr) { \
-		ERR(fmt, ##arg); \
+		WARN(fmt, ##arg); \
 	} \
 } while (0)
 #define ret_if(expr) do { \

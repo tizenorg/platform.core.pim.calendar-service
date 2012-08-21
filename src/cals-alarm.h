@@ -19,6 +19,7 @@
 #ifndef __CALENDAR_SVC_ALARM_H__
 #define __CALENDAR_SVC_ALARM_H__
 
+#include "cals-time.h"
 
 enum {
 	CALS_ALARM_REMOVE_BY_EVENT_ID,
@@ -27,7 +28,7 @@ enum {
 	CALS_ALARM_REMOVE_ALL,
 };
 int cals_alarm_remove(int type, int related_id);
-int cals_alarm_add(int event_id, cal_alarm_info_t *alarm_info, struct tm *start_date_time);
+int cals_alarm_add(int event_id, cal_alarm_info_t *alarm_info, struct cals_time *start_time);
 int cals_alarm_get_event_id(int alarm_id);
 int cals_get_alarm_info(const int event_id, GList **alarm_list);
 
