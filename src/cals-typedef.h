@@ -98,6 +98,7 @@ typedef struct _updated {
 	int type;
 	int id;
 	int ver;
+	int calendar_id;
 	struct _updated *next;
 } cals_updated;
 

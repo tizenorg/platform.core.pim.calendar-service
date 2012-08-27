@@ -31,6 +31,7 @@
 
 #define PKG_CALENDAR_APP "org.tizen.calendar"
 
+
 int cals_alarm_remove(int type, int related_id)
 {
 	int ret;

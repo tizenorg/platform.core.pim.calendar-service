@@ -46,9 +46,24 @@
 
 //#define CALS_DEBUGGING
 #ifdef CALS_DEBUGGING
-#define CALS_FN_CALL DBG(">>>>>>>>%s called", __FUNCTION__)
-#define CALS_FN_END DBG("<<<<<<<<%s ended", __FUNCTION__)
-#define CALS_DBG(fmt, arg...) DBG("%d " fmt, __LINE__, ##arg)
+    #if defined(CALS_IPC_SERVER)
+    #define CALS_FN_CALL DBG("SERVER:>>>>>>>>%s called", __FUNCTION__)
+    #define CALS_FN_END DBG("SERVER:<<<<<<<<%s ended", __FUNCTION__)
+    #elif defined(CALS_IPC_CLIENT)
+    #define CALS_FN_CALL DBG("CLIENT:>>>>>>>>%s called", __FUNCTION__)
+    #define CALS_FN_END DBG("CLIENT:<<<<<<<<%s ended", __FUNCTION__)
+    #else
+    #define CALS_FN_CALL DBG(">>>>>>>>%s called", __FUNCTION__)
+    #define CALS_FN_END DBG("<<<<<<<<%s ended", __FUNCTION__)
+    #endif
+
+    #if defined(CALS_IPC_SERVER)
+    #define CALS_DBG(fmt, arg...) DBG("SERVER:%d " fmt, __LINE__, ##arg)
+    #elif defined(CALS_IPC_CLIENT)
+    #define CALS_DBG(fmt, arg...) DBG("CLIENT:%d " fmt, __LINE__, ##arg)
+    #else
+    #define CALS_DBG(fmt, arg...) DBG("%d " fmt, __LINE__, ##arg)
+    #endif
 #else /* CALS_DEBUGGING */
 #define CALS_FN_CALL
 #define CALS_FN_END

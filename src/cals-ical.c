@@ -121,10 +121,51 @@ int cals_func_summary(int ver, cal_sch_full_t *sch, void *data);
 int cals_func_transp(int ver, cal_sch_full_t *sch, void *data);
 int cals_func_url(int ver, cal_sch_full_t *sch, void *data);
 int cals_func_recurid(int ver, cal_sch_full_t *sch, void *data);
-int cals_func_rrule(int ver, cal_sch_full_t *sch, void *data);
+int cals_func_rrule1(int ver, cal_sch_full_t *sch, void *data);
 int cals_func_dtend(int ver, cal_sch_full_t *sch, void *data);
 int cals_func_duration(int ver, cal_sch_full_t *sch, void *data);
 int cals_func_attach(int ver, cal_sch_full_t *sch, void *data);
+
+
+enum {
+	ATTENDEE_CUTYPE = 0x0,
+	ATTENDEE_MEMBER,
+	ATTENDEE_ROLE,
+	ATTENDEE_PARTSTAT,
+	ATTENDEE_RSVP,
+	ATTENDEE_DELTO,
+	ATTENDEE_DELFROM,
+	ATTENDEE_SENTBY,
+	ATTENDEE_CN,
+	ATTENDEE_DIR,
+	ATTENDEE_MAX,
+};
+
+int cals_func_attendee_cutype(cal_sch_full_t *sch, void *data);
+int cals_func_attendee_member(cal_sch_full_t *sch, void *data);
+int cals_func_attendee_role(cal_sch_full_t *sch, void *data);
+int cals_func_attendee_partstat(cal_sch_full_t *sch, void *data);
+int cals_func_attendee_rsvp(cal_sch_full_t *sch, void *data);
+int cals_func_attendee_delto(cal_sch_full_t *sch, void *data);
+int cals_func_attendee_delfrom(cal_sch_full_t *sch, void *data);
+int cals_func_attendee_sentby(cal_sch_full_t *sch, void *data);
+int cals_func_attendee_cn(cal_sch_full_t *sch, void *data);
+int cals_func_attendee_dir(cal_sch_full_t *sch, void *data);
+
+struct _vala_func _attendee_list[ATTENDEE_MAX] =
+{
+	{ "CUTYPE=", cals_func_attendee_cutype },
+	{ "MEMBER=", cals_func_attendee_member },
+	{ "ROLE=", cals_func_attendee_role },
+	{ "PARTSTAT=", cals_func_attendee_partstat },
+	{ "RSVP=", cals_func_attendee_rsvp },
+	{ "DELTO=", cals_func_attendee_delto },
+	{ "DELFROM=", cals_func_attendee_delfrom },
+	{ "SENTBY=", cals_func_attendee_sentby },
+	{ "CN=", cals_func_attendee_cn },
+	{ "DIR=", cals_func_attendee_dir }
+};
+
 int cals_func_attendee(int ver, cal_sch_full_t *sch, void *data);
 int cals_func_categories(int ver, cal_sch_full_t *sch, void *data);
 int cals_func_comment(int ver, cal_sch_full_t *sch, void *data);
@@ -134,6 +175,7 @@ int cals_func_rstatus(int ver, cal_sch_full_t *sch, void *data);
 int cals_func_related(int ver, cal_sch_full_t *sch, void *data);
 int cals_func_resources(int ver, cal_sch_full_t *sch, void *data);
 int cals_func_rdate(int ver, cal_sch_full_t *sch, void *data);
+int cals_func_aalarm(int ver, cal_sch_full_t *sch, void *data);
 
 /* for vcalendar version 1.0 */
 int cals_ver1_func_rrule(cal_sch_full_t *sch, void *data);
@@ -160,7 +202,7 @@ enum {
 	VEVE_DTEND,
 //	VEVE_DURATION,
 //	VEVE_ATTACH,
-//	VEVE_ATTENDEE,
+	VEVE_ATTENDEE,
 	VEVE_CATEGORIES,
 //	VEVE_COMMENT,
 //	VEVE_CONTACT,
@@ -169,6 +211,7 @@ enum {
 //	VEVE_RELATED,
 //	VEVE_RESOURCES,
 //	VEVE_RDATE,
+	VEVE_AALARM,	/* for ver 1.0 */
 	VEVE_MAX,
 };
 
@@ -191,12 +234,12 @@ struct _veve_func _veve_list[VEVE_MAX] =
 //	{ "TRANSP", cals_func_transp },
 //	{ "URL", cals_func_url },
 //	{ "RECURID", cals_func_recurid },
-	{ "RRULE", cals_func_rrule },
+	{ "RRULE", cals_func_rrule1 },
 	{ "DTEND", cals_func_dtend },
 //	{ "DURATION", cals_func_duration },
 //	{ "ATTACH", cals_func_attach },
-//	{ "ATTENDEE", cals_func_attendee },
-	{ "CATEGORIES", cals_func_categories }//,
+	{ "ATTENDEE", cals_func_attendee },
+	{ "CATEGORIES", cals_func_categories },
 //	{ "COMMENT", cals_func_comment },
 //	{ "CONTACT", cals_func_contact },
 //	{ "EXDATE", cals_func_exdate },
@@ -204,6 +247,7 @@ struct _veve_func _veve_list[VEVE_MAX] =
 //	{ "RELATED", cals_func_related },
 //	{ "RESOURCES", cals_func_resources },
 //	{ "RDATE", cals_func_rdate }
+	{ "AALARM", cals_func_aalarm }
 };
 
 int cals_func_action(cal_sch_full_t *sch, void *data);
@@ -288,8 +332,8 @@ struct _rrule_func _rrule_list[RRULE_MAX] =
 	{ "WKST=", cals_func_wkst }
 };
 
-int cals_func_related_trig(cal_sch_full_t *sch, void *data);
-int cals_func_value(cal_sch_full_t *sch, void *data);
+int cals_func_trig_related(cal_sch_full_t *sch, void *data);
+int cals_func_trig_value(cal_sch_full_t *sch, void *data);
 
 enum {
 	TRIG_RELATED = 0x0,
@@ -299,8 +343,8 @@ enum {
 
 struct _vala_func _trig_list[TRIG_MAX] =
 {
-	{ "RELATED=", cals_func_related_trig },
-	{ "VALUE=", cals_func_value }
+	{ "RELATED=", cals_func_trig_related },
+	{ "VALUE=", cals_func_trig_value }
 };
 
 int cals_func_charset(int *val, void *data);
@@ -408,6 +452,7 @@ char cals_2hexa_to_1char(char *p)
 
 int cals_quoted_printable_decode(char *p, int *len)
 {
+	CALS_FN_CALL;
 	int i = 0, j = 0;
 	char ch;
 
@@ -636,7 +681,7 @@ API int calendar_svc_read_schedules(const char *stream, GList **schedules)
 	*schedules = l;
 	return ret;
 }
-
+#ifndef CALS_IPC_CLIENT
 int cals_do_importing(int calendar_id, char *stream, void *data)
 {
 	int ret;
@@ -677,7 +722,7 @@ int cals_do_importing(int calendar_id, char *stream, void *data)
 
 	return ret;
 }
-
+#endif
 static const char* cals_get_stream_from_path(const char *path)
 {
 	FILE *file;
@@ -742,7 +787,7 @@ int calendar_svc_read_schedules_from_file(const char *path, GList **schedules)
 	}
 	return 0;
 }
-
+#ifndef CALS_IPC_CLIENT
 int cals_import_schedules(const char *path, int calendar_id)
 {
 	FILE *file;
@@ -805,7 +850,7 @@ API int calendar_svc_calendar_import(const char *path, int calendar_id)
 	ret = cals_import_schedules(path, calendar_id);
 	return ret;
 }
-
+#endif
 
 
 // func ////////////////////////////////////////////////////////
@@ -1098,7 +1143,7 @@ int cals_func_dtstart(int ver, cal_sch_full_t *sch, void *data)
 		p++;
 		sch->dtstart_tzid = strdup(buf);
 	} else {
-		sch->dtstart_tzid = strdup("Europe/London");
+		sch->dtstart_tzid = strdup(CALS_TZID_0);
 	}
 
 	if (!strncmp(p, "VALUE=", strlen("VALUE="))) {
@@ -1162,41 +1207,105 @@ int cals_func_created(int ver, cal_sch_full_t *sch, void *data)
 	return 0;
 }
 
-int cals_func_description(int ver, cal_sch_full_t *sch, void *data)
+int _work_description_property(cal_sch_full_t *sch, char *buf)
 {
-	char *p = (char *)data;
-	int encoding = 0;
+	int i;
+	int ret = 0;
 
-	while (*p != '\n' && *p != '\r' && *p != '\0') {
-		if ( *p == ':') {
-			p++;
-			if (encoding == ENCODE_BASE64) {
-				gsize len;
-				sch->description = strdup((char *)g_base64_decode(p, &len));
-
-			} else if (encoding == ENCODE_QUOTED_PRINTABLE) {
-				if (ver == 1) {
-					int len;
-					cals_quoted_printable_decode(p, &len);
-					sch->description = strdup(p);
-				} else {
-					CALS_DBG("only ver1.0 supports quoted printable\n");
-					sch->summary = strdup(p);
-				}
-
-			} else {
-				sch->description = strdup(p);
-
-			}
-
-		} else if (*p == ';') {
-			p++;
-			cals_get_optional_parameter(p, &encoding);
-
-		} else {
-			p++;
+	for (i = 0; i < TEXT_MAX; i++) {
+		if (!strncmp(buf, _optional_list[i].prop, strlen(_optional_list[i].prop))) {
+			_optional_list[i].func(&ret, buf);
+			break;
 		}
 	}
+	return ret;
+}
+
+int _work_description_switch(int me, int mode, char *buf, int *charset, int *encoding)
+{
+	CALS_FN_CALL;
+	switch (mode) {
+	case 1:
+	case 2:
+		if (!strncmp(buf, "CHARSET=UTF-8", strlen("CHARSET=UTF-8"))) {
+			DBG("CHARSET=UTF-8");
+			*charset = 1;
+
+		} else if (!strncmp(buf, "CHARSET=UTF-16",
+					strlen("CHARSET=UTF-16"))) {
+			DBG("CHARSET=UTF-16");
+			*charset = 1;
+
+		} else if (!strncmp(buf, "ENCODING=BASE64",
+					strlen("ENCODING=BASE64"))) {
+			DBG("ENCODE_BASE64");
+			*encoding = ENCODE_BASE64;
+
+		} else if (!strncmp(buf, "ENCODING=QUOTED-PRINTABLE",
+					strlen("ENCODING=QUOTED-PRINTABLE"))) {
+			DBG("ENCODE_QUOTED_PRINTABLE");
+			*encoding = ENCODE_QUOTED_PRINTABLE;
+
+		} else {
+
+		}
+		mode = 0;
+		break;
+	default:
+		mode = me;
+		break;
+	}
+	return mode;
+}
+
+int cals_func_description(int ver, cal_sch_full_t *sch, void *data)
+{
+	CALS_FN_CALL;
+	int i, j;
+	int len;
+	int out;
+	int mode;
+	int charset, encoding;
+	char buf[64] = {0};
+	char *p = (char *)data;
+
+	i = j = 0;
+	out = 0;
+	mode = 0;
+	charset = encoding = 0;
+	while (p[i] != '\0') {
+		switch (p[i]) {
+		case ':':
+			mode = 1;
+			out = 1;
+			break;
+
+		case ';':
+			buf[j] = '\0';
+			mode = _work_description_switch(2, mode, buf, &charset, &encoding);
+			j = 0;
+			break;
+
+		default:
+			buf[j] = p[i];
+			j++;
+			break;
+		}
+		i++;
+
+		if (out) {
+			DBG("out");
+			break;
+		}
+	}
+	_work_description_switch(0, mode, buf, &charset, &encoding);
+
+	DBG("charset(%d) encoding(%d)", charset, encoding);
+	if (encoding) {
+		cals_quoted_printable_decode(p+i, &len);
+	}
+	sch->description = strdup(p+i);
+
 	return 0;
 }
 
@@ -1309,39 +1418,51 @@ int cals_func_status(int ver, cal_sch_full_t *sch, void *data)
 
 int cals_func_summary(int ver, cal_sch_full_t *sch, void *data)
 {
+	CALS_FN_CALL;
+	int i, j;
+	int len;
+	int out;
+	int mode;
+	int charset, encoding;
+	char buf[64] = {0};
 	char *p = (char *)data;
-	int encoding = 0;
 
-	while (*p != '\n' && *p != '\r' && *p != '\0') {
-		if ( *p == ':') {
-			p++;
-			if (encoding == ENCODE_BASE64) {
-				gsize len;
-				sch->summary = strdup((char *)g_base64_decode(p, &len));
-
-			} else if (encoding == ENCODE_QUOTED_PRINTABLE) {
-				if (ver == 1) {
-					int len;
-					cals_quoted_printable_decode(p, &len);
-					sch->summary = strdup(p);
-				} else {
-					CALS_DBG("only ver1.0 supports quoted printable\n");
-					sch->summary = strdup(p);
-				}
-
-			} else {
-				sch->summary = strdup(p);
-			}
+	i = j = 0;
+	out = 0;
+	mode = 0;
+	charset = encoding = 0;
+	while (p[i] != '\0') {
+		switch (p[i]) {
+		case ':':
+			mode = 1;
+			out = 1;
 			break;
 
-		} else if (*p == ';') {
-			p++;
-			cals_get_optional_parameter(p, &encoding);
+		case ';':
+			buf[j] = '\0';
+			mode = _work_description_switch(2, mode, buf, &charset, &encoding);
+			j = 0;
+			break;
 
-		} else {
-			p++;
+		default:
+			buf[j] = p[i];
+			j++;
+			break;
+		}
+		i++;
+
+		if (out) {
+			break;
 		}
 	}
+	_work_description_switch(0, mode, buf, &charset, &encoding);
+
+	DBG("charset(%d) encoding(%d)", charset, encoding);
+	if (encoding) {
+		cals_quoted_printable_decode(p+i, &len);
+	}
+	sch->summary = strdup(p+i);
+
 	DBG("ver(%d)summary(%s)\n", ver, sch->summary);
 
 	return 0;
@@ -1375,6 +1496,7 @@ int cals_func_rrule(int ver, cal_sch_full_t *sch, void *data)
 
 			switch (ver) {
 			case 1:
+				DBG("version 2");
 				for (i = 0; i < RRULE_MAX; i++) {
 					if (!strncmp(p, _rrule_list[i].prop, strlen(_rrule_list[i].prop))) {
 						int j = 0;
@@ -1395,6 +1517,7 @@ int cals_func_rrule(int ver, cal_sch_full_t *sch, void *data)
 				break;
 
 			case 2:
+				DBG("version 1");
 				/* Suppose vcalendar 1.0, if p == data */
 				if ((p - 1) == (char *)data) {
 					cals_ver1_func_rrule(sch, p);
@@ -1404,6 +1527,214 @@ int cals_func_rrule(int ver, cal_sch_full_t *sch, void *data)
 		} else {
 			p++;
 		}
+	}
+
+	return 0;
+}
+
+int cals_func_rrule1(int ver, cal_sch_full_t *sch, void *data)
+{
+	int i, j, k;
+	int mode;
+	int version = 0;
+	char buf[64] = {0};
+	char *p = (char *)data;
+
+	i = j = 0;
+	mode = 0;
+
+	if (strstr(p, "FREQ=")) {
+		DBG("This is version 2");
+		version = 2;
+	} else {
+		DBG("This is version 1");
+		version = 1;
+	}
+
+	if (version == 2) {
+		i = j = 0;
+		sch->interval = 1;
+		/* this is for ver 2 */
+		while (p[i] != '\0') {
+			DBG("[%c](%d)", p[i], i);
+			switch (p[i]) {
+			case ':':
+			case ';':
+				DBG("%d", __LINE__);
+				buf[j] = '\0';
+				if (strlen(buf) < 1) {
+					break;
+				}
+
+				for (k = 0; k < RRULE_MAX; k++) {
+					if (!strncmp(buf, _rrule_list[k].prop, strlen(_rrule_list[k].prop))) {
+						_rrule_list[k].func(sch, buf + strlen(_rrule_list[k].prop));
+						break;
+					}
+				}
+				j = 0;
+				break;
+
+			default:
+				DBG("%d", __LINE__);
+				buf[j] = p[i];
+				j++;
+				break;
+			}
+			i++;
+		}
+
+		buf[j] = '\0';
+		for (i = 0; i < RRULE_MAX; i++) {
+			if (!strncmp(buf, _rrule_list[i].prop, strlen(_rrule_list[i].prop))) {
+				version = 2;
+				_rrule_list[i].func(sch, buf + strlen(_rrule_list[i].prop));
+				break;
+			}
+		}
+		return 0;
+	}
+
+	/* this is for ver 1 */
+	int interval;
+	int out = 0;
+	char by[64] = {0};
+	char _by[64] = {0};
+	char date[8] = {0};
+	int tmp;
+	int is_wday = 0;
+	int y, mon, d, h, min, s;
+	char t, z;
+	i = 0;
+	mode = 0;
+	interval = 0;
+	while (p[i] != '\0') {
+		switch (p[i]) {
+		case ':':
+		case ' ':
+			if (mode == 0) {
+				DBG("in mode 1");
+				mode = 1;
+
+			} else if (mode == 1) {
+				DBG("in mode 2");
+				mode = 2;
+				buf[j] = '\0';
+				if (buf[0] == 'D') {
+					sch->freq = CALS_FREQ_DAILY;
+
+				} else if (buf[0] == 'W') {
+					sch->freq = CALS_FREQ_WEEKLY;
+
+				} else if (buf[0] == 'M') {
+					sch->freq = CALS_FREQ_MONTHLY;
+
+				} else if (buf[0] == 'Y') {
+					sch->freq = CALS_FREQ_YEARLY;
+
+				} else {
+					sch->freq = CALS_FREQ_ONCE;
+
+				}
+
+				if (buf[1] >= '1' && buf[1] <= '9') {
+					sch->interval = atoi(&buf[1]);
+				} else {
+					sch->interval = atoi(&buf[2]);
+				}
+
+			} else {
+				mode = 3;
+				DBG("in mode 3");
+				buf[j] = '\0';
+				if (buf[0] == '#' || strlen(buf) > strlen("YYYYMMDDTHHMMSS")) {
+					DBG("end statement[%s]", buf);
+					switch (sch->freq) {
+					case CALS_FREQ_YEARLY:
+						sch->bymonth = strdup(by);
+
+						tmp = cals_time_get_val_datetime(sch->dtstart_tzid,
+								sch->dtstart_utime, "mday", &tmp);
+						snprintf(date, sizeof(date), "%d", tmp);
+						sch->bymonthday = strdup(date);
+
+						break;
+
+					case CALS_FREQ_MONTHLY:
+						tmp = cals_time_get_val_datetime(sch->dtstart_tzid,
+								sch->dtstart_utime, "month", &tmp);
+						snprintf(date, sizeof(date), "%d", tmp);
+						sch->bymonth = strdup(date);
+
+						if (is_wday) {
+							sch->byday = strdup(by);
+						} else {
+							sch->bymonthday = strdup(by);
+						}
+						break;
+
+					case CALS_FREQ_WEEKLY:
+						sch->byday = strdup(by);
+						break;
+
+					case CALS_FREQ_DAILY:
+						sch->byday = strdup(by);
+						break;
+					}
+					out = 1;
+					break;
+				}
+
+				DBG("len(%d)", strlen(by));
+				if (strlen(by) < 1) {
+					DBG("ret(%d)", atoi(buf));
+					if (buf[0] >= '1' && buf[0] <= '9') {
+						DBG("Set digit");
+						is_wday = 0;
+					} else {
+						DBG("Set wday [%s]", buf);
+						is_wday = 1;
+					}
+					DBG("[%s][%s]", by, buf);
+					snprintf(_by, sizeof(by), "%s", buf);
+
+				} else {
+					DBG("[%s][%s]", by, buf);
+					snprintf(_by, sizeof(by), "%s %s", by, buf);
+				}
+				memcpy(by, _by, sizeof(_by));
+			}
+			j = 0;
+			break;
+
+		default:
+			buf[j] = p[i];
+			j++;
+			break;
+		}
+		i++;
+
+		if (out) {
+			break;
+		}
+	}
+
+	DBG("freq(%d) interval(%d) by[%s]", sch->freq, sch->interval, by);
+
+	if (buf[0] == '#') {
+		DBG("until count");
+		sch->range_type = CALS_RANGE_COUNT;
+		sch->count = atoi(&buf[1]);
+
+	} else {
+		DBG("until time");
+		sch->range_type = CALS_RANGE_UNTIL;
+		sch->until_type = CALS_TIME_UTIME;
+		sscanf(buf, "%4d%2d%2d%c%2d%2d%2d%c",
+				&y, &mon, &d, &t, &h, &min, &s, &z);
+		sch->until_utime = cals_time_date_to_utime(sch->dtstart_tzid,
+				y, mon, d, h, min, s);
+
 	}
 
 	return 0;
@@ -1434,7 +1765,7 @@ int cals_func_dtend(int ver, cal_sch_full_t *sch, void *data)
 		p++;
 		sch->dtend_tzid = strdup(buf);
 	} else {
-		sch->dtend_tzid = strdup("Europe/London");
+		sch->dtend_tzid = strdup(CALS_TZID_0);
 	}
 
 	if (!strncmp(p, "VALUE=", strlen("VALUE="))) {
@@ -1489,10 +1820,184 @@ int cals_func_attach(int ver, cal_sch_full_t *sch, void *data)
 	return 0;
 }
 
-int cals_func_attendee(int ver, cal_sch_full_t *sch, void *data)
+/////////////////////////////////////////////////////////////////
+int cals_func_attendee_cutype(cal_sch_full_t *sch, void *data)
 {
 	return 0;
 }
+
+int cals_func_attendee_member(cal_sch_full_t *sch, void *data)
+{
+	return 0;
+}
+
+int cals_func_attendee_role(cal_sch_full_t *sch, void *data)
+{
+	return 0;
+}
+
+int cals_func_attendee_partstat(cal_sch_full_t *sch, void *data)
+{
+	return 0;
+}
+
+int cals_func_attendee_rsvp(cal_sch_full_t *sch, void *data)
+{
+	return 0;
+}
+
+int cals_func_attendee_delto(cal_sch_full_t *sch, void *data)
+{
+	return 0;
+}
+
+int cals_func_attendee_delfrom(cal_sch_full_t *sch, void *data)
+{
+	return 0;
+}
+
+int cals_func_attendee_sentby(cal_sch_full_t *sch, void *data)
+{
+	return 0;
+}
+
+int cals_func_attendee_cn(cal_sch_full_t *sch, void *data)
+{
+	CALS_FN_CALL;
+	int i = 0;
+	char *text;
+	char *p = (char *)data;
+	GList *l;
+	cal_value *cv;
+	cal_participant_info_t *pi;
+
+	l = g_list_last(sch->attendee_list);
+	if (l == NULL) {
+		ERR("Failed to get attendee last");
+		return -1;
+	}
+
+	cv = (cal_value *)l->data;
+	pi = (cal_participant_info_t *)cv->user_data;
+
+	while (*p != ':' && *p != '\n' && *p != '\r' && *p != '\0') {
+		i++;
+		p++;
+	}
+
+	text = calloc(i + 1, sizeof(char));
+	if (text == NULL) {
+		ERR("Failed to calloc");
+		return -1;
+	}
+	snprintf(text, i + 1, "%s", (char *)data);
+
+	pi->attendee_name = text;
+	DBG("cn[%s]", text);
+
+	return 0;
+}
+
+int cals_func_attendee_dir(cal_sch_full_t *sch, void *data)
+{
+	CALS_FN_CALL;
+	return 0;
+}
+
+int _work_attendee_mailto(cal_sch_full_t *sch, char *buf)
+{
+	CALS_FN_CALL;
+	return 0;
+}
+
+int _work_attendee_property(cal_sch_full_t *sch, char *buf)
+{
+	CALS_FN_CALL;
+	int i;
+	int len_all, len_prop;
+
+	for (i = 0; i < ATTENDEE_MAX; i++) {
+		if (!strncmp(buf, _attendee_list[i].prop, strlen(_attendee_list[i].prop))) {
+			len_all = strlen(buf);
+			len_prop = strlen(_attendee_list[i].prop);
+			snprintf(buf, len_all - len_prop + 1, "%s", &buf[len_prop]);
+			_attendee_list[i].func(sch, buf);
+			break;
+		}
+	}
+	return 0;
+}
+
+int cals_func_attendee(int ver, cal_sch_full_t *sch, void *data)
+{
+	CALS_FN_CALL;
+	int i, j;
+	char *p = (char *)data;
+	cal_value *val;
+
+	val = calendar_svc_value_new(CAL_VALUE_LST_ATTENDEE_LIST);
+	if (val == NULL) {
+		ERR("Failed to new value attendee");
+		return -1;
+	}
+
+	sch->attendee_list = g_list_append(sch->attendee_list, val);
+
+	i = 0;
+	j = 0;
+	int mode = 0;
+	char buf[64] = {0};
+
+	while (p[i] != '\0') {
+		switch (p[i]) {
+		case ':':
+			/* work mail to */
+			if (mode) {
+				buf[j] = '\0';
+				_work_attendee_mailto(sch, buf);
+				mode = 0;
+			} else {
+				mode = 1;
+			}
+			j = 0;
+			break;
+
+		case ';':
+			/* work property */
+			if (mode) {
+				buf[j] = '\0';
+				_work_attendee_property(sch, buf);
+				mode = 0;
+			} else {
+				mode = 2;
+			}
+			j = 0;
+			break;
+
+		default:
+			buf[j] = p[i];
+			j++;
+			break;
+		}
+		i++;
+	}
+
+	switch (mode) {
+	case 1:
+		buf[j] = '\0';
+		_work_attendee_mailto(sch, buf);
+		break;
+	case 2:
+		buf[j] = '\0';
+		_work_attendee_property(sch, buf);
+		break;
+	default:
+		break;
+	}
+
+	return 0;
+}
+
 
 int cals_func_categories(int ver, cal_sch_full_t *sch, void *data)
 {
@@ -1535,6 +2040,7 @@ int cals_func_categories(int ver, cal_sch_full_t *sch, void *data)
 	return 0;
 }
 
+
 int cals_func_comment(int ver, cal_sch_full_t *sch, void *data)
 {
 	return 0;
@@ -1570,6 +2076,127 @@ int cals_func_rdate(int ver, cal_sch_full_t *sch, void *data)
 	return 0;
 }
 
+/* for ver 1.0 */
+
+int _work_aalarm_time(cal_sch_full_t *sch, void *data)
+{
+	CALS_FN_CALL;
+	int y, mon, d, h, min, s;
+	long long int lli_a;
+	char t, z;
+	char *p = (char *)data;
+	cal_value *cv;
+	cal_alarm_info_t *al = NULL;
+
+	if (p == NULL) {
+		ERR("Invalid argument");
+		return -1;
+	}
+
+	y = mon = d = h = min = s = 0;
+	sscanf(p, "%04d%02d%02d%c%02d%02d%02d%c",
+			&y, &mon, &d, &t, &h, &min, &s, &z);
+
+	lli_a = cals_time_date_to_utime(sch->dtstart_tzid, y, mon, d, h, min, s);
+
+	cv = calendar_svc_value_new(CAL_VALUE_LST_ALARM);
+	if (cv == NULL) {
+		ERR("Failed to new value");
+		return -1;
+	}
+	sch->alarm_list = g_list_append(sch->alarm_list, cv);
+
+	al = (cal_alarm_info_t *)cv->user_data;
+	al->remind_tick_unit = CAL_SCH_TIME_UNIT_SPECIFIC;
+	al->alarm_time = lli_a;
+
+	/* work extra */
+	int lli_d;
+	lli_d = sch->dtstart_utime - lli_a;
+	if (lli_d < 60 * 60) {
+		al->remind_tick_unit = CAL_SCH_TIME_UNIT_MIN;
+		al->remind_tick = lli_d / (60);
+
+	} else if (lli_d < 60 * 60 * 24) {
+		al->remind_tick_unit = CAL_SCH_TIME_UNIT_HOUR;
+		al->remind_tick = lli_d / (60 * 60);
+
+	} else if (lli_d < 60 * 60 * 24 * 31) {
+		al->remind_tick_unit = CAL_SCH_TIME_UNIT_DAY;
+		al->remind_tick = lli_d / (60 * 60 * 24);
+
+	} else {
+		al->remind_tick_unit = CAL_SCH_TIME_UNIT_WEEK;
+		al->remind_tick = lli_d / (60 * 60 * 24 * 31);
+
+	}
+	DBG("tick(%d) unit(%d)", al->remind_tick, al->remind_tick_unit);
+	return 0;
+}
+
+int _work_aalarm_property(cal_sch_full_t *sch, void *data)
+{
+	return 0;
+}
+
+int _work_aalarm_switch(int mode, int me, cal_sch_full_t *sch, char *buf)
+{
+	CALS_FN_CALL;
+	switch (mode) {
+	case 1:
+		_work_aalarm_time(sch, buf);
+		mode = 0;
+		break;
+	case 2:
+		_work_aalarm_property(sch, buf);
+		mode = 0;
+		break;
+	default:
+		mode = me;
+		break;
+	}
+	return mode;
+}
+
+int cals_func_aalarm(int ver, cal_sch_full_t *sch, void *data)
+{
+	CALS_FN_CALL;
+	int i, j;
+	int mode = 0;
+	char buf[64] = {0};
+	char *p = (char *)data;
+
+	i = 0;
+	j = 0;
+	while (p[i] != '\0') {
+		switch (p[i]) {
+		case ':':
+			buf[j] = '\0';
+			mode = _work_aalarm_switch(mode, 1, sch, buf);
+			j = 0;
+			break;
+
+		case ';':
+			buf[j] = '\0';
+			mode = _work_aalarm_switch(mode, 2, sch, buf);
+			j = 0;
+			break;
+
+		default:
+			buf[j] = p[i];
+			j++;
+			break;
+		}
+		i++;
+	}
+
+	_work_aalarm_switch(mode, 0, sch, buf);
+
+	return 0;
+}
+/* end */
+
+
 enum {
 	WEEKNAME2_SA = 0x0,
 	WEEKNAME2_FR,
@@ -1585,6 +2212,7 @@ const char weekname2[WEEKNAME2_MAX][3] = {"SA", "FR", "TH", "WE", "TU", "MO", "S
 /* for vcalendar version 1.0 */
 int cals_ver1_func_rrule(cal_sch_full_t *sch, void *data)
 {
+	CALS_FN_CALL;
 	char *p = (char *)data;
 	int i = 0, j = 0;
 	int column = 0, loop = 1;
@@ -1782,9 +2410,9 @@ char *cals_convert_sec_from_duration(char *p, int *dur_t, char *dur)
 int cals_func_trigger(cal_sch_full_t *sch, void *data)
 {
 	int i = 0, out = 0;
+
 	char *p = (char *)data;
 	long long int dtstart_utime;
-	int dur_t;
 	cal_value *val;
 	cal_alarm_info_t *alarm;
 	GList *l;
@@ -1822,8 +2450,7 @@ int cals_func_trigger(cal_sch_full_t *sch, void *data)
 		if (out == 1) {
 			break;
 		}
-		p = cals_convert_sec_from_duration(p, &dur_t, NULL);
-		alarm->alarm_time = dtstart_utime + (long long int)dur_t;
+		cals_func_trig_related(sch, p);
 		break;
 	}
 	return 0;
@@ -2100,15 +2727,181 @@ int cals_func_wkst(cal_sch_full_t *sch, void *data)
 	return 0;
 }
 
-int cals_func_related_trig(cal_sch_full_t *sch, void *data)
+int _get_tick_unit(char *p, int *tick, int *unit)
 {
-	CALS_DBG("%s\n", (char *)data);
+	int d, c, i; /* direct, const, i */
+	int t, u; /* tick, unit */
+	char buf[8] = {0};
+
+	t = 0;
+	c = 0;
+	u = CAL_SCH_TIME_UNIT_OFF;
+	while (*p != '\0' && *p != '\n') {
+		switch (*p) {
+		case '+':
+			d = 1;
+			break;
+		case '-':
+			d = -1;
+			break;
+		case 'P':
+			i = 0;
+			break;
+		case 'T':
+			break;
+		case 'W':
+			c = atoi(buf);
+			DBG("W tick(%d)", c);
+			if (c == 0) break;
+			u = CAL_SCH_TIME_UNIT_WEEK;
+			t += c;
+			i = 0;
+			break;
+		case 'D':
+			c = atoi(buf);
+			DBG("D tick(%d)", c);
+			if (c == 0) break;
+			u = CAL_SCH_TIME_UNIT_DAY;
+			t += c;
+			i = 0;
+			break;
+		case 'H':
+			c = atoi(buf);
+			DBG("H tick(%d)", c);
+			if (c == 0) break;
+			u = CAL_SCH_TIME_UNIT_HOUR;
+			t += c;
+			i = 0;
+			break;
+		case 'M':
+			c = atoi(buf);
+			DBG("M tick(%d)", c);
+			if (c == 0) break;
+			u = CAL_SCH_TIME_UNIT_MIN;
+			t += c;
+			i = 0;
+			break;
+		case 'S':
+			i = 0;
+			break;
+		default:
+			buf[i] = *p;
+			i++;
+			break;
+		}
+		p++;
+	}
+	if (t != c) {
+		u = CAL_SCH_TIME_UNIT_SPECIFIC;
+	}
+	*tick = t;
+	*unit = u;
+	DBG("get tic(%d) unit(%d)", t, u);
+
 	return 0;
 }
 
-int cals_func_value(cal_sch_full_t *sch, void *data)
+int cals_func_trig_related(cal_sch_full_t *sch, void *data)
 {
 	CALS_DBG("%s\n", (char *)data);
+
+	int tick, unit;
+	char *p = (char *)data;
+	GList *l;
+	cal_value *cv;
+	cal_alarm_info_t *al = NULL;
+
+	if (p == NULL) {
+		return -1;
+	}
+
+	l = g_list_last(sch->alarm_list);
+	if (l == NULL) {
+		DBG("Faield to get list from alarm list");
+		return 0;
+	}
+
+	cv = (cal_value *)l->data;
+	if (cv == NULL) {
+		ERR("Failed to get cal value");
+		return -1;
+	}
+	al = (cal_alarm_info_t *)cv->user_data;
+	if (al == NULL) {
+		ERR("Failed to get alarm info");
+		return -1;
+	}
+
+	if (!strncmp(p, "START", strlen("START") + 1)) {
+		p += strlen("START") + 1;
+		DBG("related start and value[%s]", p);
+		_get_tick_unit(p, &tick, &unit);
+		al->remind_tick = tick;
+		al->remind_tick_unit = unit;
+
+	} else if (!strncmp(p, "END", strlen("END") +1)) {
+		p += strlen("END") + 1;
+		DBG("related end and value[%s]", p);
+		_get_tick_unit(p, &tick, &unit);
+		al->remind_tick = tick;
+		al->remind_tick_unit = unit;
+
+	} else {
+		DBG("no related and value[%s]", p);
+		_get_tick_unit(p, &tick, &unit);
+		al->remind_tick = tick;
+		al->remind_tick_unit = unit;
+
+	}
+
+	return 0;
+}
+
+long long int _get_utime_from_datetime(char *tzid, char *p)
+{
+	int y, mon, d, h, min, s;
+	int len;
+	char t, z;
+	if (p == NULL) {
+		return -1;
+	}
+	len = strlen(p);
+	if (len < strlen("YYYYMMDDTHHMMSS")) {
+		return -1;
+	}
+
+	sscanf(p, "%04d%02d%02d%c%02d%02d%02d%c",
+			&y, &mon, &d, &t, &h, &min, &s, &z);
+
+	return cals_time_date_to_utime(tzid, y, mon, d, h, min, s);
+}
+
+int cals_func_trig_value(cal_sch_full_t *sch, void *data)
+{
+	CALS_DBG("%s\n", (char *)data);
+
+	char *p = (char *)data;
+	GList *l;
+	cal_value *cv;
+	cal_alarm_info_t *al = NULL;
+
+	l = g_list_last(sch->alarm_list);
+	if (l == NULL) {
+		DBG("No alarm");
+		return 0;
+	}
+
+	cv = (cal_value *)l->data;
+	al = (cal_alarm_info_t *)cv->user_data;
+
+	if (!strncmp(p, "DATE-TIME", strlen("DATE-TIME") + 1)) {
+		p += strlen("DATE-TIME") + 1;
+		al->remind_tick_unit = CAL_SCH_TIME_UNIT_SPECIFIC;
+		al->alarm_time = _get_utime_from_datetime(sch->dtstart_tzid, p);
+	} else {
+
+	}
+
 	return 0;
 }
 
@@ -2124,9 +2917,11 @@ int cals_func_encoding(int *val, void *data)
 	*val = 0;
 
 	if (!strncmp(p, "BASE64", strlen("BASE64"))) {
+		DBG("ENCODE_BASE64");
 		*val = ENCODE_BASE64;
 
 	} else if (!strncmp(p, "QUOTED-PRINTABLE", strlen("QUOTED-PRINTABLE"))){
+		DBG("ENCODE_QUOTED_PRINTABLE");
 		*val = ENCODE_QUOTED_PRINTABLE;
 
 	}
@@ -2711,7 +3506,7 @@ API int calendar_svc_write_schedules(GList *schedules, char **stream)
 	return CAL_SUCCESS;
 }
 
-
+#ifndef CALS_IPC_CLIENT
 API int calendar_svc_calendar_export(int calendar_id, const char *path)
 {
 	int fd, r;
@@ -2797,3 +3592,4 @@ API int calendar_svc_calendar_export(int calendar_id, const char *path)
 
 	return CAL_SUCCESS;
 }
+#endif

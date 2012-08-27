@@ -37,48 +37,6 @@ static inline const char *cals_todo_get_order(cals_todo_list_order_t order)
 	return _todo_list_order[order];
 }
 
-int cals_todo_init(cal_sch_full_t *sch_full_record)
-{
-	retvm_if(NULL == sch_full_record, CAL_ERR_ARG_INVALID , "sch_full_record is NULL");
-
-	memset(sch_full_record,0,sizeof(cal_sch_full_t));
-
-	sch_full_record->cal_type = CALS_SCH_TYPE_TODO;
-	sch_full_record->task_status = CALS_TODO_STATUS_NONE;
-	sch_full_record->calendar_id = DEFAULT_TODO_CALENDAR_ID;
-
-	sch_full_record->index = CALS_INVALID_ID;
-	sch_full_record->timezone = -1;
-	sch_full_record->contact_id = CALS_INVALID_ID;
-	sch_full_record->calendar_type = CAL_PHONE_CALENDAR;
-	sch_full_record->attendee_list = NULL;
-	sch_full_record->busy_status = 2;
-	sch_full_record->summary = NULL;
-	sch_full_record->description = NULL;
-	sch_full_record->location= NULL;
-	sch_full_record->categories = NULL;
-	sch_full_record->exdate = NULL;
-	sch_full_record->organizer_email = NULL;
-	sch_full_record->organizer_name = NULL;
-	sch_full_record->uid= NULL;
-	sch_full_record->gcal_id = NULL;
-	sch_full_record->location_summary = NULL;
-	sch_full_record->etag = NULL;
-	sch_full_record->edit_uri = NULL;
-	sch_full_record->gevent_id = NULL;
-	sch_full_record->original_event_id = CALS_INVALID_ID;
-
-	sch_full_record->sync_status = CAL_SYNC_STATUS_NEW;
-	sch_full_record->account_id = -1;
-	sch_full_record->is_deleted = 0;
-	sch_full_record->latitude = 1000; // set default 1000 out of range(-180 ~ 180)
-	sch_full_record->longitude = 1000; // set default 1000 out of range(-180 ~ 180)
-	sch_full_record->freq = CALS_FREQ_ONCE;
-
-	return CAL_SUCCESS;
-}
-
-
 static int __todo_get_query_priority(int priority, char *query, int len)
 {
 	switch (priority) {
@@ -212,7 +170,7 @@ API int calendar_svc_todo_get_list(int calendar_id, long long int dtend_from, lo
 {
 	cal_iter *it;
 	sqlite3_stmt *stmt = NULL;
-	char buf_calendar_id[256] = {0};
+	char buf_id[256] = {0};
 	char buf_dtend_from[256] = {0};
 	char buf_dtend_to[256] = {0};
 	char buf_priority[256] = {0};
@@ -223,18 +181,18 @@ API int calendar_svc_todo_get_list(int calendar_id, long long int dtend_from, lo
 	retv_if(order < CALS_TODO_LIST_ORDER_END_DATE || order > CALS_TODO_LIST_ORDER_STATUS, CAL_ERR_ARG_INVALID);
 
 	if (calendar_id > 0) {
-		snprintf(buf_calendar_id, sizeof(buf_calendar_id), "AND calendar_id = %d ", calendar_id);
+		snprintf(buf_id, sizeof(buf_id), "AND calendar_id = %d ", calendar_id);
 	} else {
-		memset(buf_calendar_id, 0x0, sizeof(buf_calendar_id));
+		memset(buf_id, 0x0, sizeof(buf_id));
 	}
 
-	if (dtend_from >= 0) {
+	if (dtend_from != CALS_TODO_NO_DUE_DATE) {
 		snprintf(buf_dtend_from, sizeof(buf_dtend_from), "AND dtend_utime >= %lld ", dtend_from);
 	} else {
 		memset(buf_dtend_from, 0x0, sizeof(buf_dtend_from));
 	}
 
-	if (dtend_to >= 0) {
+	if (dtend_to != CALS_TODO_NO_DUE_DATE) {
 		snprintf(buf_dtend_to, sizeof(buf_dtend_to), "AND dtend_utime <= %lld ", dtend_to);
 	} else {
 		memset(buf_dtend_to, 0x0, sizeof(buf_dtend_to));
@@ -250,7 +208,7 @@ API int calendar_svc_todo_get_list(int calendar_id, long long int dtend_from, lo
 			"ORDER BY %s",
 			CALS_TABLE_SCHEDULE,
 			CAL_STRUCT_TYPE_TODO,
-			buf_calendar_id, buf_dtend_from, buf_dtend_to, buf_priority, buf_status,
+			buf_id, buf_dtend_from, buf_dtend_to, buf_priority, buf_status,
 			cals_todo_get_order(order));
 
 	stmt = cals_query_prepare(query);
@@ -294,10 +252,10 @@ static inline int cals_todo_get_changes(int calendar_id, int version, cal_iter *
 	}
 
 	snprintf(query, sizeof(query),
-			"SELECT id, changed_ver, created_ver, is_deleted FROM %s "
+			"SELECT id, changed_ver, created_ver, is_deleted, calendar_id FROM %s "
 			"WHERE changed_ver > %d AND original_event_id = %d AND type = %d %s "
 			"UNION "
-			"SELECT schedule_id, deleted_ver, -1, 1 FROM %s "
+			"SELECT schedule_id, deleted_ver, -1, 1, calendar_id FROM %s "
 			"WHERE deleted_ver > %d AND schedule_type = %d %s",
 			CALS_TABLE_SCHEDULE,
 			version, CALS_INVALID_ID, CALS_SCH_TYPE_TODO, buf,
@@ -313,12 +271,14 @@ static inline int cals_todo_get_changes(int calendar_id, int version, cal_iter *
 
 		result->id = sqlite3_column_int(stmt, 0);
 		result->ver = sqlite3_column_int(stmt, 1);
-		if (sqlite3_column_int(stmt, 3) == 1)
+		if (sqlite3_column_int(stmt, 3) == 1) {
 			result->type = CALS_UPDATED_TYPE_DELETED;
-		else if (sqlite3_column_int(stmt, 2) == result->ver || version < sqlite3_column_int(stmt, 2))
+		} else if (sqlite3_column_int(stmt, 2) == result->ver || version < sqlite3_column_int(stmt, 2)) {
 			result->type = CALS_UPDATED_TYPE_INSERTED;
-		else
+		} else {
 			result->type = CALS_UPDATED_TYPE_MODIFIED;
+		}
+		result->calendar_id = sqlite3_column_int(stmt, 4);
 
 		if (iter->info->head == NULL) {
 			iter->info->head = result;
@@ -439,10 +399,10 @@ API int calendar_svc_todo_get_list_by_period(int calendar_id,
 	snprintf(query, sizeof(query),
 			"SELECT * FROM %s "
 			"WHERE dtend_utime >= %lld AND dtend_utime <= %lld "
-			"AND type = %d %s %s ",
+			"AND type = %d %s %s %s ",
 			CALS_TABLE_SCHEDULE,
 			due_from, dueto,
-			CALS_SCH_TYPE_TODO, buf_prio, buf_stat);
+			CALS_SCH_TYPE_TODO, buf_prio, buf_stat, buf_id);
 DBG("%s\n", query);
 	stmt = cals_query_prepare(query);
 	retvm_if(NULL == stmt, CAL_ERR_DB_FAILED, "Failed to query prepare");
@@ -457,6 +417,7 @@ API int calendar_svc_todo_get_count_by_period(int calendar_id,
 {
 	int ret, cnt = 0;
 	char query[CALS_SQL_MIN_LEN] = {0};
+	char buf_id[64] = {0};
 	char buf_prio[64] = {0};
 	char buf_stat[256] = {0};
 
@@ -465,6 +426,12 @@ API int calendar_svc_todo_get_count_by_period(int calendar_id,
 
 	DBG("priority(%d) status(%d)", priority, status);
 	sqlite3_stmt *stmt = NULL;
+
+	if (calendar_id > 0) {
+		snprintf(buf_id, sizeof(buf_id), "AND calendar_id = %d ", calendar_id);
+	} else {
+		memset(query, 0x0, sizeof(buf_id));
+	}
 
 	/* priority */
 	__todo_get_query_priority(priority, buf_prio, sizeof(buf_prio));
@@ -475,10 +442,10 @@ API int calendar_svc_todo_get_count_by_period(int calendar_id,
 	snprintf(query, sizeof(query),
 			"SELECT count(*) FROM %s "
 			"WHERE dtend_utime >= %lld AND dtend_utime <= %lld "
-			"AND type = %d %s %s ",
+			"AND type = %d %s %s %s ",
 			CALS_TABLE_SCHEDULE,
 			due_from, dueto,
-			CALS_SCH_TYPE_TODO, buf_prio, buf_stat);
+			CALS_SCH_TYPE_TODO, buf_prio, buf_stat, buf_id);
 
 DBG("%s\n", query);
 	stmt = cals_query_prepare(query);

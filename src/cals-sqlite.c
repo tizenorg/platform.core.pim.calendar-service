@@ -23,7 +23,11 @@
 #include "cals-db-info.h"
 #include "cals-sqlite.h"
 
+#ifdef CALS_IPC_SERVER
+__thread sqlite3 *calendar_db_handle;
+#else
 sqlite3 *calendar_db_handle;
+#endif
 
 int cals_db_open(void)
 {
@@ -168,8 +172,9 @@ int cals_escape_like_pattern(const char *src, char * const dest, int dest_size)
 	}
 
 	while (src[s_pos] != 0) {
-		if (dest_size == d_pos - 1)
+		if (dest_size -1 == d_pos) {
 			break;
+		}
 		if ('%' == src[s_pos] || '_' == src[s_pos]) {
 			dest[d_pos++] = '\\';
 		}
@@ -177,7 +182,6 @@ int cals_escape_like_pattern(const char *src, char * const dest, int dest_size)
 	}
 
 	dest[d_pos] = '\0';
-
 	return d_pos;
 }
 

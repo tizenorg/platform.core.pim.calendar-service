@@ -1,7 +1,7 @@
 Name:       libslp-calendar
 Summary:    DB library for calendar
 Version:    0.1.13
-Release:    36
+Release:    41
 Group:      System/Libraries
 License:    Apache 2.0
 Source0:    %{name}-%{version}.tar.gz

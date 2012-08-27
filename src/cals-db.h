@@ -35,10 +35,9 @@
  *
  * @return		This function returns initialized record.
  * @param[in]	sch_full_record	Points the field information for schedule table' s record.
- * @param[out]	error_code	Points the error code.
  * @exception	CAL_ERR_ARG_INVALID.
  */
-bool cal_db_service_free_full_record(cal_sch_full_t *sch_full_record, int *error_code);
+int cal_db_service_free_full_record(cal_sch_full_t *sch_full_record);
 
 
 /**

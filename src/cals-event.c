@@ -28,48 +28,6 @@
 #include "cals-schedule.h"
 #include "cals-time.h"
 
-
-int cals_event_init(cal_sch_full_t *sch_full_record)
-{
-	retvm_if(NULL == sch_full_record, CAL_ERR_ARG_INVALID , "sch_full_record is NULL");
-
-	memset(sch_full_record,0,sizeof(cal_sch_full_t));
-
-	sch_full_record->cal_type = CALS_SCH_TYPE_EVENT;
-	sch_full_record->meeting_status = CALS_EVENT_STATUS_NONE;
-	sch_full_record->calendar_id = DEFAULT_EVENT_CALENDAR_ID;
-
-	sch_full_record->index = CALS_INVALID_ID;
-	sch_full_record->timezone = -1;
-	sch_full_record->contact_id = CALS_INVALID_ID;
-	sch_full_record->calendar_type = CAL_PHONE_CALENDAR;
-	sch_full_record->attendee_list = NULL;
-	sch_full_record->busy_status = 2;
-	sch_full_record->summary = NULL;
-	sch_full_record->description = NULL;
-	sch_full_record->location= NULL;
-	sch_full_record->categories = NULL;
-	sch_full_record->exdate = NULL;
-	sch_full_record->organizer_email = NULL;
-	sch_full_record->organizer_name = NULL;
-	sch_full_record->uid= NULL;
-	sch_full_record->gcal_id = NULL;
-	sch_full_record->location_summary = NULL;
-	sch_full_record->etag = NULL;
-	sch_full_record->edit_uri = NULL;
-	sch_full_record->gevent_id = NULL;
-	sch_full_record->original_event_id = CALS_INVALID_ID;
-
-	sch_full_record->sync_status = CAL_SYNC_STATUS_NEW;
-	sch_full_record->account_id = -1;
-	sch_full_record->is_deleted = 0;
-	sch_full_record->latitude = 1000; // set default 1000 out of range(-180 ~ 180)
-	sch_full_record->longitude = 1000; // set default 1000 out of range(-180 ~ 180)
-	sch_full_record->freq = CALS_FREQ_ONCE;
-
-	return CAL_SUCCESS;
-}
-
 static inline void cals_event_make_condition(int calendar_id,
 		time_t start_time, time_t end_time, int all_day, char *dest, int dest_size)
 {
@@ -173,10 +131,10 @@ static inline int cals_event_get_changes(int calendar_id, int version, cal_iter 
 	}
 
 	snprintf(query, sizeof(query),
-			"SELECT id, changed_ver, created_ver, is_deleted FROM %s "
+			"SELECT id, changed_ver, created_ver, is_deleted, calendar_id FROM %s "
 			"WHERE changed_ver > %d AND original_event_id = %d AND type = %d %s "
 			"UNION "
-			"SELECT schedule_id, deleted_ver, -1, 1 FROM %s "
+			"SELECT schedule_id, deleted_ver, -1, 1, calendar_id FROM %s "
 			"WHERE deleted_ver > %d AND schedule_type = %d %s ",
 			CALS_TABLE_SCHEDULE,
 			version, CALS_INVALID_ID, CALS_SCH_TYPE_EVENT, buf,
@@ -199,6 +157,7 @@ static inline int cals_event_get_changes(int calendar_id, int version, cal_iter 
 		} else {
 			result->type = CALS_UPDATED_TYPE_MODIFIED;
 		}
+		result->calendar_id = sqlite3_column_int(stmt, 4);
 
 		if (iter->info->head == NULL) {
 			iter->info->head = result;
@@ -555,14 +514,14 @@ API int calendar_svc_event_delete_normal_instance(int event_id, long long int dt
 	} else {
 		DBG("append exdate");
 		len = strlen(exdate);
-		p = calloc(len + strlen(", ") + len_datetime + 1, sizeof(char));
+		p = calloc(len + strlen(",") + len_datetime + 1, sizeof(char));
 		if (p == NULL) {
 			ERR("Failed to calloc");
 			sqlite3_finalize(stmt);
 			return CAL_ERR_OUT_OF_MEMORY;
 		}
 		str_datetime =  cals_time_get_str_datetime(NULL, dtstart_utime);
-		snprintf(p, len + 2 + len_datetime + 1, "%s, %s",
+		snprintf(p, len + strlen(",") + len_datetime + 1, "%s,%s",
 				exdate, str_datetime);
 	}
 	if (str_datetime) free(str_datetime);
@@ -654,13 +613,13 @@ API int calendar_svc_event_delete_allday_instance(int event_id, int dtstart_year
 	} else {
 		DBG("append exdate");
 		len = strlen(exdate);
-		p = calloc(len + strlen(", ") + len_datetime + 1, sizeof(char));
+		p = calloc(len + strlen(",") + len_datetime + 1, sizeof(char));
 		if (p == NULL) {
 			ERR("Failed to calloc");
 			sqlite3_finalize(stmt);
 			return CAL_ERR_OUT_OF_MEMORY;
 		}
-		snprintf(p, len + 2 + len_datetime + 1, "%s, %s",
+		snprintf(p, len + strlen(",") + len_datetime + 1, "%s,%s",
 				exdate, buf);
 	}
 	sqlite3_finalize(stmt);

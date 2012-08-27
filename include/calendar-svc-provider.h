@@ -452,6 +452,7 @@ enum SEARCHFIELD {
 #define CALS_STRUCT_UPDATED_INT_VERSION "version"                /**< Version of schedule */
 #define CALS_STRUCT_UPDATED_INT_TYPE "updated_type"      /**< Type of schedule update #cals_updated_type */
 #define CALS_STRUCT_UPDATED_INT_ID "updated_id"      /**< id of updated schedule */
+#define CALS_STRUCT_UPDATED_INT_CALENDAR_ID "updated_calendar_id"      /**< id of updated schedule */
 /**
  * @}
  */

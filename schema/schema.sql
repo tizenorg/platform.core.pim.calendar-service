@@ -75,6 +75,16 @@ CREATE INDEX sch_idx1 ON schedule_table(type);
 CREATE TRIGGER trg_sch_del AFTER DELETE ON schedule_table
  BEGIN
    DELETE FROM alarm_table WHERE event_id = old.id;
+   DELETE FROM normal_instance_table WHERE event_id = (SELECT rowid FROM schedule_table WHERE original_event_id = old.id);
+   DELETE FROM allday_instance_table WHERE event_id = (SELECT rowid FROM schedule_table WHERE original_event_id = old.id);
+   DELETE FROM schedule_table WHERE original_event_id = old.id;
+ END;
+
+CREATE TRIGGER trig_original_mod AFTER UPDATE OF is_deleted ON schedule_table
+ BEGIN
+   DELETE FROM normal_instance_table WHERE event_id = (SELECT rowid FROM schedule_table WHERE original_event_id = old.id);
+   DELETE FROM allday_instance_table WHERE event_id = (SELECT rowid FROM schedule_table WHERE original_event_id = old.id);
+   UPDATE schedule_table SET is_deleted = 1 WHERE original_event_id = old.id;
  END;
 
 CREATE TABLE rrule_table
@@ -220,5 +230,5 @@ ver INTEGER PRIMARY KEY
 );
 INSERT INTO version_table VALUES(0);
 
-INSERT INTO calendar_table VALUES(0,0,0,0,'Default event calendar',0,0,'224.167.79.255',0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,-1,0,3);
-INSERT INTO calendar_table VALUES(0,0,0,0,'Default todo calendar',0,0,'224.167.79.255',0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,-1,0,3);
+INSERT INTO calendar_table VALUES(0,0,0,0,'Default event calendar',0,0,'224.167.79.255',0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,-1,0,1);
+INSERT INTO calendar_table VALUES(0,0,0,0,'Default todo calendar',0,0,'41.177.227.255',0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,-1,0,2);

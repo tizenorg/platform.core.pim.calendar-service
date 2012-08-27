@@ -101,7 +101,7 @@ static int months[] = {
 	[CALS_DECEMBER] = UCAL_DECEMBER,
 };
 
-static struct day days[] = {
+static struct day wdays[] = {
 	[CALS_SUNDAY] = {UCAL_SUNDAY, "SU"},
 	[CALS_MONDAY] = {UCAL_MONDAY, "MO"},
 	[CALS_TUESDAY] = {UCAL_TUESDAY, "TU"},
@@ -137,7 +137,7 @@ static UCalendar *_ucal_get_cal(const char *tzid, int wkst)
 	}
 
 	if (wkst >= CALS_SUNDAY && wkst <= CALS_SATURDAY)
-		ucal_setAttribute(cal, UCAL_FIRST_DAY_OF_WEEK, days[wkst].uday);
+		ucal_setAttribute(cal, UCAL_FIRST_DAY_OF_WEEK, wdays[wkst].uday);
 
 	return cal;
 }
@@ -174,30 +174,28 @@ static inline void _ucal_set_month(UCalendar *cal, int month)
 	ucal_set(cal, UCAL_MONTH, months[month]);
 }
 
-static inline void _ucal_set_day(UCalendar *cal, int day)
-{
-	int woy; /* week of year */
-	int date, date_new; /* date */
-	UErrorCode status = U_ZERO_ERROR;
 
-	if (day == CALS_NODAY)
+static inline void _ucal_set_wday(UCalendar *cal, int wday)
+{
+	if (wday == CALS_NODAY) {
+		DBG("this is wday repeat, so pass this shift");
 		return;
-	woy = ucal_get(cal, UCAL_WEEK_OF_YEAR, &status);
-	date = ucal_get(cal, UCAL_DATE, &status);
-	ucal_set(cal, UCAL_DAY_OF_WEEK, days[day].uday);
-	ucal_set(cal, UCAL_WEEK_OF_YEAR, woy);
-	date_new = ucal_get(cal, UCAL_DATE, &status);
-	DBG("date old(%d) new(%d)", date, date_new);
-	if (date_new < date) {
-		ucal_add(cal, UCAL_DATE, 7, &status);
 	}
+	ucal_set(cal, UCAL_DAY_OF_WEEK, wdays[wday].uday);
 }
 
-static inline void _ucal_set_week(UCalendar *cal, int week)
+static inline void _ucal_set_week(UCalendar *cal, int week, cal_sch_full_t *sch)
 {
 	if (!week)
 		return;
-	ucal_set(cal, UCAL_DAY_OF_WEEK_IN_MONTH, week);
+
+	switch (inst_info[sch->freq].f) {
+	case UCAL_WEEK_OF_YEAR:
+		return;
+	default:
+		ucal_set(cal, UCAL_DAY_OF_WEEK_IN_MONTH, week);
+		break;
+	}
 }
 
 static void _ucal_get_instance(UCalendar *cal,
@@ -232,13 +230,22 @@ static inline int _is_after(struct cals_time *t1, struct cals_time *t2)
 	DBG("%d %d %d /%d %d %d", t1->year, t1->month, t1->mday,
 			t2->year, t2->month, t2->mday);
 	if (t1->year > t2->year) {
+		DBG("exit year");
 		return 1;
-	} else if (t1->month > t2->month) {
-		return 1;
-	} else if (t1->mday > t2->mday) {
-		return 1;
-	} else {
+	} else if (t1->year < t2->year) {
 		return 0;
+	} else {
+		if (t1->month > t2->month) {
+			return 1;
+		} else if (t1->month < t2->month) {
+			return 0;
+		} else {
+			if (t1->mday > t2->mday) {
+				return 1;
+			} else {
+				return 0;
+			}
+		}
 	}
 }
 
@@ -308,15 +315,117 @@ int _ucal_del_inundant(int event_id, struct cals_time *st, cal_sch_full_t *sch)
 	return 0;
 }
 
-static int _insert_instance(UCalendar *cal, int event_id,
-		struct cals_time *st, int dr, int day, int week, cal_sch_full_t *sch)
+int _shift_to_valid_mday(UCalendar *cal, int mday, int wday, cal_sch_full_t *sch)
 {
+	CALS_FN_CALL;
+	int y, m, d, month;
+	UErrorCode status = U_ZERO_ERROR;
+
+	if (wday != CALS_NODAY) {
+		DBG("this is wday repeat, so pass this shift");
+		return 0;
+	}
+
+	DBG("mday(%d)wday%d)", mday, wday);
+	switch (inst_info[sch->freq].f) {
+	case UCAL_YEAR:
+		month = ucal_get(cal, UCAL_MONTH, &status);
+		d = ucal_get(cal, UCAL_DATE, &status);
+		while (d != mday && y < 9999 ) {
+			ucal_add(cal, inst_info[sch->freq].f, sch->interval, &status);
+			ucal_set(cal, UCAL_MONTH, month);
+			ucal_set(cal, UCAL_DATE, mday);
+			y = ucal_get(cal, UCAL_YEAR, &status);
+			m = ucal_get(cal, UCAL_MONTH, &status);
+			d = ucal_get(cal, UCAL_DATE, &status);
+		}
+		break;
+
+	case UCAL_MONTH:
+		d = ucal_get(cal, UCAL_DATE, &status);
+		while (d != mday && y < 9999 ) {
+			ucal_set(cal, UCAL_DATE, mday);
+			y = ucal_get(cal, UCAL_YEAR, &status);
+			m = ucal_get(cal, UCAL_MONTH, &status);
+			d = ucal_get(cal, UCAL_DATE, &status);
+		}
+		break;
+	default:
+		break;
+	}
+	DBG("shift to %04d/%02d/%02d and should be same %02d date", y, m, d, mday);
+	return 0;
+}
+
+int _shift_to_valid_wday(UCalendar *cal, int year, int month, int mday, int wday, int week, cal_sch_full_t *sch)
+{
+	CALS_FN_CALL;
+	int y, m, d; /* date */
+	UErrorCode status = U_ZERO_ERROR;
+
+	if (!week)
+		return 0;
+
+	y = ucal_get(cal, UCAL_YEAR, &status);
+	m = ucal_get(cal, UCAL_MONTH, &status) + 1;
+	d = ucal_get(cal, UCAL_DATE, &status);
+	DBG(" got next mday(%d) origin mday(%d)", d, mday);
+
+	switch (inst_info[sch->freq].f) {
+	case UCAL_YEAR:
+		if (y <= year && m <= month && d < mday) {
+			DBG("less than start date");
+			ucal_add(cal, UCAL_YEAR, 1, &status);
+		} else if (m < month) {
+			DBG("mismatched month");
+			ucal_add(cal, UCAL_MONTH, 1, &status);
+		}
+		_ucal_set_wday(cal, wday);
+		_ucal_set_week(cal, week, sch);
+		break;
+
+	case UCAL_MONTH:
+		if ((m <= month && d < mday) || (m < month)) {
+			DBG(" so, added 1 week");
+			ucal_add(cal, UCAL_MONTH, 1, &status);
+			_ucal_set_mday(cal, 15);
+			_ucal_set_wday(cal, wday);
+			_ucal_set_week(cal, week, sch);
+		}
+		break;
+
+	case UCAL_WEEK_OF_YEAR:
+		if (y <= year && m <= month && d < mday) {
+//			while ((m <= month && d < mday) || (m < month)) {
+//				ucal_add(cal, UCAL_WEEK_OF_YEAR, 1, &status);
+				ucal_add(cal, inst_info[sch->freq].f, sch->interval, &status);
+				m = ucal_get(cal, UCAL_MONTH, &status) + 1;
+				d = ucal_get(cal, UCAL_DATE, &status);
+//			}
+		}
+		break;
+	default:
+		break;
+	}
+
+	_print_cal(cal);
+	return 0;
+}
+
+
+static int _insert_instance(UCalendar *cal, int event_id,
+		struct cals_time *st, int dr, int wday, int week, cal_sch_full_t *sch)
+{
+	CALS_FN_CALL;
 	int r;
 	int i;
 	int cnt;
 	int e_year;
 	int e_month;
 	int e_mday;
+	int year;
+	int month;
+	int mday;
 
 	UCalendar *e_cal;
 	UErrorCode status = U_ZERO_ERROR;
@@ -329,12 +438,27 @@ static int _insert_instance(UCalendar *cal, int event_id,
 	memset(&until, 0, sizeof(struct cals_time));
 	memset(&in, 0, sizeof(struct cals_time));
 
+	year = ucal_get(cal, UCAL_YEAR, &status);
+	month = ucal_get(cal, UCAL_MONTH, &status) + 1;
+	mday = ucal_get(cal, UCAL_DATE, &status);
 	cnt = _get_max_count(sch);
 	_set_until(&until, sch);
 
 	for (i = 0; i < cnt; i++) {
-		_ucal_set_day(cal, day);
-		_ucal_set_week(cal, week);
+		if (wday != CALS_NODAY) {
+			DBG("set 15th for wday");
+			switch (inst_info[sch->freq].f) {
+			case UCAL_YEAR:
+			case UCAL_MONTH:
+				_ucal_set_mday(cal, 15);
+				break;
+			default:
+				break;
+			}
+		}
+		_ucal_set_wday(cal, wday);
+		_ucal_set_week(cal, week, sch);
+		_shift_to_valid_wday(cal, year, month, mday, wday, week, sch);
 
 		_ucal_get_instance(cal, st, &in);
 		if (sch->freq != CALS_FREQ_ONCE && _is_after(&in, &until)) {
@@ -381,8 +505,10 @@ static int _insert_instance(UCalendar *cal, int event_id,
 		}
 
 		ucal_add(cal, inst_info[sch->freq].f, sch->interval, &status);
+		_print_cal(cal);
+		_shift_to_valid_mday(cal, mday, wday, sch);
 	}
-
+	ucal_close(cal);
 	return r;
 }
 
@@ -428,18 +554,52 @@ static inline int _get_month(const char *str)
 	return month;
 }
 
-static inline int _get_mday(const char *str)
+static inline int _get_mday(const char *str, int *mday)
 {
-	int mday;
+	int d;
 
 	if (!str || !*str)
 		return -1;
 
-	mday = atoi(str);
-	if (mday < 1 || mday > 31)
+	d = atoi(str);
+	if (d < 1 || d > 31)
 		return -1;
 
-	return mday;
+	*mday = d;
+	return 0;
+}
+
+int _adjust_valid_first_mday(UCalendar *cal, int year, int month, int mday, cal_sch_full_t *sch)
+{
+	CALS_FN_CALL;
+	int caly, calm, cald;
+	UErrorCode status = U_ZERO_ERROR;
+
+	caly = ucal_get(cal, UCAL_YEAR, &status);
+	calm = ucal_get(cal, UCAL_MONTH, &status) + 1;
+	cald = ucal_get(cal, UCAL_DATE, &status);
+
+	if (caly <= year && calm <= month, cald< mday) {
+		switch (inst_info[sch->freq].f) {
+		case UCAL_YEAR:
+			ucal_add(cal, UCAL_YEAR, 1, &status);
+			break;
+		case UCAL_MONTH:
+			ucal_add(cal, UCAL_MONTH, 1, &status);
+			break;
+		case UCAL_WEEK_OF_YEAR:
+			ucal_add(cal, UCAL_DATE, 7, &status);
+			break;
+		default:
+			break;
+		}
+	}
+	return 0;
+}
+
+int _set_valid_first_mday(UCalendar *cal, struct cals_time *st, cal_sch_full_t *sch)
+{
+	return 0;
 }
 
 static int insert_bymday(int event_id,
@@ -448,11 +608,13 @@ static int insert_bymday(int event_id,
 	UCalendar *cal;
 	int r;
 	int i;
+	int y, m, d;
 	int mday;
 	char **t;
-	const char *d = ",";
+	const char *dl = ",";
+	UErrorCode status = U_ZERO_ERROR;
 
-	t = g_strsplit(sch->bymonthday, d, -1);
+	t = g_strsplit(sch->bymonthday, dl, -1);
 
 	if (!t) {
 		ERR("g_strsplit failed");
@@ -460,8 +622,9 @@ static int insert_bymday(int event_id,
 	}
 
 	for (i = 0; t[i]; ++i) {
-		mday = _get_mday(t[i]);
-		if (mday < 0) {
+		r = _get_mday(t[i], &mday);
+		if (r < 0) {
+			ERR("Failed to get mday");
 			g_strfreev(t);
 			return CAL_ERR_ARG_INVALID;
 		}
@@ -470,10 +633,14 @@ static int insert_bymday(int event_id,
 		if (!cal)
 			return CAL_ERR_FAIL;
 		_ucal_set_time(cal, st);
+		y = ucal_get(cal, UCAL_YEAR, &status);
+		m = ucal_get(cal, UCAL_MONTH, &status) + 1;
+		d = ucal_get(cal, UCAL_DATE, &status);
 		_ucal_set_month(cal, month);
 		_ucal_set_mday(cal, mday);
+		_adjust_valid_first_mday(cal, y, m, d, sch);
 
-		r = _insert_instance(cal, event_id, st, dr, CALS_NODAY, 0,  sch);
+		r = _insert_instance(cal, event_id, st, dr, CALS_NODAY, 0, sch);
 		if (r) {
 			ERR("_insert_bymday failed (%d)", r);
 			g_strfreev(t);
@@ -499,7 +666,7 @@ static int insert_no_by(int event_id,
 	return _insert_instance(cal, event_id, st, dr, CALS_NODAY, 0, sch);
 }
 
-static inline int _get_day(const char *str, int *week, int *day)
+static inline int _get_wday(const char *str, int *week, int *wday)
 {
 	int i;
 	int d;
@@ -509,42 +676,42 @@ static inline int _get_day(const char *str, int *week, int *day)
 		return -1;
 
 	if (!sscanf(str, "%d", &d)) {
-		DBG("no week digit");
+		DBG("no digit in front of char, so set 1 as default");
 		if (sscanf(str, "%s", buf) != 1) {
-			ERR("Failed to get day[%s]", str);
+			ERR("Failed to get wday[%s]", str);
 			return -1;
 		}
-		d = 0;
+		d = 1;
 	} else {
 		if (sscanf(str, "%d%s", &d, buf) != 2) {
-			ERR("Failed to get day[%s]", str);
+			ERR("Failed to get wday[%s]", str);
 			return -1;
 		}
 	}
 
-	*week = d;
+	*week = d > 4 ? -1 : d;
 
 	buf[2] = '\0';
-	DBG("[%s] and sets week (%d)", buf, d);
+	DBG("Sets week(%d) wday[%s]", d, buf);
 
-	for (i = 0; i < sizeof(days)/sizeof(struct day); i++) {
-		if (!strncmp(days[i].str, buf, 2)) {
-			DBG("inserted wday[%s]and set[%s]", days[i].str, buf);
-			*day = i;
+	for (i = 0; i < sizeof(wdays)/sizeof(struct day); i++) {
+		if (!strncmp(wdays[i].str, buf, 2)) {
+			DBG("inserted week(%d) wday[%s]", *week, wdays[i].str);
+			*wday = i;
 			break;
 		}
 	}
-
 	return 0;
 }
 
 static int insert_byday(int event_id,
 		struct cals_time *st, int dr, int month, cal_sch_full_t *sch)
 {
+	CALS_FN_CALL;
 	UCalendar *cal;
 	int r;
 	int i;
-	int day;
+	int wday;
 	int week;
 	char **t;
 	const char *d = ",";
@@ -556,14 +723,14 @@ static int insert_byday(int event_id,
 		return CAL_ERR_OUT_OF_MEMORY;
 	}
 
-	day = 0;
+	wday = 0;
 	week = 0;
 
 	for (i = 0; t[i]; ++i) {
-		r = _get_day(t[i], &week, &day);
+		r = _get_wday(t[i], &week, &wday);
 		if (r < 0) {
+			ERR("Failed to get wday");
 			g_strfreev(t);
-			ERR("_get_day failed");
 			return CAL_ERR_ARG_INVALID;
 		}
 
@@ -573,7 +740,7 @@ static int insert_byday(int event_id,
 		_ucal_set_time(cal, st);
 		_ucal_set_month(cal, month);
 
-		r = _insert_instance(cal, event_id, st, dr, day, week, sch);
+		r = _insert_instance(cal, event_id, st, dr, wday, week, sch);
 		if (r) {
 			ERR("_insert_bymday failed (%d)", r);
 			g_strfreev(t);

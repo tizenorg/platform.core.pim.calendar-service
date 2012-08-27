@@ -1,3 +1,43 @@
+libslp-calendar (0.1.13-41) unstable; urgency=low
+
+  * added calendar_id when updated list is returned.
+  * Git: magnolia/framework/pim/calendar-service
+  * Tag: libslp-calendar_0.1.13-41
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Mon, 20 Aug 2012 20:08:46 +0900
+
+libslp-calendar (0.1.13-40) unstable; urgency=low
+
+  * Add vcalendar importing alarm, repeat for ver 1.
+  * Git: magnolia/framework/pim/calendar-service
+  * Tag: libslp-calendar_0.1.13-40
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Mon, 20 Aug 2012 10:19:12 +0900
+
+libslp-calendar (0.1.13-39) unstable; urgency=low
+
+  * Add calendar ipc server/client
+  * Git: magnolia/framework/pim/calendar-service
+  * Tag: libslp-calendar_0.1.13-39
+
+ -- tw123.kim <tw123.kim@samsung.com>  Mon, 14 Aug 2012 17:27:13 +0900
+
+libslp-calendar (0.1.13-38) unstable; urgency=low
+
+  * fixed buffer overflow in smartsearch_excl api.
+  * Git: magnolia/framework/pim/calendar-service
+  * Tag: libslp-calendar_0.1.13-38
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Mon, 13 Aug 2012 17:27:13 +0900
+
+libslp-calendar (0.1.13-37) unstable; urgency=low
+
+  * delete extra instance created by multi weekday set.
+  * Git: magnolia/framework/pim/calendar-service
+  * Tag: libslp-calendar_0.1.13-37
+
+ -- Jeesun Kim <iamjs.kim@samsung.com>  Wed, 08 Aug 2012 09:17:16 +0900
+
 libslp-calendar (0.1.13-36) unstable; urgency=low
 
   * fixed: s1-6347.

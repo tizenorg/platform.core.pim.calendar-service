@@ -36,9 +36,17 @@
 #include "cals-schedule.h"
 #include "cals-inotify.h"
 
+#ifdef CALS_IPC_SERVER
+extern __thread sqlite3 *calendar_db_handle;
+#else
 extern sqlite3* calendar_db_handle;
+#endif
 
+#ifdef CALS_IPC_SERVER
+static __thread int db_ref_cnt = 0;
+#else
 static int db_ref_cnt = 0;
+#endif
 cal_svc_tm_info_t cal_svc_tm_value;
 
 typedef enum
@@ -192,35 +200,51 @@ API int calendar_svc_connect(void)
 	CALS_FN_CALL;
 	int ret = 0;
 
+#ifdef CALS_IPC_SERVER
+	DBG("pthread_self=%x, db_ref_cnt=%p", pthread_self(),&db_ref_cnt );
+#endif
 	g_type_init();	// added for alarmmgr
 
 	if(db_ref_cnt <= 0)
 	{
 		ret = cals_db_open();
 		retvm_if(ret, ret, "cals_db_open() Failed(%d)", ret);
-
+#ifdef CALS_IPC_SERVER
+#else
 		ret = cals_inotify_init();
 		if(CAL_SUCCESS != ret) {
 			cals_db_close();
 			ERR("cals_inotify_init() Failed(%d)", ret);
 			return ret;
 		}
+#endif
 		db_ref_cnt = 0;
 	}
 	db_ref_cnt++;
-
+#ifdef CALS_IPC_SERVER
+    DBG("db_ref_cnt(%d)", db_ref_cnt);
+#endif
 	return CAL_SUCCESS;
 }
 
 API int calendar_svc_close(void)
 {
 	CALS_FN_CALL;
+#ifdef CALS_IPC_SERVER
+    DBG("db_ref_cnt(%d)", db_ref_cnt);
+    DBG("pthread_self=%x, db_ref_cnt=%p", pthread_self(),&db_ref_cnt );
+#endif
 	retvm_if(0 == db_ref_cnt, CAL_ERR_ENV_INVALID,
 			"Calendar service was not connected");
 
 	if (db_ref_cnt==1) {
 		cals_db_close();
+#ifdef CALS_IPC_SERVER
+		db_ref_cnt = 0;
+		return 1;
+#else
 		cals_inotify_close();
+#endif
 	}
 	db_ref_cnt--;
 
@@ -421,14 +445,18 @@ API int calendar_svc_get(const char *data_type,int index,const char *field_list,
 		cal_sch_full_t *sch_record = NULL;
 		sch_record = (*record)->user_data;
 
+		/*
+		 * is_deleted = 0 is not included in query.
+		 * instead, developer should check after getting data.
+		 */
 		if (field_list) {
 			cals_rearrange_schedule_field(field_list, rearranged, sizeof(rearranged));
 			snprintf(sql_value, sizeof(sql_value),
-					"SELECT %s FROM %s WHERE id = %d AND is_deleted = 0 ",
+					"SELECT %s FROM %s WHERE id = %d ",
 					CALS_TABLE_SCHEDULE, rearranged, index);
 		} else {
 			snprintf(sql_value, sizeof(sql_value),
-					"SELECT * FROM %s WHERE id = %d AND is_deleted = 0 ",
+					"SELECT * FROM %s WHERE id = %d ",
 					CALS_TABLE_SCHEDULE, index);
 		}
 
@@ -437,7 +465,15 @@ API int calendar_svc_get(const char *data_type,int index,const char *field_list,
 		retex_if(NULL == stmt,,"cals_query_prepare() Failed");
 
 		rc = cals_stmt_step(stmt);
-		if (rc != CAL_TRUE) {
+		if (rc == CAL_SUCCESS) {
+			DBG("stmt done is called. No data(%d)", rc);
+			sqlite3_finalize(stmt);
+			if (malloc_inside && *record != NULL) {
+				calendar_svc_struct_free(record);
+			}
+			return CAL_ERR_NO_DATA;
+
+		} else if (rc != CAL_TRUE) {
 			ERR("Failed to step stmt(%d)", rc);
 			sqlite3_finalize(stmt);
 			if (malloc_inside && *record != NULL) {
@@ -482,10 +518,9 @@ API int calendar_svc_get(const char *data_type,int index,const char *field_list,
 
 		sch_record->index = index;
 
-		if (0 == strcmp(data_type,CAL_STRUCT_SCHEDULE)) {
-			cal_db_service_get_participant_info_by_index(index,&(sch_record->attendee_list),&error_code);
-			cals_get_alarm_info(index, &(sch_record->alarm_list));
-		}
+		cal_db_service_get_participant_info_by_index(index,
+				&(sch_record->attendee_list),&error_code);
+		cals_get_alarm_info(index, &(sch_record->alarm_list));
 	}
 	else if(0 == strcmp(data_type,CAL_STRUCT_CALENDAR))
 	{
@@ -1197,6 +1232,7 @@ static void cals_iter_get_info_change(cals_updated *cursor, cals_updated *result
 	result->type = cursor->type;
 	result->id = cursor->id;
 	result->ver = cursor->ver;
+	result->calendar_id = cursor->calendar_id;
 	return;
 }
 

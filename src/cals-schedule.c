@@ -357,6 +357,7 @@ int cals_insert_schedule(cal_sch_full_t *sch_record)
 
 	if (sch_record->attendee_list)
 	{
+		DBG("attendee exists");
 		GList *list = g_list_first(sch_record->attendee_list);
 		cal_participant_info_t *participant_info = NULL;
 
@@ -374,30 +375,58 @@ int cals_insert_schedule(cal_sch_full_t *sch_record)
 			}
 			list = g_list_next(list);
 		}
+	} else {
+		DBG("No attendee exists");
 	}
 
 	if (sch_record->alarm_list)
 	{
+		DBG("alarm exists");
 		GList *list = sch_record->alarm_list;
 		cal_alarm_info_t *alarm_info = NULL;
 
 		while (list)
 		{
 			cvalue = list->data;
-			if (cvalue)
+			if (cvalue == NULL) {
+				ERR("Failed to fine value");
+				break;
+			}
+
+			alarm_info = cvalue->user_data;
+			if (alarm_info == NULL) {
+				ERR("Failed to find alarm info");
+				break;
+			}
+
+			if(alarm_info->is_deleted == 0)
 			{
-				alarm_info = cvalue->user_data;
-				if(alarm_info->is_deleted == 0)
+				DBG("type(%d) tick(%d) unit(%d)",
+						sch_record->cal_type,
+						alarm_info->remind_tick,
+						alarm_info->remind_tick_unit);
+				if (alarm_info->remind_tick != CALS_INVALID_ID)
 				{
-					if (alarm_info->remind_tick != CALS_INVALID_ID)
-					{
+					switch (sch_record->cal_type) {
+					case CALS_SCH_TYPE_EVENT:
 						ret = cals_alarm_add(index, alarm_info, &st);
 						warn_if(CAL_SUCCESS != ret, "cals_alarm_add() Failed(%d)", ret);
+						break;
+					case CALS_SCH_TYPE_TODO:
+						if (sch_record->dtend_utime == CALS_TODO_NO_DUE_DATE) {
+							DBG("no due date is set");
+							break;
+						}
+						ret = cals_alarm_add(index, alarm_info, &et);
+						warn_if(CAL_SUCCESS != ret, "cals_alarm_add() Failed(%d)", ret);
+						break;
 					}
 				}
 			}
 			list = list->next;
 		}
+	} else {
+		DBG("No alarm exists");
 	}
 
 	cals_end_trans(true);
@@ -622,6 +651,7 @@ static inline int _cals_update_rrule(const int index, cal_sch_full_t *record)
 	retv_if(record == NULL, CAL_ERR_ARG_NULL);
 
 	snprintf(query, sizeof(query), "UPDATE %s set "
+			"freq = %d, "
 			"range_type = %d, "
 			"until_type = %d, "
 			"until_utime = %lld, "
@@ -640,6 +670,7 @@ static inline int _cals_update_rrule(const int index, cal_sch_full_t *record)
 			"wkst = %d "
 			"WHERE event_id = %d",
 			CALS_TABLE_RRULE,
+			record->freq,
 			record->range_type,
 			record->until_type,
 			record->until_utime,
@@ -995,12 +1026,6 @@ int cals_delete_schedule(int id)
 	r = _cals_clear_instances(id);
 	if (r) {
 		ERR("_cals_clear_instances failed (%d)", r);
-		return r;
-	}
-
-	r = _cals_delete_rrule(id);
-	if (r) {
-		ERR("_cals_delete_rrule (%d)", r);
 		return r;
 	}
 
@@ -1660,7 +1685,8 @@ API int calendar_svc_smartsearch_excl(const char *keyword, int offset, int limit
 
 	snprintf(query, sizeof(query), "SELECT A.* "
 			"FROM %s A LEFT JOIN %s B ON A.calendar_id = B.ROWID "
-			"WHERE A.summary LIKE ('%%' || :key || '%%') AND B.visibility = 1 LIMIT %d OFFSET %d",
+			"WHERE A.summary LIKE ('%%' || :key || '%%') "
+			"AND B.visibility = 1 LIMIT %d OFFSET %d",
 			CALS_TABLE_SCHEDULE, CALS_TABLE_CALENDAR, limit, offset);
 
 	stmt = cals_query_prepare(query);

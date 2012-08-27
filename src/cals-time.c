@@ -117,6 +117,7 @@ char *cals_time_get_str_datetime(char *tzid, long long int t)
 		tzid = CALS_TZID_0;
 	}
 	cal = _ucal_get_cal(tzid);
+	ucal_setMillis(cal, sec2ms(t), &status);
 
 	y = ucal_get(cal, UCAL_YEAR, &status);
 	mon = ucal_get(cal, UCAL_MONTH, &status) + 1;
@@ -129,6 +130,27 @@ char *cals_time_get_str_datetime(char *tzid, long long int t)
 			"%04d%02d%02dT%02d%02d%02dZ",
 			y, mon, d, h, m, s);
 	return strdup(buf);
+}
+
+int cals_time_get_val_datetime(char *tzid, long long int t, const char *field, int *val)
+{
+	UErrorCode status = U_ZERO_ERROR;
+	UCalendar *cal;
+
+	if (tzid == NULL) {
+		tzid = CALS_TZID_0;
+	}
+	cal = _ucal_get_cal(tzid);
+	if (!strncmp(field, "year", strlen("year"))) {
+		*val = ucal_get(cal, UCAL_YEAR, &status);
+	} else if (!strncmp(field, "month", strlen("month"))) {
+		*val = ucal_get(cal, UCAL_MONTH, &status);
+	} else if (!strncmp(field, "mday", strlen("mday"))) {
+		*val = ucal_get(cal, UCAL_DATE, &status);
+	}
+	ucal_close(cal);
+
+	return 0;
 }
 
 long long int cals_time_convert_to_lli(struct cals_time *ct)
@@ -178,7 +200,7 @@ long long int cals_time_date_to_utime(const char *tzid,
 {
 	UCalendar *cal;
 	UErrorCode status = U_ZERO_ERROR;
-	UChar *_tzid;
+	//UChar *_tzid;
 	long long int lli;
 
 	cal = _ucal_get_cal(tzid);
@@ -204,3 +226,66 @@ long long int cals_get_lli_now(void)
 {
 	return ms2sec(ucal_getNow());
 }
+
+#ifdef CALS_IPC_CLIENT
+char cal_month[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+/* sec to 1970 1 1 0:0:0 */
+#define D19700101 62167219200
+
+long long int _date_to_utime(int y, int mon, int d, int h, int min, int s)
+{
+    int i;
+    long long int t;
+
+    t = y * 365;
+    t += ((int)y/4 - (int)y/100 + (int)y/400);
+    for (i = 0; i < mon-1; i++) {
+        t += cal_month[i];
+    }
+    if (i > 2 && (y % 4 == 0)) {
+        t += 1;
+        if ((y % 100 == 0) && (y % 400 != 0)) {
+            t -= 1;
+        }
+    }
+    t += d;
+    t *= (24 * 60 * 60);
+    t += (((h * 60) + min ) * 60 + s);
+    t -= D19700101;
+    return t;
+}
+
+long long int _datetime_to_utime(char *datetime)
+{
+    int y, mon, d, h, min, s;
+    char tmp[8] = {0};
+    char *p;
+
+    if (datetime == NULL || strlen(datetime) == 0) {
+        ERR("Invalid argument");
+        return -1;
+    }
+
+    p = datetime;
+    snprintf(tmp, 5, "%s", p);
+    y = atoi(tmp);
+    snprintf(tmp, 3, "%s", p + 4);
+    mon = atoi(tmp);
+    snprintf(tmp, 3, "%s", p + 6);
+    d = atoi(tmp);
+
+    if (strlen(datetime) > 14) {
+        snprintf(tmp, 3, "%s", p + 9);
+        h = atoi(tmp);
+        snprintf(tmp, 3, "%s", p + 11);
+        min = atoi(tmp);
+        snprintf(tmp, 3, "%s", p + 13);
+        s = atoi(tmp);
+
+    } else {
+        h = min = s = 0;
+    }
+
+    return _date_to_utime(y, mon, d, h, min, s);
+}
+#endif

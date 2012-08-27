@@ -23,8 +23,160 @@
 #include "calendar-svc-provider.h"
 #include "cals-internal.h"
 #include "cals-typedef.h"
+#ifdef CALS_IPC_CLIENT
+#else
 #include "cals-db.h"
 #include "cals-utils.h"
+#endif
+
+#ifdef CALS_IPC_CLIENT
+static bool __cal_free_participant(cal_participant_info_t* paritcipant_info, int *error_code)
+{
+    if(NULL == paritcipant_info)
+    {
+        return true;
+    }
+
+    CAL_FREE(paritcipant_info->attendee_email);
+    CAL_FREE(paritcipant_info->attendee_number);
+    CAL_FREE(paritcipant_info->attendee_name);
+
+    return true;
+}
+
+static bool __cal_free_full_record(cal_sch_full_t *sch_full_record, int *error_code)
+{
+    retex_if(error_code == NULL, ,"error_code is NULL.");
+    retex_if(sch_full_record == NULL, *error_code = CAL_ERR_ARG_INVALID,"sch_full_record is NULL.");
+    cal_value *value = NULL;
+    GList *head;
+
+    CAL_FREE(sch_full_record->summary);
+    CAL_FREE(sch_full_record->description);
+    CAL_FREE(sch_full_record->location);
+    CAL_FREE(sch_full_record->categories);
+    CAL_FREE(sch_full_record->uid);
+    CAL_FREE(sch_full_record->organizer_name);
+    CAL_FREE(sch_full_record->organizer_email);
+    CAL_FREE(sch_full_record->gcal_id);
+    CAL_FREE(sch_full_record->updated);
+    CAL_FREE(sch_full_record->location_summary);
+    CAL_FREE(sch_full_record->etag);
+    CAL_FREE(sch_full_record->edit_uri);
+    CAL_FREE(sch_full_record->gevent_id);
+
+    if (sch_full_record->attendee_list)
+    {
+        head = sch_full_record->attendee_list;
+        while (sch_full_record->attendee_list)
+        {
+            value = sch_full_record->attendee_list->data;
+            if(NULL != value)
+            {
+                if(NULL != value->user_data)
+                {
+                    __cal_free_participant((cal_participant_info_t*)value->user_data,error_code);
+                    CAL_FREE(value->user_data);
+
+                }
+                CAL_FREE(value);
+            }
+            sch_full_record->attendee_list = sch_full_record->attendee_list->next;
+        }
+        g_list_free(head);
+        sch_full_record->attendee_list = NULL;
+    }
+    return true;
+
+CATCH:
+
+    return false;
+}
+#endif
+
+int cals_event_init(cal_sch_full_t *sch_full_record)
+{
+	retvm_if(NULL == sch_full_record, CAL_ERR_ARG_INVALID , "sch_full_record is NULL");
+
+	memset(sch_full_record,0,sizeof(cal_sch_full_t));
+
+	sch_full_record->cal_type = CALS_SCH_TYPE_EVENT;
+	sch_full_record->meeting_status = CALS_EVENT_STATUS_NONE;
+	sch_full_record->calendar_id = DEFAULT_EVENT_CALENDAR_ID;
+
+	sch_full_record->index = CALS_INVALID_ID;
+	sch_full_record->timezone = -1;
+	sch_full_record->contact_id = CALS_INVALID_ID;
+	sch_full_record->calendar_type = CAL_PHONE_CALENDAR;
+	sch_full_record->attendee_list = NULL;
+	sch_full_record->busy_status = 2;
+	sch_full_record->summary = NULL;
+	sch_full_record->description = NULL;
+	sch_full_record->location= NULL;
+	sch_full_record->categories = NULL;
+	sch_full_record->exdate = NULL;
+	sch_full_record->organizer_email = NULL;
+	sch_full_record->organizer_name = NULL;
+	sch_full_record->uid= NULL;
+	sch_full_record->gcal_id = NULL;
+	sch_full_record->location_summary = NULL;
+	sch_full_record->etag = NULL;
+	sch_full_record->edit_uri = NULL;
+	sch_full_record->gevent_id = NULL;
+	sch_full_record->original_event_id = CALS_INVALID_ID;
+
+	sch_full_record->sync_status = CAL_SYNC_STATUS_NEW;
+	sch_full_record->account_id = -1;
+	sch_full_record->is_deleted = 0;
+	sch_full_record->latitude = 1000; // set default 1000 out of range(-180 ~ 180)
+	sch_full_record->longitude = 1000; // set default 1000 out of range(-180 ~ 180)
+	sch_full_record->freq = CALS_FREQ_ONCE;
+	sch_full_record->until_utime = CALS_TODO_NO_DUE_DATE;
+
+	return CAL_SUCCESS;
+}
+
+int cals_todo_init(cal_sch_full_t *sch_full_record)
+{
+	retvm_if(NULL == sch_full_record, CAL_ERR_ARG_INVALID , "sch_full_record is NULL");
+
+	memset(sch_full_record,0,sizeof(cal_sch_full_t));
+
+	sch_full_record->cal_type = CALS_SCH_TYPE_TODO;
+	sch_full_record->task_status = CALS_TODO_STATUS_NONE;
+	sch_full_record->calendar_id = DEFAULT_TODO_CALENDAR_ID;
+
+	sch_full_record->index = CALS_INVALID_ID;
+	sch_full_record->timezone = -1;
+	sch_full_record->contact_id = CALS_INVALID_ID;
+	sch_full_record->calendar_type = CAL_PHONE_CALENDAR;
+	sch_full_record->attendee_list = NULL;
+	sch_full_record->busy_status = 2;
+	sch_full_record->summary = NULL;
+	sch_full_record->description = NULL;
+	sch_full_record->location= NULL;
+	sch_full_record->categories = NULL;
+	sch_full_record->exdate = NULL;
+	sch_full_record->organizer_email = NULL;
+	sch_full_record->organizer_name = NULL;
+	sch_full_record->uid= NULL;
+	sch_full_record->gcal_id = NULL;
+	sch_full_record->location_summary = NULL;
+	sch_full_record->etag = NULL;
+	sch_full_record->edit_uri = NULL;
+	sch_full_record->gevent_id = NULL;
+	sch_full_record->original_event_id = CALS_INVALID_ID;
+
+	sch_full_record->sync_status = CAL_SYNC_STATUS_NEW;
+	sch_full_record->account_id = -1;
+	sch_full_record->is_deleted = 0;
+	sch_full_record->latitude = 1000; // set default 1000 out of range(-180 ~ 180)
+	sch_full_record->longitude = 1000; // set default 1000 out of range(-180 ~ 180)
+	sch_full_record->freq = CALS_FREQ_ONCE;
+	sch_full_record->until_utime = CALS_TODO_NO_DUE_DATE;
+
+	return CAL_SUCCESS;
+}
 
 static inline void cals_init_calendar_record(calendar_t *calendar)
 {
@@ -204,7 +356,11 @@ API int calendar_svc_struct_free (cal_struct** event)
 	{
 	case CAL_STRUCT_TYPE_SCHEDULE:
 	case CAL_STRUCT_TYPE_TODO:
-		cal_db_service_free_full_record((cal_sch_full_t*)(*event)->user_data,&ret);
+#ifdef CALS_IPC_CLIENT
+	    __cal_free_full_record((cal_sch_full_t*)(*event)->user_data,&ret);
+#else
+		cal_db_service_free_full_record((cal_sch_full_t*)(*event)->user_data);
+#endif
 		CAL_FREE((*event)->user_data);
 		CAL_FREE(*event);
 		break;
@@ -846,6 +1002,10 @@ API int calendar_svc_struct_get_int(cal_struct *event, const char *field)
 		else if(0 == strcmp(field, CALS_STRUCT_UPDATED_INT_VERSION))
 		{
 			return update->ver;
+		}
+		else if(0 == strcmp(field, CALS_STRUCT_UPDATED_INT_CALENDAR_ID))
+		{
+			return update->calendar_id;
 		}
 		else
 		{

@@ -29,7 +29,11 @@
 
 #define CALS_MALLOC_DEFAULT_NUM 256 //4Kbytes
 
+#ifdef CALS_IPC_SERVER
+extern __thread sqlite3 *calendar_db_handle;
+#else
 extern sqlite3* calendar_db_handle;
+#endif
 
 typedef	enum
 {
@@ -45,6 +49,15 @@ static const char *CALS_NOTI_EVENT_CHANGED="/opt/data/calendar-svc/.CALENDAR_SVC
 static const char *CALS_NOTI_TODO_CHANGED="/opt/data/calendar-svc/.CALENDAR_SVC_TODO_CHANGED";
 static const char *CALS_NOTI_CALENDAR_CHANGED="/opt/data/calendar-svc/.CALENDAR_SVC_CALENDAR_CHANGED";
 
+#ifdef CALS_IPC_SERVER
+static __thread int transaction_cnt = 0;
+static __thread int transaction_ver = 0;
+static __thread bool version_up = false;
+
+static __thread bool event_change=false;
+static __thread bool todo_change=false;
+static __thread bool calendar_change=false;
+#else
 static int transaction_cnt = 0;
 static int transaction_ver = 0;
 static bool version_up = false;
@@ -52,6 +65,7 @@ static bool version_up = false;
 static bool event_change=false;
 static bool todo_change=false;
 static bool calendar_change=false;
+#endif
 
 static inline void _cals_notify_event_change(void)
 {
@@ -330,9 +344,10 @@ inline cals_updated* cals_updated_schedule_add_mempool(void)
 	int i;
 	cals_updated *mempool;
 
-	mempool = calloc(CALS_MALLOC_DEFAULT_NUM, sizeof(cals_updated));
-	for (i=0;i<CALS_MALLOC_DEFAULT_NUM-1;i++)
-		mempool[i].next = &mempool[i+1];
+	mempool = calloc(1, sizeof(cals_updated));
+//	for (i = 0; i < CALS_MALLOC_DEFAULT_NUM-1; i++) {
+//		mempool[i].next = &mempool[i+1];
+//	}
 	return mempool;
 }
 
@@ -344,7 +359,8 @@ inline int cals_updated_schedule_free_mempool(cals_updated *mempool)
 
 	memseg = mempool;
 	while (memseg) {
-		tmp = memseg[CALS_MALLOC_DEFAULT_NUM-1].next;
+		tmp = memseg->next;
+//		tmp = memseg[CALS_MALLOC_DEFAULT_NUM-1].next;
 		free(memseg);
 		memseg = tmp;
 	}

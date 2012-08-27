@@ -35,7 +35,11 @@
 #include "cals-schedule.h"
 #include "cals-db.h"
 
+#ifdef CALS_IPC_SERVER
+extern __thread sqlite3 *calendar_db_handle;
+#else
 extern sqlite3 *calendar_db_handle;
+#endif
 
 static bool __check_record_index_valid(int index)
 {
@@ -67,53 +71,124 @@ bool cal_db_service_free_participant(cal_participant_info_t* paritcipant_info, i
 	return true;
 }
 
-bool cal_db_service_free_full_record(cal_sch_full_t *sch_full_record, int *error_code)
+int cals_db_free_alarm(cal_sch_full_t *record)
 {
-	retex_if(error_code == NULL, ,"error_code is NULL.");
-	retex_if(sch_full_record == NULL, *error_code = CAL_ERR_ARG_INVALID,"sch_full_record is NULL.");
-	cal_value *value = NULL;
-	GList *head;
+	CALS_FN_CALL;
+	GList *l;
+	cal_value *cv;
+	cal_alarm_info_t *ai;
 
-	CAL_FREE(sch_full_record->summary);
-	CAL_FREE(sch_full_record->description);
-	CAL_FREE(sch_full_record->location);
-	CAL_FREE(sch_full_record->categories);
-	CAL_FREE(sch_full_record->uid);
-	CAL_FREE(sch_full_record->organizer_name);
-	CAL_FREE(sch_full_record->organizer_email);
-	CAL_FREE(sch_full_record->gcal_id);
-	CAL_FREE(sch_full_record->updated);
-	CAL_FREE(sch_full_record->location_summary);
-	CAL_FREE(sch_full_record->etag);
-	CAL_FREE(sch_full_record->edit_uri);
-	CAL_FREE(sch_full_record->gevent_id);
-
-	if (sch_full_record->attendee_list)
-	{
-		head = sch_full_record->attendee_list;
-		while (sch_full_record->attendee_list)
-		{
-			value = sch_full_record->attendee_list->data;
-			if(NULL != value)
-			{
-				if(NULL != value->user_data)
-				{
-					cal_db_service_free_participant((cal_participant_info_t*)value->user_data,error_code);
-					CAL_FREE(value->user_data);
-
-				}
-				CAL_FREE(value);
-			}
-			sch_full_record->attendee_list = sch_full_record->attendee_list->next;
-		}
-		g_list_free(head);
-		sch_full_record->attendee_list = NULL;
+	if (record == NULL) {
+		ERR("Invalid argument: record is NULL");
+		return -1;
 	}
-	return true;
 
-CATCH:
+	if (record->alarm_list == NULL) {
+		DBG("No alarm list to free");
+		return 0;
+	}
 
-	return false;
+	l = record->alarm_list;
+	while (l) {
+		cv = (cal_value *)l->data;
+		if (cv == NULL) {
+			l = g_list_next(l);
+			continue;
+		}
+
+		ai = (cal_alarm_info_t *)cv->user_data;
+		if (ai == NULL) {
+			l = g_list_next(l);
+			continue;
+		}
+
+		CAL_FREE(ai->alarm_tone);
+		CAL_FREE(ai->alarm_description);
+		CAL_FREE(ai);
+
+		CAL_FREE(cv);
+
+		l = g_list_next(l);
+	}
+	g_list_free(record->alarm_list);
+	record->alarm_list = NULL;
+
+	return 0;
+}
+
+int cals_db_free_attendee(cal_sch_full_t *record)
+{
+	CALS_FN_CALL;
+	GList *l;
+	cal_value *cv;
+	cal_participant_info_t *pi;
+
+	if (record == NULL) {
+		ERR("Invalid argument: record is NULL");
+		return -1;
+	}
+
+	if (record->attendee_list == NULL) {
+		DBG("No attendee list to free");
+		return 0;
+	}
+
+	l = record->attendee_list;
+	while (l) {
+		cv = (cal_value *)l->data;
+		if (cv == NULL) {
+			l = g_list_next(l);
+			continue;
+		}
+
+		pi = (cal_participant_info_t *)cv->user_data;
+		if (pi == NULL) {
+			l = g_list_next(l);
+			continue;
+		}
+
+		CAL_FREE(pi->attendee_email);
+		CAL_FREE(pi->attendee_number);
+		CAL_FREE(pi->attendee_name);
+		CAL_FREE(pi);
+
+		CAL_FREE(cv);
+
+		l = g_list_next(l);
+	}
+	g_list_free(record->attendee_list);
+	record->attendee_list = NULL;
+
+	return 0;
+}
+
+int cal_db_service_free_full_record(cal_sch_full_t *record)
+{
+	if (record == NULL) {
+		ERR("Invalid argument: record is NULL");
+		return -1;
+	}
+
+	CAL_FREE(record->dtstart_tzid);
+	CAL_FREE(record->dtend_tzid);
+	CAL_FREE(record->summary);
+	CAL_FREE(record->description);
+	CAL_FREE(record->location);
+	CAL_FREE(record->categories);
+	CAL_FREE(record->uid);
+	CAL_FREE(record->organizer_name);
+	CAL_FREE(record->organizer_email);
+	CAL_FREE(record->gcal_id);
+	CAL_FREE(record->updated);
+	CAL_FREE(record->location_summary);
+	CAL_FREE(record->etag);
+	CAL_FREE(record->edit_uri);
+	CAL_FREE(record->gevent_id);
+
+	cals_db_free_alarm(record);
+	cals_db_free_attendee(record);
+
+	return 0;
 }
 
 /************************************************************************************************
