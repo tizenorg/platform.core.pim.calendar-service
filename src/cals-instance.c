@@ -178,7 +178,7 @@ static inline void _ucal_set_month(UCalendar *cal, int month)
 static inline void _ucal_set_wday(UCalendar *cal, int wday)
 {
 	if (wday == CALS_NODAY) {
-		DBG("this is wday repeat, so pass this shift");
+		DBG("this is mday repeat, so pass this shift");
 		return;
 	}
 	ucal_set(cal, UCAL_DAY_OF_WEEK, wdays[wday].uday);
@@ -544,10 +544,12 @@ static inline int _get_month(const char *str)
 {
 	int month;
 
+	DBG("[%s]", str);
 	if (!str || !*str)
 		return -1;
 
 	month = atoi(str);
+	DBG("(%d)", month);
 	if (month < CALS_JANUARY || month > CALS_DECEMBER)
 		return -1;
 

@@ -941,7 +941,7 @@ API int calendar_svc_clean_after_sync(int calendar_id)
 	/* delete recur table */
 	/* get event id which id_delete = 1 */
 	snprintf(query, sizeof(query), "SELECT id FROM %s "
-			"WHERE is_delete = 1 AND calendar_id = %d",
+			"WHERE is_deleted = 1 AND calendar_id = %d",
 			CALS_TABLE_SCHEDULE,
 			calendar_id);
 	stmt = cals_query_prepare(query);

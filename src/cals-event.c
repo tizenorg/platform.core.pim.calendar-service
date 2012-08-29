@@ -234,11 +234,13 @@ API int calendar_svc_event_get_normal_list_by_period(int calendar_id, int op_cod
 				"B.dtend_type, A.dtend_utime "
 				"FROM %s as A, %s as B, %s as C "
 				"ON A.event_id = B.id AND B.calendar_id = C.rowid "
-				"WHERE A.dtstart_utime <= %lld AND A.dtend_utime > %lld "
+				"WHERE ((A.dtstart_utime < %lld AND A.dtend_utime > %lld) "
+				"OR A.dtstart_utime = %lld) "
 				"AND B.type = %d AND B.is_deleted = 0 AND C.visibility = 1 %s "
 				"ORDER BY A.dtstart_utime ",
 				CALS_TABLE_NORMAL_INSTANCE, CALS_TABLE_SCHEDULE, CALS_TABLE_CALENDAR,
 				etime, stime,
+				stime,
 				CALS_SCH_TYPE_EVENT, buf);
 		break;
 
@@ -251,11 +253,13 @@ API int calendar_svc_event_get_normal_list_by_period(int calendar_id, int op_cod
 				"B.summary, B.location "
 				"FROM %s as A, %s as B, %s as C "
 				"ON A.event_id = B.id AND B.calendar_id = C.rowid "
-				"WHERE A.dtstart_utime <= %lld AND A.dtend_utime > %lld "
+				"WHERE ((A.dtstart_utime < %lld AND A.dtend_utime > %lld) "
+				"OR A.dtstart_utime = %lld) "
 				"AND B.type = %d AND B.is_deleted = 0 AND C.visibility = 1 %s "
 				"ORDER BY A.dtstart_utime ",
 				CALS_TABLE_NORMAL_INSTANCE, CALS_TABLE_SCHEDULE, CALS_TABLE_CALENDAR,
 				etime, stime,
+				stime,
 				CALS_SCH_TYPE_EVENT, buf);
 		break;
 
@@ -269,11 +273,13 @@ API int calendar_svc_event_get_normal_list_by_period(int calendar_id, int op_cod
 				"B.meeting_status, B.priority, B.sensitivity, B.rrule_id "
 				"FROM %s as A, %s as B, %s as C "
 				"ON A.event_id = B.id AND B.calendar_id = C.rowid "
-				"WHERE A.dtstart_utime <= %lld AND A.dtend_utime > %lld "
+				"WHERE ((A.dtstart_utime < %lld AND A.dtend_utime > %lld) "
+				"OR A.dtstart_utime = %lld) "
 				"AND B.type = %d AND B.is_deleted = 0 AND C.visibility = 1 %s "
 				"ORDER BY A.dtstart_utime ",
 				CALS_TABLE_NORMAL_INSTANCE, CALS_TABLE_SCHEDULE, CALS_TABLE_CALENDAR,
 				etime, stime,
+				stime,
 				CALS_SCH_TYPE_EVENT, buf);
 		break;
 
@@ -288,11 +294,13 @@ API int calendar_svc_event_get_normal_list_by_period(int calendar_id, int op_cod
 				"B.latitude, B.longitude "
 				"FROM %s as A, %s as B, %s as C "
 				"ON A.event_id = B.id AND B.calendar_id = C.rowid "
-				"WHERE A.dtstart_utime <= %lld AND A.dtend_utime > %lld "
+				"WHERE ((A.dtstart_utime < %lld AND A.dtend_utime > %lld) "
+				"OR A.dtstart_utime = %lld) "
 				"AND B.type = %d AND B.is_deleted = 0 AND C.visibility = 1 %s "
 				"ORDER BY A.dtstart_utime ",
 				CALS_TABLE_NORMAL_INSTANCE, CALS_TABLE_SCHEDULE, CALS_TABLE_CALENDAR,
 				etime, stime,
+				stime,
 				CALS_SCH_TYPE_EVENT, buf);
 		break;
 
@@ -467,6 +475,13 @@ API int calendar_svc_event_delete_normal_instance(int event_id, long long int dt
 	char query[CALS_SQL_MIN_LEN] = {0};
 	sqlite3_stmt *stmt;
 
+	ret = cals_begin_trans();
+	if (ret != CAL_SUCCESS) {
+		ERR("cals_begin_trans() Failed(%d)", ret);
+		cals_end_trans(false);
+		return ret;
+	}
+
 	len_datetime = strlen("YYYYMMDDTHHMMSSZ");
 
 	/* delete instance from normal_instance_table */
@@ -476,8 +491,12 @@ API int calendar_svc_event_delete_normal_instance(int event_id, long long int dt
 			event_id, dtstart_utime);
 
 	ret = cals_query_exec(query);
-	retvm_if(ret != CAL_SUCCESS, ret, "Failed to delete instance(errno:%d)"
-			"[id:%d utime:%lld]", ret, event_id, dtstart_utime);
+	if (ret != CAL_SUCCESS) {
+		ERR("Failed to delete instance(errno:%d) [id:%d utime:%lld]",
+				ret, event_id, dtstart_utime);
+		cals_end_trans(false);
+		return ret;
+	}
 
 	/* get exdate to append */
 	snprintf(query, sizeof(query), "SELECT %s FROM %s "
@@ -486,7 +505,11 @@ API int calendar_svc_event_delete_normal_instance(int event_id, long long int dt
 			event_id);
 
 	stmt = cals_query_prepare(query);
-	retvm_if (NULL == stmt, CAL_ERR_DB_FAILED, "cals_query_prepare() failed.");
+	if (stmt == NULL) {
+		ERR("cals_query_prepare() failed.");
+		cals_end_trans(false);
+		return CAL_ERR_DB_FAILED;
+	}
 
 	ret = cals_stmt_step(stmt);
 	if (ret == CAL_TRUE) {
@@ -496,6 +519,7 @@ API int calendar_svc_event_delete_normal_instance(int event_id, long long int dt
 	} else if (ret != CAL_SUCCESS) {
 		ERR("Failed to step(errno:%d)", ret);
 		sqlite3_finalize(stmt);
+		cals_end_trans(false);
 		return ret;
 	}
 
@@ -505,6 +529,7 @@ API int calendar_svc_event_delete_normal_instance(int event_id, long long int dt
 		if (p == NULL) {
 			ERR("Failed to calloc");
 			sqlite3_finalize(stmt);
+			cals_end_trans(false);
 			return CAL_ERR_OUT_OF_MEMORY;
 		}
 		str_datetime =  cals_time_get_str_datetime(NULL, dtstart_utime);
@@ -518,6 +543,7 @@ API int calendar_svc_event_delete_normal_instance(int event_id, long long int dt
 		if (p == NULL) {
 			ERR("Failed to calloc");
 			sqlite3_finalize(stmt);
+			cals_end_trans(false);
 			return CAL_ERR_OUT_OF_MEMORY;
 		}
 		str_datetime =  cals_time_get_str_datetime(NULL, dtstart_utime);
@@ -527,15 +553,22 @@ API int calendar_svc_event_delete_normal_instance(int event_id, long long int dt
 	if (str_datetime) free(str_datetime);
 	sqlite3_finalize(stmt);
 
-	/* updaet exdate from schedule table */
+	/* updaet exdate, version, last_mod from schedule table */
 	snprintf(query, sizeof(query), "UPDATE %s SET "
-			"exdate = ? "
+			"exdate = ?, "
+			"changed_ver = %d, "
+			"last_mod = strftime('%%s','now') "
 			"WHERE id = %d ",
 			CALS_TABLE_SCHEDULE,
+			cals_get_next_ver(),
 			event_id);
 
 	stmt = cals_query_prepare(query);
-	retvm_if (NULL == stmt, CAL_ERR_DB_FAILED, "Failed to prepare(errno:%d)", ret);
+	if (stmt == NULL) {
+		ERR("cals_query_prepare() failed.");
+		cals_end_trans(false);
+		return CAL_ERR_DB_FAILED;
+	}
 
 	cals_stmt_bind_text(stmt, 1, p);
 
@@ -543,6 +576,7 @@ API int calendar_svc_event_delete_normal_instance(int event_id, long long int dt
 	if (CAL_SUCCESS != ret) {
 		sqlite3_finalize(stmt);
 		ERR("sqlite3_step() Failed(%d)", ret);
+		cals_end_trans(false);
 		return ret;
 	}
 	sqlite3_finalize(stmt);
@@ -552,6 +586,8 @@ API int calendar_svc_event_delete_normal_instance(int event_id, long long int dt
 	if (ret < 0) {
 		WARN("cals_notify failed (%d)", ret);
 	}
+
+	cals_end_trans(true);
 
 	return CAL_SUCCESS;
 }
@@ -565,6 +601,13 @@ API int calendar_svc_event_delete_allday_instance(int event_id, int dtstart_year
 	char buf[32] = {0};
 	sqlite3_stmt *stmt;
 
+	ret = cals_begin_trans();
+	if (ret != CAL_SUCCESS) {
+		ERR("cals_begin_trans() Failed(%d)", ret);
+		cals_end_trans(false);
+		return ret;
+	}
+
 	len_datetime = strlen("YYYYMMDDTHHMMSSZ");
 
 	/* delete instance from normal_instance_table */
@@ -576,8 +619,12 @@ API int calendar_svc_event_delete_allday_instance(int event_id, int dtstart_year
 			event_id, buf);
 
 	ret = cals_query_exec(query);
-	retvm_if(ret != CAL_SUCCESS, ret, "Failed to delete instance(errno:%d)"
-			"[id:%d datetime:%s]", ret, event_id, buf);
+	if (ret != CAL_SUCCESS) {
+		ERR("Failed to delete instance(errno:%d) [id:%d datetime:%s]",
+				ret, event_id, buf);
+		cals_end_trans(false);
+		return ret;
+	}
 
 	/* get exdate to append */
 	snprintf(query, sizeof(query), "SELECT %s FROM %s "
@@ -586,7 +633,11 @@ API int calendar_svc_event_delete_allday_instance(int event_id, int dtstart_year
 			event_id);
 
 	stmt = cals_query_prepare(query);
-	retvm_if (NULL == stmt, CAL_ERR_DB_FAILED, "cals_query_prepare() failed.");
+	if (stmt == NULL) {
+		ERR("cals_query_prepare() failed.");
+		cals_end_trans(false);
+		return CAL_ERR_DB_FAILED;
+	}
 
 	ret = cals_stmt_step(stmt);
 	if (ret == CAL_TRUE) {
@@ -596,6 +647,7 @@ API int calendar_svc_event_delete_allday_instance(int event_id, int dtstart_year
 	} else if (ret != CAL_SUCCESS) {
 		ERR("Failed to step(errno:%d)", ret);
 		sqlite3_finalize(stmt);
+		cals_end_trans(false);
 		return ret;
 	}
 
@@ -617,6 +669,7 @@ API int calendar_svc_event_delete_allday_instance(int event_id, int dtstart_year
 		if (p == NULL) {
 			ERR("Failed to calloc");
 			sqlite3_finalize(stmt);
+			cals_end_trans(false);
 			return CAL_ERR_OUT_OF_MEMORY;
 		}
 		snprintf(p, len + strlen(",") + len_datetime + 1, "%s,%s",
@@ -632,7 +685,11 @@ API int calendar_svc_event_delete_allday_instance(int event_id, int dtstart_year
 			event_id);
 
 	stmt = cals_query_prepare(query);
-	retvm_if (NULL == stmt, CAL_ERR_DB_FAILED, "Failed to prepare(errno:%d)", ret);
+	if (stmt == NULL) {
+		ERR("cals_query_prepare() failed.");
+		cals_end_trans(false);
+		return CAL_ERR_DB_FAILED;
+	}
 
 	cals_stmt_bind_text(stmt, 1, p);
 
@@ -640,6 +697,7 @@ API int calendar_svc_event_delete_allday_instance(int event_id, int dtstart_year
 	if (CAL_SUCCESS != ret) {
 		sqlite3_finalize(stmt);
 		ERR("sqlite3_step() Failed(%d)", ret);
+		cals_end_trans(false);
 		return ret;
 	}
 	sqlite3_finalize(stmt);
@@ -649,6 +707,8 @@ API int calendar_svc_event_delete_allday_instance(int event_id, int dtstart_year
 	if (ret < 0) {
 		WARN("cals_notify failed (%d)", ret);
 	}
+
+	cals_end_trans(true);
 
 	return CAL_SUCCESS;
 }

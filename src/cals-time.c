@@ -122,7 +122,7 @@ char *cals_time_get_str_datetime(char *tzid, long long int t)
 	y = ucal_get(cal, UCAL_YEAR, &status);
 	mon = ucal_get(cal, UCAL_MONTH, &status) + 1;
 	d = ucal_get(cal, UCAL_DATE, &status);
-	h = ucal_get(cal, UCAL_HOUR, &status);
+	h = ucal_get(cal, UCAL_HOUR_OF_DAY, &status);
 	m = ucal_get(cal, UCAL_MINUTE, &status);
 	s = ucal_get(cal, UCAL_SECOND, &status);
 
