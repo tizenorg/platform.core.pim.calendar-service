@@ -399,7 +399,8 @@ API int calendar_svc_todo_get_list_by_period(int calendar_id,
 	snprintf(query, sizeof(query),
 			"SELECT * FROM %s "
 			"WHERE dtend_utime >= %lld AND dtend_utime <= %lld "
-			"AND type = %d %s %s %s ",
+			"AND type = %d %s %s %s "
+			"ORDER BY dtend_utime ",
 			CALS_TABLE_SCHEDULE,
 			due_from, dueto,
 			CALS_SCH_TYPE_TODO, buf_prio, buf_stat, buf_id);
