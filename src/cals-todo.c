@@ -273,11 +273,12 @@ static inline int cals_todo_get_changes(int calendar_id, int version, cal_iter *
 		result->ver = sqlite3_column_int(stmt, 1);
 		if (sqlite3_column_int(stmt, 3) == 1) {
 			result->type = CALS_UPDATED_TYPE_DELETED;
-		} else if (sqlite3_column_int(stmt, 2) == result->ver || version < sqlite3_column_int(stmt, 2)) {
-			result->type = CALS_UPDATED_TYPE_INSERTED;
-		} else {
+		} else if (sqlite3_column_int(stmt, 2) != result->ver) {
 			result->type = CALS_UPDATED_TYPE_MODIFIED;
+		} else {
+			result->type = CALS_UPDATED_TYPE_INSERTED;
 		}
+
 		result->calendar_id = sqlite3_column_int(stmt, 4);
 
 		if (iter->info->head == NULL) {
