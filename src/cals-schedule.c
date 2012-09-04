@@ -734,12 +734,48 @@ static inline int _cals_update_rrule(const int index, cal_sch_full_t *record)
 	return CAL_SUCCESS;
 }
 
+int _cals_get_rrule_id(int index, int *rrule_id)
+{
+	int r;
+	sqlite3_stmt *stmt;
+	char query[CALS_SQL_MAX_LEN] = {0};
+
+	snprintf(query, sizeof(query),
+			"SELECT rrule_id "
+			"FROM %s "
+			"WHERE id = %d ",
+			CALS_TABLE_SCHEDULE,
+			index);
+	stmt = cals_query_prepare(query);
+	if (!stmt) {
+		ERR("cals_query_prepare failed");
+		return CAL_ERR_DB_FAILED;
+	}
+
+	r = cals_stmt_step(stmt);
+	if (r < 0) {
+		sqlite3_finalize(stmt);
+		ERR("cals_stmt_step failed (%d)", r);
+		return r;
+	}
+
+	if (r == CAL_SUCCESS) {
+		ERR("cals_stmt_step return no data");
+		sqlite3_finalize(stmt);
+		return CAL_ERR_NO_DATA;
+	}
+
+	*rrule_id = sqlite3_column_int(stmt, 0);
+	sqlite3_finalize(stmt);
+	return CAL_SUCCESS;
+}
 
 int cals_update_schedule(const int index, cal_sch_full_t *sch_record)
 {
 	bool is_success = false;
 	cal_value * cvalue = NULL;
 	int ret = 0;
+	int rrule_id = 0;
 
 	retv_if(NULL == sch_record, CAL_ERR_ARG_NULL);
 
@@ -748,8 +784,28 @@ int cals_update_schedule(const int index, cal_sch_full_t *sch_record)
 	ret = _cals_update_schedule(index, sch_record);
 	retvm_if(CAL_SUCCESS != ret, ret, "_cals_update_schedule() Failed(%d)", ret);
 
-	ret = _cals_update_rrule(index, sch_record);
-	retvm_if(CAL_SUCCESS != ret, ret, "Failed in update rrule(%d)", ret);
+	if (sch_record->freq != CALS_FREQ_ONCE) {
+		ret = _cals_get_rrule_id(index, &rrule_id);
+
+		if (rrule_id > 0) {
+			ret = _cals_update_rrule(index, sch_record);
+			retvm_if(CAL_SUCCESS != ret, ret, "Failed in update rrule(%d)", ret);
+
+		} else {
+			ret = _cals_insert_rrule(index, sch_record);
+			if (ret < CAL_SUCCESS) {
+				ERR("Failed in _cals_insert_rrule(%d)\n", ret);
+				return ret;
+			}
+			sch_record->rrule_id = ret;
+			DBG("added rrule_id(%d)", ret);
+			ret = _cals_insert_rrule_id(index, sch_record);
+			if (ret != CAL_SUCCESS) {
+				ERR("Failed in _cals_insert_rrule_id(%d)\n", ret);
+			}
+			DBG("ended add");
+		}
+	}
 
 	_cals_delete_participant_info(index);
 	if (sch_record->attendee_list)
