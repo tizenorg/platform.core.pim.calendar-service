@@ -1,7 +1,7 @@
 /*
  * Calendar Service
  *
- * Copyright (c) 2000 - 2012 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2012 - 2013 Samsung Electronics Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,14 @@
 #include <db-util.h>
 
 #include "schema.h"
-#include "cals-db-info.h"
-#include "cals-internal.h"
-#include "calendar-svc-errors.h"
 
+#define CALS_DB_PATH "/opt/usr/dbspace/.calendar-svc.db"
+#define CALS_DB_JOURNAL_PATH "/opt/usr/dbspace/.calendar-svc.db-journal"
+
+// For Security
+#define CALS_SECURITY_FILE_GROUP 6003
+#define CALS_SECURITY_DEFAULT_PERMISSION 0660
+#define CALS_SECURITY_DIR_DEFAULT_PERMISSION 0770
 
 static inline int remake_db_file()
 {
@@ -36,41 +40,68 @@ static inline int remake_db_file()
 	sqlite3 *db;
 
 	ret = db_util_open(CALS_DB_PATH, &db, 0);
-	retvm_if(SQLITE_OK != ret, CAL_ERR_DB_NOT_OPENED, "db_util_open() Failed(%d)", ret);
+	if (SQLITE_OK != ret)
+	{
+		printf("db_util_open() Failed(%d)\n", ret);
+		return -1;
+	}
 
 	ret = sqlite3_exec(db, schema_query, NULL, 0, &errmsg);
 	if (SQLITE_OK != ret) {
-		ERR("remake calendar DB file is Failed : %s", errmsg);
+		printf("remake calendar DB file is Failed : %s\n", errmsg);
 		sqlite3_free(errmsg);
 	}
 
 	db_util_close(db);
 
 	fd = open(CALS_DB_PATH, O_CREAT | O_RDWR, 0660);
-	retvm_if(-1 == fd, CAL_ERR_FAIL, "open Failed");
+	if (-1 == fd)
+	{
+		printf("open Failed\n");
+		return -1;
+	}
 
-	fchown(fd, getuid(), CALS_SECURITY_FILE_GROUP);
+	ret = fchown(fd, getuid(), CALS_SECURITY_FILE_GROUP);
+	if (-1 == ret)
+	{
+		printf("Failed to fchown\n");
+		close(fd);
+		return -1;
+	}
 	fchmod(fd, CALS_SECURITY_DEFAULT_PERMISSION);
 	close(fd);
 
 	fd = open(CALS_DB_JOURNAL_PATH, O_CREAT | O_RDWR, 0660);
-	retvm_if(-1 == fd, CAL_ERR_FAIL, "open Failed");
+	if (-1 == fd)
+	{
+		printf("open Failed\n");
+		return -1;
+	}
 
-	fchown(fd, getuid(), CALS_SECURITY_FILE_GROUP);
+	ret = fchown(fd, getuid(), CALS_SECURITY_FILE_GROUP);
+	if (-1 == ret)
+	{
+		printf("Failed to fchown\n");
+		close(fd);
+		return -1;
+	}
 	fchmod(fd, CALS_SECURITY_DEFAULT_PERMISSION);
 	close(fd);
 
-	return CAL_SUCCESS;
+	return 0;
 }
 
 static inline int check_db_file(void)
 {
 	int fd = open(CALS_DB_PATH, O_RDONLY);
-	retvm_if(-1 == fd, -1,
-			"DB file(%s) is not exist", CALS_DB_PATH);
+	if (-1 == fd)
+	{
+		printf("DB file(%s) is not exist\n", CALS_DB_PATH);
+		return -1;
+	}
 
 	close(fd);
-	return CAL_SUCCESS;
+	return 0;
 }
 
 static inline int check_schema(void)
@@ -78,7 +109,7 @@ static inline int check_schema(void)
 	if (check_db_file())
 		remake_db_file();
 
-	return CAL_SUCCESS;
+	return 0;
 }
 
 int main(int argc, char **argv)

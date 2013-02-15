@@ -16,44 +16,19 @@
  * limitations under the License.
  *
  */
-#include <stdio.h>
-#include <stdlib.h>
 
-int main(int argc, char **argv)
-{
-	FILE *fp;
-	int c;
+#ifndef __CALENDAR_SVC_INOTIFY_H__
+#define __CALENDAR_SVC_INOTIFY_H__
 
-	fp = fopen(argv[1], "r");
-	if (fp == NULL)
-		exit(EXIT_FAILURE);
+#include "calendar_types2.h"
 
-	printf("static const char *schema_query = \"\\\n");
+#ifdef CAL_IPC_CLIENT
+void _cal_inotify_call_pending_callback(void);
+#endif
 
-	do{
-		c = fgetc(fp);
-		switch (c)
-		{
-		case '\n':
-			printf("\\\n");
-			break;
-		case '-':
-			if ('-' == (c = fgetc(fp))) {
-				while ('\n' != c && EOF != c)
-					c = fgetc(fp);
-				printf("\\\n");
-			}
-			else printf("-%c",c);
-			break;
-		case EOF:
-			break;
-		default:
-			printf("%c",c);
-			break;
-		}
-	}while(EOF != c);
-	printf("\";\n");
+int _cal_inotify_initialize(void);
+int _cal_inotify_subscribe(cal_noti_type_e type, const char *path, calendar_db_changed_cb callback, void *data);
+int _cal_inotify_unsubscribe_with_data(const char *path, calendar_db_changed_cb callback, void *user_data);
+void _cal_inotify_finalize(void);
 
-	exit(EXIT_SUCCESS);
-}
-
+#endif // __CALENDAR_SVC_INOTIFY_H__

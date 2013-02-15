@@ -16,44 +16,18 @@
  * limitations under the License.
  *
  */
-#include <stdio.h>
-#include <stdlib.h>
 
-int main(int argc, char **argv)
-{
-	FILE *fp;
-	int c;
+#ifndef __CALENDAR_SVC_DB_ALARM_H__
+#define __CALENDAR_SVC_DB_ALARM_H__
 
-	fp = fopen(argv[1], "r");
-	if (fp == NULL)
-		exit(EXIT_FAILURE);
+int _cal_db_alarm_get_records(int event_id, GList **out_list);
+int _cal_db_alarm_convert_gtoh(GList *glist, int id, calendar_list_h *hlist);
+int _cal_db_alarm_delete_with_id(int event_id);
+/*
+ * @param[in] list   The alarm list
+ *
+ * @return 0 on none alarm, 1 on alarm.
+ */
+int _cal_db_alarm_has_alarm(GList *list);
 
-	printf("static const char *schema_query = \"\\\n");
-
-	do{
-		c = fgetc(fp);
-		switch (c)
-		{
-		case '\n':
-			printf("\\\n");
-			break;
-		case '-':
-			if ('-' == (c = fgetc(fp))) {
-				while ('\n' != c && EOF != c)
-					c = fgetc(fp);
-				printf("\\\n");
-			}
-			else printf("-%c",c);
-			break;
-		case EOF:
-			break;
-		default:
-			printf("%c",c);
-			break;
-		}
-	}while(EOF != c);
-	printf("\";\n");
-
-	exit(EXIT_SUCCESS);
-}
-
+#endif  //__CALENDAR_SVC_DB_ALARM_H__

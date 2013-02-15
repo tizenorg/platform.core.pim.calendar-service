@@ -16,44 +16,18 @@
  * limitations under the License.
  *
  */
-#include <stdio.h>
-#include <stdlib.h>
 
-int main(int argc, char **argv)
-{
-	FILE *fp;
-	int c;
+#ifndef __CALENDAR_SVC_MUTEX_H__
+#define __CALENDAR_SVC_MUTEX_H__
 
-	fp = fopen(argv[1], "r");
-	if (fp == NULL)
-		exit(EXIT_FAILURE);
+enum {
+    CAL_MUTEX_CONNECTION,
+    CAL_MUTEX_PIMS_IPC_CALL,
+    CAL_MUTEX_INOTIFY,
+    CAL_MUTEX_PROPERTY_HASH,
+};
 
-	printf("static const char *schema_query = \"\\\n");
+void _cal_mutex_lock(int type);
+void _cal_mutex_unlock(int type);
 
-	do{
-		c = fgetc(fp);
-		switch (c)
-		{
-		case '\n':
-			printf("\\\n");
-			break;
-		case '-':
-			if ('-' == (c = fgetc(fp))) {
-				while ('\n' != c && EOF != c)
-					c = fgetc(fp);
-				printf("\\\n");
-			}
-			else printf("-%c",c);
-			break;
-		case EOF:
-			break;
-		default:
-			printf("%c",c);
-			break;
-		}
-	}while(EOF != c);
-	printf("\";\n");
-
-	exit(EXIT_SUCCESS);
-}
-
+#endif  //__CALENDAR_SVC_MUTEX_H__
