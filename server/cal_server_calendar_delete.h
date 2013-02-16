@@ -16,44 +16,9 @@
  * limitations under the License.
  *
  */
-#include <stdio.h>
-#include <stdlib.h>
+#ifndef __CAL_SERVER_CALENDAR_DELETE_H__
+#define __CAL_SERVER_CALENDAR_DELETE_H__
 
-int main(int argc, char **argv)
-{
-	FILE *fp;
-	int c;
+void _cal_server_calendar_delete_start(void);
 
-	fp = fopen(argv[1], "r");
-	if (fp == NULL)
-		exit(EXIT_FAILURE);
-
-	printf("static const char *schema_query = \"\\\n");
-
-	do{
-		c = fgetc(fp);
-		switch (c)
-		{
-		case '\n':
-			printf("\\\n");
-			break;
-		case '-':
-			if ('-' == (c = fgetc(fp))) {
-				while ('\n' != c && EOF != c)
-					c = fgetc(fp);
-				printf("\\\n");
-			}
-			else printf("-%c",c);
-			break;
-		case EOF:
-			break;
-		default:
-			printf("%c",c);
-			break;
-		}
-	}while(EOF != c);
-	printf("\";\n");
-
-	exit(EXIT_SUCCESS);
-}
-
+#endif /*__CAL_SERVER_CALENDAR_DELETE_H__*/

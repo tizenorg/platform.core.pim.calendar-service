@@ -16,44 +16,12 @@
  * limitations under the License.
  *
  */
-#include <stdio.h>
-#include <stdlib.h>
 
-int main(int argc, char **argv)
-{
-	FILE *fp;
-	int c;
+#ifndef __CALENDAR_SVC_DB_INSTANCE_H__
+#define __CALENDAR_SVC_DB_INSTANCE_H__
 
-	fp = fopen(argv[1], "r");
-	if (fp == NULL)
-		exit(EXIT_FAILURE);
+int _cal_db_instance_publish_record(calendar_record_h record);
+int _cal_db_instance_discard_record(calendar_record_h record);;
+int _cal_db_instance_get_now(long long int *current);
 
-	printf("static const char *schema_query = \"\\\n");
-
-	do{
-		c = fgetc(fp);
-		switch (c)
-		{
-		case '\n':
-			printf("\\\n");
-			break;
-		case '-':
-			if ('-' == (c = fgetc(fp))) {
-				while ('\n' != c && EOF != c)
-					c = fgetc(fp);
-				printf("\\\n");
-			}
-			else printf("-%c",c);
-			break;
-		case EOF:
-			break;
-		default:
-			printf("%c",c);
-			break;
-		}
-	}while(EOF != c);
-	printf("\";\n");
-
-	exit(EXIT_SUCCESS);
-}
-
+#endif // __CALENDAR_SVC_DB_INSTANCE_H__

@@ -16,44 +16,20 @@
  * limitations under the License.
  *
  */
-#include <stdio.h>
-#include <stdlib.h>
 
-int main(int argc, char **argv)
-{
-	FILE *fp;
-	int c;
+#ifndef __CAL_CLIENT_IPC_H__
+#define __CAL_CLIENT_IPC_H__
 
-	fp = fopen(argv[1], "r");
-	if (fp == NULL)
-		exit(EXIT_FAILURE);
+#include <pims-ipc.h>
 
-	printf("static const char *schema_query = \"\\\n");
+bool _cal_client_ipc_is_call_inprogress(void);
 
-	do{
-		c = fgetc(fp);
-		switch (c)
-		{
-		case '\n':
-			printf("\\\n");
-			break;
-		case '-':
-			if ('-' == (c = fgetc(fp))) {
-				while ('\n' != c && EOF != c)
-					c = fgetc(fp);
-				printf("\\\n");
-			}
-			else printf("-%c",c);
-			break;
-		case EOF:
-			break;
-		default:
-			printf("%c",c);
-			break;
-		}
-	}while(EOF != c);
-	printf("\";\n");
+int _cal_client_ipc_call(char *module, char *function, pims_ipc_h data_in,
+        pims_ipc_data_h *data_out);
+int _cal_client_ipc_call_async(char *module, char *function, pims_ipc_h data_in,
+        pims_ipc_call_async_cb callback, void *userdata);
 
-	exit(EXIT_SUCCESS);
-}
+void _cal_client_ipc_set_change_version(int version);
+int _cal_client_ipc_get_change_version(void);
 
+#endif // __CAL_CLIENT_IPC_H__

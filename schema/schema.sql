@@ -1,7 +1,7 @@
 --
 -- Calendar Service
 --
--- Copyright (c) 2000 - 2012 Samsung Electronics Co., Ltd. All rights reserved.
+-- Copyright (c) 2012 - 2013 Samsung Electronics Co., Ltd. All rights reserved.
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -21,65 +21,112 @@ CREATE TABLE schedule_table
 id INTEGER PRIMARY KEY AUTOINCREMENT,
 account_id INTEGER,
 type INTEGER,
-category INTEGER,
 summary TEXT,
 description TEXT,
 location TEXT,
-all_day_event INTEGER,
-start_date_time INTEGER,
-end_date_time INTEGER,
-repeat_item INTEGER,
-repeat_interval INTEGER,
-repeat_occurrences INTEGER,
-repeat_end_date INTEGER,
-sun_moon INTEGER,
-week_start INTEGER,
-week_flag TEXT,
-day_date INTEGER,
-last_modified_time INTEGER,
-missed INTEGER,
+categories TEXT,
+exdate TEXT,
 task_status INTEGER,
 priority INTEGER,
-timezone INTEGER,
-file_id INTEGER,
+timezone INTEGER DEFAULT 0,
 contact_id INTEGER,
 busy_status INTEGER,
 sensitivity INTEGER,
 uid TEXT,
-calendar_type INTEGER,
 organizer_name TEXT,
 organizer_email TEXT,
 meeting_status INTEGER,
-gcal_id TEXT,
-deleted INTEGER,
-updated TEXT,
-location_type INTEGER,
-location_summary TEXT,
-etag TEXT,
 calendar_id INTEGER,
-sync_status INTEGER,
-edit_uri TEXT,
-gevent_id TEXT,
-dst INTEGER,
-original_event_id INTEGER,
+original_event_id INTEGER DEFAULT -1,
 latitude DOUBLE,
 longitude DOUBLE,
-is_deleted INTEGER,
-tz_name TEXT,
-tz_city_name TEXT,
 email_id INTEGER,
 availability INTEGER,
-created_date_time INTEGER,
-completed_date_time INTEGER,
-progress INTEGER
+created_time INTEGER,
+completed_time INTEGER,
+progress INTEGER,
+changed_ver INTEGER,
+created_ver INTEGER,
+is_deleted INTEGER DEFAULT 0,
+dtstart_type INTEGER,
+dtstart_utime INTEGER,
+dtstart_datetime TEXT,
+dtstart_tzid TEXT,
+dtend_type INTEGER,
+dtend_utime INTEGER,
+dtend_datetime TEXT,
+dtend_tzid TEXT,
+last_mod INTEGER,
+rrule_id INTEGER DEFAULT 0,
+recurrence_id TEXT,
+rdate TEXT,
+has_attendee INTEGER,
+has_alarm INTEGER,
+system_type INTEGER,
+updated INTEGER,
+sync_data1 TEXT,
+sync_data2 TEXT,
+sync_data3 TEXT,
+sync_data4 TEXT
 );
-CREATE INDEX sch_idx1 ON schedule_table(type, category);
+CREATE INDEX sch_idx1 ON schedule_table(type);
 CREATE TRIGGER trg_sch_del AFTER DELETE ON schedule_table
  BEGIN
-   DELETE FROM cal_alarm_table WHERE event_id = old.id;
+   DELETE FROM rrule_table WHERE event_id = old.id;
+   DELETE FROM alarm_table WHERE event_id = old.id;
+   DELETE FROM schedule_table WHERE original_event_id = old.id;
+   DELETE FROM normal_instance_table WHERE event_id = old.id;
+   DELETE FROM allday_instance_table WHERE event_id = old.id;
+   DELETE FROM attendee_table WHERE event_id = old.id;
+   DELETE FROM extended_table WHERE record_id = old.id AND record_type = 2;
+   DELETE FROM extended_table WHERE record_id = old.id AND record_type = 3;
  END;
 
-CREATE TABLE cal_participant_table
+CREATE TRIGGER trig_original_mod AFTER UPDATE OF is_deleted ON schedule_table
+ BEGIN
+   DELETE FROM normal_instance_table WHERE event_id = (SELECT rowid FROM schedule_table WHERE original_event_id = old.id);
+   DELETE FROM allday_instance_table WHERE event_id = (SELECT rowid FROM schedule_table WHERE original_event_id = old.id);
+   UPDATE schedule_table SET is_deleted = 1 WHERE original_event_id = old.id;
+ END;
+
+CREATE TABLE rrule_table
+(
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+event_id INTEGER,
+freq INTEGER DEFAULT 0,
+range_type INTEGER,
+until_type INTEGER,
+until_utime INTEGER,
+until_datetime TEXT,
+count INTEGER,
+interval INTEGER,
+bysecond TEXT,
+byminute TEXT,
+byhour TEXT,
+byday TEXT,
+bymonthday TEXT,
+byyearday TEXT,
+byweekno TEXT,
+bymonth TEXT,
+bysetpos TEXT,
+wkst INTEGER
+);
+
+CREATE TABLE normal_instance_table
+(
+event_id INTEGER,
+dtstart_utime INTEGER,
+dtend_utime INTEGER
+);
+
+CREATE TABLE allday_instance_table
+(
+event_id INTEGER,
+dtstart_datetime TEXT,
+dtend_datetime TEXT
+);
+
+CREATE TABLE attendee_table
 (
 event_id INTEGER,
 attendee_name TEXT,
@@ -96,69 +143,30 @@ attendee_delegate_uri TEXT,
 attendee_uid TEXT
 );
 
-CREATE TABLE cal_meeting_category_table
-(
-event_id INTEGER,
-category_name TEXT
-);
-
-CREATE TABLE recurrency_log_table
-(
-uid TEXT,
-start_date_time INTEGER,
-end_date_time INTEGER,
-event_id INTEGER,
-exception_event_id INTEGER,
-updated INTEGER
-);
-
 CREATE TABLE calendar_table
 (
-calendar_id TEXT,
+id INTEGER PRIMARY KEY AUTOINCREMENT,
 uid TEXT,
-link TEXT,
 updated INTEGER,
 name TEXT,
 description TEXT,
-author TEXT,
 color TEXT,
-hidden INTEGER,
-selected INTEGER,
 location TEXT,
-locale INTEGER,
-country INTEGER,
-time_zone INTEGER,
-timezone_label TEXT,
-display_all_timezones INTEGER,
-date_field_order INTEGER,
-format_24hour_time INTEGER,
-week_start INTEGER,
-default_cal_mode INTEGER,
-custom_cal_mode INTEGER,
-user_location TEXT,
-weather TEXT,
-show_declined_events INTEGER,
-hide_invitations INTEGER,
-alternate_calendar INTEGER,
 visibility INTEGER,
-projection INTEGER,
-sequence INTEGER,
-suppress_reply_notifications INTEGER,
 sync_event INTEGER,
-times_cleaned INTEGER,
-guests_can_modify INTEGER,
-guests_can_invite_others INTEGER,
-guests_can_see_guests INTEGER,
-access_level INTEGER,
-sync_status INTEGER,
-is_deleted INTEGER,
+is_deleted INTEGER DEFAULT 0,
 account_id INTEGER,
-sensitivity INTEGER,
-store_type INTEGER
+store_type INTEGER,
+sync_data1 TEXT,
+sync_data2 TEXT,
+sync_data3 TEXT,
+sync_data4 TEXT,
+deleted INTEGER DEFAULT 0
 );
 
 CREATE TABLE timezone_table
 (
+id INTEGER PRIMARY KEY AUTOINCREMENT,
 tz_offset_from_gmt INTEGER,
 standard_name TEXT,
 std_start_month INTEGER,
@@ -171,10 +179,18 @@ day_light_start_month INTEGER,
 day_light_start_position_of_week INTEGER,
 day_light_start_day INTEGER,
 day_light_start_hour INTEGER,
-day_light_bias INTEGER
+day_light_bias INTEGER,
+calendar_id INTEGER
 );
 
-CREATE TABLE cal_alarm_table
+CREATE TRIGGER trg_cal_del AFTER DELETE ON calendar_table
+ BEGIN
+   DELETE FROM timezone_table WHERE calendar_id = old.id;
+   DELETE FROM schedule_table WHERE calendar_id = old.id;
+   DELETE FROM extended_table WHERE record_id = old.id AND record_type = 1;
+ END;
+
+CREATE TABLE alarm_table
 (
 event_id INTEGER,
 alarm_time INTEGER,
@@ -183,7 +199,42 @@ remind_tick_unit INTEGER,
 alarm_tone TEXT,
 alarm_description TEXT,
 alarm_type INTEGER,
-alarm_id INTEGER
+alarm_id INTEGER default 0
 );
 
-INSERT INTO calendar_table VALUES(0,0,0,0,'default calendar',0,0,'76.198.86.255',0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,-1,0,3);
+CREATE TABLE reminder_table
+(
+pkgname TEXT NOT NULL,
+onoff INTEGER default 1,
+key TEXT,
+value TEXT
+);
+INSERT INTO reminder_table VALUES('org.tizen.calendar', 1, NULL, NULL);
+
+CREATE TABLE extended_table
+(
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+record_id INTEGER,
+record_type INTEGER,
+key TEXT,
+value TEXT
+);
+
+CREATE TABLE deleted_table
+(
+schedule_id INTEGER,
+schedule_type INTEGER,
+calendar_id INTEGER,
+deleted_ver INTEGER
+);
+CREATE INDEX deleted_schedule_ver_idx ON deleted_table(deleted_ver);
+
+CREATE TABLE version_table
+(
+ver INTEGER PRIMARY KEY
+);
+INSERT INTO version_table VALUES(0);
+
+INSERT INTO calendar_table VALUES(1,0,0,'Default event calendar'   ,0,'224.167.79.255',0,1,1,0,-1,1,0,0,0,0,0);
+INSERT INTO calendar_table VALUES(2,0,0,'Default todo calendar'    ,0,'41.177.227.255',0,1,1,0,-1,2,0,0,0,0,0);
+INSERT INTO calendar_table VALUES(3,0,0,'Default birthday calendar',0,'141.17.27.255' ,0,1,0,0,-1,1,0,0,0,0,0);

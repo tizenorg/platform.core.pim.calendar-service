@@ -16,44 +16,12 @@
  * limitations under the License.
  *
  */
-#include <stdio.h>
-#include <stdlib.h>
 
-int main(int argc, char **argv)
-{
-	FILE *fp;
-	int c;
+#ifndef __CALENDAR_SVC_QUERY_H__
+#define __CALENDAR_SVC_QUERY_H__
 
-	fp = fopen(argv[1], "r");
-	if (fp == NULL)
-		exit(EXIT_FAILURE);
+#include "calendar_query.h"
 
-	printf("static const char *schema_query = \"\\\n");
+int _cal_query_clone(calendar_query_h query, calendar_query_h* out_query);
 
-	do{
-		c = fgetc(fp);
-		switch (c)
-		{
-		case '\n':
-			printf("\\\n");
-			break;
-		case '-':
-			if ('-' == (c = fgetc(fp))) {
-				while ('\n' != c && EOF != c)
-					c = fgetc(fp);
-				printf("\\\n");
-			}
-			else printf("-%c",c);
-			break;
-		case EOF:
-			break;
-		default:
-			printf("%c",c);
-			break;
-		}
-	}while(EOF != c);
-	printf("\";\n");
-
-	exit(EXIT_SUCCESS);
-}
-
+#endif  //__CALENDAR_SVC_QUERY_H__
