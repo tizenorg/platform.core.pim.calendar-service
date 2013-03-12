@@ -16,44 +16,21 @@
  * limitations under the License.
  *
  */
-#include <stdio.h>
-#include <stdlib.h>
 
-int main(int argc, char **argv)
-{
-	FILE *fp;
-	int c;
+#ifndef __CALENDAR_SVC_VCALENDAR_MAKE_H__
+#define __CALENDAR_SVC_VCALENDAR_MAKE_H__
 
-	fp = fopen(argv[1], "r");
-	if (fp == NULL)
-		exit(EXIT_FAILURE);
+#include "calendar_vcalendar.h"
 
-	printf("static const char *schema_query = \"\\\n");
+typedef struct {
+	int size;
+	char *data;
+	char lbuf[76];
+} cal_make_s ;
 
-	do{
-		c = fgetc(fp);
-		switch (c)
-		{
-		case '\n':
-			printf("\\\n");
-			break;
-		case '-':
-			if ('-' == (c = fgetc(fp))) {
-				while ('\n' != c && EOF != c)
-					c = fgetc(fp);
-				printf("\\\n");
-			}
-			else printf("-%c",c);
-			break;
-		case EOF:
-			break;
-		default:
-			printf("%c",c);
-			break;
-		}
-	}while(EOF != c);
-	printf("\";\n");
+cal_make_s *_cal_vcalendar_make_new(void);
+int _cal_vcalendar_make_vcalendar(cal_make_s *b, calendar_list_h list);
+char *_cal_vcalendar_make_get_data(cal_make_s *b);
+void _cal_vcalendar_make_free(cal_make_s **b);
 
-	exit(EXIT_SUCCESS);
-}
-
+#endif // __CALENDAR_SVC_VCALENDAR_MAKE_H__

@@ -16,44 +16,12 @@
  * limitations under the License.
  *
  */
-#include <stdio.h>
-#include <stdlib.h>
 
-int main(int argc, char **argv)
-{
-	FILE *fp;
-	int c;
+#ifndef __CALENDAR_SVC_DB_EXTENDED_H__
+#define __CALENDAR_SVC_DB_EXTENDED_H__
 
-	fp = fopen(argv[1], "r");
-	if (fp == NULL)
-		exit(EXIT_FAILURE);
+int _cal_db_extended_get_records(int record_id, calendar_record_type_e record_type, GList **out_list);
+int _cal_db_extended_convert_gtoh(GList *glist, int record_id, calendar_record_type_e record_type, calendar_list_h *hlist);
+int _cal_db_extended_delete_with_id(int record_id, calendar_record_type_e record_type);
 
-	printf("static const char *schema_query = \"\\\n");
-
-	do{
-		c = fgetc(fp);
-		switch (c)
-		{
-		case '\n':
-			printf("\\\n");
-			break;
-		case '-':
-			if ('-' == (c = fgetc(fp))) {
-				while ('\n' != c && EOF != c)
-					c = fgetc(fp);
-				printf("\\\n");
-			}
-			else printf("-%c",c);
-			break;
-		case EOF:
-			break;
-		default:
-			printf("%c",c);
-			break;
-		}
-	}while(EOF != c);
-	printf("\";\n");
-
-	exit(EXIT_SUCCESS);
-}
-
+#endif  //__CALENDAR_SVC_DB_EXTENDED_H__
