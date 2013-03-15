@@ -45,7 +45,7 @@ struct _prop_func {
 
 struct _vcalendar_func {
 	char *prop;
-	int (*func)(int ver, calendar_list_h list, calendar_record_h event, void *data);
+	int (*func)(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont);
 };
 
 struct _record_func {
@@ -54,8 +54,8 @@ struct _record_func {
 };
 
 char *_cal_vcalendar_parse_vcalendar(calendar_list_h *list_sch, void *data);
-char *_cal_vcalendar_parse_vevent(int ver, calendar_list_h *list_sch, void *data);
-char *_cal_vcalendar_parse_vtodo(int ver, calendar_list_h *list_sch, void *data);
+char *_cal_vcalendar_parse_vevent(int type, calendar_list_h *list_sch, void *data);
+char *_cal_vcalendar_parse_vtodo(int type, calendar_list_h *list_sch, void *data);
 char *_cal_vcalendar_parse_valarm(int type, calendar_record_h record, void *data);
 
 enum {
@@ -77,21 +77,21 @@ struct _prop_func _basic_funcs[VCAL_MAX] =
 //	{"METHOD", __cal_vcalendar_parse_method }
 };
 
-static int __cal_vcalendar_parse_dtstamp(int ver, calendar_list_h list, calendar_record_h event, void *data);
-static int __cal_vcalendar_parse_uid(int type, calendar_list_h list, calendar_record_h record, void *data);
-static int __cal_vcalendar_parse_dtstart(int ver, calendar_list_h list, calendar_record_h event, void *data);
-static int __cal_vcalendar_parse_created(int ver, calendar_list_h list, calendar_record_h event, void *data);
-static int __cal_vcalendar_parse_description(int ver, calendar_list_h list, calendar_record_h event, void *data);
-static int __cal_vcalendar_parse_last_mod(int ver, calendar_list_h list, calendar_record_h event, void *data);
-static int __cal_vcalendar_parse_location(int ver, calendar_list_h list, calendar_record_h event, void *data);
-static int __cal_vcalendar_parse_priority(int ver, calendar_list_h list, calendar_record_h event, void *data);
-static int __cal_vcalendar_parse_status(int ver, calendar_list_h list, calendar_record_h event, void *data);
-static int __cal_vcalendar_parse_summary(int ver, calendar_list_h list, calendar_record_h event, void *data);
-static int __cal_vcalendar_parse_rrule(int ver, calendar_list_h list, calendar_record_h event, void *data);
-static int __cal_vcalendar_parse_dtend(int ver, calendar_list_h list, calendar_record_h event, void *data);
+static int __cal_vcalendar_parse_dtstamp(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont);
+static int __cal_vcalendar_parse_uid(int type, calendar_list_h list, calendar_record_h record, char *prop, char *cont);
+static int __cal_vcalendar_parse_dtstart(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont);
+static int __cal_vcalendar_parse_created(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont);
+static int __cal_vcalendar_parse_description(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont);
+static int __cal_vcalendar_parse_last_mod(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont);
+static int __cal_vcalendar_parse_location(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont);
+static int __cal_vcalendar_parse_priority(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont);
+static int __cal_vcalendar_parse_status(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont);
+static int __cal_vcalendar_parse_summary(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont);
+static int __cal_vcalendar_parse_rrule(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont);
+static int __cal_vcalendar_parse_dtend(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont);
 
-static int __cal_vcalendar_parse_completed(int ver, calendar_list_h list, calendar_record_h event, void *data);
-static int __cal_vcalendar_parse_percent(int ver, calendar_list_h list, calendar_record_h event, void *data);
+static int __cal_vcalendar_parse_completed(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont);
+static int __cal_vcalendar_parse_percent(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont);
 
 enum {
 	ATTENDEE_CUTYPE = 0x0,
@@ -132,9 +132,10 @@ struct _record_func _attendee_funcs[ATTENDEE_MAX] =
 	{ "DIR=", __cal_vcalendar_parse_attendee_dir }
 };
 
-static int __cal_vcalendar_parse_attendee(int ver, calendar_list_h list, calendar_record_h event, void *data);
-static int __cal_vcalendar_parse_categories(int ver, calendar_list_h list, calendar_record_h event, void *data);
-static int __cal_vcalendar_parse_aalarm(int ver, calendar_list_h list, calendar_record_h event, void *data);
+static int __cal_vcalendar_parse_attendee(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont);
+static int __cal_vcalendar_parse_categories(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont);
+static int __cal_vcalendar_parse_aalarm(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont);
+static int __cal_vcalendar_parse_extended(int type, calendar_list_h list, calendar_record_h record, char *prop, char *cont);
 
 enum {
 	VEVE_DTSTAMP = 0x0,
@@ -153,6 +154,7 @@ enum {
 	VEVE_ATTENDEE,
 	VEVE_CATEGORIES,
 	VEVE_AALARM,	/* for ver 1.0 */
+	VEVE_EXTENDED,
 	VEVE_MAX,
 };
 
@@ -174,6 +176,7 @@ struct _vcalendar_func _vevent_funcs[VEVE_MAX] =
 	{ "ATTENDEE", __cal_vcalendar_parse_attendee },
 	{ "CATEGORIES", __cal_vcalendar_parse_categories },
 	{ "AALARM", __cal_vcalendar_parse_aalarm },
+	{ "X-", __cal_vcalendar_parse_extended },
 };
 
 static int __cal_vcalendar_parse_action(calendar_record_h alarm, void *data);
@@ -242,6 +245,7 @@ enum {
 //	VTODO_X_PROP,
 //	VTODO_IANA_PROP,
 	VTODO_AALARM,	/* for ver 1.0 */
+	VTODO_EXTENDED,
 	VTODO_MAX,
 };
 
@@ -261,6 +265,7 @@ struct _vcalendar_func _vtodo_funcs[VTODO_MAX] =
 	{ "SUMMARY", __cal_vcalendar_parse_summary },
 	{ "DUE", __cal_vcalendar_parse_dtend },
 	{ "AALARM", __cal_vcalendar_parse_aalarm },
+	{ "X-", __cal_vcalendar_parse_extended },
 };
 
 static int __cal_vcalendar_parse_freq(calendar_record_h event, void *data);
@@ -427,25 +432,29 @@ int _cal_vcalendar_parse_unfolding(char *stream)
 	retv_if(stream == NULL, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	p = stream;
-	while (*stream) {
-		if ('=' == *stream && '\r' == *(stream + 1) && '\n' == *(stream + 2))
+	while ('\0' != *p) {
+		if ('=' == *p && '\r' == *(p + 1) && '\n' == *(p + 2)) // ver 1.0
 		{
-			stream += 3;
+			p += 3;
 		}
-		else if ('\n' == *stream && ' ' == *(stream + 1))
+		else if ('=' == *p && '\n' == *(p + 1)) // ver 1.0 not spec but allow
 		{
-			stream += 2;
-			p--;
+			p += 2;
 		}
-		else if ('\0' == *stream)
+		else if ('\r' == *p && '\n' == *(p + 1) && ' ' == *(p + 2)) // ver 2.0
 		{
-			DBG("break\n");
-			break;
+			p += 2;
 		}
-		*p = *stream;
-		p++;
+		else if ('\n' == *p && ' ' == *(p + 1)) // ver 2.0 not spec but allow
+		{
+			p += 1;
+		}
+		else
+		{
+		}
+		*stream = *p;
 		stream++;
-
+		p++;
 	}
 	return CALENDAR_ERROR_NONE;
 }
@@ -509,8 +518,13 @@ char *_cal_vcalendar_parse_read_line(char *stream, char **prop, char **cont)
 
 	while (*p) {
 		switch (*p) {
+		case '\n': // not spec but allow
+			p += 1 ;
+			out = 1;
+			break;
 		case '\r':
 			if ('\n' == *(p + 1)) {
+				p += 2;
 				out = 1;
 			}
 			break;
@@ -530,7 +544,6 @@ char *_cal_vcalendar_parse_read_line(char *stream, char **prop, char **cont)
 	if (0 < i) {
 		*cont = calloc(1, i);
 		snprintf(*cont, i, "%s", q);
-		p += 2;
 	} else {
 		*prop = NULL;
 		*cont = NULL;
@@ -554,32 +567,29 @@ static int __cal_vcalendar_parse_version(int *val, void *data)
 	char *p = (char *)data;
 
 	p++;
-	if (!strncmp(p, "1.0", strlen("1.0")))
+	DBG("version[%s]", p);
+	if (strstr(p, "1.0"))
 	{
 		DBG("version 1.0");
 	}
-	else if (!strncmp(p, "2.0", strlen("2.0")))
-	{
-		DBG("version 2.0");
-	}
 	else
 	{
-		DBG("Invald version");
+		DBG("version 2.0");
 	}
 
 	return CALENDAR_ERROR_NONE;
 }
 
 /* vevnt */////////////////////////////////////////////////
-static int __cal_vcalendar_parse_dtstamp(int ver, calendar_list_h list, calendar_record_h event, void *data)
+static int __cal_vcalendar_parse_dtstamp(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont)
 {
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_vcalendar_parse_uid(int type, calendar_list_h list, calendar_record_h record, void *data)
+static int __cal_vcalendar_parse_uid(int type, calendar_list_h list, calendar_record_h record, char *prop, char *cont)
 {
 	int ret;
-	char *p = (char *)data;
+	char *p = (char *)cont;
 
 	p++;
 
@@ -598,6 +608,7 @@ static int __cal_vcalendar_parse_uid(int type, calendar_list_h list, calendar_re
 static int __cal_vcalendar_parse_get_tzid_from_list(calendar_list_h list, const char *tzid, calendar_record_h *timezone)
 {
 	GList *l = NULL;
+	int ret = 0;
 
 	if (list == NULL || tzid == NULL)
 	{
@@ -612,30 +623,32 @@ static int __cal_vcalendar_parse_get_tzid_from_list(calendar_list_h list, const 
 		char *uri = NULL;
 		calendar_record_h record = (calendar_record_h)l->data;
 		calendar_record_get_uri_p(record, &uri);
-		if (strncmp(uri, _calendar_timezone._uri, strlen(_calendar_timezone._uri)))
+		if (CALENDAR_ERROR_NONE == ret)
 		{
-			l = g_list_next(l);
-			continue;
-		}
+			if (strncmp(uri, _calendar_timezone._uri, strlen(_calendar_timezone._uri)))
+			{
+				l = g_list_next(l);
+				continue;
+			}
 
-		cal_timezone_s *tz = (cal_timezone_s *)record;
-		if (!strncmp(tz->standard_name, tzid, strlen(tzid)))
-		{
-			DBG("Found same tzid[%s] in the list", tzid);
-			*timezone = record;
-			break;
+			cal_timezone_s *tz = (cal_timezone_s *)record;
+			if (!strncmp(tz->standard_name, tzid, strlen(tzid)))
+			{
+				DBG("Found same tzid[%s] in the list", tzid);
+				*timezone = record;
+				break;
+			}
 		}
-
 		l = g_list_next(l);
 	}
 
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_vcalendar_parse_dtstart(int type, calendar_list_h list, calendar_record_h record, void *data)
+static int __cal_vcalendar_parse_dtstart(int type, calendar_list_h list, calendar_record_h record, char *prop, char *cont)
 {
 	int ret;
-	char *p = (char *)data;
+	char *p = (char *)cont;
 	int k = 0, j;
 	char *tzid = NULL; // free after appling
 	char buf[64] = {0, };
@@ -762,10 +775,10 @@ static int __cal_vcalendar_parse_dtstart(int type, calendar_list_h list, calenda
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_vcalendar_parse_created(int type, calendar_list_h list, calendar_record_h record, void *data)
+static int __cal_vcalendar_parse_created(int type, calendar_list_h list, calendar_record_h record, char *prop, char *cont)
 {
 	int ret;
-	char *p = (char *)data;
+	char *p = (char *)cont;
 
 	p++;
 	switch (type)
@@ -819,16 +832,22 @@ static int __work_description_switch(int me, int mode, char *buf, int *charset, 
 	return mode;
 }
 
-static int __cal_vcalendar_parse_description(int type, calendar_list_h list, calendar_record_h record, void *data)
+static int __cal_vcalendar_parse_description(int type, calendar_list_h list, calendar_record_h record, char *prop, char *cont)
 {
-	int i, j;
+	int i = 0, j;
 	int ret;
 	int len;
 	int out;
 	int mode;
 	int charset, encoding;
 	char buf[64] = {0};
-	char *p = (char *)data;
+	char *p = (char *)cont;
+
+	if (p[i + 1] == '\0')
+	{
+		ERR("Invalid parameter");
+		return CALENDAR_ERROR_INVALID_PARAMETER;
+	}
 
 	i = j = 0;
 	out = 0;
@@ -879,10 +898,10 @@ static int __cal_vcalendar_parse_description(int type, calendar_list_h list, cal
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_vcalendar_parse_last_mod(int type, calendar_list_h list, calendar_record_h record, void *data)
+static int __cal_vcalendar_parse_last_mod(int type, calendar_list_h list, calendar_record_h record, char *prop, char *cont)
 {
 	int ret;
-	char *p = (char *)data;
+	char *p = (char *)cont;
 
 	p++;
 
@@ -926,16 +945,22 @@ inline void __cal_vcalendar_parse_get_optional(char *p, int *encoding)
 	}
 }
 
-static int __cal_vcalendar_parse_location(int type, calendar_list_h list, calendar_record_h record, void *data)
+static int __cal_vcalendar_parse_location(int type, calendar_list_h list, calendar_record_h record, char *prop, char *cont)
 {
-	int i, j;
+	int i = 0, j;
 	int ret;
 	int len;
 	int out;
 	int mode;
 	int charset, encoding;
 	char buf[64] = {0};
-	char *p = (char *)data;
+	char *p = (char *)cont;
+
+	if (p[i + 1] == '\0')
+	{
+		ERR("Invalid parameter");
+		return CALENDAR_ERROR_INVALID_PARAMETER;
+	}
 
 	i = j = 0;
 	out = 0;
@@ -986,10 +1011,10 @@ static int __cal_vcalendar_parse_location(int type, calendar_list_h list, calend
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_vcalendar_parse_priority(int type, calendar_list_h list, calendar_record_h record, void *data)
+static int __cal_vcalendar_parse_priority(int type, calendar_list_h list, calendar_record_h record, char *prop, char *cont)
 {
 	int ret;
-	char *p = (char *)data;
+	char *p = (char *)cont;
 
 	p++;
 	if (p[0] < '0' || p[0] > '9') {
@@ -1009,11 +1034,11 @@ static int __cal_vcalendar_parse_priority(int type, calendar_list_h list, calend
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_vcalendar_parse_status(int type, calendar_list_h list, calendar_record_h record, void *data)
+static int __cal_vcalendar_parse_status(int type, calendar_list_h list, calendar_record_h record, char *prop, char *cont)
 {
 	int ret;
 	int status;
-	char *p = (char *)data;
+	char *p = (char *)cont;
 
 	p++;
 
@@ -1073,16 +1098,22 @@ static int __cal_vcalendar_parse_status(int type, calendar_list_h list, calendar
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_vcalendar_parse_summary(int type, calendar_list_h list, calendar_record_h record, void *data)
+static int __cal_vcalendar_parse_summary(int type, calendar_list_h list, calendar_record_h record, char *prop, char *cont)
 {
 	int ret;
-	int i, j;
+	int i = 0, j;
 	int len;
 	int out;
 	int mode;
 	int charset, encoding;
 	char buf[64] = {0};
-	char *p = (char *)data;
+	char *p = (char *)cont;
+
+	if (p[i + 1] == '\0')
+	{
+		ERR("Invalid parameter");
+		return CALENDAR_ERROR_INVALID_PARAMETER;
+	}
 
 	i = j = 0;
 	out = 0;
@@ -1133,18 +1164,232 @@ static int __cal_vcalendar_parse_summary(int type, calendar_list_h list, calenda
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_vcalendar_parse_rrule(int ver, calendar_list_h list, calendar_record_h event, void *data)
+enum {
+	__RRULE_VER1_MODE_FREQ = 0x0,
+	__RRULE_VER1_MODE_NTH,
+	__RRULE_VER1_MODE_BY,
+	__RRULE_VER1_MODE_UNTIL,
+	__RRULE_VER1_MODE_OUT,
+};
+
+static int __cal_vcalendar_parse_rrule_ver1(calendar_record_h record, char *p)
+{
+	DBG("This is rrule for ver 1.0");
+	int ret;
+	int i, j;
+	int length;
+	int freq = CALENDAR_RECURRENCE_NONE;
+	int mode = 0; // 0:freq, 1:nth 2:bystr 3:range
+	int interval = 0;
+	unsigned int byint = 0; // 1:bymonthday 2:byday 3:bymonth 4:byyearday
+	int len;
+	int num = 0;
+	int y, mon, d, h, min, s;
+	char t1, z;
+	char **t;
+	char buf_by[256] = {0};
+	char buf[32] = {0};
+	calendar_time_s ut = {0};
+	cal_event_s *event = (cal_event_s *)record;
+
+	p++;
+	t = g_strsplit(p, " ", -1);
+	if (!t) {
+		ERR("g_strsplit failed");
+		g_strfreev(t);
+		return CALENDAR_ERROR_OUT_OF_MEMORY;
+	}
+	length = g_strv_length(t);
+	for (i = 0; i < length; i++)
+	{
+		if (t[i] == NULL || strlen(t[i]) == 0)
+		{
+			continue;
+		}
+
+		switch (mode)
+		{
+		case __RRULE_VER1_MODE_FREQ: // freq
+			mode = __RRULE_VER1_MODE_NTH;
+			if (*t[i] == 'D')
+			{
+				DBG("CALENDAR_RECURRENCE_DAILY");
+				freq = CALENDAR_RECURRENCE_DAILY;
+				interval = strlen(t[i]) == 1 ? 1 : atoi(t[i] + 1);
+				byint = _calendar_event.bymonthday;
+			}
+			else if (*t[i] == 'W')
+			{
+				DBG("CALENDAR_RECURRENCE_WEEKLY");
+				freq = CALENDAR_RECURRENCE_WEEKLY;
+				interval = strlen(t[i]) == 1 ? 1 : atoi(t[i] + 1);
+				byint = _calendar_event.byday;
+			}
+			else if (*t[i] == 'M'&& *(t[i] + 1) == 'P')
+			{
+				DBG("CALENDAR_RECURRENCE_MONTHLY");
+				freq = CALENDAR_RECURRENCE_MONTHLY;
+				interval = strlen(t[i]) == 2 ? 1 : atoi(t[i] + 2);
+				byint = _calendar_event.byday;
+			}
+			else if (*t[i] == 'M'&& *(t[i] + 1) == 'D')
+			{
+				DBG("CALENDAR_RECURRENCE_MONTHLY");
+				freq = CALENDAR_RECURRENCE_MONTHLY;
+				interval = strlen(t[i]) == 2 ? 1 : atoi(t[i] + 2);
+				byint = _calendar_event.bymonthday;
+			}
+			else if (*t[i] == 'Y'&& *(t[i] + 1) == 'M')
+			{
+				DBG("CALENDAR_RECURRENCE_YEARLY");
+				freq = CALENDAR_RECURRENCE_YEARLY;
+				interval = strlen(t[i]) == 2 ? 1 : atoi(t[i] + 2);
+				byint = _calendar_event.bymonth;
+			}
+			else if (*t[i] == 'Y'&& *(t[i] + 1) == 'D')
+			{
+				DBG("CALENDAR_RECURRENCE_YEARLY");
+				freq = CALENDAR_RECURRENCE_YEARLY;
+				interval = strlen(t[i]) == 2 ? 1 : atoi(t[i] + 2);
+				byint = _calendar_event.byyearday;
+			}
+			else
+			{
+				ERR("Invalid ");
+			}
+			ret = _cal_record_set_int(record, _calendar_event.freq, freq);
+			DBG("interval(%d)", interval);
+			ret = _cal_record_set_int(record, _calendar_event.interval, interval);
+			break;
+
+		case __RRULE_VER1_MODE_NTH: // num
+			mode = __RRULE_VER1_MODE_BY;
+			if (byint != _calendar_event.byday || *t[i] < '1' || *t[i] > '9')
+			{
+				DBG("No nth");
+				i--;
+				break;
+			}
+
+			num = 0;
+			memset(buf, 0x0, sizeof(buf));
+			len = strlen(t[i]);
+			for (j = 0; j < len; j++)
+			{
+				if (*(t[i] + j) >= '1' && *(t[i] + j) <= '9')
+				{
+					buf[j] = *(t[i] + j);
+				}
+				else if (*(t[i] + j) == '-')
+				{
+					num = atoi(buf);
+					num *= -1;
+				}
+				else
+				{
+				}
+			}
+			DBG("nth(%d)", num);
+			break;
+
+		case __RRULE_VER1_MODE_BY:
+			mode = __RRULE_VER1_MODE_UNTIL;
+			if (*t[i] == '#' || strlen(t[i]) > strlen("YYYYMMDD"))
+			{
+				DBG("No by");
+				i--;
+				break;
+			}
+
+			memset(buf, 0x0, sizeof(buf));
+			if (num > 0)
+			{
+				snprintf(buf, sizeof(buf), "%d%s", num, t[i]);
+			}
+			else
+			{
+				snprintf(buf, sizeof(buf), "%s", t[i]);
+			}
+
+			strcat(buf_by, buf);
+			break;
+
+		case __RRULE_VER1_MODE_UNTIL: // until
+			mode = __RRULE_VER1_MODE_OUT; // out
+			if (*t[i] == '#')
+			{
+				num = atoi(t[i] + 1);
+				if (num == 0)
+				{
+					DBG("CALENDAR_RANGE_NONE");
+					ret = _cal_record_set_int(record, _calendar_event.range_type, CALENDAR_RANGE_NONE);
+				}
+				else
+				{
+					DBG("CALENDAR_RANGE_COUNT(%d)", num);
+					ret = _cal_record_set_int(record, _calendar_event.range_type, CALENDAR_RANGE_COUNT);
+					ret = _cal_record_set_int(record, _calendar_event.count, num);
+				}
+			}
+			else
+			{
+				sscanf(t[i], "%4d%2d%2d%c%2d%2d%2d%c", &y, &mon, &d, &t1, &h, &min, &s, &z);
+				switch (event->start.type)
+				{
+				case CALENDAR_TIME_UTIME:
+					ut.type = CALENDAR_TIME_UTIME;
+					ut.time.utime = _cal_time_convert_itol(event->start_tzid,
+							y, mon, d, h, min, s);
+					DBG("CALENDAR_RANGE_UNTIL(%lld)", ut.time.utime);
+					break;
+				case CALENDAR_TIME_LOCALTIME:
+					ut.type = CALENDAR_TIME_LOCALTIME;
+					ut.time.date.year = y;
+					ut.time.date.month = mon;
+					ut.time.date.mday = d;
+					DBG("CALENDAR_RANGE_UNTIL(%04d/%02d/%02d)", y, mon, d);
+					break;
+				}
+				ret = _cal_record_set_int(record, _calendar_event.range_type, CALENDAR_RANGE_UNTIL);
+				ret = _cal_record_set_caltime(record, _calendar_event.until_time, ut);
+			}
+			break;
+
+		default:
+			mode = __RRULE_VER1_MODE_OUT;
+			break;
+		}
+
+		if (mode == __RRULE_VER1_MODE_OUT)
+		{
+			break;
+		}
+	}
+	if (strlen(buf_by) > 0)
+	{
+		DBG("bystr[%s]", buf_by);
+		ret = _cal_record_set_str(record, byint, buf_by);
+	}
+	return CALENDAR_ERROR_NONE;
+}
+
+static int __cal_vcalendar_parse_rrule(int type, calendar_list_h list, calendar_record_h record, char *prop, char *cont)
 {
 	int ret;
 	int i, j, k;
 	int mode;
 	int version = 0;
 	char buf[64] = {0};
-	char *tzid;
-	char *p = (char *)data;
+	char *p = (char *)cont;
 
 	i = j = 0;
 	mode = 0;
+
+	if (p[i + 1] == '\0')
+	{
+		ERR("Invalid parameter");
+		return CALENDAR_ERROR_INVALID_PARAMETER;
+	}
 
 	if (strstr(p, "FREQ=")) {
 		DBG("This is version 2");
@@ -1156,7 +1401,7 @@ static int __cal_vcalendar_parse_rrule(int ver, calendar_list_h list, calendar_r
 
 	if (version == 2) {
 		i = j = 0;
-		ret = _cal_record_set_int(event, _calendar_event.interval, 1);
+		ret = _cal_record_set_int(record, _calendar_event.interval, 1);
 		/* this is for ver 2 */
 		while (p[i] != '\0') {
 			DBG("[%c](%d)", p[i], i);
@@ -1170,7 +1415,7 @@ static int __cal_vcalendar_parse_rrule(int ver, calendar_list_h list, calendar_r
 
 				for (k = 0; k < RRULE_MAX; k++) {
 					if (!strncmp(buf, _rrule_funcs[k].prop, strlen(_rrule_funcs[k].prop))) {
-						_rrule_funcs[k].func(event, buf + strlen(_rrule_funcs[k].prop));
+						_rrule_funcs[k].func(record, buf + strlen(_rrule_funcs[k].prop));
 						break;
 					}
 				}
@@ -1189,186 +1434,23 @@ static int __cal_vcalendar_parse_rrule(int ver, calendar_list_h list, calendar_r
 		for (i = 0; i < RRULE_MAX; i++) {
 			if (!strncmp(buf, _rrule_funcs[i].prop, strlen(_rrule_funcs[i].prop))) {
 				version = 2;
-				_rrule_funcs[i].func(event, buf + strlen(_rrule_funcs[i].prop));
+				_rrule_funcs[i].func(record, buf + strlen(_rrule_funcs[i].prop));
 				break;
 			}
 		}
 		return CALENDAR_ERROR_NONE;
 	}
 
-	/* this is for ver 1 */
-	int freq = 0;
-	int interval;
-	char by[64] = {0};
-	char _by[64] = {0};
-	char date[8] = {0};
-	int tmp;
-	int is_wday = 0;
-	int y, mon, d, h, min, s;
-	char t, z;
-	calendar_time_s stime;
-	i = 0;
-	mode = 0;
-	interval = 0;
-
-	ret = calendar_record_get_str(event, _calendar_event.start_tzid, &tzid);
-	ret = calendar_record_get_caltime(event, _calendar_event.start_time, &stime);
-
-	while (p[i] != '\0') {
-		switch (p[i]) {
-		case ':':
-		case ' ':
-			if (mode == 0) {
-				DBG("in mode 1");
-				mode = 1;
-
-			} else if (mode == 1) {
-				DBG("in mode 2");
-				mode = 2;
-				buf[j] = '\0';
-				if (buf[0] == 'D') {
-					freq = CALENDAR_RECURRENCE_DAILY;
-
-				} else if (buf[0] == 'W') {
-					freq = CALENDAR_RECURRENCE_WEEKLY;
-
-				} else if (buf[0] == 'M') {
-					freq = CALENDAR_RECURRENCE_MONTHLY;
-
-				} else if (buf[0] == 'Y') {
-					freq = CALENDAR_RECURRENCE_YEARLY;
-
-				} else {
-					freq = CALENDAR_RECURRENCE_NONE;
-
-				}
-				ret = _cal_record_set_int(event, _calendar_event.freq, freq);
-
-				if (buf[1] >= '1' && buf[1] <= '9') {
-					interval = atoi(&buf[1]);
-				} else {
-					interval = atoi(&buf[2]);
-				}
-				DBG("interval(%d)", interval);
-				ret = _cal_record_set_int(event, _calendar_event.interval, interval);
-				memset(buf, 0x0, sizeof(buf));
-
-			} else {
-				mode = 3;
-				DBG("in mode 3");
-				DBG("remained buf[%s]", buf);
-
-
-				DBG("len(%d)", strlen(by));
-				if (strlen(by) < 1) {
-					DBG("ret(%d)", atoi(buf));
-					if (buf[0] >= '1' && buf[0] <= '9') {
-						DBG("Set digit");
-						is_wday = 0;
-					} else {
-						DBG("Set wday [%s]", buf);
-						is_wday = 1;
-					}
-					DBG("1[%s][%s]", by, buf);
-					snprintf(_by, sizeof(by), "%s", buf);
-
-				} else {
-					DBG("2[%s][%s]", by, buf);
-					snprintf(_by, sizeof(by), "%s %s", by, buf);
-				}
-				memcpy(by, _by, sizeof(_by));
-
-
-				buf[j] = '\0';
-				DBG("end statement[%s]", buf);
-				DBG("freq(%d}", freq);
-				switch (freq) {
-				case CALENDAR_RECURRENCE_YEARLY:
-					ret = _cal_record_set_str(event, _calendar_event.bymonth, by);
-					_cal_time_ltoi(tzid, stime.time.utime, NULL, NULL, &tmp);
-					snprintf(date, sizeof(date), "%d", tmp);
-					ret = _cal_record_set_str(event, _calendar_event.bymonthday, date);
-					break;
-
-				case CALENDAR_RECURRENCE_MONTHLY:
-					_cal_time_ltoi(tzid, stime.time.utime, NULL, &tmp, NULL);
-					snprintf(date, sizeof(date), "%d", tmp);
-					ret = _cal_record_set_str(event, _calendar_event.bymonth, date);
-
-					if (is_wday) {
-						ret = _cal_record_set_str(event, _calendar_event.byday, by);
-					} else {
-						ret = _cal_record_set_str(event, _calendar_event.bymonthday, by);
-					}
-					break;
-
-				case CALENDAR_RECURRENCE_WEEKLY:
-					DBG("set weekly[%s]", by);
-					ret = _cal_record_set_str(event, _calendar_event.byday, by);
-					break;
-
-				case CALENDAR_RECURRENCE_DAILY:
-					DBG("set daily[%s]", by);
-					ret = _cal_record_set_str(event, _calendar_event.byday, by);
-					break;
-				default:
-					DBG("Nothing to set");
-					break;
-				}
-			}
-			j = 0;
-			memset(buf, 0x0, sizeof(buf));
-			break;
-
-		default:
-			buf[j] = p[i];
-			j++;
-			break;
-		}
-		i++;
-	}
-
-	DBG("freq(%d) interval(%d) by[%s]", freq, interval, by);
-
-	i = 0;
-	DBG("buf[%s]", buf);
-	calendar_time_s caltime = {0};
-	if (buf[i] == '#') {
-		if (buf[i + 1] == '0')
-		{
-			DBG("count 0 and means endless");
-			ret = _cal_record_set_int(event, _calendar_event.range_type,
-					CALENDAR_RANGE_NONE);
-		}
-		else
-		{
-			DBG("until count [%s]", &buf[i+1]);
-			ret = _cal_record_set_int(event, _calendar_event.range_type,
-					CALENDAR_RANGE_COUNT);
-			ret = _cal_record_set_int(event, _calendar_event.count,
-					atoi(&buf[i+1]));
-		}
-
-	} else {
-		ret = _cal_record_set_int(event, _calendar_event.range_type,
-				CALENDAR_RANGE_UNTIL);
-		DBG("untiltime[%s]", &buf[i]);
-		sscanf(&buf[i], "%4d%2d%2d%c%2d%2d%2d%c",
-				&y, &mon, &d, &t, &h, &min, &s, &z);
-		caltime.type = CALENDAR_TIME_UTIME;
-		caltime.time.utime = _cal_time_convert_itol(tzid, y, mon, d, h, min, s);
-		ret = _cal_record_set_caltime(event, _calendar_event.until_time, caltime);
-	}
-
-	CAL_FREE(tzid);
+	// for ver 1.0
+	__cal_vcalendar_parse_rrule_ver1(record, p);
 
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_vcalendar_parse_dtend(int type, calendar_list_h list, calendar_record_h record, void *data)
+static int __cal_vcalendar_parse_dtend(int type, calendar_list_h list, calendar_record_h record, char *prop, char *cont)
 {
 	int ret;
-	char *p = (char *)data;
+	char *p = (char *)cont;
 	int k = 0, j;
 	char buf[64] = {0, };
 	char *tzid = NULL;
@@ -1491,12 +1573,12 @@ static int __cal_vcalendar_parse_dtend(int type, calendar_list_h list, calendar_
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_vcalendar_parse_completed(int ver, calendar_list_h list, calendar_record_h event, void *data)
+static int __cal_vcalendar_parse_completed(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont)
 {
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_vcalendar_parse_percent(int ver, calendar_list_h list, calendar_record_h event, void *data)
+static int __cal_vcalendar_parse_percent(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont)
 {
 	return CALENDAR_ERROR_NONE;
 }
@@ -1595,11 +1677,11 @@ int _work_attendee_property(calendar_record_h attendee, char *buf)
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_vcalendar_parse_attendee(int ver, calendar_list_h list, calendar_record_h event, void *data)
+static int __cal_vcalendar_parse_attendee(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont)
 {
 	int ret;
 	int i, j;
-	char *p = (char *)data;
+	char *p = (char *)cont;
 	calendar_record_h attendee;
 
 	ret = calendar_record_create(_calendar_attendee._uri, &attendee);
@@ -1610,6 +1692,12 @@ static int __cal_vcalendar_parse_attendee(int ver, calendar_list_h list, calenda
 	j = 0;
 	int mode = 0;
 	char buf[64] = {0};
+
+	if (p[i + 1] == '\0')
+	{
+		ERR("Invalid parameter");
+		return CALENDAR_ERROR_INVALID_PARAMETER;
+	}
 
 	while (p[i] != '\0') {
 		switch (p[i]) {
@@ -1662,9 +1750,9 @@ static int __cal_vcalendar_parse_attendee(int ver, calendar_list_h list, calenda
 }
 
 
-static int __cal_vcalendar_parse_categories(int ver, calendar_list_h list, calendar_record_h event, void *data)
+static int __cal_vcalendar_parse_categories(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont)
 {
-	char *p = (char *)data;
+	char *p = (char *)cont;
 	int encoding = 0;
 
 	while (*p != '\n' && *p != '\r' && *p != '\0') {
@@ -1693,7 +1781,70 @@ static int __cal_vcalendar_parse_categories(int ver, calendar_list_h list, calen
 			p++;
 		}
 	}
-	DBG("ver(%d)categories(%s)\n", ver, p);
+	DBG("type(%d)categories(%s)\n", type, p);
+
+	return CALENDAR_ERROR_NONE;
+}
+
+static int __cal_vcalendar_parse_extended(int type, calendar_list_h list, calendar_record_h record, char *prop, char *cont)
+{
+	int ret;
+	int id;
+	calendar_record_h extended = NULL;
+
+	ret = calendar_record_create(_calendar_extended_property._uri, &extended);
+	if (CALENDAR_ERROR_NONE != ret)
+	{
+		ERR("calendar_record_create() failed");
+		return ret;
+	}
+
+	DBG("key[%s]value[%s]", prop, cont +1);
+	ret = calendar_record_set_str(extended, _calendar_extended_property.key, prop);
+	if (CALENDAR_ERROR_NONE != ret)
+	{
+		ERR("calendar_record_set_str() failed");
+		return ret;
+	}
+	ret = calendar_record_set_str(extended, _calendar_extended_property.value, cont +1);
+	if (CALENDAR_ERROR_NONE != ret)
+	{
+		ERR("calendar_record_set_str() failed");
+		return ret;
+	}
+
+	switch (type)
+	{
+	case CALENDAR_BOOK_TYPE_EVENT:
+		ret = calendar_record_get_int(record, _calendar_event.id, &id);
+		if (CALENDAR_ERROR_NONE != ret)
+		{
+			ERR("calendar_record_get_int() failed");
+			return ret;
+		}
+		ret = calendar_record_add_child_record(record, _calendar_event.extended, extended);
+		if (CALENDAR_ERROR_NONE != ret)
+		{
+			ERR("calendar_record_add_child_record() failed");
+			return ret;
+		}
+		break;
+
+	case CALENDAR_BOOK_TYPE_TODO:
+		ret = calendar_record_get_int(record, _calendar_todo.id, &id);
+		if (CALENDAR_ERROR_NONE != ret)
+		{
+			ERR("calendar_record_get_int() failed");
+			return ret;
+		}
+		ret = calendar_record_add_child_record(record, _calendar_todo.extended, extended);
+		if (CALENDAR_ERROR_NONE != ret)
+		{
+			ERR("calendar_record_add_child_record() failed");
+			return ret;
+		}
+		break;
+	}
 
 	return CALENDAR_ERROR_NONE;
 }
@@ -1712,7 +1863,7 @@ enum {
 	__AALARM_REPEATCOUNT,
 	__AALARM_AUDIOCONTENT,
 };
-static int __cal_vcalendar_parse_aalarm(int ver, calendar_list_h list, calendar_record_h record, void *data)
+static int __cal_vcalendar_parse_aalarm(int type, calendar_list_h list, calendar_record_h record, char *prop, char *cont)
 {
 	int ret;
 	int i = 0, j = 0;
@@ -1720,7 +1871,13 @@ static int __cal_vcalendar_parse_aalarm(int ver, calendar_list_h list, calendar_
 	int y, mon, d, h, min, s;
 	char t, z;
 	char buf[64] = {0};
-	char *p = (char *)data;
+	char *p = (char *)cont;
+
+	if (p[i + 1] == '\0')
+	{
+		ERR("Invalid parameter");
+		return CALENDAR_ERROR_INVALID_PARAMETER;
+	}
 
 	while (p[i] != '\0')
 	{
@@ -1781,6 +1938,11 @@ static int __cal_vcalendar_parse_aalarm(int ver, calendar_list_h list, calendar_
 
 		case __AALARM_RUNTIME:
 			y = mon = d = h = min = s = 0;
+			if (strlen(buf) < strlen("YYYYMMDD"))
+			{
+				ERR("Invalid until[%s]", buf);
+				return CALENDAR_ERROR_INVALID_PARAMETER;
+			}
 			sscanf(buf, "%04d%02d%02d%c%02d%02d%02d%c", &y, &mon, &d, &t, &h, &min, &s, &z);
 			DBG("%d %d %d %d %d %d", y, mon, d, h, min, s);
 			break;
@@ -1809,7 +1971,7 @@ static int __cal_vcalendar_parse_aalarm(int ver, calendar_list_h list, calendar_
 	int tick = 0, unit = 0;
 	calendar_record_h alarm = NULL;
 	calendar_time_s caltime = {0};
-	switch (ver)
+	switch (type)
 	{
 	case VCALENDAR_TYPE_VEVENT:
 		ret = calendar_record_get_caltime(record, _calendar_event.start_time, &caltime);
@@ -2233,7 +2395,7 @@ static int __cal_vcalendar_parse_until(calendar_record_h event, void *data)
 	/* until value type has the same value as the dtstart */
 	ret = _cal_record_set_int(event, _calendar_event.range_type, CALENDAR_RANGE_UNTIL);
 
-	ret = calendar_record_get_str(event, _calendar_event.start_tzid, &tzid);
+	ret = calendar_record_get_str_p(event, _calendar_event.start_tzid, &tzid);
 	ret = calendar_record_get_caltime(event, _calendar_event.start_time, &stime);
 	until.type = stime.type;
 
@@ -2252,7 +2414,6 @@ static int __cal_vcalendar_parse_until(calendar_record_h event, void *data)
 		break;
 	}
 	ret = _cal_record_set_caltime(event, _calendar_event.until_time, until);
-	CAL_FREE(tzid);
 
 	return CALENDAR_ERROR_NONE;
 }
@@ -2532,7 +2693,7 @@ static int __cal_vcalendar_parse_encoding(int *val, void *data)
 
 // end parse func////////////////////////////////////////////////////////////////
 
-char *_cal_vcalendar_parse_vevent(int ver, calendar_list_h *list_sch, void *data)
+char *_cal_vcalendar_parse_vevent(int type, calendar_list_h *list_sch, void *data)
 {
 	DBG("[%s]", __func__);
 	int i;
@@ -2562,7 +2723,7 @@ char *_cal_vcalendar_parse_vevent(int ver, calendar_list_h *list_sch, void *data
 		} else {
 			for (i = 0; i < VEVE_MAX; i++) {
 				if (!strncmp(prop, _vevent_funcs[i].prop, strlen(_vevent_funcs[i].prop))) {
-					_vevent_funcs[i].func(ver, *list_sch, event, cont);
+					_vevent_funcs[i].func(type, *list_sch, event, prop, cont);
 					break;
 				}
 			}
@@ -2612,7 +2773,7 @@ char *_cal_vcalendar_parse_vtodo(int type, calendar_list_h *list_sch, void *data
 		} else {
 			for (i = 0; i < VTODO_MAX; i++) {
 				if (!strncmp(prop, _vtodo_funcs[i].prop, strlen(_vtodo_funcs[i].prop))) {
-					_vtodo_funcs[i].func(type, *list_sch, todo, cont);
+					_vtodo_funcs[i].func(type, *list_sch, todo, prop, cont);
 					break;
 				}
 			}
@@ -2982,14 +3143,44 @@ char *_cal_vcalendar_parse_vcalendar(calendar_list_h *list, void *data)
 			break;
 		}
 
-		if (!strncmp(prop, "PRODID", strlen("PRODID"))) {
-			_basic_funcs[VCAL_PRODID].func(NULL, cont);
+		calendar_record_h extended = NULL;
+		ret = calendar_record_create(_calendar_extended_property._uri, &extended);
+		if (CALENDAR_ERROR_NONE != ret)
+		{
+			ERR("calendar_record_create() failed");
+			CAL_FREE(prop);
+			CAL_FREE(cont);
+			break;
+		}
 
-		} else if (!strncmp(prop, "VERSION", strlen("VERSION"))) {
-			_basic_funcs[VCAL_VERSION].func(NULL, cont);
+		ret = calendar_record_set_str(extended, _calendar_extended_property.key, prop);
+		if (CALENDAR_ERROR_NONE != ret)
+		{
+			ERR("calendar_record_set_str() failed");
+			CAL_FREE(prop);
+			CAL_FREE(cont);
+			calendar_record_destroy(extended, true);
+			break;
+		}
 
-		} else {
+		ret = calendar_record_set_str(extended, _calendar_extended_property.value, cont);
+		if (CALENDAR_ERROR_NONE != ret)
+		{
+			ERR("calendar_record_set_str() failed");
+			CAL_FREE(prop);
+			CAL_FREE(cont);
+			calendar_record_destroy(extended, true);
+			break;
+		}
 
+		ret = calendar_list_add(l, extended);
+		if (CALENDAR_ERROR_NONE != ret)
+		{
+			ERR("calendar_record_set_str() failed");
+			CAL_FREE(prop);
+			CAL_FREE(cont);
+			calendar_record_destroy(extended, true);
+			break;
 		}
 
 		CAL_FREE(prop);

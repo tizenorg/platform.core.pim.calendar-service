@@ -20,7 +20,7 @@ SET(VERSION "${VERSION_MAJOR}.1.14")
 SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} -I${CMAKE_SOURCE_DIR}/include")
 
 INCLUDE(FindPkgConfig)
-pkg_check_modules(pkgs REQUIRED glib-2.0 sqlite3 vconf dlog db-util alarm-service icu-i18n appsvc)
+pkg_check_modules(pkgs REQUIRED glib-2.0 sqlite3 vconf dlog db-util alarm-service icu-i18n appsvc bundle)
 
 FOREACH(flag ${pkgs_CFLAGS})
 	SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} ${flag}")

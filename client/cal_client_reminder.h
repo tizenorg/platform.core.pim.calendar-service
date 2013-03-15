@@ -17,18 +17,9 @@
  *
  */
 
-#ifndef __CALENDAR_SVC_MUTEX_H__
-#define __CALENDAR_SVC_MUTEX_H__
+#ifndef __CAL_CLIENT_REMINDER_H__
+#define __CAL_CLIENT_REMINDER_H__
 
-enum {
-    CAL_MUTEX_CONNECTION,
-    CAL_MUTEX_PIMS_IPC_CALL,
-    CAL_MUTEX_INOTIFY,
-    CAL_MUTEX_PROPERTY_HASH,
-	CAL_MUTEX_PIMS_IPC_PUBSUB,
-};
+int _cal_client_reminder_create_for_subscribe(void);
 
-void _cal_mutex_lock(int type);
-void _cal_mutex_unlock(int type);
-
-#endif  //__CALENDAR_SVC_MUTEX_H__
+#endif // __CAL_CLIENT_REMINDER_H__

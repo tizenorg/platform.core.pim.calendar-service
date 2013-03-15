@@ -1775,12 +1775,20 @@ static int __cal_db_instance_publish_record_details(UCalendar *ucal, cal_event_s
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-
 	int duration = -1;
+	int exception_freq; // for exception
 	long long int range = 0;
 	calendar_time_s until = {0};
 
 	__cal_db_instance_get_duration(ucal, &event->start, &event->end, &duration);
+
+	if (event->original_event_id > 0)
+	{
+		DBG("this is exception event so publish only one instance");
+		exception_freq = event->freq;
+		event->freq = CALENDAR_RECURRENCE_NONE;
+	}
+
 
 	switch (event->range_type)
 	{
@@ -1865,6 +1873,12 @@ static int __cal_db_instance_publish_record_details(UCalendar *ucal, cal_event_s
 	if (event->bysetpos)
 	{
 		__cal_db_instance_apply_setpos(event->index, &event->start, event, event->freq);
+	}
+
+	if (event->original_event_id > 0)
+	{
+		DBG("return freq for exception event");
+		event->freq = exception_freq;
 	}
 
 	return CALENDAR_ERROR_NONE;

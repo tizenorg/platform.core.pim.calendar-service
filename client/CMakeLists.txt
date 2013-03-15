@@ -11,7 +11,7 @@ SET(CALSVC2 calendar-service2)
 SET(SRCS
 	cal_client_ipc.c
 	cal_client_db.c
-    cal_client_alert.c
+    cal_client_reminder.c
 	${CMAKE_SOURCE_DIR}/common/ipc/cal_ipc_marshal.c
 	${CMAKE_SOURCE_DIR}/common/ipc/cal_ipc_marshal_alarm.c
 	${CMAKE_SOURCE_DIR}/common/ipc/cal_ipc_marshal_attendee.c

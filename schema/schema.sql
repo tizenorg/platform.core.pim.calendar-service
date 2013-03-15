@@ -70,6 +70,7 @@ sync_data3 TEXT,
 sync_data4 TEXT
 );
 CREATE INDEX sch_idx1 ON schedule_table(type);
+CREATE INDEX sch_idx2 ON schedule_table(calendar_id);
 CREATE TRIGGER trg_sch_del AFTER DELETE ON schedule_table
  BEGIN
    DELETE FROM rrule_table WHERE event_id = old.id;
@@ -118,6 +119,8 @@ event_id INTEGER,
 dtstart_utime INTEGER,
 dtend_utime INTEGER
 );
+CREATE INDEX n_i_idx1 ON normal_instance_table(event_id, dtstart_utime);
+CREATE INDEX n_i_idx2 ON normal_instance_table(dtstart_utime);
 
 CREATE TABLE allday_instance_table
 (
@@ -125,6 +128,8 @@ event_id INTEGER,
 dtstart_datetime TEXT,
 dtend_datetime TEXT
 );
+CREATE INDEX a_i_idx1 ON allday_instance_table(event_id, dtstart_datetime);
+CREATE INDEX a_i_idx2 ON allday_instance_table(dtstart_datetime);
 
 CREATE TABLE attendee_table
 (

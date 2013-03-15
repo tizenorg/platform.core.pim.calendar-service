@@ -166,6 +166,7 @@ API int calendar_db_get_records_with_query( calendar_query_h query, int offset, 
  * @brief       Cleans data after sync
  *
  * @param[in]   calendar_book_id			The calendar book ID
+ * @param[in]   calendar_db_version         The calendar database version
  *
  * @return  0 on success, otherwise a negative error value.
  * @retval  #CALENDAR_ERROR_NONE				Successful
@@ -177,7 +178,7 @@ API int calendar_db_get_records_with_query( calendar_query_h query, int offset, 
  *
  * @see calendar_connect()
  */
-API int calendar_db_clean_after_sync( int calendar_book_id ); // calendar_svc_clean_after_sync  for EAS sync
+API int calendar_db_clean_after_sync( int calendar_book_id, int calendar_db_version ); // calendar_svc_clean_after_sync  for EAS sync
 
 /**
  * @brief       Gets records count of a specific view

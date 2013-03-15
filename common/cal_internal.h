@@ -44,26 +44,33 @@
 #define WARN(fmt, arg...) SLOGW("%s:%d " fmt, __FUNCTION__, __LINE__, ##arg)
 #define ERR(fmt, arg...) SLOGE("%s:%d " fmt, __FUNCTION__, __LINE__, ##arg)
 #define DBG(fmt, arg...) SLOGD("%s:" fmt, __FUNCTION__, ##arg)
+#define VERBOSE(fmt, arg...) SLOGV(fmt, ##arg)
 
 //#define CAL_DEBUGGING
 #ifdef CAL_DEBUGGING
     #if defined(CAL_IPC_SERVER)
     #define CAL_FN_CALL DBG("SERVER:>>>>>>>>%s called", __FUNCTION__)
     #define CAL_FN_END DBG("SERVER:<<<<<<<<%s ended", __FUNCTION__)
+    #define CAL_FN_CALL_VERBOSE VERBOSE("SERVER:>>>>>>>>%s called", __FUNCTION__)
     #elif defined(CAL_IPC_CLIENT)
     #define CAL_FN_CALL DBG("CLIENT:>>>>>>>>%s called", __FUNCTION__)
     #define CAL_FN_END DBG("CLIENT:<<<<<<<<%s ended", __FUNCTION__)
+    #define CAL_FN_CALL_VERBOSE VERBOSE("CLIENT:>>>>>>>>%s called", __FUNCTION__)
     #else
     #define CAL_FN_CALL DBG(">>>>>>>>%s called", __FUNCTION__)
     #define CAL_FN_END DBG("<<<<<<<<%s ended", __FUNCTION__)
+    #define CAL_FN_CALL_VERBOSE VERBOSE(">>>>>>>>%s called", __FUNCTION__)
     #endif
 
     #if defined(CAL_IPC_SERVER)
     #define CAL_DBG(fmt, arg...) DBG("SERVER:%d " fmt, __LINE__, ##arg)
+    #define CAL_VERBOSE(fmt, arg...) VERBOSE("SERVER:%d " fmt, __LINE__, ##arg)
     #elif defined(CAL_IPC_CLIENT)
     #define CAL_DBG(fmt, arg...) DBG("CLIENT:%d " fmt, __LINE__, ##arg)
+    #define CAL_VERBOSE(fmt, arg...) VERBOSE("CLIENT:%d " fmt, __LINE__, ##arg)
     #else
     #define CAL_DBG(fmt, arg...) DBG("%d " fmt, __LINE__, ##arg)
+    #define CAL_VERBOSE(fmt, arg...) VERBOSE("%d " fmt, __LINE__, ##arg)
     #endif
 #else /* CAL_DEBUGGING */
 #define CAL_FN_CALL

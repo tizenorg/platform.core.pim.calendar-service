@@ -38,6 +38,7 @@
 #include "cal_ipc_marshal.h"
 
 #include "cal_client_ipc.h"
+#include "cal_client_reminder.h"
 
 static TLS pims_ipc_h calendar_ipc_thread = NULL;
 static pims_ipc_h calendar_ipc = NULL;
@@ -117,6 +118,10 @@ API int calendar_connect(void)
 
     _cal_view_initialize();
 
+    if (0 == calendar_connection_count)
+    {
+		_cal_client_reminder_create_for_subscribe();
+	}
     calendar_connection_count++;
     calendar_ipc = ipc_handle;
     _cal_mutex_unlock(CAL_MUTEX_CONNECTION);
@@ -152,6 +157,10 @@ API int calendar_disconnect(void)
         _cal_mutex_unlock(CAL_MUTEX_CONNECTION);
         return ret;
     }
+	else
+	{
+		_cal_client_reminder_destroy_for_subscribe();
+	}
 
     // ipc call
     if (pims_ipc_call(calendar_ipc, CAL_IPC_MODULE, CAL_IPC_SERVER_DISCONNECT, indata, &outdata) != 0)
@@ -327,14 +336,17 @@ API int calendar_connect_with_flags(unsigned int flags)
         {
             int retry_time = 500;
             int i = 0;
-            for(i=0;i<6;i++)
+            for(i=0;i<9;i++)
             {
                 usleep(retry_time*1000);
                 ret = calendar_connect();
                 DBG("retry cnt=%d, ret=%x",(i+1), ret);
                 if (ret == CALENDAR_ERROR_NONE)
                     break;
-                retry_time *= 2;
+                if (i>6)
+                    retry_time += 30000;
+                else
+                    retry_time *= 2;
             }
 
         }

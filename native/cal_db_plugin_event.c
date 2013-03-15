@@ -63,7 +63,7 @@ static int __cal_db_event_update_dirty(calendar_record_h record);
 bool __cal_db_event_check_changed_rrule(record);
 */
 static int __cal_db_event_exception_get_records(int original_id, GList **out_list);
-static int __cal_db_event_exception_convert_gtoh(GList *glist, int original_id, calendar_list_h *hlist);
+static int __cal_db_event_exception_convert_gtoh(GList *glist, int original_id, int calendar_id, calendar_list_h *hlist);
 static int __cal_db_event_exception_delete_with_id(int original_id);
 
 cal_db_plugin_cb_s _cal_db_event_plugin_cb = {
@@ -143,6 +143,34 @@ static int __cal_db_event_check_value_validation(cal_event_s *event)
 		break;
 	}
 
+	return CALENDAR_ERROR_NONE;
+}
+
+static int __cal_db_event_update_original_event_version(int original_event_id, int version)
+{
+	char query[CAL_DB_SQL_MAX_LEN] = {0};
+	cal_db_util_error_e dbret = CAL_DB_OK;
+
+	DBG("original_event(%d) changed_ver updated", original_event_id);
+	if (original_event_id > 0)
+	{
+		snprintf(query, sizeof(query), "UPDATE %s SET "
+				"changed_ver = %d WHERE id = %d ",
+				CAL_TABLE_SCHEDULE, version, original_event_id);
+
+		dbret = _cal_db_util_query_exec(query);
+		if(CAL_DB_DONE != dbret)
+		{
+			ERR("_cal_db_util_query_exec() Failed");
+			switch (dbret)
+			{
+			case CAL_DB_ERROR_NO_SPACE:
+				return CALENDAR_ERROR_FILE_NO_SPACE;
+			default:
+				return CALENDAR_ERROR_DB_FAILED;
+			}
+		}
+	}
 	return CALENDAR_ERROR_NONE;
 }
 
@@ -350,6 +378,10 @@ static int __cal_db_event_insert_record(calendar_record_h record, int* id)
 	event_id = _cal_db_util_last_insert_id();
 	sqlite3_finalize(stmt);
 
+	// update parent event changed ver in case this event is exception mod
+	// which is original_event_id > 0
+	__cal_db_event_update_original_event_version(event->original_event_id, input_ver);
+
 	calendar_record_get_int(record, _calendar_event.id, &tmp);
 	_cal_record_set_int(record, _calendar_event.id, event_id);
 	if (id)
@@ -389,18 +421,21 @@ static int __cal_db_event_insert_record(calendar_record_h record, int* id)
 		DBG("No attendee");
 	}
 
-	if (event->exception_list)
+	if (event->original_event_id < 0)
 	{
-	    DBG("insert exception");
-        list = NULL;
-        ret = __cal_db_event_exception_convert_gtoh(event->exception_list, event_id, &list);
-        ret = calendar_db_insert_records(list, NULL, NULL);
-        ret = calendar_list_destroy(list, false);
+		if (event->exception_list)
+		{
+			DBG("insert exception");
+			list = NULL;
+			ret = __cal_db_event_exception_convert_gtoh(event->exception_list, event_id, event->calendar_id, &list);
+			ret = calendar_db_insert_records(list, NULL, NULL);
+			ret = calendar_list_destroy(list, false);
+		}
+		else
+		{
+			DBG("No exception");
+		}
 	}
-    else
-    {
-        DBG("No exception");
-    }
 
 	if (event->extended_list)
 	{
@@ -534,6 +569,7 @@ static int __cal_db_event_update_record(calendar_record_h record)
 	cal_db_util_error_e dbret = CAL_DB_OK;
 	int has_alarm = 0;
 	int timezone_id = 0;
+	int input_ver = 0;
 
 	retv_if(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER);
 
@@ -550,6 +586,7 @@ static int __cal_db_event_update_record(calendar_record_h record)
     }
     has_alarm = _cal_db_alarm_has_alarm(event->alarm_list);
 	_cal_time_get_timezone_from_table(event->start_tzid, NULL, &timezone_id);
+	input_ver = _cal_db_util_get_next_ver();
 	snprintf(query, sizeof(query), "UPDATE %s SET "
 			"changed_ver = %d,"
 			"type = %d,"
@@ -598,7 +635,7 @@ static int __cal_db_event_update_record(calendar_record_h record)
 	        "sync_data4 = ? "
 			"WHERE id = %d;",
 		CAL_TABLE_SCHEDULE,
-		_cal_db_util_get_next_ver(),
+		input_ver,
 		CAL_SCH_TYPE_EVENT,/*event->cal_type,*/
 		event->event_status,
 		event->priority,
@@ -724,6 +761,10 @@ static int __cal_db_event_update_record(calendar_record_h record)
 	}
 	sqlite3_finalize(stmt);
 
+	// update parent event changed ver in case this event is exception mod
+	// which is original_event_id > 0
+	__cal_db_event_update_original_event_version(event->original_event_id, input_ver);
+
 	_cal_db_rrule_get_rrule_from_event(record, &rrule);
 	_cal_db_rrule_update_record(event->index, rrule);
 	CAL_FREE(rrule);
@@ -761,7 +802,7 @@ static int __cal_db_event_update_record(calendar_record_h record)
     {
         DBG("insert exception");
         list = NULL;
-        ret = __cal_db_event_exception_convert_gtoh(event->exception_list, event->index, &list);
+        ret = __cal_db_event_exception_convert_gtoh(event->exception_list, event->index, event->calendar_id, &list);
         if (ret == CALENDAR_ERROR_NONE)
         {
             calendar_db_insert_records(list, NULL, NULL);
@@ -783,6 +824,94 @@ static int __cal_db_event_update_record(calendar_record_h record)
 
 	_cal_db_util_notify(CAL_NOTI_TYPE_EVENT);
 
+	return CALENDAR_ERROR_NONE;
+}
+
+static int __cal_db_event_add_exdate(calendar_record_h record)
+{
+	char query[CAL_DB_SQL_MAX_LEN];
+	sqlite3_stmt *stmt = NULL;
+	cal_db_util_error_e dbret = CAL_DB_OK;
+	cal_event_s *event = (cal_event_s *)record;
+	if (NULL == event)
+	{
+		ERR("Invalid parameter: event is NULL");
+		return CALENDAR_ERROR_INVALID_PARAMETER;
+	}
+	if (event->original_event_id < 0)
+	{
+		return CALENDAR_ERROR_NONE;
+	}
+	DBG("This is exception event");
+
+	// get exdate from original event.
+	snprintf(query, sizeof(query), "SELECT exdate FROM %s WHERE id = %d ",
+			CAL_TABLE_SCHEDULE, event->original_event_id);
+
+	stmt = _cal_db_util_query_prepare(query);
+	if (NULL == stmt)
+	{
+		ERR("query[%s]", query);
+		ERR("_cal_db_util_query_prepare() Failed");
+		return CALENDAR_ERROR_DB_FAILED;
+	}
+
+	// add recurrence id to end of the exdate of original event.
+    const unsigned char *temp;
+	char *exdate = NULL;
+	if (CAL_DB_ROW == _cal_db_util_stmt_step(stmt))
+	{
+		temp = sqlite3_column_text(stmt, 1);
+		if (NULL == temp)
+		{
+			exdate = strdup(event->recurrence_id);
+		}
+		else
+		{
+			if (strstr((char *)temp, event->recurrence_id))
+			{
+				DBG("warn: recurrence id already is registered to exdate");
+				sqlite3_finalize(stmt);
+				return CALENDAR_ERROR_NONE;
+			}
+			exdate = strdup((char *)temp);
+			strcat(exdate, event->recurrence_id);
+		}
+	}
+	else
+	{
+		DBG("Failed to get exdate: event_id(%d)", event->original_event_id);
+	}
+	sqlite3_finalize(stmt);
+	stmt = NULL;
+
+	// update exdate
+	DBG("update to recurrence id to exdate[%s]", exdate);
+	snprintf(query, sizeof(query), "UPDATE %s SET exdate = ? WHERE id = %d ",
+			CAL_TABLE_SCHEDULE, event->original_event_id);
+
+	stmt = _cal_db_util_query_prepare(query);
+	if (NULL == stmt)
+	{
+		DBG("query[%s]", query);
+		ERR("_cal_db_util_query_prepare() failed");
+		return CALENDAR_ERROR_DB_FAILED;
+	}
+	int index = 1;
+	_cal_db_util_stmt_bind_text(stmt, index, exdate);
+
+    dbret = _cal_db_util_stmt_step(stmt);
+	sqlite3_finalize(stmt);
+	if (CAL_DB_DONE != dbret) {
+		ERR("sqlite3_step() Failed(%d)", dbret);
+		switch (dbret)
+		{
+		case CAL_DB_ERROR_NO_SPACE:
+			return CALENDAR_ERROR_FILE_NO_SPACE;
+		default:
+			return CALENDAR_ERROR_DB_FAILED;
+		}
+	}
 	return CALENDAR_ERROR_NONE;
 }
 
@@ -899,6 +1028,9 @@ static int __cal_db_event_delete_record(int id)
 	ret = _cal_db_instance_discard_record(record_event);
 	retvm_if(ret != CALENDAR_ERROR_NONE, CALENDAR_ERROR_DB_FAILED,
 			"_cal_db_instance_discard_record() Failed(%d)", ret);
+
+	// start:add record to exdate if this record is exception mod.
+	__cal_db_event_add_exdate(record_event);
 
 	ret = calendar_record_destroy(record_event, true);
 	ret = calendar_record_destroy(record_calendar, true);
@@ -1410,6 +1542,7 @@ static int __cal_db_event_replace_record(calendar_record_h record, int id)
 	cal_db_util_error_e dbret = CAL_DB_OK;
 	int has_alarm = 0;
 	int timezone_id = 0;
+	int input_ver = 0;
 
 	retv_if(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER);
 
@@ -1419,6 +1552,7 @@ static int __cal_db_event_replace_record(calendar_record_h record, int id)
     }
     has_alarm = _cal_db_alarm_has_alarm(event->alarm_list);
 	_cal_time_get_timezone_from_table(event->start_tzid, NULL, &timezone_id);
+	input_ver = _cal_db_util_get_next_ver();
 	snprintf(query, sizeof(query), "UPDATE %s SET "
 			"changed_ver = %d,"
 			"type = %d,"
@@ -1467,7 +1601,7 @@ static int __cal_db_event_replace_record(calendar_record_h record, int id)
 	        "sync_data4 = ? "
 			"WHERE id = %d ",
 		CAL_TABLE_SCHEDULE,
-		_cal_db_util_get_next_ver(),
+		input_ver,
 		CAL_SCH_TYPE_EVENT,/*event->cal_type,*/
 		event->event_status,
 		event->priority,
@@ -1593,6 +1727,10 @@ static int __cal_db_event_replace_record(calendar_record_h record, int id)
 	}
 	sqlite3_finalize(stmt);
 
+	// update parent event changed ver in case this event is exception mod
+	// which is original_event_id > 0
+	__cal_db_event_update_original_event_version(event->original_event_id, input_ver);
+
 	_cal_db_rrule_get_rrule_from_event(record, &rrule);
 	_cal_db_rrule_update_record(id, rrule);
 	CAL_FREE(rrule);
@@ -1630,7 +1768,7 @@ static int __cal_db_event_replace_record(calendar_record_h record, int id)
     {
         DBG("insert exception");
         list = NULL;
-        ret = __cal_db_event_exception_convert_gtoh(event->exception_list, id, &list);
+        ret = __cal_db_event_exception_convert_gtoh(event->exception_list, id, event->calendar_id, &list);
         if (ret == CALENDAR_ERROR_NONE)
         {
             calendar_db_insert_records(list, NULL, NULL);
@@ -2590,7 +2728,7 @@ static int __cal_db_event_exception_get_records(int original_id, GList **out_lis
     return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_db_event_exception_convert_gtoh(GList *glist, int original_id, calendar_list_h *hlist)
+static int __cal_db_event_exception_convert_gtoh(GList *glist, int original_id, int calendar_id, calendar_list_h *hlist)
 {
     int ret;
     GList *g = NULL;
@@ -2611,6 +2749,7 @@ static int __cal_db_event_exception_convert_gtoh(GList *glist, int original_id, 
         if (exception)
         {
             ret = _cal_record_set_int(exception,_calendar_event.original_event_id, original_id);
+            ret = _cal_record_set_int(exception,_calendar_event.calendar_book_id, calendar_id);
             ret = calendar_list_add(h, exception);
 
         }

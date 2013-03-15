@@ -371,6 +371,7 @@ API int calendar_db_insert_record( calendar_record_h record, int* id )
 
     retvm_if(record==NULL,CALENDAR_ERROR_INVALID_PARAMETER,"record is NULL");
 
+    CAL_RECORD_RESET_COMMON((cal_record_s*)record);
     // make indata
     indata = pims_ipc_data_create(0);
     if (indata == NULL)
@@ -762,7 +763,7 @@ API int calendar_db_get_records_with_query( calendar_query_h query, int offset, 
     return ret;
 }
 
-API int calendar_db_clean_after_sync( int calendar_book_id )
+API int calendar_db_clean_after_sync( int calendar_book_id, int calendar_db_version)
 {
     int ret = CALENDAR_ERROR_NONE;
     pims_ipc_data_h indata = NULL;
@@ -779,6 +780,13 @@ API int calendar_db_clean_after_sync( int calendar_book_id )
         return ret;
     }
     ret = _cal_ipc_marshal_int(calendar_book_id,indata);
+    if (ret != CALENDAR_ERROR_NONE)
+    {
+        ERR("marshal fail");
+        CAL_IPC_DATA_FREE(indata);
+        return ret;
+    }
+    ret = _cal_ipc_marshal_int(calendar_db_version,indata);
     if (ret != CALENDAR_ERROR_NONE)
     {
         ERR("marshal fail");

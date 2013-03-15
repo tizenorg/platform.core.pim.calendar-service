@@ -789,11 +789,12 @@ API int calendar_db_get_records_with_query( calendar_query_h query, int offset, 
 	return CALENDAR_ERROR_NONE;
 }
 
-API int calendar_db_clean_after_sync( int calendar_book_id )
+API int calendar_db_clean_after_sync( int calendar_book_id,  int calendar_db_version )
 {
     int ret;
     char query[CAL_DB_SQL_MIN_LEN] = {0};
     cal_db_util_error_e dbret = CAL_DB_OK;
+    int len = 0;
 
     retvm_if(calendar_book_id < 0, CALENDAR_ERROR_INVALID_PARAMETER, "calendar_id(%d) is Invalid", calendar_book_id);
 
@@ -802,10 +803,14 @@ API int calendar_db_clean_after_sync( int calendar_book_id )
     // !! please check rrule_table, alarm_table, attendee_table ..
 
     /* delete event table */
-    snprintf(query, sizeof(query), "DELETE FROM %s "
+    len = snprintf(query, sizeof(query), "DELETE FROM %s "
             "WHERE is_deleted = 1 AND calendar_id = %d",
             CAL_TABLE_SCHEDULE,
             calendar_book_id);
+    if (calendar_db_version > 0)
+    {
+        len = snprintf(query+len, sizeof(query)-len, " AND changed_ver <= %d", calendar_db_version);
+    }
 
     dbret = _cal_db_util_query_exec(query);
     CAL_DBG("%s",query);

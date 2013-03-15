@@ -169,17 +169,54 @@ static int __dft_event_set_3(calendar_record_h event, int occurence, int status,
 {
 	int ret;
 
+	switch (occurence)
+	{
+	case CALENDAR_RECURRENCE_NONE:
+	case CALENDAR_RECURRENCE_DAILY:
+	case CALENDAR_RECURRENCE_WEEKLY:
+	case CALENDAR_RECURRENCE_MONTHLY:
+	case CALENDAR_RECURRENCE_YEARLY:
+	    break;
+	default:
+		printf("Out of range, so set CALENDAR_RECURRENCE_NONE\n");
+		occurence = CALENDAR_RECURRENCE_NONE;
+		break;
+	}
 	ret = calendar_record_set_int(event, _calendar_event.count, occurence);
 	if(CALENDAR_ERROR_NONE != ret)
 	{
 		printf("failed to set _calendar_event.count\n");
 		return -1;
 	}
+	switch (status)
+	{
+	case CALENDAR_EVENT_BUSY_STATUS_FREE:
+	case CALENDAR_EVENT_BUSY_STATUS_BUSY:
+	case CALENDAR_EVENT_BUSY_STATUS_UNAVAILABLE:
+	case CALENDAR_EVENT_BUSY_STATUS_TENTATIVE:
+		break;
+	default:
+		printf("Out of range, so set CALENDAR_EVENT_BUSY_STATUS_FREE\n");
+		status = CALENDAR_EVENT_BUSY_STATUS_FREE;
+		break;
+	}
 	ret = calendar_record_set_int(event, _calendar_event.busy_status, status);
 	if(CALENDAR_ERROR_NONE != ret)
 	{
 		printf("failed to set _calendar_event.busy_status\n");
 		return -1;
+	}
+
+	switch (sensitivity)
+	{
+	case CALENDAR_SENSITIVITY_PUBLIC:
+	case CALENDAR_SENSITIVITY_PRIVATE:
+	case CALENDAR_SENSITIVITY_CONFIDENTIAL:
+		break;
+	default:
+		printf("Out of range, so set CALENDAR_SENSITIVITY_PUBLIC\n");
+		sensitivity = CALENDAR_SENSITIVITY_PUBLIC;
+		break;
 	}
 	ret = calendar_record_set_int(event, _calendar_event.sensitivity, sensitivity);
 	if(CALENDAR_ERROR_NONE != ret)
@@ -296,17 +333,56 @@ static int __dft_todo_set_3(calendar_record_h todo, int occurence, int status, i
 {
 	int ret;
 
+	switch (occurence)
+	{
+	case CALENDAR_RECURRENCE_NONE:
+	case CALENDAR_RECURRENCE_DAILY:
+	case CALENDAR_RECURRENCE_WEEKLY:
+	case CALENDAR_RECURRENCE_MONTHLY:
+	case CALENDAR_RECURRENCE_YEARLY:
+	    break;
+	default:
+		printf("Out of range, so set CALENDAR_RECURRENCE_NONE\n");
+		occurence = CALENDAR_RECURRENCE_NONE;
+		break;
+	}
 	ret = calendar_record_set_int(todo, _calendar_todo.count, occurence);
 	if(CALENDAR_ERROR_NONE != ret)
 	{
 		printf("failed to set _calendar_todo.count\n");
 		return -1;
 	}
+
+	switch (status)
+	{
+	case CALENDAR_TODO_STATUS_NONE:
+	case CALENDAR_TODO_STATUS_NEEDS_ACTION:
+	case CALENDAR_TODO_STATUS_COMPLETED:
+	case CALENDAR_TODO_STATUS_IN_PROCESS:
+	case CALENDAR_TODO_STATUS_CANCELED:
+		break;
+	default:
+		printf("Out of range, so set ALENDAR_TODO_STATUS_NEEDS_ACTION\n");
+		status = CALENDAR_TODO_STATUS_NEEDS_ACTION;
+		break;
+	}
 	ret = calendar_record_set_int(todo, _calendar_todo.todo_status, status);
 	if(CALENDAR_ERROR_NONE != ret)
 	{
 		printf("failed to set _calendar_todo.todo_status\n");
 		return -1;
+	}
+
+	switch (sensitivity)
+	{
+	case CALENDAR_SENSITIVITY_PUBLIC:
+	case CALENDAR_SENSITIVITY_PRIVATE:
+	case CALENDAR_SENSITIVITY_CONFIDENTIAL:
+		break;
+	default:
+		printf("Out of range, so set CALENDAR_SENSITIVITY_PUBLIC\n");
+		sensitivity = CALENDAR_SENSITIVITY_PUBLIC;
+		break;
 	}
 	ret = calendar_record_set_int(todo, _calendar_todo.sensitivity, sensitivity);
 	if(CALENDAR_ERROR_NONE != ret)

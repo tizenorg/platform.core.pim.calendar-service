@@ -87,6 +87,7 @@ ADD_EXECUTABLE(${DAEMON}
 	cal_server.c
 	cal_server_alarm.c
 	cal_server_calendar_delete.c
+	cal_server_reminder.c
 	)
 SET_TARGET_PROPERTIES(${DAEMON} PROPERTIES COMPILE_FLAGS ${EXTRA_CFLAGS})
 TARGET_LINK_LIBRARIES(${DAEMON} ${calserver_pkgs_LDFLAGS} ${LIBNAME})

@@ -20,6 +20,8 @@
 #ifndef __TIZEN_SOCAIL_CALENDAR_REMINDER_H__
 #define __TIZEN_SOCAIL_CALENDAR_REMINDER_H__
 
+#include <calendar_types2.h>
+
 #ifndef API
 #define API __attribute__ ((visibility("default")))
 #endif
@@ -100,7 +102,35 @@ API int calendar_reminder_deactivate_receiver(const char *pkgname);
  *
  * @see calendar_reminder_remove_receiver()
  */
-API bool calendar_reminder_has_receiver(const char *pkgname);
+API int calendar_reminder_has_receiver(const char *pkgname);
+
+/**
+ * @brief   Adds callback to get noti when alarm alerts.
+ *
+ * @param[in]   callback			    Callback to add.
+ * @param[in]   user_data				The user data
+ *
+ * @return  0 on success, otherwise a negative error value.
+ * @retval  #CALENDAR_ERROR_NONE        Successful
+ * @retval  #CALENDAR_ERROR_DB_FAILED   Database operation failure
+ *
+ * @see calendar_reminder_remove_cb()
+ */
+API int calendar_reminder_add_cb(calendar_reminder_cb callback, void *user_data);
+
+/**
+ * @brief   Removes callback to get noti when alarm alerts.
+ *
+ * @param[in]   callback			    Callback to remove.
+ * @param[in]   user_data				The user data
+ *
+ * @return  0 on success, otherwise a negative error value.
+ * @retval  #CALENDAR_ERROR_NONE        Successful
+ * @retval  #CALENDAR_ERROR_DB_FAILED   Database operation failure
+ *
+ * @see calendar_reminder_add_cb()
+ */
+API int calendar_reminder_remove_cb(calendar_reminder_cb callback, void *user_data);
 
 /**
  * @}

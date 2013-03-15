@@ -174,6 +174,9 @@ static int __server_main(void)
         return -1;
     }
 
+	// for subscribe
+	pims_ipc_svc_init_for_publish(CAL_IPC_SOCKET_PATH_FOR_SUBSCRIPTION, CAL_SECURITY_DEFAULT_PERMISSION, 0660);
+
     //loop = g_main_loop_new(NULL, FALSE);
 
     //calendar_alarm_init();
@@ -200,6 +203,7 @@ static int __server_main(void)
 	_cal_inotify_finalize();
 	calendar_disconnect();
 
+	pims_ipc_svc_deinit_for_publish();
     pims_ipc_svc_deinit();
 
     return 0;

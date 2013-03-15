@@ -249,7 +249,12 @@ int _cal_db_rrule_insert_record(int id, cal_rrule_s *rrule)
 
 	DBG("[%s]", query);
 	stmt = _cal_db_util_query_prepare(query);
-	retvm_if(stmt == NULL, CALENDAR_ERROR_DB_FAILED, "Failed to query prepare");
+	if (NULL == stmt)
+	{
+		DBG("query[%s]", query);
+		ERR("_cal_db_util_query_prepare() Failed");
+		return CALENDAR_ERROR_DB_FAILED;
+	}
 
 	index = 1;
 
@@ -412,24 +417,58 @@ int _cal_db_rrule_get_rrule(int id, cal_rrule_s **rrule)
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_db_rrule_update_record(int id, cal_rrule_s *rrule)
+static int __cal_db_rrule_delete_record(int id)
 {
-	int dbret;
-	int index;
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
-	char until_datetime[32] = {0};
-	sqlite3_stmt *stmt = NULL;
+	cal_db_util_error_e dbret = CAL_DB_OK;
 
-	retvm_if(rrule == NULL, CALENDAR_ERROR_INVALID_PARAMETER,
-			"Invalid argument: rrule is NULL");
+	snprintf(query, sizeof(query),
+			"DELETE FROM %s WHERE event_id = %d ",
+			CAL_TABLE_RRULE, id);
 
-	if (rrule->freq == CALENDAR_RECURRENCE_NONE)
+	dbret = _cal_db_util_query_exec(query);
+	if(CAL_DB_DONE != dbret)
 	{
-		DBG("freq is NONE");
-		return CALENDAR_ERROR_NONE;
+		ERR("_cal_db_util_query_exec() Failed");
+		switch (dbret)
+		{
+		case CAL_DB_ERROR_NO_SPACE:
+			return CALENDAR_ERROR_FILE_NO_SPACE;
+		default:
+			return CALENDAR_ERROR_DB_FAILED;
+		}
+	}
+	return CALENDAR_ERROR_NONE;
+}
+
+static int __cal_db_rrule_has_record(int id, int *has_record)
+{
+	int ret;
+    int count = 0;
+	char query[CAL_DB_SQL_MAX_LEN] = {0};
+
+	snprintf(query, sizeof(query),
+			"SELECT count(*) FROM %s WHERE event_id = %d ",
+			CAL_TABLE_RRULE, id);
+
+	ret = _cal_db_util_query_get_first_int_result(query, NULL, &count);
+	if (CALENDAR_ERROR_NONE != ret)
+	{
+		ERR("_cal_db_util_query_get_first_int_result() failed");
+		return ret;
 	}
 
-	DBG("freq exist, so update rrule");
+	*has_record = count > 0 ? 1 : 0;
+	return CALENDAR_ERROR_NONE;
+}
+
+static int __cal_db_rrule_update_record(int id, cal_rrule_s *rrule)
+{
+	char query[CAL_DB_SQL_MAX_LEN] = {0};
+	char until_datetime[32] = {0};
+	cal_db_util_error_e dbret = CAL_DB_OK;
+	sqlite3_stmt *stmt = NULL;
+
 	snprintf(query, sizeof(query),
 			"UPDATE %s SET "
 			"freq = %d, "
@@ -460,13 +499,15 @@ int _cal_db_rrule_update_record(int id, cal_rrule_s *rrule)
 			rrule->wkst,
 			id);
 
-	DBG("query[%s]", query);
 	stmt = _cal_db_util_query_prepare(query);
-	retvm_if(stmt == NULL, CALENDAR_ERROR_DB_FAILED,
-			"_cal_db_util_query_prepare() Failed");
+	if (NULL == stmt)
+	{
+		DBG("query[%s]", query);
+		ERR("_cal_db_util_query_prepare() Failed");
+		return CALENDAR_ERROR_DB_FAILED;
+	}
 
-	index = 1;
-
+	int index = 1;
 	if (CALENDAR_TIME_LOCALTIME == rrule->until_type)
 	{
 		snprintf(until_datetime, sizeof(until_datetime), "%04d%02d%02d",
@@ -523,7 +564,34 @@ int _cal_db_rrule_update_record(int id, cal_rrule_s *rrule)
 			return CALENDAR_ERROR_DB_FAILED;
 		}
 	}
+	return CALENDAR_ERROR_NONE;
+}
 
+int _cal_db_rrule_update_record(int id, cal_rrule_s *rrule)
+{
+	int has_record = 0;
+
+	retvm_if(rrule == NULL, CALENDAR_ERROR_INVALID_PARAMETER,
+			"Invalid argument: rrule is NULL");
+
+	if (rrule->freq == CALENDAR_RECURRENCE_NONE)
+	{
+		DBG("freq is NONE");
+		__cal_db_rrule_delete_record(id);
+		return CALENDAR_ERROR_NONE;
+	}
+	else
+	{
+		__cal_db_rrule_has_record(id, &has_record);
+		if (has_record)
+		{
+			__cal_db_rrule_update_record(id, rrule);
+		}
+		else
+		{
+			_cal_db_rrule_insert_record(id, rrule);
+		}
+	}
 	return CALENDAR_ERROR_NONE;
 }
 

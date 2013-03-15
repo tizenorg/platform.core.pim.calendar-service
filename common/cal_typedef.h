@@ -30,6 +30,7 @@
 #define CAL_NOTI_EVENT_CHANGED "/opt/usr/data/calendar-svc/.CALENDAR_SVC_EVENT_CHANGED"
 #define CAL_NOTI_TODO_CHANGED "/opt/usr/data/calendar-svc/.CALENDAR_SVC_TODO_CHANGED"
 #define CAL_NOTI_CALENDAR_CHANGED "/opt/usr/data/calendar-svc/.CALENDAR_SVC_CALENDAR_CHANGED"
+#define CAL_NOTI_REMINDER_CAHNGED "reminder"
 
 /**
  * @enum cal_priority_e

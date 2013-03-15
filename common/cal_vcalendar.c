@@ -225,6 +225,7 @@ API int calendar_vcalendar_parse_to_calendar_foreach(const char *vcalendar_file_
                     fclose(file);
                     return CALENDAR_ERROR_INVALID_PARAMETER;
                 }
+				calendar_list_next(list);
             }
 
             calendar_list_destroy(list, true);

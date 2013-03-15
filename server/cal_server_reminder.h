@@ -17,18 +17,10 @@
  *
  */
 
-#ifndef __CALENDAR_SVC_MUTEX_H__
-#define __CALENDAR_SVC_MUTEX_H__
+#ifndef __CAL_SERVER_REMINDER_H__
+#define __CAL_SERVER_REMINDER_H__
 
-enum {
-    CAL_MUTEX_CONNECTION,
-    CAL_MUTEX_PIMS_IPC_CALL,
-    CAL_MUTEX_INOTIFY,
-    CAL_MUTEX_PROPERTY_HASH,
-	CAL_MUTEX_PIMS_IPC_PUBSUB,
-};
+void _cal_server_reminder_publish(void);
+void _cal_server_reminder_add_callback_data(char *key, char *value);
 
-void _cal_mutex_lock(int type);
-void _cal_mutex_unlock(int type);
-
-#endif  //__CALENDAR_SVC_MUTEX_H__
+#endif  //__CAL_SERVER_REMINDER_H__

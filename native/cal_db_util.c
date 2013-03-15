@@ -168,7 +168,8 @@ int _cal_db_util_query_get_first_int_result(const char *query, GSList *bind_text
 	{
 		ERR("sqlite3_step() failed(%d, %s).", ret, sqlite3_errmsg(calendar_db_handle));
 		sqlite3_finalize(stmt);
-		if (SQLITE_DONE == ret) return CALENDAR_ERROR_DB_FAILED;
+		if (SQLITE_DONE == ret)
+		    return CALENDAR_ERROR_DB_RECORD_NOT_FOUND;
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 

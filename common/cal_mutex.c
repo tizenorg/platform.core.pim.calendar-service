@@ -27,6 +27,7 @@ static pthread_mutex_t __cal_property_hash_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t __cal_connection_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t __cal_pims_ipc_call_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t __cal_inotify_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t __cal_pims_ipc_pubsub_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static inline pthread_mutex_t* cts_mutex_get_mutex(int type)
 {
@@ -45,6 +46,9 @@ static inline pthread_mutex_t* cts_mutex_get_mutex(int type)
     case CAL_MUTEX_INOTIFY:
         ret_val = &__cal_inotify_mutex;
         break;
+	case CAL_MUTEX_PIMS_IPC_PUBSUB:
+		ret_val = &__cal_pims_ipc_pubsub_mutex;
+		break;
     default:
         ERR("unknown type(%d)", type);
         ret_val = NULL;

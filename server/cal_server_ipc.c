@@ -618,10 +618,17 @@ void _cal_server_ipc_db_clean_after_sync(pims_ipc_h ipc, pims_ipc_data_h indata,
 {
     int ret = CALENDAR_ERROR_NONE;
     int calendar_book_id = 0;
+    int calendar_db_version = 0;
 
     if (indata)
     {
         ret = _cal_ipc_unmarshal_int(indata,&calendar_book_id);
+        if (ret != CALENDAR_ERROR_NONE)
+        {
+            ERR("_cal_ipc_unmarshal_int fail");
+            goto ERROR_RETURN;
+        }
+        ret = _cal_ipc_unmarshal_int(indata,&calendar_db_version);
         if (ret != CALENDAR_ERROR_NONE)
         {
             ERR("_cal_ipc_unmarshal_int fail");
@@ -635,7 +642,7 @@ void _cal_server_ipc_db_clean_after_sync(pims_ipc_h ipc, pims_ipc_data_h indata,
         goto ERROR_RETURN;
     }
 
-    ret = calendar_db_clean_after_sync(calendar_book_id);
+    ret = calendar_db_clean_after_sync(calendar_book_id, calendar_db_version);
 
 ERROR_RETURN:
     if (outdata)

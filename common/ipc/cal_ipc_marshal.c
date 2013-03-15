@@ -1106,7 +1106,8 @@ int _cal_ipc_unmarshal_list(const pims_ipc_data_h ipc_data, calendar_list_h* lis
     if (_cal_ipc_unmarshal_int(ipc_data,&(count)) != CALENDAR_ERROR_NONE)
     {
         ERR("_cal_ipc_unmarshal fail");
-        return CALENDAR_ERROR_INVALID_PARAMETER;
+        ret = CALENDAR_ERROR_INVALID_PARAMETER;
+        goto ERROR_RETURN;
     }
 
     for(i=0;i<count;i++)

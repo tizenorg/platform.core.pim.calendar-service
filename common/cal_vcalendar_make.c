@@ -230,13 +230,7 @@ static inline int __cal_vcalendar_make_created(cal_make_s *b, long long int t)
 	return CALENDAR_ERROR_NONE;
 }
 
-static inline int __cal_vcalendar_make_description(cal_make_s *b, char *s)
-{
-	__cal_vcalendar_make_printf(b, "DESCRIPTION:", s);
-	return CALENDAR_ERROR_NONE;
-}
-
-static inline int __cal_vcalendar_make_dtstart(cal_make_s *b, calendar_time_s *caltime)
+static inline int __cal_vcalendar_make_dtstart(cal_make_s *b, char *tzid, calendar_time_s *caltime)
 {
 	retvm_if(caltime == NULL, -1, "Invalid argument: calendar_time_s is NULL");
 
@@ -250,18 +244,32 @@ static inline int __cal_vcalendar_make_dtstart(cal_make_s *b, calendar_time_s *c
 	{
 	case CALENDAR_TIME_UTIME:
         {
-            char* tmp_tzid = NULL;
-            tmp_tzid = _cal_time_convert_ltos(NULL, caltime->time.utime);
-            if (tmp_tzid)
-            {
-                __cal_vcalendar_make_printf(b, "DTSTART:", tmp_tzid);
-                CAL_FREE(tmp_tzid);
-            }
+			char* str_time = NULL;
+			if (NULL != tzid && strlen(tzid) > 0)
+			{
+				str_time = _cal_time_convert_ltos(tzid, caltime->time.utime);
+				if (str_time)
+				{
+					char buf[128] = {0};
+					snprintf(buf, sizeof(buf), "DTSTART;TZID=%s:", tzid);
+					__cal_vcalendar_make_printf(b, buf, str_time);
+					CAL_FREE(str_time);
+				}
+			}
+			else
+			{
+				str_time = _cal_time_convert_ltos(NULL, caltime->time.utime);
+				if (str_time)
+				{
+					__cal_vcalendar_make_printf(b, "DTSTART:", str_time);
+					CAL_FREE(str_time);
+				}
+			}
         }
 		break;
 
 	case CALENDAR_TIME_LOCALTIME:
-		__cal_vcalendar_make_printf(b, "DTSTART:",
+		__cal_vcalendar_make_printf(b, "DTSTART;VALUE=DATE:",
 				__cal_vcalendar_make_itos(caltime->time.date.year,
 					caltime->time.date.month, caltime->time.date.mday));
 		break;
@@ -279,12 +287,6 @@ static inline int __cal_vcalendar_make_last_mod(cal_make_s *b, long long int lli
         __cal_vcalendar_make_printf(b, "LAST-MODIFIED:",tmp_tzid);
         CAL_FREE(tmp_tzid);
     }
-	return CALENDAR_ERROR_NONE;
-}
-
-static inline int __cal_vcalendar_make_location(cal_make_s *b, char *s)
-{
-	__cal_vcalendar_make_printf(b, "LOCATION:", s);
 	return CALENDAR_ERROR_NONE;
 }
 
@@ -331,13 +333,7 @@ int __cal_vcalendar_make_dtstamp(cal_make_s *b, char *tzid)
 	return CALENDAR_ERROR_NONE;
 }
 
-static inline int __cal_vcalendar_make_summary(cal_make_s *b, char *s)
-{
-	__cal_vcalendar_make_printf(b, "SUMMARY:", s);
-	return CALENDAR_ERROR_NONE;
-}
-
-static inline int __cal_vcalendar_make_dtend(cal_make_s *b, calendar_time_s *caltime)
+static inline int __cal_vcalendar_make_dtend(cal_make_s *b, char *tzid, calendar_time_s *caltime)
 {
 	retvm_if(caltime == NULL, -1, "Invalid argument: calendar_time_s is NULL");
 
@@ -351,18 +347,32 @@ static inline int __cal_vcalendar_make_dtend(cal_make_s *b, calendar_time_s *cal
 	{
 	case CALENDAR_TIME_UTIME:
         {
-            char *tmp_tzid = NULL;
-            tmp_tzid = _cal_time_convert_ltos(NULL, caltime->time.utime);
-            if (tmp_tzid)
-            {
-                __cal_vcalendar_make_printf(b, "DTEND:", tmp_tzid);
-                CAL_FREE(tmp_tzid);
-            }
+			char* str_time = NULL;
+			if (NULL != tzid && strlen(tzid) > 0)
+			{
+				str_time = _cal_time_convert_ltos(tzid, caltime->time.utime);
+				if (str_time)
+				{
+					char buf[128] = {0};
+					snprintf(buf, sizeof(buf), "DTEND;TZID=%s:", tzid);
+					__cal_vcalendar_make_printf(b, buf, str_time);
+					CAL_FREE(str_time);
+				}
+			}
+			else
+			{
+				str_time = _cal_time_convert_ltos(NULL, caltime->time.utime);
+				if (str_time)
+				{
+					__cal_vcalendar_make_printf(b, "DTEND:", str_time);
+					CAL_FREE(str_time);
+				}
+			}
         }
 		break;
 
 	case CALENDAR_TIME_LOCALTIME:
-		__cal_vcalendar_make_printf(b, "DTEND:",
+		__cal_vcalendar_make_printf(b, "DTEND;VALUE=DATE:",
 				__cal_vcalendar_make_itos(caltime->time.date.year,
 					caltime->time.date.month, caltime->time.date.mday));
 		break;
@@ -371,21 +381,41 @@ static inline int __cal_vcalendar_make_dtend(cal_make_s *b, calendar_time_s *cal
 	return CALENDAR_ERROR_NONE;
 }
 
-static inline int __cal_vcalendar_make_due(cal_make_s *b, calendar_time_s *caltime)
+static inline int __cal_vcalendar_make_due(cal_make_s *b, char *tzid,  calendar_time_s *caltime)
 {
 	retvm_if(caltime == NULL, -1, "Invalid argument: calendar_time_s is NULL");
+
+	if (caltime->time.utime == CALENDAR_TODO_NO_DUE_DATE)
+	{
+		DBG("No due date");
+		return CALENDAR_ERROR_NONE;
+	}
 
 	switch (caltime->type)
 	{
 	case CALENDAR_TIME_UTIME:
         {
-            char *tmp_tzid = NULL;
-            tmp_tzid = _cal_time_convert_ltos(NULL, caltime->time.utime);
-            if (tmp_tzid)
-            {
-                __cal_vcalendar_make_printf(b, "DUE:", tmp_tzid);
-                CAL_FREE(tmp_tzid);
-            }
+			char* str_time = NULL;
+			if (NULL != tzid && strlen(tzid) > 0)
+			{
+				str_time = _cal_time_convert_ltos(tzid, caltime->time.utime);
+				if (str_time)
+				{
+					char buf[128] = {0};
+					snprintf(buf, sizeof(buf), "DUE;TZID=%s:", tzid);
+					__cal_vcalendar_make_printf(b, buf, str_time);
+					CAL_FREE(str_time);
+				}
+			}
+			else
+			{
+				str_time = _cal_time_convert_ltos(NULL, caltime->time.utime);
+				if (str_time)
+				{
+					__cal_vcalendar_make_printf(b, "DUE:", str_time);
+					CAL_FREE(str_time);
+				}
+			}
         }
 		break;
 
@@ -573,6 +603,119 @@ int __cal_vcalendar_make_audio(cal_make_s *b, calendar_record_h alarm)
 	return CALENDAR_ERROR_NONE;
 }
 
+// ver 1.0 aalarm
+int __cal_vcalendar_make_aalarm(cal_make_s *b, calendar_record_h record, calendar_record_h alarm)
+{
+	int ret;
+	int type;
+	int tick, unit;
+	char *uri = NULL;
+	long long int utime;
+	calendar_time_s caltime = {0};
+	retvm_if(alarm == NULL, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid argument: alarm is NULL");
+
+	ret = calendar_record_get_uri_p(record, &uri);
+	if (CALENDAR_ERROR_NONE != ret)
+	{
+		ERR("calendar_record_get_uri_p() failed");
+		return ret;
+	}
+
+	if (!strncmp(uri, _calendar_event._uri, strlen(_calendar_event._uri)))
+	{
+		type = CALENDAR_RECORD_TYPE_EVENT;
+	}
+	else if (!strncmp(uri, _calendar_todo._uri, strlen(_calendar_todo._uri)))
+	{
+		type = CALENDAR_RECORD_TYPE_TODO;
+	}
+	else
+	{
+		ERR("Invalid type(%s)", uri);
+		return CALENDAR_ERROR_INVALID_PARAMETER;
+	}
+
+	ret = calendar_record_get_int(alarm, _calendar_alarm.tick_unit, &unit);
+	if (CALENDAR_ERROR_NONE != ret)
+	{
+		ERR("calendar_record_get_int() failed");
+		return ret;
+	}
+	ret = calendar_record_get_int(alarm, _calendar_alarm.tick, &tick);
+	if (CALENDAR_ERROR_NONE != ret)
+	{
+		ERR("calendar_record_get_int() failed");
+		return ret;
+	}
+
+	switch (unit)
+	{
+	case CALENDAR_ALARM_TIME_UNIT_SPECIFIC:
+		ret = calendar_record_get_lli(alarm, _calendar_alarm.time, &utime);
+		if (CALENDAR_ERROR_NONE != ret)
+		{
+			ERR("calendar_record_get_lli() failed");
+			return ret;
+		}
+		break;
+
+	default:
+		switch (type)
+		{
+		case CALENDAR_RECORD_TYPE_EVENT:
+			ret = calendar_record_get_caltime(record, _calendar_event.start_time, &caltime);
+			if (CALENDAR_ERROR_NONE != ret)
+			{
+				ERR("calendar_record_get_caltime() failed");
+				return ret;
+			}
+			switch (caltime.type)
+			{
+			case CALENDAR_TIME_UTIME:
+				utime = caltime.time.utime - (tick * unit);
+				break;
+
+			case CALENDAR_TIME_LOCALTIME:
+				utime = _cal_time_convert_itol(NULL, caltime.time.date.year,
+						caltime.time.date.month, caltime.time.date.mday, 0, 0, 0);
+				utime -= (tick * unit);
+				break;
+			}
+			break;
+
+		case CALENDAR_RECORD_TYPE_TODO:
+			ret = calendar_record_get_caltime(record, _calendar_todo.due_time, &caltime);
+			if (CALENDAR_ERROR_NONE != ret)
+			{
+				ERR("calendar_record_get_caltime() failed");
+				return ret;
+			}
+			switch (caltime.type)
+			{
+			case CALENDAR_TIME_UTIME:
+				utime = caltime.time.utime - (tick * unit);
+				break;
+
+			case CALENDAR_TIME_LOCALTIME:
+				utime = _cal_time_convert_itol(NULL, caltime.time.date.year,
+						caltime.time.date.month, caltime.time.date.mday, 0, 0, 0);
+				utime -= (tick * unit);
+				break;
+			}
+			break;
+		}
+		break;
+	}
+
+	char *calstr = _cal_time_convert_ltos(NULL, utime);
+	DBG("[%s]", calstr);
+
+	ret = __cal_vcalendar_make_printf(b, "AALARM:", calstr);
+	CAL_FREE(calstr);
+
+	return CALENDAR_ERROR_NONE;
+}
+
 int __cal_vcalendar_make_alarm(cal_make_s *b, calendar_record_h alarm)
 {
 	int ret;
@@ -592,6 +735,289 @@ int __cal_vcalendar_make_alarm(cal_make_s *b, calendar_record_h alarm)
 
 	__cal_vcalendar_make_printf(b, "END:VALARM", NULL);
 	return CALENDAR_ERROR_NONE;
+}
+
+int __cal_vcalendar_make_rrule_append_mday(char *buf, char *mday)
+{
+	int i;
+	int num;
+	int length = 0;
+	char **t;
+	char *p;
+
+	if (NULL == buf || NULL == mday)
+	{
+		ERR("Invalid parameter");
+		return CALENDAR_ERROR_INVALID_PARAMETER;
+	}
+
+	t = g_strsplit(mday, ",", -1);
+	if (!t) {
+		ERR("g_strsplit failed");
+		g_strfreev(t);
+		return CALENDAR_ERROR_OUT_OF_MEMORY;
+	}
+	length = g_strv_length(t);
+	for (i = 0; i < length; i++)
+	{
+		p = t[i];
+		while (*p == ' ')
+		{
+			p++;
+		}
+		num = atoi(p);
+		if (num > 0)
+		{
+			strcat(buf, p);
+		}
+		else
+		{
+			strcat(buf, p + 1);
+			strcat(buf, "-");
+		}
+		strcat(buf, " ");
+	}
+	g_strfreev(t);
+
+	return CALENDAR_ERROR_NONE;
+}
+
+int __cal_vcalendar_make_rrule_append_wday(char *buf, char *wday)
+{
+	int i, j;
+	int num, num_past;
+	int length = 0;
+	char **t;
+	char *p;
+	char buf_temp[8] = {0};
+
+	num_past = 0;
+	t = g_strsplit(wday, ",", -1);
+	if (!t) {
+		ERR("g_strsplit failed");
+		g_strfreev(t);
+		return CALENDAR_ERROR_OUT_OF_MEMORY;
+	}
+	length = g_strv_length(t);
+	for (i = 0; i < length; i++)
+	{
+		p = t[i];
+		while (*p == ' ') // del space
+		{
+			p++;
+		}
+		j = 0; // get number
+		while (p[j] == '+' || p[j] == '-' || (p[j] >= '1' && p[j] <= '9'))
+		{
+			j++;
+		}
+		if (j > 0)
+		{
+			if (*p == '-')
+			{
+				snprintf(buf_temp, j, "%s", p + 1);
+				num = atoi(buf_temp);
+				if (0 == i)
+				{
+					num_past = num;
+					strcat(buf, buf_temp);
+					strcat(buf, "-");
+					strcat(buf, " ");
+				}
+			}
+			else
+			{
+				snprintf(buf_temp, j + 1, "%s", p);
+				num = atoi(buf_temp);
+				if (0 == i)
+				{
+					num_past = num;
+					strcat(buf, buf_temp);
+					strcat(buf, " ");
+				}
+			}
+			if (num_past == num)
+			{
+				strcat(buf, p + j);
+				strcat(buf, " ");
+			}
+			else
+			{
+				ERR("Out of 1.0 spec");
+			}
+			DBG("%d num(%d) val[%s]", i, num, p + j);
+		}
+		else
+		{
+			strcat(buf, p);
+			strcat(buf, " ");
+		}
+	}
+	g_strfreev(t);
+
+	return CALENDAR_ERROR_NONE;
+}
+
+int __cal_vcalendar_make_rrule_append_until(char *buf, calendar_record_h record)
+{
+	int ret;
+	int range_type = 0;
+	int count;
+	char *until_str = NULL;
+	char buf_range[256] = {0};
+	calendar_time_s caltime;
+
+	ret = calendar_record_get_int(record, _calendar_event.range_type, &range_type);
+	if (CALENDAR_ERROR_NONE != ret)
+	{
+		ERR("calendar_record_get_int() failed");
+		return ret;
+	}
+
+	switch (range_type)
+	{
+	case CALENDAR_RANGE_COUNT:
+		ret = calendar_record_get_int(record, _calendar_event.count, &count);
+		if (CALENDAR_ERROR_NONE != ret)
+		{
+			ERR("calendar_record_get_int() failed");
+			return ret;
+		}
+		snprintf(buf_range, sizeof(buf_range), "#%d", count);
+		break;
+
+	case CALENDAR_RANGE_UNTIL:
+		memset(&caltime, 0x0, sizeof(calendar_time_s));
+		ret = calendar_record_get_caltime(record, _calendar_event.until_time, &caltime);
+		if (CALENDAR_ERROR_NONE != ret)
+		{
+			ERR("calendar_record_get_caltime() failed");
+			return ret;
+		}
+		switch (caltime.type)
+		{
+		case CALENDAR_TIME_UTIME:
+			until_str = _cal_time_convert_ltos(NULL, caltime.time.utime);
+			snprintf(buf_range, sizeof(buf_range), "%s", until_str);
+			CAL_FREE(until_str);
+			break;
+
+		case CALENDAR_TIME_LOCALTIME:
+			snprintf(buf_range, sizeof(buf_range), "%04d%02d%02dT000000Z",
+					caltime.time.date.year, caltime.time.date.month, caltime.time.date.mday);
+			break;
+		}
+		break;
+
+	case CALENDAR_RANGE_NONE:
+		snprintf(buf_range, sizeof(buf_range), "#0");
+		break;
+	}
+	strcat(buf, buf_range);
+
+	return CALENDAR_ERROR_NONE;
+}
+
+static int __cal_vcalendar_make_rrule_ver1(cal_make_s *b, calendar_record_h record)
+{
+	int ret;
+	int freq;
+	int interval = 0;
+	char *byyearday = NULL;
+	char *bymonth = NULL;
+	char *bymonthday = NULL;
+	char *byday = NULL;
+	char buf[512] = {0};
+
+	ret = calendar_record_get_int(record, _calendar_event.freq, &freq);
+	if (CALENDAR_ERROR_NONE != ret)
+	{
+		ERR("calendar_record_get_int() failed");
+		return ret;
+	}
+	ret = calendar_record_get_int(record, _calendar_event.interval, &interval);
+	if (CALENDAR_ERROR_NONE != ret)
+	{
+		ERR("calendar_record_get_int() failed");
+		return ret;
+	}
+	ret = calendar_record_get_str_p(record, _calendar_event.bymonthday, &byyearday);
+	if (CALENDAR_ERROR_NONE != ret)
+	{
+		ERR("calendar_record_get_str_p() failed");
+		return ret;
+	}
+	ret = calendar_record_get_str_p(record, _calendar_event.bymonth, &bymonth);
+	if (CALENDAR_ERROR_NONE != ret)
+	{
+		ERR("calendar_record_get_str_p() failed");
+		return ret;
+	}
+	ret = calendar_record_get_str_p(record, _calendar_event.byday, &byday);
+	if (CALENDAR_ERROR_NONE != ret)
+	{
+		ERR("calendar_record_get_str_p() failed");
+		return ret;
+	}
+	ret = calendar_record_get_str_p(record, _calendar_event.bymonthday, &bymonthday);
+	if (CALENDAR_ERROR_NONE != ret)
+	{
+		ERR("calendar_record_get_str_p() failed");
+		return ret;
+	}
+
+	switch (freq) {
+	case CALENDAR_RECURRENCE_DAILY:
+		snprintf(buf, sizeof(buf), "D%d ", interval);
+		break;
+
+	case CALENDAR_RECURRENCE_WEEKLY:
+		snprintf(buf, sizeof(buf), "W%d ", interval);
+		__cal_vcalendar_make_rrule_append_wday(buf, byday);
+		break;
+
+	case CALENDAR_RECURRENCE_MONTHLY:
+		if (byday)
+		{
+			snprintf(buf, sizeof(buf), "MP%d ", interval);
+			__cal_vcalendar_make_rrule_append_wday(buf, byday);
+		}
+		else if (bymonthday)
+		{
+			snprintf(buf, sizeof(buf), "MD%d ", interval);
+			__cal_vcalendar_make_rrule_append_mday(buf, bymonthday);
+		}
+		else
+		{
+			ERR("Invalid parameter");
+		}
+		break;
+
+	case CALENDAR_RECURRENCE_YEARLY:
+		if (bymonth)
+		{
+			snprintf(buf, sizeof(buf), "YM%d ", interval);
+			__cal_vcalendar_make_rrule_append_mday(buf, bymonth);
+		}
+		else if (byyearday)
+		{
+			snprintf(buf, sizeof(buf), "YD%d ", interval);
+			__cal_vcalendar_make_rrule_append_mday(buf, byyearday);
+		}
+		else
+		{
+			ERR("Invalid parameter");
+		}
+		break;
+
+	default:
+		ERR("Invalid parameter");
+		break;
+	}
+
+	__cal_vcalendar_make_rrule_append_until(buf, record);
+
+	return __cal_vcalendar_make_printf(b, "RRULE:", buf);
 }
 
 static int __cal_vcalendar_make_rrule(cal_make_s *b, int freq, calendar_record_h record)
@@ -625,75 +1051,66 @@ static int __cal_vcalendar_make_rrule(cal_make_s *b, int freq, calendar_record_h
 	strcat(buf, ";INTERVAL=");
 	strcat(buf, tmp);
 
-	ret = calendar_record_get_str(record, _calendar_event.bysecond, &text);
+	ret = calendar_record_get_str_p(record, _calendar_event.bysecond, &text);
 	if (text) {
 		strcat(buf, ";BYSECOND=");
 		strcat(buf, text);
-		CAL_FREE(text);
 		text = NULL;
 	}
 
-	ret = calendar_record_get_str(record, _calendar_event.byminute, &text);
+	ret = calendar_record_get_str_p(record, _calendar_event.byminute, &text);
 	if (text) {
 		strcat(buf, ";BYMINUTE=");
 		strcat(buf, text);
-		CAL_FREE(text);
 		text = NULL;
 	}
 
-	ret = calendar_record_get_str(record, _calendar_event.byhour, &text);
+	ret = calendar_record_get_str_p(record, _calendar_event.byhour, &text);
 	if (text) {
 		strcat(buf, ";BYHOUR=");
 		strcat(buf, text);
-		CAL_FREE(text);
 		text = NULL;
 	}
 
-	ret = calendar_record_get_str(record, _calendar_event.byday, &text);
+	ret = calendar_record_get_str_p(record, _calendar_event.byday, &text);
 	if (text) {
 		strcat(buf, ";BYDAY=");
 		strcat(buf, text);
-		CAL_FREE(text);
 		text = NULL;
 	}
 
-	ret = calendar_record_get_str(record, _calendar_event.bymonthday, &text);
+	ret = calendar_record_get_str_p(record, _calendar_event.bymonthday, &text);
 	if (text) {
 		strcat(buf, ";BYMONTHDAY=");
 		strcat(buf, text);
-		CAL_FREE(text);
 		text = NULL;
 	}
 
-	ret = calendar_record_get_str(record, _calendar_event.byyearday, &text);
+	ret = calendar_record_get_str_p(record, _calendar_event.byyearday, &text);
 	if (text) {
 		strcat(buf, ";BYYEARDAY=");
 		strcat(buf, text);
-		CAL_FREE(text);
 		text = NULL;
 	}
 
-	ret = calendar_record_get_str(record, _calendar_event.byweekno, &text);
+	ret = calendar_record_get_str_p(record, _calendar_event.byweekno, &text);
 	if (text) {
 		strcat(buf, ";BYWEEKNO=");
 		strcat(buf, text);
-		CAL_FREE(text);
 		text = NULL;
 	}
 
-	ret = calendar_record_get_str(record, _calendar_event.bymonth, &text);
+	ret = calendar_record_get_str_p(record, _calendar_event.bymonth, &text);
 	if (text) {
 		strcat(buf, ";BYMONTH=");
 		strcat(buf, text);
-		CAL_FREE(text);
 		text = NULL;
 	}
 
-	ret = calendar_record_get_str(record, _calendar_event.bysetpos, &text);
+	ret = calendar_record_get_str_p(record, _calendar_event.bysetpos, &text);
 	if (text) {
 		strcat(buf, ";BYSETPOS=");
 		strcat(buf, text);
-		CAL_FREE(text);
 		text = NULL;
 	}
 
@@ -765,12 +1182,74 @@ static int __cal_vcalendar_make_rrule(cal_make_s *b, int freq, calendar_record_h
 	return __cal_vcalendar_make_printf(b, "RRULE:", buf);
 }
 /////////////////////////////////////////////////////////////////////////////
-int __cal_vcalendar_make_schedule(cal_make_s *b, calendar_record_h record)
+
+int __cal_vcalendar_make_child_extended(cal_make_s *b, calendar_record_h child)
+{
+	int ret;
+	char *key = NULL;
+	char *value = NULL;
+	if (NULL == child)
+	{
+		ERR("Invalid argument: child is NULL");
+		return CALENDAR_ERROR_INVALID_PARAMETER;
+	}
+
+	ret = calendar_record_get_str_p(child, _calendar_extended_property.key, &key);
+	if (CALENDAR_ERROR_NONE != ret)
+	{
+		ERR("calendar_record_get_str_p() failed");
+		return ret;
+	}
+	if (NULL == key || strncmp(key, "X-", strlen("X-")))
+	{
+		DBG("Not extended for vcalendar[%s]", key);
+		return CALENDAR_ERROR_NONE;
+	}
+
+	ret = calendar_record_get_str_p(child, _calendar_extended_property.value, &value);
+	if (CALENDAR_ERROR_NONE != ret)
+	{
+		ERR("calendar_record_get_str_p() failed");
+		return ret;
+	}
+	ret = __cal_vcalendar_make_printf(b, key, value);
+	if (CALENDAR_ERROR_NONE != ret)
+	{
+		ERR("__cal_vcalendar_make_printf() failed");
+		return ret;
+	}
+
+	return CALENDAR_ERROR_NONE;
+}
+
+int __cal_vcalendar_make_printf_str_p(calendar_record_h record, unsigned int property_id, cal_make_s *b, const char *property_str)
+{
+	int ret;
+	char *strval = NULL;
+
+	ret = calendar_record_get_str_p(record, property_id, &strval);
+	if (CALENDAR_ERROR_NONE != ret)
+	{
+		ERR("calendar_record_get_str_p() failed(ret:%d): categories", ret);
+		return ret;
+	}
+	if (strval && (strlen(strval) > 0))
+	{
+		ret = __cal_vcalendar_make_printf(b, property_str, strval);
+		if (CALENDAR_ERROR_NONE != ret)
+		{
+			ERR("__cal_vcalendar_make_printf() failed(ret:%d)", ret);
+			return ret;
+		}
+	}
+	return CALENDAR_ERROR_NONE;
+}
+
+int __cal_vcalendar_make_schedule(int version, cal_make_s *b, calendar_record_h record)
 {
 	int ret;
 	int freq;
 	int intval;
-	long long int llival;
 	char *strval = NULL;
 	char *strval2 = NULL;
 	calendar_time_s caltime = {0};
@@ -800,71 +1279,58 @@ int __cal_vcalendar_make_schedule(cal_make_s *b, calendar_record_h record)
 	ret = __cal_vcalendar_make_transp(b, intval);
 	retv_if(ret != CALENDAR_ERROR_NONE, ret);
 
-	// created_time
+	// dtstart_type
 	ret = calendar_record_get_str_p(record, _calendar_event.start_tzid, &tzid);
 	ret = calendar_record_get_caltime(record, _calendar_event.start_time, &caltime);
 	if (ret != CALENDAR_ERROR_NONE) {
 		ERR("Failed to get start_time(%d)", ret);
 		return -1;
 	}
+	ret = __cal_vcalendar_make_dtstart(b, tzid, &caltime);
+	retvm_if(ret != CALENDAR_ERROR_NONE, -1, "Failed to get dtstart(%d)", ret);
 
+
+	// created_time
+/* keis want to skip for there potential error.
 	ret = calendar_record_get_lli(record, _calendar_event.created_time, &llival);
 	retvm_if(ret != CALENDAR_ERROR_NONE, -1,
 			"Failed to get created_time(%d)", ret);
 
 	ret = __cal_vcalendar_make_created(b, llival);
 	retv_if(ret != CALENDAR_ERROR_NONE, ret);
-
+*/
 
 	// description
-	strval = NULL;
-	ret = calendar_record_get_str_p(record, _calendar_event.description, &strval);
-	retvm_if(ret != CALENDAR_ERROR_NONE, -1,
-			"Failed to get description(%d)", ret);
+	__cal_vcalendar_make_printf_str_p(record, _calendar_event.description, b, "DESCRIPTION:");
 
-	if (strval) {
-		ret = __cal_vcalendar_make_description(b, strval);
-		retv_if(ret != CALENDAR_ERROR_NONE, ret);
-
-	} else {
-		DBG("No description");
-	}
-
-	// dtstart_type
-	ret = __cal_vcalendar_make_dtstart(b, &caltime);
-	retvm_if(ret != CALENDAR_ERROR_NONE, -1,
-			"Failed to get dtstart(%d)", ret);
-
-	// TODO : geo
-
+	// rrule
 	ret = calendar_record_get_int(record, _calendar_event.freq, &freq);
-	DBG("freq(%d)", freq);
+	retvm_if(ret != CALENDAR_ERROR_NONE, ret,
+			"Failed to get last_modified_time(%d)", ret);
 	if (freq)
 	{
-		__cal_vcalendar_make_rrule(b, freq, record);
+		switch (version)
+		{
+		case 1:
+			ret = __cal_vcalendar_make_rrule_ver1(b, record);
+			break;
+
+		default:
+			__cal_vcalendar_make_rrule(b, freq, record);
+		}
 	}
 
 	// last_mod
+/* keis want to skip for there potential error.
 	ret = calendar_record_get_lli(record, _calendar_event.last_modified_time, &llival);
 	retvm_if(ret != CALENDAR_ERROR_NONE, -1,
 			"Failed to get last_modified_time(%d)", ret);
 
 	ret = __cal_vcalendar_make_last_mod(b, llival);
 	retv_if(ret != CALENDAR_ERROR_NONE, ret);
-
+*/
 	// location
-	strval = NULL;
-	ret = calendar_record_get_str_p(record, _calendar_event.location, &strval);
-	retvm_if(ret != CALENDAR_ERROR_NONE, -1,
-			"Failed to get location(%d)", ret);
-
-	if (strval) {
-		ret = __cal_vcalendar_make_location(b, strval);
-		retv_if(ret != CALENDAR_ERROR_NONE, ret);
-
-	} else {
-		DBG("No location");
-	}
+	__cal_vcalendar_make_printf_str_p(record, _calendar_event.location, b, "LOCATION:");
 
 	// organizer email
 	strval = NULL;
@@ -897,54 +1363,36 @@ int __cal_vcalendar_make_schedule(cal_make_s *b, calendar_record_h record)
 	// TODO : seq
 
 	// dtstamp
+/* keis want to skip for there potential error.
 	ret = __cal_vcalendar_make_dtstamp(b, tzid);
 	retv_if(ret != CALENDAR_ERROR_NONE, ret);
+*/
 
 	// summary
-	strval = NULL;
-	ret = calendar_record_get_str_p(record, _calendar_event.summary, &strval);
-	retvm_if(ret != CALENDAR_ERROR_NONE, -1,
-			"Failed to get summary(%d)", ret);
-
-	if (strval) {
-		ret = __cal_vcalendar_make_summary(b, strval);
-		retv_if(ret != CALENDAR_ERROR_NONE, ret);
-
-	} else {
-		DBG("No summary");
-	}
+	__cal_vcalendar_make_printf_str_p(record, _calendar_event.summary, b, "SUMMARY:");
 
 	// dtend
 	ret = calendar_record_get_caltime(record, _calendar_event.end_time, &caltime);
 	retvm_if(ret != CALENDAR_ERROR_NONE, -1,
 			"Failed to get end_time(%d)", ret);
 
-	ret = __cal_vcalendar_make_dtend(b, &caltime);
-	retvm_if(ret != CALENDAR_ERROR_NONE, -1,
-			"Failed to get dtstart(%d)", ret);
+	ret = __cal_vcalendar_make_dtend(b, tzid, &caltime);
+	retvm_if(ret != CALENDAR_ERROR_NONE, -1, "Failed to get end(%d)", ret);
+
+	// categories
+	__cal_vcalendar_make_printf_str_p(record, _calendar_event.categories, b, "CATEGORIES:");
+
+	// uid
+	__cal_vcalendar_make_printf_str_p(record, _calendar_event.uid, b, "UID:");
 
 	// exdate
-	strval = NULL;
-	ret = calendar_record_get_str_p(record, _calendar_event.exdate, &strval);
-	if (CALENDAR_ERROR_NONE != ret)
-	{
-		ERR("calendar_record_get_str_p() failed(ret:%d): exdate", ret);
-		return ret;
-	}
-	if (strval)
-	{
-		ret = __cal_vcalendar_make_exdate(b, strval);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("__cal_vcalendar_make_exdate() failed(ret:%d)", ret);
-			return ret;
-		}
-	}
+	__cal_vcalendar_make_printf_str_p(record, _calendar_event.exdate, b, "EXDATE:");
 
-	// attendee
 	unsigned int count;
 	calendar_record_h child = NULL;
 
+	// attendee
+	count = 0;
 	ret = calendar_record_get_child_record_count(record,
 			_calendar_event.calendar_attendee, &count);
 	retvm_if(ret != CALENDAR_ERROR_NONE, -1,
@@ -967,37 +1415,74 @@ int __cal_vcalendar_make_schedule(cal_make_s *b, calendar_record_h record)
 	}
 
 	// alarm
-	ret = calendar_record_get_child_record_count(record,
-			_calendar_event.calendar_alarm, &count);
-	retvm_if(ret != CALENDAR_ERROR_NONE, -1,
-			"Failed to get child count(%d)", ret);
+	count = 0;
+	switch (version)
+	{
+	case 1:
+		// In ver 1.0, only first alarm will be dealt with.
+		ret = calendar_record_get_child_record_count(record, _calendar_event.calendar_alarm, &count);
+		retvm_if(ret != CALENDAR_ERROR_NONE, -1, "Failed to get child count(%d)", ret);
+		if (count > 0)
+		{
+			ret = calendar_record_get_child_record_at_p(record, _calendar_event.calendar_alarm, 0, &child);
+			retvm_if(ret != CALENDAR_ERROR_NONE, -1, "Failed to get child alarm(%d)", ret);
+
+			ret = __cal_vcalendar_make_aalarm(b, record, child);
+			retv_if(ret != CALENDAR_ERROR_NONE, ret);
+		}
+		else
+		{
+			DBG("No alarm in ver1.0");
+		}
+		break;
+
+	default:
+		ret = calendar_record_get_child_record_count(record, _calendar_event.calendar_alarm, &count);
+		retvm_if(ret != CALENDAR_ERROR_NONE, -1, "Failed to get child count(%d)", ret);
+
+		while (count > 0)
+		{
+			count--;
+			ret = calendar_record_get_child_record_at_p(record, _calendar_event.calendar_alarm, count, &child);
+			retvm_if(ret != CALENDAR_ERROR_NONE, -1, "Failed to get child alarm(%d)", ret);
+
+			ret = __cal_vcalendar_make_alarm(b, child);
+			retv_if(ret != CALENDAR_ERROR_NONE, ret);
+		}
+
+		if (count <= 0)
+		{
+			DBG("No alarm in ver2.0");
+		}
+	}
+
+	// extended
+	count = 0;
+	ret = calendar_record_get_child_record_count(record, _calendar_event.extended, &count);
+	retvm_if(ret != CALENDAR_ERROR_NONE, -1, "Failed to get child count(%d)", ret);
 
 	while (count > 0)
 	{
 		count--;
-		ret = calendar_record_get_child_record_at_p(record,
-				_calendar_event.calendar_alarm, count, &child);
-		retvm_if(ret != CALENDAR_ERROR_NONE, -1,
-				"Failed to get child alarm(%d)", ret);
+		ret = calendar_record_get_child_record_at_p(record, _calendar_event.extended, count, &child);
+		retvm_if(ret != CALENDAR_ERROR_NONE, -1, "Failed to get child alarm(%d)", ret);
 
-		ret = __cal_vcalendar_make_alarm(b, child);
+		ret = __cal_vcalendar_make_child_extended(b, child);
 		retv_if(ret != CALENDAR_ERROR_NONE, ret);
 	}
 
 	if (count <= 0)
 	{
-		DBG("No alarm");
+		DBG("No extended");
 	}
 
 	return __cal_vcalendar_make_printf(b, "END:VEVENT", NULL);
 }
 
-int __cal_vcalendar_make_todo(cal_make_s *b, calendar_record_h record)
+int __cal_vcalendar_make_todo(int version, cal_make_s *b, calendar_record_h record)
 {
 	int ret;
 	int intval;
-	long long int llival;
-	char *strval = NULL;
 	calendar_time_s caltime = {0};
 	char *uri = NULL;
 	char *tzid = NULL;
@@ -1017,64 +1502,45 @@ int __cal_vcalendar_make_todo(cal_make_s *b, calendar_record_h record)
 	__cal_vcalendar_make_class(b, intval);
 	retv_if(ret != CALENDAR_ERROR_NONE, ret);
 
-	// created_time
+	// dtstart_type
 	ret = calendar_record_get_str_p(record, _calendar_todo.start_tzid, &tzid);
 	ret = calendar_record_get_caltime(record, _calendar_todo.start_time, &caltime);
 	if (ret != CALENDAR_ERROR_NONE) {
 		ERR("Failed to get start_time(%d)", ret);
 		return -1;
 	}
+	ret = __cal_vcalendar_make_dtstart(b, tzid, &caltime);
+	retvm_if(ret != CALENDAR_ERROR_NONE, -1,
+			"Failed to get dtstart(%d)", ret);
 
+	// created_time
+/* keis want to skip for there potential error.
 	ret = calendar_record_get_lli(record, _calendar_todo.created_time, &llival);
 	retvm_if(ret != CALENDAR_ERROR_NONE, -1,
 			"Failed to get created_time(%d)", ret);
 
 	ret = __cal_vcalendar_make_created(b, llival);
 	retv_if(ret != CALENDAR_ERROR_NONE, ret);
-
+*/
 
 	// description
-	strval = NULL;
-	ret = calendar_record_get_str_p(record, _calendar_todo.description, &strval);
-	retvm_if(ret != CALENDAR_ERROR_NONE, -1,
-			"Failed to get description(%d)", ret);
+	__cal_vcalendar_make_printf_str_p(record, _calendar_todo.description, b, "DESCRIPTION:");
 
-	if (strval) {
-		ret = __cal_vcalendar_make_description(b, strval);
-		retv_if(ret != CALENDAR_ERROR_NONE, ret);
-
-	} else {
-		DBG("No description");
-	}
-
-	// dtstart_type
-	ret = __cal_vcalendar_make_dtstart(b, &caltime);
-	retvm_if(ret != CALENDAR_ERROR_NONE, -1,
-			"Failed to get dtstart(%d)", ret);
 
 	// TODO : geo
 
 	// last_mod
+/* keis want to skip for there potential error.
 	ret = calendar_record_get_lli(record, _calendar_todo.last_modified_time, &llival);
 	retvm_if(ret != CALENDAR_ERROR_NONE, -1,
 			"Failed to get last_modified_time(%d)", ret);
 
 	ret = __cal_vcalendar_make_last_mod(b, llival);
 	retv_if(ret != CALENDAR_ERROR_NONE, ret);
+*/
 
 	// location
-	strval = NULL;
-	ret = calendar_record_get_str_p(record, _calendar_todo.location, &strval);
-	retvm_if(ret != CALENDAR_ERROR_NONE, -1,
-			"Failed to get location(%d)", ret);
-
-	if (strval) {
-		ret = __cal_vcalendar_make_location(b, strval);
-		retv_if(ret != CALENDAR_ERROR_NONE, ret);
-
-	} else {
-		DBG("No location");
-	}
+	__cal_vcalendar_make_printf_str_p(record, _calendar_todo.location, b, "LOCATION:");
 
 	// priority
 	ret = calendar_record_get_int(record, _calendar_todo.priority, &intval);
@@ -1088,77 +1554,173 @@ int __cal_vcalendar_make_todo(cal_make_s *b, calendar_record_h record)
 	// TODO : seq
 
 	// dtstamp
+/* keis want to skip for there potential error.
 	ret = __cal_vcalendar_make_dtstamp(b, tzid);
 	retv_if(ret != CALENDAR_ERROR_NONE, ret);
+*/
 
 	// summary
-	strval = NULL;
-	ret = calendar_record_get_str_p(record, _calendar_todo.summary, &strval);
-	retvm_if(ret != CALENDAR_ERROR_NONE, -1,
-			"Failed to get summary(%d)", ret);
-
-	if (strval) {
-		ret = __cal_vcalendar_make_summary(b, strval);
-		retv_if(ret != CALENDAR_ERROR_NONE, ret);
-
-	} else {
-		DBG("No summary");
-	}
+	__cal_vcalendar_make_printf_str_p(record, _calendar_todo.summary, b, "SUMMARY:");
 
 	// dtend
 	ret = calendar_record_get_caltime(record, _calendar_todo.due_time, &caltime);
 	retvm_if(ret != CALENDAR_ERROR_NONE, -1,
 			"Failed to get due_time(%d)", ret);
 
-	ret = __cal_vcalendar_make_due(b, &caltime);
-	retvm_if(ret != CALENDAR_ERROR_NONE, -1,
-			"__cal_vcalendar_make_due() failed(%d)", ret);
+	ret = __cal_vcalendar_make_due(b, tzid, &caltime);
+	retvm_if(ret != CALENDAR_ERROR_NONE, -1, "__cal_vcalendar_make_due() failed(%d)", ret);
+
+	// categories
+	__cal_vcalendar_make_printf_str_p(record, _calendar_todo.categories, b, "CATEGORIES:");
+
+	// uid
+	__cal_vcalendar_make_printf_str_p(record, _calendar_todo.uid, b, "UID:");
 
 	// alarm
 	unsigned int count;
 	calendar_record_h child = NULL;
-	ret = calendar_record_get_child_record_count(record,
-			_calendar_todo.calendar_alarm, &count);
-	retvm_if(ret != CALENDAR_ERROR_NONE, -1,
-			"Failed to get child count(%d)", ret);
+
+	switch (version)
+	{
+	case 1:
+		// In ver 1.0, only first alarm will be dealt with.
+		ret = calendar_record_get_child_record_count(record, _calendar_todo.calendar_alarm, &count);
+		retvm_if(ret != CALENDAR_ERROR_NONE, -1, "Failed to get child count(%d)", ret);
+		if (count > 0)
+		{
+			ret = calendar_record_get_child_record_at_p(record, _calendar_todo.calendar_alarm, 0, &child);
+			retvm_if(ret != CALENDAR_ERROR_NONE, -1, "Failed to get child alarm(%d)", ret);
+
+			ret = __cal_vcalendar_make_aalarm(b, record, child);
+			retv_if(ret != CALENDAR_ERROR_NONE, ret);
+		}
+		else
+		{
+			DBG("No alarm in ver1.0");
+		}
+		break;
+
+	default:
+		ret = calendar_record_get_child_record_count(record, _calendar_todo.calendar_alarm, &count);
+		retvm_if(ret != CALENDAR_ERROR_NONE, -1, "Failed to get child count(%d)", ret);
+
+		while (count > 0)
+		{
+			count--;
+			ret = calendar_record_get_child_record_at_p(record, _calendar_todo.calendar_alarm, count, &child);
+			retvm_if(ret != CALENDAR_ERROR_NONE, -1, "Failed to get child alarm(%d)", ret);
+
+			ret = __cal_vcalendar_make_alarm(b, child);
+			retv_if(ret != CALENDAR_ERROR_NONE, ret);
+		}
+
+		if (count <= 0)
+		{
+			DBG("No alarm in ver2.0");
+		}
+	}
+
+	// extended
+	count = 0;
+	ret = calendar_record_get_child_record_count(record, _calendar_todo.extended, &count);
+	retvm_if(ret != CALENDAR_ERROR_NONE, -1, "Failed to get child count(%d)", ret);
 
 	while (count > 0)
 	{
 		count--;
-		ret = calendar_record_get_child_record_at_p(record,
-				_calendar_todo.calendar_alarm, count, &child);
-		retvm_if(ret != CALENDAR_ERROR_NONE, -1,
-				"Failed to get child alarm(%d)", ret);
+		ret = calendar_record_get_child_record_at_p(record, _calendar_todo.extended, count, &child);
+		retvm_if(ret != CALENDAR_ERROR_NONE, -1, "Failed to get child alarm(%d)", ret);
 
-		ret = __cal_vcalendar_make_alarm(b, child);
+		ret = __cal_vcalendar_make_child_extended(b, child);
 		retv_if(ret != CALENDAR_ERROR_NONE, ret);
 	}
-
 	if (count <= 0)
 	{
-		DBG("No alarm");
+		DBG("No extended");
 	}
 
 	return __cal_vcalendar_make_printf(b, "END:VTODO", NULL);
 }
 
+int __cal_vcalendar_make_parent_extended(cal_make_s *b, calendar_list_h list, int *has_extended, int *version)
+{
+	int ret = CALENDAR_ERROR_NONE;
+	GList *l = NULL;
+	cal_list_s *cal_list = (cal_list_s *)list;
+
+	if (NULL == list)
+	{
+		ERR("Invalid parameter: list is NULL");
+		return CALENDAR_ERROR_DB_FAILED;
+	}
+
+	l = g_list_first(cal_list->record);
+	while (l)
+	{
+		char *uri = NULL;
+		calendar_record_h record = (calendar_record_h)l->data;
+		calendar_record_get_uri_p(record, &uri);
+		if (strncmp(uri, _calendar_extended_property._uri, strlen(_calendar_extended_property._uri)))
+		{
+			l = g_list_next(l);
+			continue;
+		}
+
+		*has_extended = 1;
+		cal_extended_s *extended = (cal_extended_s *)record;
+		if (NULL == extended)
+		{
+			ERR("extended is NULL");
+			return CALENDAR_ERROR_DB_FAILED;
+		}
+		ret = __cal_vcalendar_make_printf(b, extended->key, extended->value);
+		DBG("extended key[%s] value[%s]", extended->key, extended->value);
+		if (!strncmp(extended->key, "VERSION", strlen("VERSION")))
+		{
+			if (strstr(extended->value, "1.0"))
+			{
+				*version = 1;
+			}
+			else
+			{
+				*version = 2;
+			}
+
+			DBG("version (%s)", extended->value);
+			break;
+		}
+		l = g_list_next(l);
+	}
+	return CALENDAR_ERROR_NONE;
+}
+
 int _cal_vcalendar_make_vcalendar(cal_make_s *b, calendar_list_h list)
 {
 	int ret;
+	int version = 0;
+	int has_extended = 0;
 	char *uri = NULL;
 	calendar_record_h record;
 
 	ret = __cal_vcalendar_make_printf(b, "BEGIN:VCALENDAR", NULL);
 	retv_if(ret != CALENDAR_ERROR_NONE, ret);
 
-	ret = __cal_vcalendar_make_printf(b, "CALSCALE:GREGORIAN", NULL);
+	ret = __cal_vcalendar_make_parent_extended(b, list, &has_extended, &version);
 	retv_if(ret != CALENDAR_ERROR_NONE, ret);
 
-	ret = __cal_vcalendar_make_printf(b, "PRODID:-//Samsung Electronics//Calendar//EN", NULL);
-	retv_if(ret != CALENDAR_ERROR_NONE, ret);
+	if (has_extended == 0)
+	{
+/* keis want to skip for there potential error.
+		ret = __cal_vcalendar_make_printf(b, "CALSCALE:GREGORIAN", NULL);
+		retv_if(ret != CALENDAR_ERROR_NONE, ret);
 
-	ret = __cal_vcalendar_make_printf(b, "VERSION:2.0", NULL);
-	retv_if(ret != CALENDAR_ERROR_NONE, ret);
+		ret = __cal_vcalendar_make_printf(b, "PRODID:-//Samsung Electronics//Calendar//EN", NULL);
+		retv_if(ret != CALENDAR_ERROR_NONE, ret);
+*/
+
+		ret = __cal_vcalendar_make_printf(b, "VERSION:2.0", NULL);
+		retv_if(ret != CALENDAR_ERROR_NONE, ret);
+	}
 
 	ret = calendar_list_first(list);
 	retvm_if(ret != CALENDAR_ERROR_NONE, ret,
@@ -1175,12 +1737,12 @@ int _cal_vcalendar_make_vcalendar(cal_make_s *b, calendar_list_h list)
 		ret = calendar_record_get_uri_p(record, &uri);
 		if (!strcmp(uri, CALENDAR_VIEW_EVENT))
 		{
-			ret = __cal_vcalendar_make_schedule(b, record);
+			ret = __cal_vcalendar_make_schedule(version, b, record);
 
 		}
 		else if (!strcmp(uri, CALENDAR_VIEW_TODO))
 		{
-			ret = __cal_vcalendar_make_todo(b, record);
+			ret = __cal_vcalendar_make_todo(version, b, record);
 
 		}
 

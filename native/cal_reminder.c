@@ -19,6 +19,8 @@
 
 #include <stdlib.h>
 
+#include "calendar_reminder.h"
+
 #include "cal_internal.h"
 #include "cal_typedef.h"
 #include "cal_view.h"
@@ -249,3 +251,18 @@ API int calendar_reminder_has_receiver(const char *pkgname)
 
 	return count > 0 ? true : false;
 }
+
+API int calendar_reminder_add_cb(calendar_reminder_cb callback, void *user_data)
+{
+	ERR("This API[%s] is not valid in native library.", __func__);
+	ERR("If you want to use this API, please use in client library.");
+	return CALENDAR_ERROR_NOT_PERMITTED;
+}
+
+API int calendar_reminder_remove_cb(calendar_reminder_cb callback, void *user_data)
+{
+	ERR("This API[%s] is not valid in native library.", __func__);
+	ERR("If you want to use this API, please use in client library.");
+	return CALENDAR_ERROR_NOT_PERMITTED;
+}
+

@@ -1,7 +1,7 @@
 Name:       calendar-service
 Summary:    DB library for calendar
 Version:    0.1.14
-Release:    46
+Release:    84
 Group:      System/Libraries
 License:    Apache 2.0
 Source0:    %{name}-%{version}.tar.gz
@@ -22,6 +22,7 @@ BuildRequires: pkgconfig(appsvc)
 BuildRequires: pkgconfig(capi-base-common)
 BuildRequires: pkgconfig(contacts-service2)
 BuildRequires: pkgconfig(pims-ipc)
+BuildRequires: pkgconfig(bundle)
 
 %description
 DB library for calendar

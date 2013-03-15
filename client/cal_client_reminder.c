@@ -23,6 +23,7 @@
 #include "calendar_service.h"
 #include "calendar_db.h"
 #include "calendar_types2.h"
+#include "calendar_reminder.h"
 
 #include "cal_internal.h"
 #include "cal_typedef.h"
@@ -307,3 +308,177 @@ API int calendar_reminder_has_receiver(const char *pkgname)
 
     return ret;
 }
+
+// for reminder callback
+
+typedef struct {
+	calendar_reminder_cb cb;
+	void *user_data;
+} callback_info_s;
+
+typedef struct {
+	char *view_uri;
+	GSList *callbacks;
+} subscribe_info_s;
+
+static pims_ipc_h __ipc = NULL;
+static GSList *__subscribe_list = NULL;
+
+int _cal_client_reminder_create_for_subscribe(void)
+{
+	_cal_mutex_lock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+	if (!__ipc)
+	{
+		__ipc = pims_ipc_create_for_subscribe(CAL_IPC_SOCKET_PATH_FOR_SUBSCRIPTION);
+		if (!__ipc)
+		{
+			ERR("pims_ipc_create_for_subscribe");
+			_cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+			return CALENDAR_ERROR_IPC;
+		}
+	}
+	_cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+	return CALENDAR_ERROR_NONE;
+}
+
+int _cal_client_reminder_destroy_for_subscribe(void)
+{
+	_cal_mutex_lock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+
+	pims_ipc_destroy_for_subscribe(__ipc);
+	__ipc = NULL;
+
+	_cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+	return CALENDAR_ERROR_NONE;
+}
+
+static void __cal_client_reminder_subscribe_callback(pims_ipc_h ipc, pims_ipc_data_h data, void *user_data)
+{
+	unsigned int size = 0;
+	const unsigned char *str = NULL;
+	int len = 0;
+	subscribe_info_s *info = user_data;
+
+	if (data)
+	{
+		len = (int)pims_ipc_data_get(data, &size);
+		if (0 == len)
+		{
+			ERR("pims_ipc_data_get() failed");
+			return;
+		}
+		str = (const unsigned char *)pims_ipc_data_get(data, &size);
+		if (!str)
+		{
+			ERR("pims_ipc_data_get() failed");
+			return;
+		}
+	}
+	if (info)
+	{
+		GSList *l = NULL;
+		for (l = info->callbacks; l; l = l->next)
+		{
+			callback_info_s *cb_info = l->data;
+			if (NULL == cb_info) continue;
+
+			bundle *b = NULL;
+			b = bundle_decode(str, len);
+			if (b)
+			{
+				cb_info->cb(b, cb_info->user_data);
+				bundle_free(b);
+			}
+		}
+	}
+}
+
+API int calendar_reminder_add_cb(calendar_reminder_cb callback, void *user_data)
+{
+	GSList *it = NULL;
+	subscribe_info_s *info = NULL;
+	callback_info_s *cb_info = NULL;
+
+	_cal_mutex_lock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+
+	for (it = __subscribe_list; it; it = it->next)
+	{
+		if (NULL == it->data) continue;
+
+		info = it->data;
+		if (strcmp(info->view_uri, CAL_NOTI_REMINDER_CAHNGED) == 0)
+			break;
+		else
+			info = NULL;
+	}
+	if (NULL == info)
+	{
+		info = calloc(1, sizeof(subscribe_info_s));
+		if (NULL == info)
+		{
+			ERR("calloc() failed");
+			_cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+			return CALENDAR_ERROR_OUT_OF_MEMORY;
+		}
+		if (pims_ipc_subscribe(__ipc, CAL_IPC_MODULE_FOR_SUBSCRIPTION, (char *)CAL_NOTI_REMINDER_CAHNGED,
+					__cal_client_reminder_subscribe_callback, (void *)info) != 0)
+		{
+			ERR("pims_ipc_subscribe() failed");
+			free(info);
+			_cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+			return CALENDAR_ERROR_IPC;
+		}
+		info->view_uri = strdup(CAL_NOTI_REMINDER_CAHNGED);
+		__subscribe_list = g_slist_append(__subscribe_list, info);
+	}
+
+	cb_info = calloc(1, sizeof(callback_info_s));
+	cb_info->user_data = user_data;
+	cb_info->cb = callback;
+	info->callbacks = g_slist_append(info->callbacks, cb_info);
+
+	_cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+	return CALENDAR_ERROR_NONE;
+}
+
+API int calendar_reminder_remove_cb(calendar_reminder_cb callback, void *user_data)
+{
+	GSList *it = NULL;
+	subscribe_info_s *info = NULL;
+
+	_cal_mutex_lock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+
+	for (it = __subscribe_list; it; it = it->next)
+	{
+		if (NULL == it->data) continue;
+
+		info = it->data;
+		if (strcmp(info->view_uri, CAL_NOTI_REMINDER_CAHNGED) == 0)
+			break;
+		else
+			info = NULL;
+	}
+	if (info)
+	{
+		GSList *l = NULL;
+		for (l = info->callbacks; l; l = l->next)
+		{
+			callback_info_s *cb_info = l->data;
+			if (callback == cb_info->cb && user_data == cb_info->user_data)
+			{
+				info->callbacks = g_slist_remove(info->callbacks, cb_info);
+				break;
+			}
+		}
+		if (g_slist_length(info->callbacks) == 0)
+		{
+			__subscribe_list = g_slist_remove(__subscribe_list, info);
+			free(info->view_uri);
+			free(info);
+		}
+	}
+	_cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+	return CALENDAR_ERROR_NONE;
+}
+
+

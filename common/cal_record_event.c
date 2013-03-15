@@ -74,7 +74,7 @@ static void __cal_record_event_struct_init(cal_event_s *record)
 {
     memset(record,0,sizeof(cal_event_s));
 
-    record->meeting_status = CALENDAR_EVENT_STATUS_NONE;
+    record->meeting_status = CALENDAR_MEETING_STATUS_NOTMEETING;
     record->calendar_id = DEFAULT_EVENT_CALENDAR_BOOK_ID;
 
     record->index = CAL_INVALID_ID;
