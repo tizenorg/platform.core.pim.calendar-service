@@ -355,7 +355,7 @@ int _cal_client_reminder_destroy_for_subscribe(void)
 static void __cal_client_reminder_subscribe_callback(pims_ipc_h ipc, pims_ipc_data_h data, void *user_data)
 {
 	unsigned int size = 0;
-	const unsigned char *str = NULL;
+	const char *str = NULL;
 	int len = 0;
 	subscribe_info_s *info = user_data;
 
@@ -367,7 +367,7 @@ static void __cal_client_reminder_subscribe_callback(pims_ipc_h ipc, pims_ipc_da
 			ERR("pims_ipc_data_get() failed");
 			return;
 		}
-		str = (const unsigned char *)pims_ipc_data_get(data, &size);
+		str = (const char *)pims_ipc_data_get(data, &size);
 		if (!str)
 		{
 			ERR("pims_ipc_data_get() failed");
@@ -382,13 +382,7 @@ static void __cal_client_reminder_subscribe_callback(pims_ipc_h ipc, pims_ipc_da
 			callback_info_s *cb_info = l->data;
 			if (NULL == cb_info) continue;
 
-			bundle *b = NULL;
-			b = bundle_decode(str, len);
-			if (b)
-			{
-				cb_info->cb(b, cb_info->user_data);
-				bundle_free(b);
-			}
+			cb_info->cb(str, cb_info->user_data);
 		}
 	}
 }

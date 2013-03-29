@@ -25,39 +25,51 @@
 #include "cal_view.h"
 #include "cal_time.h"
 
-void _cal_db_rrule_set_default(calendar_record_h event)
+void _cal_db_rrule_set_default(calendar_record_h record)
 {
-	cal_event_s *_event = NULL;
-	retm_if(event == NULL, "Invalid argument: rrule is NULL");
+	cal_event_s *event = NULL;
+	retm_if(record == NULL, "Invalid argument: rrule is NULL");
 
-	_event = (cal_event_s *)event;
+	event = (cal_event_s *)record;
 
-	switch (_event->freq)
+	switch (event->freq)
 	{
 	case CALENDAR_RECURRENCE_NONE:
 		break;
 	case CALENDAR_RECURRENCE_DAILY:
 		break;
 	case CALENDAR_RECURRENCE_WEEKLY:
-		if (_event->bymonthday || _event->byday)
+		if (event->bymonthday || event->byday)
 			break;
 
-		_event->byday = _cal_time_extract_by(_event->start_tzid,
-				_event->wkst, &_event->start, CAL_DAY_OF_WEEK);
-		DBG("No byday so set default[%s]", _event->byday);
+		event->byday = _cal_time_extract_by(event->start_tzid, event->wkst,
+				&event->start, CAL_DAY_OF_WEEK);
+		DBG("Not enough field in weekly, so set byda[%s]", event->byday);
 		break;
 
 	case CALENDAR_RECURRENCE_MONTHLY:
-		if (_event->bymonthday || _event->byday)
+		if (event->bymonthday || event->byday)
 			break;
 
-		_event->bymonthday = _cal_time_extract_by(_event->start_tzid,
-				_event->wkst, &_event->start, CAL_DATE);
-		DBG("No bymonthday so set default[%s]", _event->bymonthday);
+		event->bymonthday = _cal_time_extract_by(event->start_tzid, event->wkst,
+				&event->start, CAL_DATE);
+		DBG("Not enough field in monthly, so set bymonthday[%s]", event->bymonthday);
 		break;
 
 	case CALENDAR_RECURRENCE_YEARLY:
+		if (event->bymonth && (event->bymonthday || event->byday))
+			break;
+		else if (event->byyearday || event->byweekno)
+			break;
+
+		event->bymonth = _cal_time_extract_by(event->start_tzid, event->wkst,
+				&event->start, CAL_MONTH);
+		event->bymonthday = _cal_time_extract_by(event->start_tzid, event->wkst,
+				&event->start, CAL_DATE);
+		DBG("Not enough field in yearly, so set bymonth[%s] bymonthday[%s]",
+				event->bymonth, event->bymonthday);
 		break;
+
 	default:
 		break;
 	}
@@ -69,8 +81,11 @@ void _cal_db_rrule_get_rrule_from_event(calendar_record_h event, cal_rrule_s **r
 	cal_event_s *_event;
 
 	retm_if(event == NULL, "Invalid argument: rrule is NULL");
-
 	_event = (cal_event_s *)event;
+	if (_event->freq == CALENDAR_RECURRENCE_NONE)
+	{
+		return;
+	}
 
 	_rrule = calloc(1, sizeof(cal_rrule_s));
 	retm_if(_rrule == NULL, "Failed to calloc");
@@ -213,7 +228,7 @@ void _cal_db_rrule_get_rrule_from_todo(calendar_record_h todo, cal_rrule_s **rru
 	*rrule = _rrule;
 }
 
-int _cal_db_rrule_insert_record(int id, cal_rrule_s *rrule)
+int __cal_db_rrule_insert_record(int id, cal_rrule_s *rrule)
 {
 	int rrule_id;
 	int index;
@@ -567,6 +582,21 @@ static int __cal_db_rrule_update_record(int id, cal_rrule_s *rrule)
 	return CALENDAR_ERROR_NONE;
 }
 
+int _cal_db_rrule_insert_record(int id, cal_rrule_s *rrule)
+{
+	retvm_if(rrule == NULL, CALENDAR_ERROR_INVALID_PARAMETER,
+			"Invalid argument: rrule is NULL");
+
+	if (rrule->freq == CALENDAR_RECURRENCE_NONE)
+	{
+	}
+	else
+	{
+		__cal_db_rrule_insert_record(id, rrule);
+	}
+	return CALENDAR_ERROR_NONE;
+}
+
 int _cal_db_rrule_update_record(int id, cal_rrule_s *rrule)
 {
 	int has_record = 0;
@@ -589,7 +619,7 @@ int _cal_db_rrule_update_record(int id, cal_rrule_s *rrule)
 		}
 		else
 		{
-			_cal_db_rrule_insert_record(id, rrule);
+			__cal_db_rrule_insert_record(id, rrule);
 		}
 	}
 	return CALENDAR_ERROR_NONE;

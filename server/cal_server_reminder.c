@@ -19,7 +19,6 @@
 
 
 #include <stdlib.h>
-#include <bundle.h>
 #include <pims-ipc-svc.h>
 
 #include "calendar2.h"
@@ -33,9 +32,8 @@
 
 #define CAL_SUBSCRIBE_MAX_LEN 1024
 
-static __thread unsigned char *__reminder_changed_info = NULL;
-static __thread bundle *__b = NULL;
-static __thread int __bundle_len = 0;
+static __thread char *__data = NULL;
+static __thread int __len_data = 0;
 
 static gboolean __cal_server_reminder_publish_changes_with_data(unsigned char *data, int len)
 {
@@ -73,30 +71,68 @@ static gboolean __cal_server_reminder_publish_changes_with_data(unsigned char *d
 
 void __cal_server_reminder_clear_changed_info(void)
 {
-	if (__reminder_changed_info)
+	if (__data)
 	{
-		bundle_free_encoded_rawdata(&__reminder_changed_info);
-		__reminder_changed_info = NULL;
-		__bundle_len = 0;
+		free(__data);
+		__data = NULL;
+		__len_data = 0;
 	}
 }
 
 void _cal_server_reminder_publish(void)
 {
-	if (__b)
+	if (__data)
 	{
-		bundle_encode(__b, &__reminder_changed_info, &__bundle_len);
-		__cal_server_reminder_publish_changes_with_data(__reminder_changed_info, __bundle_len);
+		__cal_server_reminder_publish_changes_with_data((unsigned char *)__data, __len_data);
 		__cal_server_reminder_clear_changed_info();
 	}
 }
 
-void _cal_server_reminder_add_callback_data(char *key, char *value)
+int _cal_server_reminder_add_callback_data(char *key, char *value)
 {
-	if (NULL == __b)
+	int len_data = 0;
+	int len_key = 0;
+	int len_value = 0;
+
+	if (NULL == key || NULL == value)
 	{
-		__b = bundle_create();
+		ERR("Invalid parameter");
+		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	bundle_add(__b, key, value);
+
+	len_key = strlen(key);
+	len_value = strlen(value);
+	DBG("key[%s]value[%s]", key, value);
+	if (NULL == __data)
+	{
+		__len_data = len_key + len_value + 2;
+		__data = calloc(__len_data, sizeof(char));
+		if (NULL == __data)
+		{
+			ERR("calloc() failed");
+			return CALENDAR_ERROR_DB_FAILED;
+		}
+		snprintf(__data, __len_data, "%s=%s", key, value);
+	}
+	else
+	{
+		char *p = NULL;
+		len_data = strlen(__data);
+
+		__len_data = len_data + len_key + len_value + 3;
+		p = calloc(__len_data, sizeof(char));
+		if (NULL == __data)
+		{
+			ERR("recalloc() failed");
+			return CALENDAR_ERROR_DB_FAILED;
+		}
+		snprintf(p, __len_data, "%s&%s=%s", __data, key, value);
+		free(__data);
+		__data = p;
+
+	}
+
+	DBG("data[%s]len(%d)", __data, __len_data);
+	return CALENDAR_ERROR_NONE;
 }
 

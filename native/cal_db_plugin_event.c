@@ -93,8 +93,6 @@ static int __cal_db_event_check_value_validation(cal_event_s *event)
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	long long int slli = 0;
-	long long int elli = 0;
 	switch (event->start.type)
 	{
 	case CALENDAR_TIME_UTIME:
@@ -130,15 +128,29 @@ static int __cal_db_event_check_value_validation(cal_event_s *event)
 		}
 
 		// check start > end
-		slli = _cal_time_convert_itol(NULL, event->start.time.date.year,
-				event->start.time.date.month, event->start.time.date.mday, 0, 0, 0);
-		elli = _cal_time_convert_itol(NULL, event->end.time.date.year,
-				event->end.time.date.month, event->end.time.date.mday, 0, 0, 0);
-
-		if (slli > elli)
+		if (event->start.time.date.year > event->end.time.date.year)
 		{
-			ERR("allday start(%lld) > end(%lld)", slli, elli);
+			ERR("allday start year(%d) > end year(%d)",
+					event->start.time.date.year > event->end.time.date.year);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
+		}
+		else
+		{
+			if (event->start.time.date.month > event->end.time.date.month)
+			{
+				ERR("allday start month(%d) > end month(%d)",
+						event->start.time.date.month, event->end.time.date.month);
+				return CALENDAR_ERROR_INVALID_PARAMETER;
+			}
+			else
+			{
+				if (event->start.time.date.mday > event->end.time.date.mday)
+				{
+					ERR("allday start day(%d) > end day(%d)",
+							event->start.time.date.mday, event->end.time.date.mday);
+					return CALENDAR_ERROR_INVALID_PARAMETER;
+				}
+			}
 		}
 		break;
 	}
@@ -391,7 +403,11 @@ static int __cal_db_event_insert_record(calendar_record_h record, int* id)
 
 	_cal_db_rrule_set_default(record);
 	_cal_db_rrule_get_rrule_from_event(record, &rrule);
-	_cal_db_rrule_insert_record(event_id, rrule);
+	if (rrule)
+	{
+		_cal_db_rrule_insert_record(event_id, rrule);
+		CAL_FREE(rrule);
+	}
 	_cal_db_instance_publish_record(record);
 
 	calendar_list_h list;
@@ -450,7 +466,6 @@ static int __cal_db_event_insert_record(calendar_record_h record, int* id)
         DBG("No extended");
     }
 
-	CAL_FREE(rrule);
 	_cal_db_util_notify(CAL_NOTI_TYPE_EVENT);
 
 	_cal_record_set_int(record, _calendar_event.id, tmp);
@@ -766,8 +781,11 @@ static int __cal_db_event_update_record(calendar_record_h record)
 	__cal_db_event_update_original_event_version(event->original_event_id, input_ver);
 
 	_cal_db_rrule_get_rrule_from_event(record, &rrule);
-	_cal_db_rrule_update_record(event->index, rrule);
-	CAL_FREE(rrule);
+	if (rrule)
+	{
+		_cal_db_rrule_update_record(event->index, rrule);
+		CAL_FREE(rrule);
+	}
 
 	ret = _cal_db_instance_discard_record(record);
 	retvm_if(ret != CALENDAR_ERROR_NONE, CALENDAR_ERROR_DB_FAILED,
@@ -858,10 +876,11 @@ static int __cal_db_event_add_exdate(calendar_record_h record)
 
 	// add recurrence id to end of the exdate of original event.
     const unsigned char *temp;
+	int len = 0;
 	char *exdate = NULL;
 	if (CAL_DB_ROW == _cal_db_util_stmt_step(stmt))
 	{
-		temp = sqlite3_column_text(stmt, 1);
+		temp = sqlite3_column_text(stmt, 0);
 		if (NULL == temp)
 		{
 			exdate = strdup(event->recurrence_id);
@@ -874,8 +893,15 @@ static int __cal_db_event_add_exdate(calendar_record_h record)
 				sqlite3_finalize(stmt);
 				return CALENDAR_ERROR_NONE;
 			}
-			exdate = strdup((char *)temp);
-			strcat(exdate, event->recurrence_id);
+			len = strlen((const char *)temp) + strlen(event->recurrence_id) + 2;
+			exdate = calloc(len, sizeof(char));
+			if (NULL == exdate)
+			{
+				ERR("calloc() failed");
+				sqlite3_finalize(stmt);
+				return CALENDAR_ERROR_DB_FAILED;
+			}
+			snprintf(exdate, len, "%s,%s", temp, event->recurrence_id);
 		}
 	}
 	else
@@ -904,6 +930,7 @@ static int __cal_db_event_add_exdate(calendar_record_h record)
 	sqlite3_finalize(stmt);
 	if (CAL_DB_DONE != dbret) {
 		ERR("sqlite3_step() Failed(%d)", dbret);
+		if (exdate) free(exdate);
 		switch (dbret)
 		{
 		case CAL_DB_ERROR_NO_SPACE:
@@ -912,6 +939,8 @@ static int __cal_db_event_add_exdate(calendar_record_h record)
 			return CALENDAR_ERROR_DB_FAILED;
 		}
 	}
+	if (exdate) free(exdate);
+
 	return CALENDAR_ERROR_NONE;
 }
 
@@ -1732,8 +1761,11 @@ static int __cal_db_event_replace_record(calendar_record_h record, int id)
 	__cal_db_event_update_original_event_version(event->original_event_id, input_ver);
 
 	_cal_db_rrule_get_rrule_from_event(record, &rrule);
-	_cal_db_rrule_update_record(id, rrule);
-	CAL_FREE(rrule);
+	if (rrule)
+	{
+		_cal_db_rrule_update_record(id, rrule);
+		CAL_FREE(rrule);
+	}
 
 	ret = _cal_db_instance_discard_record(record);
 	retvm_if(ret != CALENDAR_ERROR_NONE, CALENDAR_ERROR_DB_FAILED,
@@ -2610,8 +2642,11 @@ static int __cal_db_event_update_dirty(calendar_record_h record)
         cal_rrule_s *rrule = NULL;
 
         _cal_db_rrule_get_rrule_from_event(record, &rrule);
-        _cal_db_rrule_update_record(event->index, rrule);
-        CAL_FREE(rrule);
+        if (rrule)
+		{
+			_cal_db_rrule_update_record(event->index, rrule);
+	        CAL_FREE(rrule);
+		}
 
         ret = _cal_db_instance_discard_record(record);
         retvm_if(ret != CALENDAR_ERROR_NONE, CALENDAR_ERROR_DB_FAILED,

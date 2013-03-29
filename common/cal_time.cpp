@@ -444,6 +444,11 @@ char * _cal_time_extract_by(const char *tzid, int wkst, calendar_time_s *ct, int
 
 	switch (field)
 	{
+	case CAL_MONTH:
+		vali = ucal_get(ucal, UCAL_MONTH, &status) + 1;
+		snprintf(buf, sizeof(buf), "%d", vali);
+		break;
+
 	case CAL_DATE:
 		vali = ucal_get(ucal, UCAL_DATE, &status);
 		snprintf(buf, sizeof(buf), "%d", vali);
@@ -507,7 +512,7 @@ char * _cal_time_convert_ltos(const char *tzid, long long int lli)
 long long int _cal_time_convert_itol(const char *tzid, int y, int mon, int d, int h, int min, int s)
 {
 	long long int lli;
-	UCalendar *ucal;
+	UCalendar *ucal = NULL;
 	UErrorCode status = U_ZERO_ERROR;
 
 	ucal = _cal_time_get_ucal(tzid, -1);
@@ -518,6 +523,7 @@ long long int _cal_time_convert_itol(const char *tzid, int y, int mon, int d, in
 	ucal_set(ucal, UCAL_HOUR_OF_DAY, h);
 	ucal_set(ucal, UCAL_MINUTE, min);
 	ucal_set(ucal, UCAL_SECOND, s);
+	ucal_set(ucal, UCAL_MILLISECOND, 0);
 	lli = ms2sec(ucal_getMillis(ucal, &status));
 
 	ucal_close(ucal);

@@ -608,7 +608,6 @@ static int __cal_vcalendar_parse_uid(int type, calendar_list_h list, calendar_re
 static int __cal_vcalendar_parse_get_tzid_from_list(calendar_list_h list, const char *tzid, calendar_record_h *timezone)
 {
 	GList *l = NULL;
-	int ret = 0;
 
 	if (list == NULL || tzid == NULL)
 	{
@@ -623,22 +622,20 @@ static int __cal_vcalendar_parse_get_tzid_from_list(calendar_list_h list, const 
 		char *uri = NULL;
 		calendar_record_h record = (calendar_record_h)l->data;
 		calendar_record_get_uri_p(record, &uri);
-		if (CALENDAR_ERROR_NONE == ret)
+		if (strncmp(uri, _calendar_timezone._uri, strlen(_calendar_timezone._uri)))
 		{
-			if (strncmp(uri, _calendar_timezone._uri, strlen(_calendar_timezone._uri)))
-			{
-				l = g_list_next(l);
-				continue;
-			}
-
-			cal_timezone_s *tz = (cal_timezone_s *)record;
-			if (!strncmp(tz->standard_name, tzid, strlen(tzid)))
-			{
-				DBG("Found same tzid[%s] in the list", tzid);
-				*timezone = record;
-				break;
-			}
+			l = g_list_next(l);
+			continue;
 		}
+
+		cal_timezone_s *tz = (cal_timezone_s *)record;
+		if (!strncmp(tz->standard_name, tzid, strlen(tzid)))
+		{
+			DBG("Found same tzid[%s] in the list", tzid);
+			*timezone = record;
+			break;
+		}
+
 		l = g_list_next(l);
 	}
 

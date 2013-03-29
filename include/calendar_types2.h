@@ -20,7 +20,6 @@
 #include <stdint.h>
 #include <tizen.h>
 #include <calendar_errors.h>
-#include <bundle.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -113,12 +112,12 @@ typedef void (*calendar_db_changed_cb)(const char* view_uri, void* user_data);
 /**
  * @brief       Called when alarm is alerted.
  *
- * @param[in]   b			bundle
+ * @param[in]   consta char *param
  * @param[in]   user_data	The user data passed from the callback registration function
  *
  * @see calendar_db_add_changed_cb()
  */
-typedef void (*calendar_reminder_cb)(bundle *b, void* user_data);
+typedef void (*calendar_reminder_cb)(const char *param, void* user_data);
 
 /**
  * @brief Definition for calendar connect flag

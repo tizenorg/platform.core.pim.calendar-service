@@ -1654,13 +1654,9 @@ static int __cal_db_instance_publish_record_yearly(UCalendar *ucal, cal_event_s 
 		{
 			__cal_db_instance_publish_with_wday(ucal, event, duration, UCAL_YEAR, until);
 		}
-		else if (event->bymonthday && strlen(event->bymonthday) > 0)
-		{
-			__cal_db_instance_publish_with_mday(ucal, event, duration, UCAL_YEAR, until);
-		}
 		else
 		{
-			ERR("Not completed");
+			__cal_db_instance_publish_with_mday(ucal, event, duration, UCAL_YEAR, until);
 		}
 	}
 
@@ -1789,6 +1785,12 @@ static int __cal_db_instance_publish_record_details(UCalendar *ucal, cal_event_s
 		event->freq = CALENDAR_RECURRENCE_NONE;
 	}
 
+	DBG("event interval(%d)", event->interval);
+	if (event->interval < 1)
+	{
+		DBG("Invalid interval, so set 1");
+		event->interval = 1;
+	}
 
 	switch (event->range_type)
 	{

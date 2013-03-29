@@ -528,11 +528,11 @@
 
 /**
  * @ingroup CAPI_SOCIAL_CALENDAR_SVC_MODULE
- * @defgroup CAPI_SOCIAL_CALENDAR_SVC_RECORD_MODULE Record
+ * @defgroup CAPI_SOCIAL_CALENDAR_SVC_FILTER_MODULE Filter
  *
- * @brief The calendar record API provides the set of the definitions and interfaces that enable you to get/set data from/to calendar record handle.
+ * @brief The calendar database API provides the set of the definitions and interfaces that enable you to handle filter.
  *
- * @section CAPI_SOCIAL_CALENDAR_SVC_RECORD_MODULE_HEADER Required Header
+ * @section CAPI_SOCIAL_CALENDAR_SVC_FILTER_MODULE_HEADER Required Header
  *  \#include <calendar2.h>
  *
  * <BR>
@@ -552,11 +552,11 @@
 
 /**
  * @ingroup CAPI_SOCIAL_CALENDAR_SVC_MODULE
- * @defgroup CAPI_SOCIAL_CALENDAR_SVC_FILTER_MODULE Filter
+ * @defgroup CAPI_SOCIAL_CALENDAR_SVC_QUERY_MODULE Query
  *
- * @brief The calendar database API provides the set of the definitions and interfaces that enable you to handle filter.
+ * @brief The calendar database API provides the set of the definitions and interfaces that enable you to handle query.
  *
- * @section CAPI_SOCIAL_CALENDAR_SVC_FILTER_MODULE_HEADER Required Header
+ * @section CAPI_SOCIAL_CALENDAR_SVC_QUERY_MODULE_HEADER Required Header
  *  \#include <calendar2.h>
  *
  * <BR>
@@ -564,11 +564,23 @@
 
 /**
  * @ingroup CAPI_SOCIAL_CALENDAR_SVC_MODULE
- * @defgroup CAPI_SOCIAL_CALENDAR_SVC_QUERY_MODULE Query
+ * @defgroup CAPI_SOCIAL_CALENDAR_SVC_RECORD_MODULE Record
  *
- * @brief The calendar database API provides the set of the definitions and interfaces that enable you to handle query.
+ * @brief The calendar record API provides the set of the definitions and interfaces that enable you to get/set data from/to calendar record handle.
  *
- * @section CAPI_SOCIAL_CALENDAR_SVC_QUERY_MODULE_HEADER Required Header
+ * @section CAPI_SOCIAL_CALENDAR_SVC_RECORD_MODULE_HEADER Required Header
+ *  \#include <calendar2.h>
+ *
+ * <BR>
+ */
+
+/**
+ * @ingroup CAPI_SOCIAL_CALENDAR_SVC_MODULE
+ * @defgroup CAPI_SOCIAL_CALENDAR_SVC_REMINDER_MODULE Reminder
+ *
+ * @brief The calendar record API provides the set of the definitions and interfaces that enable you to get/set reminder.
+ *
+ * @section CAPI_SOCIAL_CALENDAR_SVC_REMINDER_MODULE_HEADER Required Header
  *  \#include <calendar2.h>
  *
  * <BR>

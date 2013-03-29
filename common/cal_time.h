@@ -46,6 +46,7 @@ int _cal_time_get_timezone_from_table(const char *tzid, calendar_record_h *timez
 int _cal_time_get_like_tzid(const char *tzid, calendar_record_h timezone, char **like_tzid);
 
 enum cal_extract_field {
+	CAL_MONTH,
 	CAL_DAY_OF_WEEK,
 	CAL_DATE,
 };

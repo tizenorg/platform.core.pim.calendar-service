@@ -230,7 +230,7 @@ static inline int __cal_vcalendar_make_created(cal_make_s *b, long long int t)
 	return CALENDAR_ERROR_NONE;
 }
 
-static inline int __cal_vcalendar_make_dtstart(cal_make_s *b, char *tzid, calendar_time_s *caltime)
+static inline int __cal_vcalendar_make_dtstart(int version, cal_make_s *b, char *tzid, calendar_time_s *caltime)
 {
 	retvm_if(caltime == NULL, -1, "Invalid argument: calendar_time_s is NULL");
 
@@ -245,7 +245,7 @@ static inline int __cal_vcalendar_make_dtstart(cal_make_s *b, char *tzid, calend
 	case CALENDAR_TIME_UTIME:
         {
 			char* str_time = NULL;
-			if (NULL != tzid && strlen(tzid) > 0)
+			if (version != 1 && NULL != tzid && strlen(tzid) > 0)
 			{
 				str_time = _cal_time_convert_ltos(tzid, caltime->time.utime);
 				if (str_time)
@@ -269,9 +269,20 @@ static inline int __cal_vcalendar_make_dtstart(cal_make_s *b, char *tzid, calend
 		break;
 
 	case CALENDAR_TIME_LOCALTIME:
-		__cal_vcalendar_make_printf(b, "DTSTART;VALUE=DATE:",
-				__cal_vcalendar_make_itos(caltime->time.date.year,
-					caltime->time.date.month, caltime->time.date.mday));
+		if (version == 1)
+		{
+			char buf[16] = {0};
+			snprintf(buf, sizeof(buf), "%04d%02d%02dT000000",
+					caltime->time.date.year, caltime->time.date.month, caltime->time.date.mday);
+			__cal_vcalendar_make_printf(b, "DTSTART:", buf);
+
+		}
+		else
+		{
+			__cal_vcalendar_make_printf(b, "DTSTART;VALUE=DATE:",
+					__cal_vcalendar_make_itos(caltime->time.date.year,
+						caltime->time.date.month, caltime->time.date.mday));
+		}
 		break;
 	}
 
@@ -333,7 +344,7 @@ int __cal_vcalendar_make_dtstamp(cal_make_s *b, char *tzid)
 	return CALENDAR_ERROR_NONE;
 }
 
-static inline int __cal_vcalendar_make_dtend(cal_make_s *b, char *tzid, calendar_time_s *caltime)
+static inline int __cal_vcalendar_make_dtend(int version, cal_make_s *b, char *tzid, calendar_time_s *caltime)
 {
 	retvm_if(caltime == NULL, -1, "Invalid argument: calendar_time_s is NULL");
 
@@ -348,7 +359,7 @@ static inline int __cal_vcalendar_make_dtend(cal_make_s *b, char *tzid, calendar
 	case CALENDAR_TIME_UTIME:
         {
 			char* str_time = NULL;
-			if (NULL != tzid && strlen(tzid) > 0)
+			if (version != 1 && NULL != tzid && strlen(tzid) > 0)
 			{
 				str_time = _cal_time_convert_ltos(tzid, caltime->time.utime);
 				if (str_time)
@@ -372,16 +383,27 @@ static inline int __cal_vcalendar_make_dtend(cal_make_s *b, char *tzid, calendar
 		break;
 
 	case CALENDAR_TIME_LOCALTIME:
-		__cal_vcalendar_make_printf(b, "DTEND;VALUE=DATE:",
-				__cal_vcalendar_make_itos(caltime->time.date.year,
-					caltime->time.date.month, caltime->time.date.mday));
+		if (version == 1)
+		{
+			char buf[16] = {0};
+			snprintf(buf, sizeof(buf), "%04d%02d%02dT000000",
+					caltime->time.date.year, caltime->time.date.month, caltime->time.date.mday);
+			__cal_vcalendar_make_printf(b, "DTEND:", buf);
+
+		}
+		else
+		{
+			__cal_vcalendar_make_printf(b, "DTEND;VALUE=DATE:",
+					__cal_vcalendar_make_itos(caltime->time.date.year,
+						caltime->time.date.month, caltime->time.date.mday));
+		}
 		break;
 	}
 
 	return CALENDAR_ERROR_NONE;
 }
 
-static inline int __cal_vcalendar_make_due(cal_make_s *b, char *tzid,  calendar_time_s *caltime)
+static inline int __cal_vcalendar_make_due(int version, cal_make_s *b, char *tzid,  calendar_time_s *caltime)
 {
 	retvm_if(caltime == NULL, -1, "Invalid argument: calendar_time_s is NULL");
 
@@ -396,7 +418,7 @@ static inline int __cal_vcalendar_make_due(cal_make_s *b, char *tzid,  calendar_
 	case CALENDAR_TIME_UTIME:
         {
 			char* str_time = NULL;
-			if (NULL != tzid && strlen(tzid) > 0)
+			if (version != 1 && NULL != tzid && strlen(tzid) > 0)
 			{
 				str_time = _cal_time_convert_ltos(tzid, caltime->time.utime);
 				if (str_time)
@@ -420,9 +442,20 @@ static inline int __cal_vcalendar_make_due(cal_make_s *b, char *tzid,  calendar_
 		break;
 
 	case CALENDAR_TIME_LOCALTIME:
-		__cal_vcalendar_make_printf(b, "DUE:",
-				__cal_vcalendar_make_itos(caltime->time.date.year,
-					caltime->time.date.month, caltime->time.date.mday));
+		if (version == 1)
+		{
+			char buf[16] = {0};
+			snprintf(buf, sizeof(buf), "%04d%02d%02dT000000",
+					caltime->time.date.year, caltime->time.date.month, caltime->time.date.mday);
+			__cal_vcalendar_make_printf(b, "DUE:", buf);
+
+		}
+		else
+		{
+			__cal_vcalendar_make_printf(b, "DUE:",
+					__cal_vcalendar_make_itos(caltime->time.date.year,
+						caltime->time.date.month, caltime->time.date.mday));
+		}
 		break;
 	}
 
@@ -1286,7 +1319,7 @@ int __cal_vcalendar_make_schedule(int version, cal_make_s *b, calendar_record_h 
 		ERR("Failed to get start_time(%d)", ret);
 		return -1;
 	}
-	ret = __cal_vcalendar_make_dtstart(b, tzid, &caltime);
+	ret = __cal_vcalendar_make_dtstart(version, b, tzid, &caltime);
 	retvm_if(ret != CALENDAR_ERROR_NONE, -1, "Failed to get dtstart(%d)", ret);
 
 
@@ -1376,7 +1409,7 @@ int __cal_vcalendar_make_schedule(int version, cal_make_s *b, calendar_record_h 
 	retvm_if(ret != CALENDAR_ERROR_NONE, -1,
 			"Failed to get end_time(%d)", ret);
 
-	ret = __cal_vcalendar_make_dtend(b, tzid, &caltime);
+	ret = __cal_vcalendar_make_dtend(version, b, tzid, &caltime);
 	retvm_if(ret != CALENDAR_ERROR_NONE, -1, "Failed to get end(%d)", ret);
 
 	// categories
@@ -1509,7 +1542,7 @@ int __cal_vcalendar_make_todo(int version, cal_make_s *b, calendar_record_h reco
 		ERR("Failed to get start_time(%d)", ret);
 		return -1;
 	}
-	ret = __cal_vcalendar_make_dtstart(b, tzid, &caltime);
+	ret = __cal_vcalendar_make_dtstart(version, b, tzid, &caltime);
 	retvm_if(ret != CALENDAR_ERROR_NONE, -1,
 			"Failed to get dtstart(%d)", ret);
 
@@ -1567,7 +1600,7 @@ int __cal_vcalendar_make_todo(int version, cal_make_s *b, calendar_record_h reco
 	retvm_if(ret != CALENDAR_ERROR_NONE, -1,
 			"Failed to get due_time(%d)", ret);
 
-	ret = __cal_vcalendar_make_due(b, tzid, &caltime);
+	ret = __cal_vcalendar_make_due(version, b, tzid, &caltime);
 	retvm_if(ret != CALENDAR_ERROR_NONE, -1, "__cal_vcalendar_make_due() failed(%d)", ret);
 
 	// categories
