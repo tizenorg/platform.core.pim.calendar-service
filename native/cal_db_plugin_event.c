@@ -781,11 +781,8 @@ static int __cal_db_event_update_record(calendar_record_h record)
 	__cal_db_event_update_original_event_version(event->original_event_id, input_ver);
 
 	_cal_db_rrule_get_rrule_from_event(record, &rrule);
-	if (rrule)
-	{
-		_cal_db_rrule_update_record(event->index, rrule);
-		CAL_FREE(rrule);
-	}
+	_cal_db_rrule_update_record(event->index, rrule); // if rrule turns none, update 0.
+	CAL_FREE(rrule);
 
 	ret = _cal_db_instance_discard_record(record);
 	retvm_if(ret != CALENDAR_ERROR_NONE, CALENDAR_ERROR_DB_FAILED,
@@ -1761,11 +1758,8 @@ static int __cal_db_event_replace_record(calendar_record_h record, int id)
 	__cal_db_event_update_original_event_version(event->original_event_id, input_ver);
 
 	_cal_db_rrule_get_rrule_from_event(record, &rrule);
-	if (rrule)
-	{
-		_cal_db_rrule_update_record(id, rrule);
-		CAL_FREE(rrule);
-	}
+	_cal_db_rrule_update_record(id, rrule);
+	CAL_FREE(rrule);
 
 	ret = _cal_db_instance_discard_record(record);
 	retvm_if(ret != CALENDAR_ERROR_NONE, CALENDAR_ERROR_DB_FAILED,
@@ -2642,11 +2636,8 @@ static int __cal_db_event_update_dirty(calendar_record_h record)
         cal_rrule_s *rrule = NULL;
 
         _cal_db_rrule_get_rrule_from_event(record, &rrule);
-        if (rrule)
-		{
-			_cal_db_rrule_update_record(event->index, rrule);
-	        CAL_FREE(rrule);
-		}
+		_cal_db_rrule_update_record(event->index, rrule);
+		CAL_FREE(rrule);
 
         ret = _cal_db_instance_discard_record(record);
         retvm_if(ret != CALENDAR_ERROR_NONE, CALENDAR_ERROR_DB_FAILED,

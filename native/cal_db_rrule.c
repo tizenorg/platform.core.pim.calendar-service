@@ -601,10 +601,7 @@ int _cal_db_rrule_update_record(int id, cal_rrule_s *rrule)
 {
 	int has_record = 0;
 
-	retvm_if(rrule == NULL, CALENDAR_ERROR_INVALID_PARAMETER,
-			"Invalid argument: rrule is NULL");
-
-	if (rrule->freq == CALENDAR_RECURRENCE_NONE)
+	if (NULL == rrule || rrule->freq == CALENDAR_RECURRENCE_NONE)
 	{
 		DBG("freq is NONE");
 		__cal_db_rrule_delete_record(id);
