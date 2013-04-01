@@ -11,7 +11,6 @@ SET(SRC_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/include")
 
 SET(PREFIX ${CMAKE_INSTALL_PREFIX})
 SET(EXEC_PREFIX "\${prefix}")
-SET(LIBDIR "\${prefix}/lib")
 SET(INCLUDEDIR "\${prefix}/${DEST_INCLUDE_DIR}")
 SET(VERSION_MAJOR 0)
 SET(VERSION "${VERSION_MAJOR}.1.14")
@@ -35,9 +34,15 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EXTRA_CFLAGS}")
 
 ADD_DEFINITIONS("-DPREFIX=\"${PREFIX}\"")
 
+# pkgconfig file
+CONFIGURE_FILE(calendar.pc.in calendar.pc @ONLY)
+CONFIGURE_FILE(client/calendar-service2.pc.in  client/calendar-service2.pc @ONLY)
+CONFIGURE_FILE(native/calendar-service-native.pc.in native/calendar-service-native.pc @ONLY)
+CONFIGURE_FILE(native/calendar-service2.pc.in native/calendar-service2.pc @ONLY)
+
 # for immigration
 SET(IMMIGRATION "calendar")
-INSTALL(FILES ${IMMIGRATION}.pc DESTINATION lib/pkgconfig)
+INSTALL(FILES ${IMMIGRATION}.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig)
 
 FILE(GLOB NOTI_FILES ${CMAKE_SOURCE_DIR}/.CALENDAR_SVC_*_CHANGED)
 INSTALL(FILES ${NOTI_FILES} DESTINATION /opt/usr/data/calendar-svc)

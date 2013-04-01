@@ -41,7 +41,7 @@ DB library for calendar (developement files)
 
 
 %build
-cmake . -DCMAKE_INSTALL_PREFIX=%{_prefix}
+%cmake .
 
 
 make %{?jobs:-j%jobs}
@@ -54,9 +54,9 @@ mkdir -p %{buildroot}/etc/rc.d/rc5.d/
 ln -s ../init.d/calendar-serviced.sh %{buildroot}/etc/rc.d/rc3.d/S85calendar-serviced
 ln -s ../init.d/calendar-serviced.sh %{buildroot}/etc/rc.d/rc5.d/S85calendar-serviced
 
-mkdir -p %{buildroot}%{_libdir}/systemd/user/tizen-middleware.target.wants
-install %{SOURCE1} %{buildroot}%{_libdir}/systemd/user/
-ln -s ../calendar.service %{buildroot}%{_libdir}/systemd/user/tizen-middleware.target.wants/
+mkdir -p %{buildroot}/usr/lib/systemd/user/tizen-middleware.target.wants
+install %{SOURCE1} %{buildroot}/usr/lib/systemd/user/
+ln -s ../calendar.service %{buildroot}/usr/lib/systemd/user/tizen-middleware.target.wants/
 
 %post
 /sbin/ldconfig
@@ -71,7 +71,7 @@ else
 		calendar-svc-initdb
 fi
 
-if [ -f /usr/lib/rpm-plugins/msm.so ]
+if [ -f %{_libdir}/rpm-plugins/msm.so ]
 then
 	chsmack -a 'calendar-service::db' /opt/usr/dbspace/.calendar-svc.db*
 fi
@@ -104,8 +104,8 @@ vconftool set -t string db/calendar/timezone_path "Asia/Seoul" -g 6003
 /opt/usr/data/calendar-svc/.CALENDAR_SVC_EVENT_CHANGED
 /opt/usr/data/calendar-svc/.CALENDAR_SVC_TODO_CHANGED
 /usr/share/calendar-svc/dft-calendar
-%{_libdir}/systemd/user/calendar.service
-%{_libdir}/systemd/user/tizen-middleware.target.wants/calendar.service
+/usr/lib/systemd/user/calendar.service
+/usr/lib/systemd/user/tizen-middleware.target.wants/calendar.service
 
 %files devel
 %defattr(-,root,root,-)
