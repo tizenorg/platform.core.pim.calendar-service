@@ -325,8 +325,26 @@ int __cal_vcalendar_make_organizer(cal_make_s *b, char *cn, char *address)
 
 static inline int __cal_vcalendar_make_priority(cal_make_s *b, int v)
 {
+	int prio = 0;
 	char tmp[2];
-	snprintf(tmp, sizeof(tmp), "%d", v);
+
+	switch (v)
+	{
+	case CALENDAR_EVENT_PRIORITY_HIGH:
+		prio = 3;	// one out of 1 ~ 4.
+		break;
+	case CALENDAR_EVENT_PRIORITY_NORMAL:
+		prio = 5;
+		break;
+	case CALENDAR_EVENT_PRIORITY_LOW:
+		prio = 7; // one out of 6 ~ 9.
+		break;
+	default:
+		prio = 0; // means none.
+		break;
+	}
+
+	snprintf(tmp, sizeof(tmp), "%d", prio);
 	__cal_vcalendar_make_printf(b, "PRIORITY:", tmp);
 	return CALENDAR_ERROR_NONE;
 }

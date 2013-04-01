@@ -1011,6 +1011,7 @@ static int __cal_vcalendar_parse_location(int type, calendar_list_h list, calend
 static int __cal_vcalendar_parse_priority(int type, calendar_list_h list, calendar_record_h record, char *prop, char *cont)
 {
 	int ret;
+	int prio = 0;
 	char *p = (char *)cont;
 
 	p++;
@@ -1019,13 +1020,36 @@ static int __cal_vcalendar_parse_priority(int type, calendar_list_h list, calend
 		return -1;
 	}
 
+	switch (atoi(p))
+	{
+	case 1:
+	case 2:
+	case 3:
+	case 4:
+		prio = CALENDAR_TODO_PRIORITY_HIGH;
+		break;
+	case 5:
+		prio = CALENDAR_TODO_PRIORITY_NORMAL;
+		break;
+	case 6:
+	case 7:
+	case 8:
+	case 9:
+		prio = CALENDAR_TODO_PRIORITY_LOW;
+		break;
+	default:
+		prio = CALENDAR_TODO_PRIORITY_NONE;
+		break;
+	}
+
 	switch (type)
 	{
 	case CALENDAR_BOOK_TYPE_EVENT:
-		ret = _cal_record_set_int(record, _calendar_event.priority, atoi(p));
+
+		ret = _cal_record_set_int(record, _calendar_event.priority, prio);
 		break;
 	case CALENDAR_BOOK_TYPE_TODO:
-		ret = _cal_record_set_int(record, _calendar_todo.priority, atoi(p));
+		ret = _cal_record_set_int(record, _calendar_todo.priority, prio);
 		break;
 	}
 	return CALENDAR_ERROR_NONE;

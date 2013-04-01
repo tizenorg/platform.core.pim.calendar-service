@@ -317,9 +317,10 @@ typedef enum
  */
 typedef enum
 {
-    CALENDAR_EVENT_PRIORITY_LOW          = 0,	/**< Low priority */
-    CALENDAR_EVENT_PRIORITY_NORMAL,				/**< Normal priority */
-    CALENDAR_EVENT_PRIORITY_HIGH				/**< High priority */
+	CALENDAR_EVENT_PRIORITY_NONE		= 0x01, /**< Priority none */
+    CALENDAR_EVENT_PRIORITY_LOW         = 0x08,	/**< Low priority */
+    CALENDAR_EVENT_PRIORITY_NORMAL		= 0x04,	/**< Normal priority */
+    CALENDAR_EVENT_PRIORITY_HIGH		= 0x02,	/**< High priority */
 } calendar_event_priority_e;
 
 /**
