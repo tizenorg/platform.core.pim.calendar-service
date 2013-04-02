@@ -85,6 +85,9 @@ cal_db_plugin_cb_s _cal_db_event_plugin_cb = {
 
 static int __cal_db_event_check_value_validation(cal_event_s *event)
 {
+	long long int slli = 0;
+	long long int elli = 0;
+
 	retv_if(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	if (event->start.type != event->end.type)
@@ -127,30 +130,16 @@ static int __cal_db_event_check_value_validation(cal_event_s *event)
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 
-		// check start > end
-		if (event->start.time.date.year > event->end.time.date.year)
+		// check start > end; convert long long int.
+		slli = _cal_time_convert_itol(NULL, event->start.time.date.year,
+				event->start.time.date.month, event->start.time.date.mday, 0, 0, 0);
+		elli = _cal_time_convert_itol(NULL, event->end.time.date.year,
+				event->end.time.date.month, event->end.time.date.mday, 0, 0, 0);
+
+		if (slli - elli > 1) // 1 is to ignore milliseconds
 		{
-			ERR("allday start year(%d) > end year(%d)",
-					event->start.time.date.year > event->end.time.date.year);
+			ERR("allday start(%lld) > end(%lld)", slli, elli);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
-		}
-		else
-		{
-			if (event->start.time.date.month > event->end.time.date.month)
-			{
-				ERR("allday start month(%d) > end month(%d)",
-						event->start.time.date.month, event->end.time.date.month);
-				return CALENDAR_ERROR_INVALID_PARAMETER;
-			}
-			else
-			{
-				if (event->start.time.date.mday > event->end.time.date.mday)
-				{
-					ERR("allday start day(%d) > end day(%d)",
-							event->start.time.date.mday, event->end.time.date.mday);
-					return CALENDAR_ERROR_INVALID_PARAMETER;
-				}
-			}
 		}
 		break;
 	}
