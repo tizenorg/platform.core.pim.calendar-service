@@ -846,7 +846,7 @@ static int __cal_db_event_add_exdate(calendar_record_h record)
 	{
 		return CALENDAR_ERROR_NONE;
 	}
-	DBG("This is exception event");
+	DBG("This is exception event and get exdate from parent(id:%d)", event->original_event_id);
 
 	// get exdate from original event.
 	snprintf(query, sizeof(query), "SELECT exdate FROM %s WHERE id = %d ",
@@ -867,9 +867,10 @@ static int __cal_db_event_add_exdate(calendar_record_h record)
 	if (CAL_DB_ROW == _cal_db_util_stmt_step(stmt))
 	{
 		temp = sqlite3_column_text(stmt, 0);
-		if (NULL == temp)
+		if (NULL == temp || strlen(temp) < 1)
 		{
 			exdate = strdup(event->recurrence_id);
+			DBG("append first exdate[%s]", exdate);
 		}
 		else
 		{
@@ -888,6 +889,7 @@ static int __cal_db_event_add_exdate(calendar_record_h record)
 				return CALENDAR_ERROR_DB_FAILED;
 			}
 			snprintf(exdate, len, "%s,%s", temp, event->recurrence_id);
+			DBG("append [%s] to aleady has exdate [%s]", temp, event->recurrence_id);
 		}
 	}
 	else
@@ -907,6 +909,7 @@ static int __cal_db_event_add_exdate(calendar_record_h record)
 	{
 		DBG("query[%s]", query);
 		ERR("_cal_db_util_query_prepare() failed");
+		if (exdate) free(exdate);
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 	int index = 1;
@@ -940,6 +943,7 @@ static int __cal_db_event_delete_record(int id)
 	calendar_record_h record_event;
 	calendar_record_h record_calendar;
 
+	DBG("delete record(id:%d", id);
 	retvm_if(id < 0, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid argument: id < 0");
 
 	ret = calendar_db_get_record(_calendar_event._uri, id, &record_event);
@@ -2711,7 +2715,7 @@ static int __cal_db_event_exception_get_records(int original_id, GList **out_lis
 
     snprintf(query, sizeof(query),
             "SELECT * FROM %s "
-            "WHERE original_event_id = %d ",
+            "WHERE original_event_id = %d AND is_delete = 0 ",
             CAL_TABLE_SCHEDULE,
             original_id);
 
@@ -2780,6 +2784,7 @@ static int __cal_db_event_exception_delete_with_id(int original_id)
     char query[CAL_DB_SQL_MAX_LEN] = {0};
     cal_db_util_error_e dbret = CAL_DB_OK;
 
+	DBG("delete exception mod with original event id(%d)", original_id);
     snprintf(query, sizeof(query), "DELETE FROM %s WHERE original_event_id=%d ",
             CAL_TABLE_SCHEDULE, original_id);
 

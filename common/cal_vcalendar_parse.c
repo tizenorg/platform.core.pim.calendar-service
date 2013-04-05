@@ -1391,6 +1391,7 @@ static int __cal_vcalendar_parse_rrule_ver1(calendar_record_h record, char *p)
 		DBG("bystr[%s]", buf_by);
 		ret = _cal_record_set_str(record, byint, buf_by);
 	}
+	g_strfreev(t);
 	return CALENDAR_ERROR_NONE;
 }
 
