@@ -94,6 +94,7 @@ static void __cal_record_event_struct_init(cal_event_s *record)
 	record->event_status = CALENDAR_EVENT_STATUS_NONE;
 
     record->is_deleted = 0;
+    record->priority = CALENDAR_EVENT_PRIORITY_NONE;
     record->latitude = CALENDAR_RECORD_NO_COORDINATE; // set default 1000 out of range(-180 ~ 180)
     record->longitude = CALENDAR_RECORD_NO_COORDINATE; // set default 1000 out of range(-180 ~ 180)
     record->freq = CALENDAR_RECURRENCE_NONE;

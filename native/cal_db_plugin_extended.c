@@ -256,6 +256,7 @@ static int __cal_db_extended_replace_record(calendar_record_h record, int id)
     cal_db_util_error_e dbret = CAL_DB_OK;
 
     retv_if(NULL == extended_info, CALENDAR_ERROR_INVALID_PARAMETER);
+    extended_info->id = id;
 
     if (extended_info->common.properties_flags != NULL)
     {

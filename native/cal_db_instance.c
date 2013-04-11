@@ -1101,14 +1101,16 @@ static int __cal_db_instance_publish_with_wday(UCalendar *ucal, cal_event_s *eve
 		switch (field)
 		{
 		case UCAL_WEEK_OF_YEAR:
-			ucal_set(ucal, field, week);
+			DBG("UCAL_WEEK_OF_YEAR");
 			ucal_set(ucal, UCAL_DAY_OF_WEEK, wday);
+			ucal_set(ucal, field, week);
+			DBG("Set wday week(%d) wday(%d)",week, wday);
 			break;
 		default:
 			__cal_db_instance_set_wday(ucal, nth, wday);
+			DBG("Set wday nth(%d) wday(%d)", nth, wday);
 			break;
 		}
-		DBG("set wday nth(%d) wday(%d)", nth, wday);
 
 		// check whether set ucal goes past or not
 		ud1 = ucal_getMillis(ucal, &ec);

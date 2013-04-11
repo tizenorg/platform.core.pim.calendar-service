@@ -86,6 +86,7 @@ static void __cal_record_todo_struct_init(cal_todo_s *record)
     record->is_deleted = 0;
     record->latitude = 1000; // set default 1000 out of range(-180 ~ 180)
     record->longitude = 1000; // set default 1000 out of range(-180 ~ 180)
+    record->priority = CALENDAR_TODO_PRIORITY_NONE;
     record->freq = CALENDAR_RECURRENCE_NONE;
     record->until_utime = CALENDAR_RECORD_NO_UNTIL;
     record->start.time.utime = CALENDAR_TODO_NO_START_DATE;

@@ -399,7 +399,7 @@ static int __cal_db_calendar_replace_record(calendar_record_h record, int id)
 	cal_db_util_error_e dbret = CAL_DB_OK;
 
 	retv_if(NULL == calendar, CALENDAR_ERROR_INVALID_PARAMETER);
-
+	calendar->index = id;
 	if (calendar->common.properties_flags != NULL)
 	{
 	    return __cal_db_calendar_update_projection(record);

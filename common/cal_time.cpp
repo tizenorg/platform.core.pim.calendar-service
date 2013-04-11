@@ -84,6 +84,12 @@ int _cal_time_get_timezone_from_table(const char *tzid, calendar_record_h *timez
 	calendar_query_h query = NULL;
 	calendar_list_h list = NULL;
 
+	if (NULL == tzid || strlen(tzid) == 0)
+	{
+		ERR("tzid is NULL");
+		return CALENDAR_ERROR_INVALID_PARAMETER;
+	}
+
 	ret = calendar_connect();
 	if (CALENDAR_ERROR_NONE != ret)
 	{

@@ -642,99 +642,107 @@ static int __cal_vcalendar_parse_get_tzid_from_list(calendar_list_h list, const 
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_vcalendar_parse_dtstart(int type, calendar_list_h list, calendar_record_h record, char *prop, char *cont)
+static char *__cal_vcalendar_parse_dtstart_tzid(char *q)
 {
-	int ret;
-	char *p = (char *)cont;
-	int k = 0, j;
-	char *tzid = NULL; // free after appling
-	char buf[64] = {0, };
-	calendar_time_s start = {0};
+	int i, j;
+	int len = 0;
+	int has_quot = 0; // to remove quotation(ex> "abc" -> abc)
+	char *s = NULL;
 
-	p++;
-
-	int is_quot = 0;
-	if (!strncmp(p, "TZID=", strlen("TZID="))) {
-		k = 0;
-		j = strlen("TZID=");
-		while ((p[j] != ':' && p[j] != ';' && p[j] != '\n' && p[j] != '\0') || is_quot == 1) {
-			if (p[j] == '\"' && is_quot == 0)
-			{
-				is_quot = 1;
-				j++;
-			}
-			else if (p[j] == '\"' && is_quot == 1)
-			{
-				is_quot = 0;
-				j++;
-				break;
-			}
-			else
-			{
-			}
-
-			buf[k] = p[j];
-			k++;
-			j++;
-		}
-		if (p[j] != '\0') {
-			buf[k] = '\0';
-		}
-		p += j;
-		p++;
-	} else {
-		snprintf(buf, sizeof(buf), "%s", CAL_TZID_GMT);
-	}
-	tzid = strdup(buf);
-	DBG("tzid[%s]", tzid);
-	DBG("next[%s]", p);
-
-	if (!strncmp(p, "VALUE=", strlen("VALUE="))) {
-		k = 0;
-		j = strlen("VALUE=");
-		while (p[j] != ':' && p[j] != ';' && p[j] != '\n' && p[j] != '\0') {
-			buf[k] = p[j];
-			k++;
-			j++;
-		}
-		if (p[j] != '\0') {
-			buf[k] = '\0';
-		}
-		p += j;
-		p++;
+	if (NULL == q)
+	{
+		ERR("Invalid parameter");
+		return NULL;
 	}
 
-	int y, mon, d, h, min, s;
-	char t, z;
-
-	if (!strncmp(buf, "DATE", strlen("DATE"))){
-		DBG("value is date");
-		start.type = CALENDAR_TIME_LOCALTIME;
-
-		sscanf(p, "%4d%2d%2d", &y, &mon, &d);
-		start.time.date.year = y;
-		start.time.date.month = mon;
-		start.time.date.mday = d;
-
-	} else {
-		DBG("value is utime");
-		start.type = CALENDAR_TIME_UTIME;
-
-		sscanf(p, "%4d%2d%2d%c%2d%2d%2d%c", &y, &mon, &d, &t, &h, &min, &s, &z);
-
-		if (strlen(p) != strlen("YYYYMMDDTHHMMSS"))
+	// TZID="Korea("GMT+9")": 21 - 5
+	j = strlen("TZID=");
+	len = strlen(q);
+	// alloc except "TZID=" string.
+	s = calloc(len - j + 1, sizeof(char));
+	if (NULL == s)
+	{
+		ERR("calloc() failed");
+		return NULL;
+	}
+	for (i = 0; i < len; i++)
+	{
+		if (q[j + i] == '\"' && has_quot == 0)
 		{
-			start.time.utime = _cal_time_convert_itol(NULL, y, mon, d, h, min, s);
+			j++;
+			has_quot = 1;
+		}
+		else if (q[len -1] == '\"' && has_quot == 1)
+		{
+			break;
+		}
+		s[i] = q[j + i];
+	}
+	s[i] = '\0';
+	return s;
+}
+
+int __cal_vcalendar_parse_dtstart_value(char *q, calendar_time_s *caltime)
+{
+	int j;
+
+	if (NULL == q || NULL == caltime)
+	{
+		ERR("Invalid parameter");
+		return CALENDAR_ERROR_INVALID_PARAMETER;
+	}
+
+	j = strlen("VALUE=");
+
+	if (!strncmp(&q[j], "DATE-TIME", strlen("DATE-TIME")))
+	{
+		caltime->type = CALENDAR_TIME_UTIME;
+	}
+	else
+	{
+		caltime->type = CALENDAR_TIME_LOCALTIME;
+	}
+	return CALENDAR_ERROR_NONE;
+}
+
+int __cal_vcalendar_parse_dtstart_time(calendar_list_h list, char *q, char *tzid, calendar_time_s *caltime)
+{
+	int len = 0;
+	int y, m, d, h, min, s;
+
+	if (NULL == q || NULL == caltime)
+	{
+		ERR("Invalid parameter");
+		return CALENDAR_ERROR_INVALID_PARAMETER;
+	}
+
+	len = strlen(q);
+
+	switch (caltime->type)
+	{
+	case CALENDAR_TIME_LOCALTIME:
+		sscanf(q, "%4d%2d%2d", &y, &m, &d);
+		caltime->time.date.year = y;
+		caltime->time.date.month = m;
+		caltime->time.date.mday = d;
+		break;
+
+	case CALENDAR_TIME_UTIME:
+		sscanf(q, "%4d%2d%2dT%2d%2d%2dZ", &y, &m, &d, &h, &min, &s);
+		if (NULL == tzid || len == strlen("YYYYMMDDTHHMMSSZ"))
+		{
+			// Z means GMT
+			caltime->time.utime = _cal_time_convert_itol(NULL, y, m, d, h, min, s);
 		}
 		else
 		{
-			char *like_tzid = NULL;
 			if (_cal_time_is_registered_tzid(tzid))
 			{
-				start.time.utime = _cal_time_convert_itol(tzid, y, mon, d, h, min, s);
+				caltime->time.utime = _cal_time_convert_itol(tzid, y, m, d, h, min, s);
 			}
 			else
 			{
+				char *like_tzid = NULL;
 				calendar_record_h timezone = NULL;
 				// try get timezone info from the list
 				__cal_vcalendar_parse_get_tzid_from_list(list, tzid, &timezone);
@@ -742,7 +750,7 @@ static int __cal_vcalendar_parse_dtstart(int type, calendar_list_h list, calenda
 				{
 					DBG("Found from the list");
 					_cal_time_get_like_tzid(tzid, timezone, &like_tzid);
-					start.time.utime = _cal_time_convert_itol(like_tzid, y, mon, d, h, min, s);
+					caltime->time.utime = _cal_time_convert_itol(like_tzid, y, m, d, h, min, s);
 					DBG("[%s]", like_tzid);
 					CAL_FREE(like_tzid);
 					like_tzid = NULL;
@@ -750,24 +758,78 @@ static int __cal_vcalendar_parse_dtstart(int type, calendar_list_h list, calenda
 				else
 				{
 					DBG("Nowhere to find");
-					start.time.utime = _cal_time_convert_itol(tzid, y, mon, d, h, min, s);
+					caltime->time.utime = _cal_time_convert_itol(tzid, y, m, d, h, min, s);
 				}
 			}
 		}
+		break;
+	}
+	return CALENDAR_ERROR_NONE;
+}
+
+static int __cal_vcalendar_parse_dtstart(int type, calendar_list_h list, calendar_record_h record, char *prop, char *cont)
+{
+	int ret;
+	int i;
+	int len = 0;
+	char *p = (char *)cont;
+	char **t;
+	char *str_tzid = NULL;
+
+	p++;
+
+	calendar_time_s caltime = {0};
+
+	t = g_strsplit_set(p, ";:", -1);
+	if (NULL == t)
+	{
+		ERR("g_strsplit_set() failed");
+		return CALENDAR_ERROR_OUT_OF_MEMORY;
 	}
 
+	len = g_strv_length(t);
+	for (i = 0; i < len; i++)
+	{
+		DBG("get string[%s]", t[i]);
+		if (!strncmp(t[i], "TZID=", strlen("TZID=")))
+		{
+			str_tzid = __cal_vcalendar_parse_dtstart_tzid(t[i]);
+			DBG("str_tzid[%s]", str_tzid);
+		}
+		else if (!strncmp(t[i], "VALUE=", strlen("VALUE")))
+		{
+			DBG("get value");
+			__cal_vcalendar_parse_dtstart_value(t[i], &caltime);
+		}
+		else if (*t[i] >= '1' && *t[i] <= '9')
+		{
+			DBG("get time");
+			__cal_vcalendar_parse_dtstart_time(list, t[i], str_tzid, &caltime);
+		}
+		else
+		{
+			ERR("Unable to parsing[%s]", t[i]);
+		}
+	}
+
+	if (NULL == str_tzid)
+	{
+		// if tzid is not set, set GMT
+		str_tzid = strdup(CAL_TZID_GMT);
+	}
 	switch (type)
 	{
 	case CALENDAR_BOOK_TYPE_EVENT:
-		ret = _cal_record_set_str(record, _calendar_event.start_tzid, tzid);
-		ret = _cal_record_set_caltime(record, _calendar_event.start_time, start);
+		ret = _cal_record_set_str(record, _calendar_event.start_tzid, str_tzid);
+		ret = _cal_record_set_caltime(record, _calendar_event.start_time, caltime);
 		break;
 	case CALENDAR_BOOK_TYPE_TODO:
-		ret = _cal_record_set_str(record, _calendar_todo.start_tzid, tzid);
-		ret = _cal_record_set_caltime(record, _calendar_todo.start_time, start);
+		ret = _cal_record_set_str(record, _calendar_todo.start_tzid, str_tzid);
+		ret = _cal_record_set_caltime(record, _calendar_todo.start_time, caltime);
 		break;
 	}
-	if (tzid) free(tzid);
+	if (str_tzid) free(str_tzid);
+	g_strfreev(t);
 
 	return CALENDAR_ERROR_NONE;
 }
@@ -802,18 +864,15 @@ static int __work_description_switch(int me, int mode, char *buf, int *charset, 
 			DBG("CHARSET=UTF-8");
 			*charset = 1;
 
-		} else if (!strncmp(buf, "CHARSET=UTF-16",
-					strlen("CHARSET=UTF-16"))) {
+		} else if (!strncmp(buf, "CHARSET=UTF-16", strlen("CHARSET=UTF-16"))) {
 			DBG("CHARSET=UTF-16");
 			*charset = 1;
 
-		} else if (!strncmp(buf, "ENCODING=BASE64",
-					strlen("ENCODING=BASE64"))) {
+		} else if (!strncmp(buf, "ENCODING=BASE64", strlen("ENCODING=BASE64"))) {
 			DBG("ENCODE_BASE64");
 			*encoding = ENCODE_BASE64;
 
-		} else if (!strncmp(buf, "ENCODING=QUOTED-PRINTABLE",
-					strlen("ENCODING=QUOTED-PRINTABLE"))) {
+		} else if (!strncmp(buf, "ENCODING=QUOTED-PRINTABLE", strlen("ENCODING=QUOTED-PRINTABLE"))) {
 			DBG("ENCODE_QUOTED_PRINTABLE");
 			*encoding = ENCODE_QUOTED_PRINTABLE;
 
@@ -1020,6 +1079,7 @@ static int __cal_vcalendar_parse_priority(int type, calendar_list_h list, calend
 		return -1;
 	}
 
+	DBG("priority(%d)", atoi(p));
 	switch (atoi(p))
 	{
 	case 1:
@@ -1042,6 +1102,7 @@ static int __cal_vcalendar_parse_priority(int type, calendar_list_h list, calend
 		break;
 	}
 
+	DBG("convert to priority(%d)", prio);
 	switch (type)
 	{
 	case CALENDAR_BOOK_TYPE_EVENT:
@@ -1187,17 +1248,23 @@ static int __cal_vcalendar_parse_summary(int type, calendar_list_h list, calenda
 
 enum {
 	__RRULE_VER1_MODE_FREQ = 0x0,
-	__RRULE_VER1_MODE_NTH,
 	__RRULE_VER1_MODE_BY,
 	__RRULE_VER1_MODE_UNTIL,
 	__RRULE_VER1_MODE_OUT,
+};
+
+enum {
+	__RRULE_VER1_BYYEARDAY = 0,
+	__RRULE_VER1_BYMONTH,
+	__RRULE_VER1_BYMONTHDAY,
+	__RRULE_VER1_BYDAY,
 };
 
 static int __cal_vcalendar_parse_rrule_ver1(calendar_record_h record, char *p)
 {
 	DBG("This is rrule for ver 1.0");
 	int ret;
-	int i, j;
+	int i;
 	int length;
 	int freq = CALENDAR_RECURRENCE_NONE;
 	int mode = 0; // 0:freq, 1:nth 2:bystr 3:range
@@ -1206,10 +1273,10 @@ static int __cal_vcalendar_parse_rrule_ver1(calendar_record_h record, char *p)
 	int len;
 	int num = 0;
 	int y, mon, d, h, min, s;
-	char t1, z;
+	int nth_week = 0;
 	char **t;
+	char *r = NULL, *q = NULL;
 	char buf_by[256] = {0};
-	char buf[32] = {0};
 	calendar_time_s ut = {0};
 	cal_event_s *event = (cal_event_s *)record;
 
@@ -1231,48 +1298,48 @@ static int __cal_vcalendar_parse_rrule_ver1(calendar_record_h record, char *p)
 		switch (mode)
 		{
 		case __RRULE_VER1_MODE_FREQ: // freq
-			mode = __RRULE_VER1_MODE_NTH;
+			mode = __RRULE_VER1_MODE_BY;
 			if (*t[i] == 'D')
 			{
 				DBG("CALENDAR_RECURRENCE_DAILY");
 				freq = CALENDAR_RECURRENCE_DAILY;
 				interval = strlen(t[i]) == 1 ? 1 : atoi(t[i] + 1);
-				byint = _calendar_event.bymonthday;
+				byint = __RRULE_VER1_BYMONTHDAY;
 			}
 			else if (*t[i] == 'W')
 			{
 				DBG("CALENDAR_RECURRENCE_WEEKLY");
 				freq = CALENDAR_RECURRENCE_WEEKLY;
 				interval = strlen(t[i]) == 1 ? 1 : atoi(t[i] + 1);
-				byint = _calendar_event.byday;
+				byint = __RRULE_VER1_BYDAY;
 			}
 			else if (*t[i] == 'M'&& *(t[i] + 1) == 'P')
 			{
 				DBG("CALENDAR_RECURRENCE_MONTHLY");
 				freq = CALENDAR_RECURRENCE_MONTHLY;
 				interval = strlen(t[i]) == 2 ? 1 : atoi(t[i] + 2);
-				byint = _calendar_event.byday;
+				byint = __RRULE_VER1_BYDAY;
 			}
 			else if (*t[i] == 'M'&& *(t[i] + 1) == 'D')
 			{
 				DBG("CALENDAR_RECURRENCE_MONTHLY");
 				freq = CALENDAR_RECURRENCE_MONTHLY;
 				interval = strlen(t[i]) == 2 ? 1 : atoi(t[i] + 2);
-				byint = _calendar_event.bymonthday;
+				byint = __RRULE_VER1_BYMONTHDAY;
 			}
 			else if (*t[i] == 'Y'&& *(t[i] + 1) == 'M')
 			{
 				DBG("CALENDAR_RECURRENCE_YEARLY");
 				freq = CALENDAR_RECURRENCE_YEARLY;
 				interval = strlen(t[i]) == 2 ? 1 : atoi(t[i] + 2);
-				byint = _calendar_event.bymonth;
+				byint = __RRULE_VER1_BYMONTH;
 			}
 			else if (*t[i] == 'Y'&& *(t[i] + 1) == 'D')
 			{
 				DBG("CALENDAR_RECURRENCE_YEARLY");
 				freq = CALENDAR_RECURRENCE_YEARLY;
 				interval = strlen(t[i]) == 2 ? 1 : atoi(t[i] + 2);
-				byint = _calendar_event.byyearday;
+				byint = __RRULE_VER1_BYYEARDAY;
 			}
 			else
 			{
@@ -1283,56 +1350,154 @@ static int __cal_vcalendar_parse_rrule_ver1(calendar_record_h record, char *p)
 			ret = _cal_record_set_int(record, _calendar_event.interval, interval);
 			break;
 
-		case __RRULE_VER1_MODE_NTH: // num
-			mode = __RRULE_VER1_MODE_BY;
-			if (byint != _calendar_event.byday || *t[i] < '1' || *t[i] > '9')
+		case __RRULE_VER1_MODE_BY: // num
+			switch (byint)
 			{
-				DBG("No nth");
-				i--;
-				break;
-			}
-
-			num = 0;
-			memset(buf, 0x0, sizeof(buf));
-			len = strlen(t[i]);
-			for (j = 0; j < len; j++)
-			{
-				if (*(t[i] + j) >= '1' && *(t[i] + j) <= '9')
+			case __RRULE_VER1_BYDAY:
+				DBG("__RRULE_VER1_BYDAY:[%s]", t[i]);
+				if (strstr(t[i], "MO") || strstr(t[i], "TU") || strstr(t[i], "WE")
+						|| strstr(t[i], "TH") || strstr(t[i], "FR")
+						|| strstr(t[i], "SA") || strstr(t[i], "SU"))
 				{
-					buf[j] = *(t[i] + j);
+					if (NULL == r)
+					{
+						len = strlen(t[i]) + 1;
+						len += (nth_week == 0) ? 0 : 8; // 8 is buf
+						r = calloc(len, sizeof(char));
+						if (NULL == r)
+						{
+							ERR("calloc() failed");
+							g_strfreev(t);
+							return CALENDAR_ERROR_DB_FAILED;
+						}
+						if (0 == nth_week)
+						{
+							snprintf(r, len, "%s", t[i]);
+						}
+						else
+						{
+							snprintf(r, len, "%d%s", nth_week, t[i]);
+						}
+					}
+					else
+					{
+						len = strlen(r) + strlen(t[i]) + 2;
+						len += (nth_week == 0) ? 0 : 8; // 8 is buf
+						q = calloc(len, sizeof(char));
+						if (NULL == r)
+						{
+							ERR("calloc() failed");
+							g_strfreev(t);
+							return CALENDAR_ERROR_DB_FAILED;
+						}
+						if (0 == nth_week)
+						{
+							snprintf(q, len, "%s,%s", r, t[i]);
+						}
+						else
+						{
+							snprintf(q, len, "%s,%d%s", r, nth_week, t[i]);
+						}
+						CAL_FREE(r);
+						r = q;
+					}
 				}
-				else if (*(t[i] + j) == '-')
+				else if (*t[i] >= '1' && *t[i] <= '9' && strlen(t[i]) < strlen("YYYYMMDD"))
 				{
-					num = atoi(buf);
-					num *= -1;
+					// MP1 1+ 1- FR: first Friday and last Friday
+					DBG("Unable to handle multi week");
+					int len = strlen(t[i]);
+					char buf[8] = {0};
+					if (*t[len -1] == '-')
+					{
+						// if 5+, buf has 5 because of len is 2 including '\0'
+						snprintf(buf, len, "%s", t[i]);
+						nth_week = atoi(buf);
+						DBG("-(%d)", nth_week);
+						nth_week *= -1;
+					}
+					else if (*t[len -1] == '+')
+					{
+						snprintf(buf, len, "%s", t[i]);
+						nth_week = atoi(buf);
+						DBG("(%d)", nth_week);
+					}
+					else
+					{
+						snprintf(buf, sizeof(buf), "%s", t[i]);
+						nth_week = atoi(buf);
+						DBG("(%d)", nth_week);
+					}
 				}
 				else
 				{
+					DBG("final string[%s]", t[i]);
+					if (r)
+					{
+						ret = _cal_record_set_str(record, _calendar_event.byday, r);
+						CAL_FREE(r);
+					}
+					i--;
+					mode = __RRULE_VER1_MODE_UNTIL;
 				}
-			}
-			DBG("nth(%d)", num);
-			break;
+				break;
 
-		case __RRULE_VER1_MODE_BY:
-			mode = __RRULE_VER1_MODE_UNTIL;
-			if (*t[i] == '#' || strlen(t[i]) > strlen("YYYYMMDD"))
-			{
-				DBG("No by");
-				i--;
+			case __RRULE_VER1_BYYEARDAY:
+			case __RRULE_VER1_BYMONTH:
+			case __RRULE_VER1_BYMONTHDAY:
+				DBG("Not __RRULE_VER1_BYDAY:");
+				if (*t[i] > '1' && *t[i] < '9'&& strlen(t[i]) < 4)
+				{
+					if (NULL == r)
+					{
+						len = strlen(t[i]) + 1;
+						r = calloc(len, sizeof(char));
+						if (NULL == r)
+						{
+							ERR("calloc() failed");
+							g_strfreev(t);
+							return CALENDAR_ERROR_DB_FAILED;
+						}
+						snprintf(r, len, "%s", t[i]);
+					}
+					else
+					{
+						len = strlen(r) + strlen(t[i]) + 2;
+						q = calloc(len, sizeof(char));
+						if (NULL == r)
+						{
+							ERR("calloc() failed");
+							g_strfreev(t);
+							return CALENDAR_ERROR_DB_FAILED;
+						}
+						snprintf(q, len, "%s,%s", r, t[i]);
+						CAL_FREE(r);
+						r = q;
+					}
+				}
+				else
+				{
+					if (r)
+					{
+						switch (byint)
+						{
+						case __RRULE_VER1_BYYEARDAY:
+							ret = _cal_record_set_str(record, _calendar_event.byyearday, r);
+							break;
+						case __RRULE_VER1_BYMONTH:
+							ret = _cal_record_set_str(record, _calendar_event.bymonth, r);
+							break;
+						case __RRULE_VER1_BYMONTHDAY:
+							ret = _cal_record_set_str(record, _calendar_event.bymonthday, r);
+							break;
+						}
+						CAL_FREE(r);
+					}
+					i--;
+					mode = __RRULE_VER1_MODE_UNTIL;
+				}
 				break;
 			}
-
-			memset(buf, 0x0, sizeof(buf));
-			if (num > 0)
-			{
-				snprintf(buf, sizeof(buf), "%d%s", num, t[i]);
-			}
-			else
-			{
-				snprintf(buf, sizeof(buf), "%s", t[i]);
-			}
-
-			strcat(buf_by, buf);
 			break;
 
 		case __RRULE_VER1_MODE_UNTIL: // until
@@ -1354,7 +1519,8 @@ static int __cal_vcalendar_parse_rrule_ver1(calendar_record_h record, char *p)
 			}
 			else
 			{
-				sscanf(t[i], "%4d%2d%2d%c%2d%2d%2d%c", &y, &mon, &d, &t1, &h, &min, &s, &z);
+				sscanf(t[i], "%4d%2d%2dT%2d%2d%2d", &y, &mon, &d, &h, &min, &s);
+				DBG("get until %04d/%02d/%02d %02d:%02d:%02d", y, mon, d, h, min, s);
 				switch (event->start.type)
 				{
 				case CALENDAR_TIME_UTIME:
@@ -1472,125 +1638,66 @@ static int __cal_vcalendar_parse_rrule(int type, calendar_list_h list, calendar_
 static int __cal_vcalendar_parse_dtend(int type, calendar_list_h list, calendar_record_h record, char *prop, char *cont)
 {
 	int ret;
+	int i;
+	int len = 0;
 	char *p = (char *)cont;
-	int k = 0, j;
-	char buf[64] = {0, };
-	char *tzid = NULL;
-	calendar_time_s end;
+	char **t;
+	char *str_tzid = NULL;
 
 	p++;
 
-	int is_quot = 0;
-	if (!strncmp(p, "TZID=", strlen("TZID="))) {
-		k = 0;
-		j = strlen("TZID=");
-		while ((p[j] != ':' && p[j] != ';' && p[j] != '\n' && p[j] != '\0') || is_quot == 1) {
+	calendar_time_s caltime = {0};
 
-			if (p[j] == '\"' && is_quot == 0)
-			{
-				is_quot = 1;
-				j++; // remove double quotation
-			}
-			else if (p[j] == '\"' && is_quot == 1)
-			{
-				is_quot = 0;
-				j++;
-				break;
-			}
-			else
-			{
-			}
-
-			buf[k] = p[j];
-			k++;
-			j++;
-		}
-		if (p[j] != '\0') {
-			buf[k] = '\0';
-		}
-		p += j;
-		p++;
-	} else {
-		snprintf(buf, sizeof(buf), "%s", CAL_TZID_GMT);
-	}
-	tzid = strdup(buf);
-
-	if (!strncmp(p, "VALUE=", strlen("VALUE="))) {
-		k = 0;
-		j = strlen("VALUE=");
-		while (p[j] != ':' && p[j] != ';' && p[j] != '\n' && p[j] != '\0') {
-			buf[k] = p[j];
-			k++;
-			j++;
-		}
-		if (p[j] != '\0') {
-			buf[k] = '\0';
-		}
-		p += j;
-		p++;
+	t = g_strsplit_set(p, ";:", -1);
+	if (NULL == t)
+	{
+		ERR("g_strsplit_set() failed");
+		return CALENDAR_ERROR_OUT_OF_MEMORY;
 	}
 
-	int y, mon, d, h, min, s;
-	char t, z;
-
-	if (!strncmp(buf, "DATE", strlen("DATE"))){
-		end.type = CALENDAR_TIME_LOCALTIME;
-
-		sscanf(p, "%4d%2d%2d", &y, &mon, &d);
-		end.time.date.year = y;
-		end.time.date.month = mon;
-		end.time.date.mday = d;
-
-	} else {
-		end.type = CALENDAR_TIME_UTIME;
-
-		sscanf(p, "%4d%2d%2d%c%2d%2d%2d%c", &y, &mon, &d, &t, &h, &min, &s, &z);
-
-		if (strlen(p) != strlen("YYYYMMDDTHHMMSS"))
+	len = g_strv_length(t);
+	for (i = 0; i < len; i++)
+	{
+		DBG("get string[%s]", t[i]);
+		if (!strncmp(t[i], "TZID=", strlen("TZID=")))
 		{
-			end.time.utime = _cal_time_convert_itol(NULL, y, mon, d, h, min, s);
+			str_tzid = __cal_vcalendar_parse_dtstart_tzid(t[i]);
+			DBG("str_tzid[%s]", str_tzid);
+		}
+		else if (!strncmp(t[i], "VALUE=", strlen("VALUE")))
+		{
+			DBG("get value");
+			__cal_vcalendar_parse_dtstart_value(t[i], &caltime);
+		}
+		else if (*t[i] >= '1' && *t[i] <= '9')
+		{
+			DBG("get time");
+			__cal_vcalendar_parse_dtstart_time(list, t[i], str_tzid, &caltime);
 		}
 		else
 		{
-			char *like_tzid = NULL;
-			if (_cal_time_is_registered_tzid(tzid))
-			{
-				end.time.utime = _cal_time_convert_itol(tzid, y, mon, d, h, min, s);
-			}
-			else
-			{
-				calendar_record_h timezone = NULL;
-				// try get timezone info from the list
-				__cal_vcalendar_parse_get_tzid_from_list(list, tzid, &timezone);
-				if (timezone)
-				{
-					DBG("Found from the list");
-					_cal_time_get_like_tzid(tzid, timezone, &like_tzid);
-					end.time.utime = _cal_time_convert_itol(like_tzid, y, mon, d, h, min, s);
-					DBG("[%s]", like_tzid);
-					CAL_FREE(like_tzid);
-					like_tzid = NULL;
-				}
-				else
-				{
-					DBG("Nowhere to find");
-					end.time.utime = _cal_time_convert_itol(tzid, y, mon, d, h, min, s);
-				}
-			}
+			ERR("Unable to parsing[%s]", t[i]);
 		}
+	}
+
+	if (NULL == str_tzid)
+	{
+		// if tzid is not set, set GMT
+		str_tzid = strdup(CAL_TZID_GMT);
 	}
 	switch (type)
 	{
 	case CALENDAR_BOOK_TYPE_EVENT:
-		ret = _cal_record_set_str(record, _calendar_event.end_tzid, tzid);
-		ret = _cal_record_set_caltime(record, _calendar_event.end_time, end);
+		ret = _cal_record_set_str(record, _calendar_event.end_tzid, str_tzid);
+		ret = _cal_record_set_caltime(record, _calendar_event.end_time, caltime);
 		break;
 	case CALENDAR_BOOK_TYPE_TODO:
-		ret = _cal_record_set_str(record, _calendar_todo.due_tzid, tzid);
-		ret = _cal_record_set_caltime(record, _calendar_todo.due_time, end);
+		ret = _cal_record_set_str(record, _calendar_todo.due_tzid, str_tzid);
+		ret = _cal_record_set_caltime(record, _calendar_todo.due_time, caltime);
 		break;
 	}
-	CAL_FREE(tzid);
+	if (str_tzid) free(str_tzid);
+	g_strfreev(t);
 
 	return CALENDAR_ERROR_NONE;
 }

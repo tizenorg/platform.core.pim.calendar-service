@@ -359,6 +359,7 @@ static int __cal_db_timezone_replace_record(calendar_record_h record, int id)
     cal_db_util_error_e dbret = CAL_DB_OK;
 
     retv_if(NULL == timezone_info, CALENDAR_ERROR_INVALID_PARAMETER);
+    timezone_info->index = id;
 
     if (timezone_info->common.properties_flags != NULL)
     {

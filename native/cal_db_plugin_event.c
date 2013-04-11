@@ -1564,6 +1564,7 @@ static int __cal_db_event_replace_record(calendar_record_h record, int id)
 	int input_ver = 0;
 
 	retv_if(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER);
+	event->index = id;
 
     if (event->common.properties_flags != NULL)
     {
@@ -2715,7 +2716,7 @@ static int __cal_db_event_exception_get_records(int original_id, GList **out_lis
 
     snprintf(query, sizeof(query),
             "SELECT * FROM %s "
-            "WHERE original_event_id = %d AND is_delete = 0 ",
+            "WHERE original_event_id = %d AND is_deleted = 0 ",
             CAL_TABLE_SCHEDULE,
             original_id);
 

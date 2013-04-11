@@ -725,6 +725,7 @@ static int __cal_db_todo_replace_record(calendar_record_h record, int id)
     int has_alarm = 0;
 
     retv_if(NULL == todo, CALENDAR_ERROR_INVALID_PARAMETER);
+    todo->index = id;
 
     //if (CAL_SYNC_STATUS_UPDATED != todo->sync_status)
     //  todo->sync_status = CAL_SYNC_STATUS_UPDATED;
