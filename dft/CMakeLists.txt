@@ -10,7 +10,7 @@ SET(PREFIX "/usr")
 SET(BINDIR "${PREFIX}/bin")
 SET(OPTDIR "/usr/share/calendar-svc")
 
-SET(LIBNAME calendar-service-native)
+SET(LIBNAME calendar-service2)
 
 IF("${CMAKE_BUILD_TYPE}" STREQUAL "")
 	SET(CMAKE_BUILD_TYPE "Release")

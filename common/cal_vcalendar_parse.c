@@ -665,14 +665,14 @@ static char *__cal_vcalendar_parse_dtstart_tzid(char *q)
 		ERR("calloc() failed");
 		return NULL;
 	}
-	for (i = 0; i < len; i++)
+	for (i = 0; i < len -j; i++)
 	{
 		if (q[j + i] == '\"' && has_quot == 0)
 		{
 			j++;
 			has_quot = 1;
 		}
-		else if (q[len -1] == '\"' && has_quot == 1)
+		else if (i == (len -j -1) && q[i] == '\"' && has_quot == 1)
 		{
 			break;
 		}
@@ -709,6 +709,7 @@ int __cal_vcalendar_parse_dtstart_time(calendar_list_h list, char *q, char *tzid
 {
 	int len = 0;
 	int y, m, d, h, min, s;
+	char c, z;
 
 	if (NULL == q || NULL == caltime)
 	{
@@ -721,14 +722,24 @@ int __cal_vcalendar_parse_dtstart_time(calendar_list_h list, char *q, char *tzid
 	switch (caltime->type)
 	{
 	case CALENDAR_TIME_LOCALTIME:
-		sscanf(q, "%4d%2d%2d", &y, &m, &d);
+		sscanf(q, "%04d%02d%02d", &y, &m, &d);
 		caltime->time.date.year = y;
 		caltime->time.date.month = m;
 		caltime->time.date.mday = d;
 		break;
 
 	case CALENDAR_TIME_UTIME:
-		sscanf(q, "%4d%2d%2dT%2d%2d%2dZ", &y, &m, &d, &h, &min, &s);
+		if (strlen(q) == strlen("YYYYMMDDTHHMMSSZ"))
+		{
+			sscanf(q, "%04d%02d%02dT%02d%02d%02dZ", &y, &m, &d, &h, &min, &s);
+			DBG("get GMT time[%04d/%02d/%02d %02d:%02d:%02d]", y, m, d, h, min, s);
+		}
+		else
+		{
+			sscanf(q, "%04d%02d%02dT%02d%02d%02d", &y, &m, &d, &h, &min, &s);
+			DBG("get local time[%04d/%02d/%02d %02d:%02d:%02d]", y, m, d, h, min, s);
+		}
+
 		if (NULL == tzid || len == strlen("YYYYMMDDTHHMMSSZ"))
 		{
 			// Z means GMT
