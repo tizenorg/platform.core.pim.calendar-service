@@ -709,7 +709,6 @@ int __cal_vcalendar_parse_dtstart_time(calendar_list_h list, char *q, char *tzid
 {
 	int len = 0;
 	int y, m, d, h, min, s;
-	char c, z;
 
 	if (NULL == q || NULL == caltime)
 	{
@@ -802,7 +801,7 @@ static int __cal_vcalendar_parse_dtstart(int type, calendar_list_h list, calenda
 	for (i = 0; i < len; i++)
 	{
 		DBG("get string[%s]", t[i]);
-		if (!strncmp(t[i], "TZID=", strlen("TZID=")))
+		if (!strncmp(t[i], "TZID=", strlen("TZID=")) && NULL == str_tzid)
 		{
 			str_tzid = __cal_vcalendar_parse_dtstart_tzid(t[i]);
 			DBG("str_tzid[%s]", str_tzid);
@@ -1563,11 +1562,13 @@ static int __cal_vcalendar_parse_rrule_ver1(calendar_record_h record, char *p)
 			break;
 		}
 	}
+
 	if (strlen(buf_by) > 0)
 	{
 		DBG("bystr[%s]", buf_by);
 		ret = _cal_record_set_str(record, byint, buf_by);
 	}
+	CAL_FREE(r);
 	g_strfreev(t);
 	return CALENDAR_ERROR_NONE;
 }
@@ -1670,7 +1671,7 @@ static int __cal_vcalendar_parse_dtend(int type, calendar_list_h list, calendar_
 	for (i = 0; i < len; i++)
 	{
 		DBG("get string[%s]", t[i]);
-		if (!strncmp(t[i], "TZID=", strlen("TZID=")))
+		if (!strncmp(t[i], "TZID=", strlen("TZID=")) && NULL == str_tzid)
 		{
 			str_tzid = __cal_vcalendar_parse_dtstart_tzid(t[i]);
 			DBG("str_tzid[%s]", str_tzid);
