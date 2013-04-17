@@ -821,8 +821,8 @@ static void __cal_db_instance_set_wday(UCalendar *ucal, int nth, int wday)
 {
 	if (ucal)
 	{
-		if (nth > 0) ucal_set(ucal, UCAL_DAY_OF_WEEK, wday);
-		if (wday > 0) ucal_set(ucal, UCAL_DAY_OF_WEEK_IN_MONTH, nth);
+		ucal_set(ucal, UCAL_DAY_OF_WEEK, wday);
+		ucal_set(ucal, UCAL_DAY_OF_WEEK_IN_MONTH, nth);
 	}
 }
 

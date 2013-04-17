@@ -84,9 +84,6 @@ chmod 660 /opt/usr/dbspace/.calendar-svc.db
 chmod 660 /opt/usr/dbspace/.calendar-svc.db-journal
 chmod 660 /opt/usr/data/calendar-svc/.CALENDAR_SVC_*
 
-vconftool set -t int db/calendar/timezone_on_off 0 -g 6003
-vconftool set -t string db/calendar/timezone_path "Asia/Seoul" -g 6003
-
 %postun -p /sbin/ldconfig
 
 %files
