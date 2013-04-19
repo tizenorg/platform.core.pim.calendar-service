@@ -709,9 +709,9 @@ static void __cal_db_instance_print_caltime(calendar_time_s *caltime)
 	}
 }
 
-static int __cal_db_instance_get_duration(UCalendar *ucal, calendar_time_s *st, calendar_time_s *et, int *duration)
+static int __cal_db_instance_get_duration(UCalendar *ucal, calendar_time_s *st, calendar_time_s *et, long long int *duration)
 {
-	int _duration = -1;
+	long long int _duration = -1;
 	UErrorCode ec = U_ZERO_ERROR;
 	UDate ud;
 
@@ -734,7 +734,7 @@ static int __cal_db_instance_get_duration(UCalendar *ucal, calendar_time_s *st, 
 			ERR("check time: start(%lld) > end(%lld)", st->time.utime, et->time.utime);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
-		_duration = (int)(et->time.utime - st->time.utime);
+		_duration = et->time.utime - st->time.utime;
 		break;
 
 	case CALENDAR_TIME_LOCALTIME:
@@ -826,7 +826,7 @@ static void __cal_db_instance_set_wday(UCalendar *ucal, int nth, int wday)
 	}
 }
 
-static int __cal_db_instance_insert_record(UCalendar *ucal, int duration, int type, int event_id)
+static int __cal_db_instance_insert_record(UCalendar *ucal, long long int duration, int type, int event_id)
 {
 	int ret;
 	long long int lli;
@@ -857,7 +857,7 @@ static int __cal_db_instance_insert_record(UCalendar *ucal, int duration, int ty
 				ucal_get(ucal, UCAL_HOUR_OF_DAY, &ec),
 				ucal_get(ucal, UCAL_MINUTE, &ec));
 		et.type = type;
-		et.time.utime = lli + (long long int)duration;
+		et.time.utime = lli + duration;
 
 		ret = calendar_record_create(_calendar_instance_normal._uri, &record);
 		if (CALENDAR_ERROR_NONE != ret)
@@ -992,7 +992,7 @@ static int __cal_db_instance_has_next(UCalendar *ucal, calendar_time_s *until)
 	return has_next;
 }
 
-static int __cal_db_instance_publish_with_wday(UCalendar *ucal, cal_event_s *event, int duration, int field, calendar_time_s *until)
+static int __cal_db_instance_publish_with_wday(UCalendar *ucal, cal_event_s *event, long long int duration, int field, calendar_time_s *until)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	int i, j;
@@ -1179,7 +1179,7 @@ static int __cal_db_instance_publish_with_wday(UCalendar *ucal, cal_event_s *eve
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_db_instance_publish_with_mday(UCalendar *ucal, cal_event_s *event, int duration, int field, calendar_time_s *until)
+static int __cal_db_instance_publish_with_mday(UCalendar *ucal, cal_event_s *event, long long int duration, int field, calendar_time_s *until)
 {
 	int i;
 	int count = 0;
@@ -1367,7 +1367,7 @@ static int __cal_db_instance_publish_with_mday(UCalendar *ucal, cal_event_s *eve
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_db_instance_publish_with_weekno(UCalendar *ucal, cal_event_s *event, int duration, int field, calendar_time_s *until)
+static int __cal_db_instance_publish_with_weekno(UCalendar *ucal, cal_event_s *event, long long int duration, int field, calendar_time_s *until)
 {
 	int i, j;
 	int count = 0;
@@ -1472,7 +1472,7 @@ static int __cal_db_instance_publish_with_weekno(UCalendar *ucal, cal_event_s *e
 }
 
 
-static int __cal_db_instance_publish_with_yday(UCalendar *ucal, cal_event_s *event, int duration, int field, calendar_time_s *until)
+static int __cal_db_instance_publish_with_yday(UCalendar *ucal, cal_event_s *event, long long int duration, int field, calendar_time_s *until)
 {
 	int i, j;
 	int count = 0;
@@ -1574,7 +1574,7 @@ static int __cal_db_instance_publish_with_yday(UCalendar *ucal, cal_event_s *eve
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_db_instance_publish_record_yearly(UCalendar *ucal, cal_event_s *event, int duration, calendar_time_s *until)
+static int __cal_db_instance_publish_record_yearly(UCalendar *ucal, cal_event_s *event, long long int duration, calendar_time_s *until)
 {
 	int i;
 	char **t = NULL;
@@ -1665,7 +1665,7 @@ static int __cal_db_instance_publish_record_yearly(UCalendar *ucal, cal_event_s 
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_db_instance_publish_record_monthly(UCalendar *ucal, cal_event_s *event, int duration, calendar_time_s *until)
+static int __cal_db_instance_publish_record_monthly(UCalendar *ucal, cal_event_s *event, long long int duration, calendar_time_s *until)
 {
 	if (NULL == ucal)
 	{
@@ -1694,7 +1694,7 @@ static int __cal_db_instance_publish_record_monthly(UCalendar *ucal, cal_event_s
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_db_instance_publish_record_weekly(UCalendar *ucal, cal_event_s *event, int duration, calendar_time_s *until)
+static int __cal_db_instance_publish_record_weekly(UCalendar *ucal, cal_event_s *event, long long int duration, calendar_time_s *until)
 {
 	if (NULL == ucal)
 	{
@@ -1713,7 +1713,7 @@ static int __cal_db_instance_publish_record_weekly(UCalendar *ucal, cal_event_s 
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_db_instance_publish_record_daily(UCalendar *ucal, cal_event_s *event, int duration, calendar_time_s *until)
+static int __cal_db_instance_publish_record_daily(UCalendar *ucal, cal_event_s *event, long long int duration, calendar_time_s *until)
 {
 	if (NULL == ucal)
 	{
@@ -1734,7 +1734,7 @@ static int __cal_db_instance_publish_record_daily(UCalendar *ucal, cal_event_s *
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_db_instance_publish_record_once(UCalendar *ucal, cal_event_s *event, int duration, calendar_time_s *until)
+static int __cal_db_instance_publish_record_once(UCalendar *ucal, cal_event_s *event, long long int duration, calendar_time_s *until)
 {
 	if (NULL == ucal)
 	{
@@ -1773,7 +1773,7 @@ static int __cal_db_instance_publish_record_details(UCalendar *ucal, cal_event_s
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	int duration = -1;
+	long long int duration = -1;
 	int exception_freq; // for exception
 	long long int range = 0;
 	calendar_time_s until = {0};
