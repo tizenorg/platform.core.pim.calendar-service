@@ -788,9 +788,28 @@ static int __cal_server_alarm_register_next_normal(long long int now_utime, GLis
 	// register new list
 	long long int mod_alarm_utime; // del seconds
 	mod_alarm_utime = nd->alarm_utime - (nd->alarm_utime % 60);
-	ret = alarmmgr_add_alarm(ALARM_TYPE_VOLATILE,
-			(time_t)(mod_alarm_utime - now_utime),
-			0, NULL, &alarm_id);
+//	ret = alarmmgr_add_alarm(ALARM_TYPE_VOLATILE, (time_t)(mod_alarm_utime - now_utime), 0, NULL, &alarm_id);
+
+///////////////////////////////////////
+	alarm_entry_t *alarm_info = NULL;
+	alarm_info = alarmmgr_create_alarm();
+	if (NULL == alarm_info)
+	{
+		ERR("Failed to create alarm");
+		return CALENDAR_ERROR_DB_FAILED;
+	}
+	char *tzid = NULL;
+	tzid = vconf_get_str(VCONFKEY_SETAPPL_TIMEZONE_ID);
+
+	alarm_date_t alarm_date;
+	_cal_time_utoi(mod_alarm_utime, tzid,
+			&alarm_date.year, &alarm_date.month, &alarm_date.day,
+			&alarm_date.hour, &alarm_date.min, &alarm_date.sec);
+	alarmmgr_set_time(alarm_info, alarm_date);
+	ret = alarmmgr_add_alarm_with_localtime(alarm_info, NULL, &alarm_id);
+	if (tzid) free(tzid);
+///////////////////////////////////////
+
 	if (ret < 0)
 	{
 		ERR("alarmmgr_add_alarm_appsvc failed (%d)", ret);
@@ -835,9 +854,28 @@ static int __cal_server_alarm_register_next_allday(time_t now_timet, GList *alld
 	}
 
 	// register new list
-	ret = alarmmgr_add_alarm(ALARM_TYPE_VOLATILE,
-			(time_t)(alarm_timet - (ad->tick * ad->unit) - now_timet),
-			0, NULL, &alarm_id);
+//	ret = alarmmgr_add_alarm(ALARM_TYPE_VOLATILE, (time_t)(alarm_timet - (ad->tick * ad->unit) - now_timet), 0, NULL, &alarm_id);
+
+///////////////////////////////////////
+	alarm_entry_t *alarm_info = NULL;
+	alarm_info = alarmmgr_create_alarm();
+	if (NULL == alarm_info)
+	{
+		ERR("Failed to create alarm");
+		return CALENDAR_ERROR_DB_FAILED;
+	}
+	char *tzid = NULL;
+	tzid = vconf_get_str(VCONFKEY_SETAPPL_TIMEZONE_ID);
+
+	alarm_date_t alarm_date;
+	_cal_time_utoi((long long int)(alarm_timet - (ad->tick * ad->unit)), tzid,
+			&alarm_date.year, &alarm_date.month, &alarm_date.day,
+			&alarm_date.hour, &alarm_date.min, &alarm_date.sec);
+	alarmmgr_set_time(alarm_info, alarm_date);
+	ret = alarmmgr_add_alarm_with_localtime(alarm_info, NULL, &alarm_id);
+	if (tzid) free(tzid);
+///////////////////////////////////////
+
 	if (ret < 0)
 	{
 		ERR("alarmmgr_add_alarm_appsvc failed (%d)", ret);

@@ -536,6 +536,24 @@ long long int _cal_time_convert_itol(const char *tzid, int y, int mon, int d, in
 	return lli;
 }
 
+int _cal_time_utoi(long long int utime, char *tzid, int *y, int *m, int *d, int *h, int *min, int *s)
+{
+	UCalendar *ucal = NULL;
+	UErrorCode status = U_ZERO_ERROR;
+
+	ucal = _cal_time_get_ucal(tzid, -1);
+	ucal_setMillis(ucal, sec2ms(utime), &status);
+	if (y) *y = ucal_get(ucal, UCAL_YEAR, &status);
+	if (m) *m = ucal_get(ucal, UCAL_MONTH, &status) + 1;
+	if (d) *d = ucal_get(ucal, UCAL_DATE, &status);
+	if (h) *h = ucal_get(ucal, UCAL_HOUR_OF_DAY, &status);
+	if (min) *min = ucal_get(ucal, UCAL_MINUTE, &status);
+	if (s) *s = ucal_get(ucal, UCAL_SECOND, &status);
+
+	ucal_close(ucal);
+	return CALENDAR_ERROR_NONE;
+}
+
 long long int _cal_time_convert_stol(char *tzid, char *datetime)
 {
 	int y, mon, d, h, min, s;

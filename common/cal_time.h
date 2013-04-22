@@ -38,6 +38,7 @@ UCalendar *_cal_time_get_ucal(const char *tzid, int wkst);
 char * _cal_time_extract_by(const char *tzid, int wkst, calendar_time_s *ct, int field);
 char * _cal_time_convert_ltos(const char *tzid, long long int lli);
 long long int _cal_time_convert_itol(const char *tzid, int y, int m, int d, int h, int min, int s);
+int _cal_time_utoi(long long int utime, char *tzid, int *y, int *m, int *d, int *h, int *min, int *s);
 long long int _cal_time_convert_stol(char *tzid, char *datetime);
 int _cal_time_ltoi(char *tzid, long long int lli, int *year, int *month, int *mday);
 int _cal_time_ltoi2(char *tzid, long long int lli, int *nth, int *wday);

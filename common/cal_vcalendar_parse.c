@@ -93,45 +93,6 @@ static int __cal_vcalendar_parse_dtend(int type, calendar_list_h list, calendar_
 static int __cal_vcalendar_parse_completed(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont);
 static int __cal_vcalendar_parse_percent(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont);
 
-enum {
-	ATTENDEE_CUTYPE = 0x0,
-	ATTENDEE_MEMBER,
-	ATTENDEE_ROLE,
-	ATTENDEE_PARTSTAT,
-	ATTENDEE_RSVP,
-	ATTENDEE_DELTO,
-	ATTENDEE_DELFROM,
-	ATTENDEE_SENTBY,
-	ATTENDEE_CN,
-	ATTENDEE_DIR,
-	ATTENDEE_MAX,
-};
-
-static int __cal_vcalendar_parse_attendee_cutype(calendar_record_h event, void *data);
-static int __cal_vcalendar_parse_attendee_member(calendar_record_h event, void *data);
-static int __cal_vcalendar_parse_attendee_role(calendar_record_h event, void *data);
-static int __cal_vcalendar_parse_attendee_partstat(calendar_record_h event, void *data);
-static int __cal_vcalendar_parse_attendee_rsvp(calendar_record_h event, void *data);
-static int __cal_vcalendar_parse_attendee_delto(calendar_record_h event, void *data);
-static int __cal_vcalendar_parse_attendee_delfrom(calendar_record_h event, void *data);
-static int __cal_vcalendar_parse_attendee_sentby(calendar_record_h event, void *data);
-static int __cal_vcalendar_parse_attendee_cn(calendar_record_h event, void *data);
-static int __cal_vcalendar_parse_attendee_dir(calendar_record_h event, void *data);
-
-struct _record_func _attendee_funcs[ATTENDEE_MAX] =
-{
-	{ "CUTYPE=", __cal_vcalendar_parse_attendee_cutype },
-	{ "MEMBER=", __cal_vcalendar_parse_attendee_member },
-	{ "ROLE=", __cal_vcalendar_parse_attendee_role },
-	{ "PARTSTAT=", __cal_vcalendar_parse_attendee_partstat },
-	{ "RSVP=", __cal_vcalendar_parse_attendee_rsvp },
-	{ "DELTO=", __cal_vcalendar_parse_attendee_delto },
-	{ "DELFROM=", __cal_vcalendar_parse_attendee_delfrom },
-	{ "SENTBY=", __cal_vcalendar_parse_attendee_sentby },
-	{ "CN=", __cal_vcalendar_parse_attendee_cn },
-	{ "DIR=", __cal_vcalendar_parse_attendee_dir }
-};
-
 static int __cal_vcalendar_parse_attendee(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont);
 static int __cal_vcalendar_parse_categories(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont);
 static int __cal_vcalendar_parse_aalarm(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont);
@@ -1724,172 +1685,210 @@ static int __cal_vcalendar_parse_percent(int type, calendar_list_h list, calenda
 	return CALENDAR_ERROR_NONE;
 }
 
-/////////////////////////////////////////////////////////////////
-static int __cal_vcalendar_parse_attendee_cutype(calendar_record_h attendee, void *data)
+static int __cal_vcalendar_parse_attendee_role(char *p, int *role)
 {
-	return CALENDAR_ERROR_NONE;
-}
-
-static int __cal_vcalendar_parse_attendee_member(calendar_record_h attendee, void *data)
-{
-	return CALENDAR_ERROR_NONE;
-}
-
-static int __cal_vcalendar_parse_attendee_role(calendar_record_h attendee, void *data)
-{
-	return CALENDAR_ERROR_NONE;
-}
-
-static int __cal_vcalendar_parse_attendee_partstat(calendar_record_h attendee, void *data)
-{
-	return CALENDAR_ERROR_NONE;
-}
-
-static int __cal_vcalendar_parse_attendee_rsvp(calendar_record_h attendee, void *data)
-{
-	return CALENDAR_ERROR_NONE;
-}
-
-static int __cal_vcalendar_parse_attendee_delto(calendar_record_h attendee, void *data)
-{
-	return CALENDAR_ERROR_NONE;
-}
-
-static int __cal_vcalendar_parse_attendee_delfrom(calendar_record_h attendee, void *data)
-{
-	return CALENDAR_ERROR_NONE;
-}
-
-static int __cal_vcalendar_parse_attendee_sentby(calendar_record_h attendee, void *data)
-{
-	return CALENDAR_ERROR_NONE;
-}
-
-static int __cal_vcalendar_parse_attendee_cn(calendar_record_h attendee, void *data)
-{
-	int ret;
-	int i = 0;
-	char *text = NULL;
-	char *p = (char *)data;
-
-	while (*p != ':' && *p != '\n' && *p != '\r' && *p != '\0') {
-		i++;
-		p++;
+	if (NULL == p)
+	{
+		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	text = calloc(i + 1, sizeof(char));
-	if (text == NULL) {
-		ERR("Failed to calloc");
-		return -1;
+	if (!strncmp(p, "REQ-PARTICIPANT", strlen("REQ-PARTICIPANT")))
+	{
+		*role = CALENDAR_ATTENDEE_ROLE_REQ_PARTICIPANT;
 	}
-	snprintf(text, i + 1, "%s", (char *)data);
-
-	ret = _cal_record_set_str(attendee, _calendar_attendee.name, text);
-	DBG("cn[%s]", text);
-	if (text) free(text);
-
+	else if (!strncmp(p, "OPT-PARTICIPANT", strlen("OPT-PARTICIPANT")))
+	{
+		*role = CALENDAR_ATTENDEE_ROLE_OPT_PARTICIPANT;
+	}
+	else if (!strncmp(p, "NON-PARTICIPANT", strlen("NON-PARTICIPANT")))
+	{
+		*role = CALENDAR_ATTENDEE_ROLE_NON_PARTICIPANT;
+	}
+	else if (!strncmp(p, "CHAIR", strlen("CHAIR")))
+	{
+		*role = CALENDAR_ATTENDEE_ROLE_CHAIR;
+	}
+	else
+	{
+	}
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_vcalendar_parse_attendee_dir(calendar_record_h attendee, void *data)
+static int __cal_vcalendar_parse_attendee_partstat(char *p, int *stat)
 {
+	if (NULL == p)
+	{
+		return CALENDAR_ERROR_INVALID_PARAMETER;
+	}
+
+	if (!strncmp(p, "NEEDS-ACTION", strlen("NEEDS-ACTION")))
+	{
+		*stat = CALENDAR_ATTENDEE_STATUS_PENDING;
+	}
+	else if (!strncmp(p, "ACCEPTED", strlen("ACCEPTED")))
+	{
+		*stat = CALENDAR_ATTENDEE_STATUS_ACCEPTED;
+	}
+	else if (!strncmp(p, "DECLINED", strlen("DECLINED")))
+	{
+		*stat = CALENDAR_ATTENDEE_STATUS_DECLINED;
+	}
+	else if (!strncmp(p, "TENTATIVE", strlen("TENTATIVE")))
+	{
+		*stat = CALENDAR_ATTENDEE_STATUS_TENTATIVE;
+	}
+	else if (!strncmp(p, "DELEGATED", strlen("DELEGATED")))
+	{
+		*stat = CALENDAR_ATTENDEE_STATUS_DELEGATED;
+	}
+	else if (!strncmp(p, "COMPLETED", strlen("COMPLETED")))
+	{
+		*stat = CALENDAR_ATTENDEE_STATUS_COMPLETED;
+	}
+	else if (!strncmp(p, "IN-PROCESS", strlen("IN-PROCESS")))
+	{
+		*stat = CALENDAR_ATTENDEE_STATUS_IN_PROCESS;
+	}
+	else
+	{
+		ERR("Unable to parse[%s]", p);
+	}
 	return CALENDAR_ERROR_NONE;
 }
 
-int _work_attendee_mailto(calendar_record_h attendee, char *buf)
+static int __cal_vcalendar_parse_attendee_mailto(char *p, calendar_record_h attendee)
 {
+	if (NULL == p || NULL == attendee)
+	{
+		ERR("Invalid parameter");
+		return CALENDAR_ERROR_INVALID_PARAMETER;
+	}
+	p++; // to remove ':'
+	_cal_record_set_str(attendee, _calendar_attendee.email, p);
 	return CALENDAR_ERROR_NONE;
 }
 
-int _work_attendee_property(calendar_record_h attendee, char *buf)
+static int __cal_vcalendar_parse_attendee_param(char *p, calendar_record_h attendee)
 {
 	int i;
-	int len_all, len_prop;
+	int len = 0;
+	char **t;
 
-	for (i = 0; i < ATTENDEE_MAX; i++) {
-		if (!strncmp(buf, _attendee_funcs[i].prop, strlen(_attendee_funcs[i].prop))) {
-			len_all = strlen(buf);
-			len_prop = strlen(_attendee_funcs[i].prop);
-			snprintf(buf, len_all - len_prop + 1, "%s", &buf[len_prop]);
-			_attendee_funcs[i].func(attendee, buf);
-			break;
-		}
-	}
-	return CALENDAR_ERROR_NONE;
-}
-
-static int __cal_vcalendar_parse_attendee(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont)
-{
-	int ret;
-	int i, j;
-	char *p = (char *)cont;
-	calendar_record_h attendee;
-
-	ret = calendar_record_create(_calendar_attendee._uri, &attendee);
-
-	ret = calendar_record_add_child_record(event, _calendar_event.calendar_attendee, attendee);
-
-	i = 0;
-	j = 0;
-	int mode = 0;
-	char buf[64] = {0};
-
-	if (p[i + 1] == '\0')
+	if (NULL == p || NULL == attendee)
 	{
 		ERR("Invalid parameter");
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	while (p[i] != '\0') {
-		switch (p[i]) {
-		case ':':
-			/* work mail to */
-			if (mode) {
-				buf[j] = '\0';
-				_work_attendee_mailto(attendee, buf);
-				mode = 0;
-			} else {
-				mode = 1;
-			}
-			j = 0;
-			break;
+	DBG("attendee param[%s]", p);
+	t = g_strsplit_set(p, ";:", -1);
+	if (NULL == t)
+	{
+		ERR("g_strsplit_set() failed");
+		return CALENDAR_ERROR_OUT_OF_MEMORY;
+	}
 
-		case ';':
-			/* work property */
-			if (mode) {
-				buf[j] = '\0';
-				_work_attendee_property(attendee, buf);
-				mode = 0;
-			} else {
-				mode = 2;
-			}
-			j = 0;
-			break;
-
-		default:
-			buf[j] = p[i];
-			j++;
-			break;
+	len = g_strv_length(t);
+	for (i = 0; i < len; i++)
+	{
+		DBG("get string[%s]", t[i]);
+		if (!strncmp(t[i], "CUTYPE=", strlen("CUTYPE=")))
+		{
 		}
-		i++;
+		else if (!strncmp(t[i], "MEMBER=", strlen("MEMBER=")))
+		{
+		}
+		else if (!strncmp(t[i], "ROLE=", strlen("ROLE=")))
+		{
+			int role = 0;
+			__cal_vcalendar_parse_attendee_role(t[i] + strlen("ROLE="), &role);
+			_cal_record_set_int(attendee, _calendar_attendee.role, role);
+		}
+		else if (!strncmp(t[i], "PARTSTAT=", strlen("PARTSTAT=")))
+		{
+			int stat = 0;
+			__cal_vcalendar_parse_attendee_partstat(t[i] + strlen("PARTSTAT="), &stat);
+			_cal_record_set_int(attendee, _calendar_attendee.status, stat);
+		}
+		else if (!strncmp(t[i], "RSVP=", strlen("RSVP=")))
+		{
+		}
+		else if (!strncmp(t[i], "DELTO=", strlen("DELTO=")))
+		{
+			DBG("[%s]", t[i] + strlen("DELTO="));
+			_cal_record_set_str(attendee, _calendar_attendee.delegate_uri, t[i] + strlen("DELTO="));
+		}
+		else if (!strncmp(t[i], "DELFROM=", strlen("DELFROM=")))
+		{
+			DBG("[%s]", t[i] + strlen("DELFROM="));
+			_cal_record_set_str(attendee, _calendar_attendee.delegator_uri, t[i] + strlen("DELFROM="));
+		}
+		else if (!strncmp(t[i], "SENT-BY=", strlen("SENT-BY=")))
+		{
+		}
+		else if (!strncmp(t[i], "CN=", strlen("CN=")))
+		{
+			DBG("[%s]", t[i] + strlen("CN="));
+			_cal_record_set_str(attendee, _calendar_attendee.name, t[i] + strlen("CN="));
+		}
+		else if (!strncmp(t[i], "DIR=", strlen("DIR=")))
+		{
+		}
+		else
+		{
+			DBG("No macthed field[%s]", t[i]);
+		}
 	}
-
-	switch (mode) {
-	case 1:
-		buf[j] = '\0';
-		_work_attendee_mailto(attendee, buf);
-		break;
-	case 2:
-		buf[j] = '\0';
-		_work_attendee_property(attendee, buf);
-		break;
-	default:
-		break;
-	}
-
+	g_strfreev(t);
 	return CALENDAR_ERROR_NONE;
 }
 
+static int __cal_vcalendar_parse_attendee(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont)
+{
+	int i;
+	int ret;
+	int len = 0;
+	char *p = (char *)cont;
+	char **t;
+
+	p++;
+
+	// divide mailto firstly.
+	t = g_strsplit(p, ":mailto", -1);
+	{
+		if (NULL == t)
+		{
+			ERR("g_strsplit_set() failed");
+			return CALENDAR_ERROR_OUT_OF_MEMORY;
+		}
+	}
+
+	calendar_record_h attendee = NULL;
+	ret = calendar_record_create(_calendar_attendee._uri, &attendee);
+	if (NULL == attendee)
+	{
+		ERR("Failed to create attedee(ret:%d)", ret);
+		return ret;
+	}
+
+	len = g_strv_length(t);
+	for (i = 0; i < len; i++)
+	{
+		if (*t[i] == ':')
+		{
+			__cal_vcalendar_parse_attendee_mailto(t[i], attendee);
+		}
+		else
+		{
+			__cal_vcalendar_parse_attendee_param(t[i], attendee);
+		}
+	}
+
+	ret = calendar_record_add_child_record(event, _calendar_event.calendar_attendee, attendee);
+
+	g_strfreev(t);
+	return CALENDAR_ERROR_NONE;
+}
 
 static int __cal_vcalendar_parse_categories(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont)
 {
