@@ -846,7 +846,13 @@ static int __cal_db_event_add_exdate(calendar_record_h record)
 	{
 		return CALENDAR_ERROR_NONE;
 	}
-	DBG("This is exception event and get exdate from parent(id:%d)", event->original_event_id);
+	DBG("This is exception mod event");
+	if (NULL == event->recurrence_id)
+	{
+		ERR("This event should have recurrence_id");
+		return CALENDAR_ERROR_NONE;
+	}
+	DBG("Exdate parent(id:%d) and recurrence_id[%s]", event->original_event_id, event->recurrence_id);
 
 	// get exdate from original event.
 	snprintf(query, sizeof(query), "SELECT exdate FROM %s WHERE id = %d ",
