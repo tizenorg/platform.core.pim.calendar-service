@@ -805,6 +805,10 @@ static int __cal_server_alarm_register_next_normal(long long int now_utime, GLis
 	_cal_time_utoi(mod_alarm_utime, tzid,
 			&alarm_date.year, &alarm_date.month, &alarm_date.day,
 			&alarm_date.hour, &alarm_date.min, &alarm_date.sec);
+	DBG("tzid[%s] datetime(%04d/%02d/%02d %02d:%02d:%02d", tzid,
+			alarm_date.year, alarm_date.month, alarm_date.day,
+			alarm_date.hour, alarm_date.min, alarm_date.sec);
+
 	alarmmgr_set_time(alarm_info, alarm_date);
 	ret = alarmmgr_add_alarm_with_localtime(alarm_info, NULL, &alarm_id);
 	if (tzid) free(tzid);
@@ -903,7 +907,7 @@ static gint __cal_server_alarm_allday_sort_cb(gconstpointer a, gconstpointer b)
 	return p1->alarm_datetime - p2->alarm_datetime > 0 ? 1 : -1;
 }
 
-static int __cal_server_alarm_register_with_alarmmgr(void)
+static int __cal_server_alarm_register_with_alarmmgr(long long int now_utime)
 {
 	GList *normal_list = NULL;
 	GList *allday_list = NULL;
@@ -914,9 +918,7 @@ static int __cal_server_alarm_register_with_alarmmgr(void)
 	gettimeofday(&stv, NULL); // check time
 
 	// for normal
-	long long int now_utime;
 	long long int from_utime, to_utime;
-	now_utime = _cal_time_get_now();
 
 	event_count = 0;
 	todo_count = 0;
@@ -956,7 +958,7 @@ static int __cal_server_alarm_register_with_alarmmgr(void)
 	time_t from_timet, to_timet;
 	int from_datetime, to_datetime;
 	struct tm datetime_tm;
-	now_timet = time(NULL);
+	now_timet = (time_t)now_utime;
 
 	event_count = 0;
 	todo_count = 0;
@@ -1080,14 +1082,24 @@ static int _alert_cb(alarm_id_t alarm_id, void *data)
 		allday_list = NULL;
 	}
 
-	__cal_server_alarm_register_with_alarmmgr();
+	__cal_server_alarm_register_with_alarmmgr(_cal_time_get_now());
 	return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
 static void __cal_server_alarm_timechange_cb(keynode_t *node, void *data)
 {
-	__cal_server_alarm_register_with_alarmmgr();
+	time_t t;
+	if (node) {
+		t = vconf_keynode_get_int(node);
+	}
+	else
+	{
+		vconf_get_int(VCONFKEY_SYSTEM_TIMECHANGE, (int *)&t);
+	}
+
+	DBG("systme changed time(%ld)", t);
+	__cal_server_alarm_register_with_alarmmgr((long long int)t);
 }
 
 int __cal_server_alarm_set_timechange(void)
@@ -1106,7 +1118,7 @@ int __cal_server_alarm_set_timechange(void)
 
 static void __changed_cb(const char* view_uri, void* data)
 {
-	__cal_server_alarm_register_with_alarmmgr();
+	__cal_server_alarm_register_with_alarmmgr(_cal_time_get_now());
 }
 
 static int __cal_server_alarm_set_inotify(calendar_db_changed_cb callback)
@@ -1129,7 +1141,7 @@ int _cal_server_alarm(void)
 	ret = alarmmgr_set_cb(_alert_cb, NULL);
 	retvm_if(ret < 0, ret, "alarmmgr_set_cb() failed");
 
-	__cal_server_alarm_register_with_alarmmgr();
+	__cal_server_alarm_register_with_alarmmgr(_cal_time_get_now());
 
 	return CALENDAR_ERROR_NONE;
 }

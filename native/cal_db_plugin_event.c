@@ -867,7 +867,7 @@ static int __cal_db_event_add_exdate(calendar_record_h record)
 	}
 
 	// add recurrence id to end of the exdate of original event.
-    const unsigned char *temp;
+    const unsigned char *temp = NULL;
 	int len = 0;
 	char *exdate = NULL;
 	if (CAL_DB_ROW == _cal_db_util_stmt_step(stmt))
