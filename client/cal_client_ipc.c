@@ -144,18 +144,22 @@ API int calendar_disconnect(void)
     pims_ipc_data_h indata = NULL;
     pims_ipc_data_h outdata = NULL;
 
-    retvm_if(calendar_ipc==NULL,CALENDAR_ERROR_NOT_PERMITTED,"calendar not connected");
-
     CAL_FN_CALL;
     _cal_mutex_lock(CAL_MUTEX_CONNECTION);
+
+    if (calendar_ipc == NULL)
+    {
+        ERR("calendar not connected");
+        ret = CALENDAR_ERROR_NOT_PERMITTED;
+        goto ERROR_RETURN;
+    }
 
     if (calendar_connection_count > 1)
     {
         calendar_connection_count--;
         CAL_DBG("calendar connect count -1 = %d",calendar_connection_count);
         ret = CALENDAR_ERROR_NONE;
-        _cal_mutex_unlock(CAL_MUTEX_CONNECTION);
-        return ret;
+        goto ERROR_RETURN;
     }
 	else
 	{
@@ -195,8 +199,6 @@ API int calendar_disconnect(void)
         _cal_view_finalize();
     }
 
-    _cal_mutex_unlock(CAL_MUTEX_CONNECTION);
-    return ret;
 ERROR_RETURN:
 
     _cal_mutex_unlock(CAL_MUTEX_CONNECTION);

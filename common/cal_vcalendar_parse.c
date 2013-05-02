@@ -1939,14 +1939,14 @@ static int __cal_vcalendar_parse_extended(int type, calendar_list_h list, calend
 		return ret;
 	}
 
-	DBG("key[%s]value[%s]", prop, cont +1);
+	DBG("key[%s]value[%s]", prop, cont);
 	ret = calendar_record_set_str(extended, _calendar_extended_property.key, prop);
 	if (CALENDAR_ERROR_NONE != ret)
 	{
 		ERR("calendar_record_set_str() failed");
 		return ret;
 	}
-	ret = calendar_record_set_str(extended, _calendar_extended_property.value, cont +1);
+	ret = calendar_record_set_str(extended, _calendar_extended_property.value, cont);
 	if (CALENDAR_ERROR_NONE != ret)
 	{
 		ERR("calendar_record_set_str() failed");
