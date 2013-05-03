@@ -19,6 +19,7 @@
 
 #include <stdlib.h>
 #include <ctype.h>
+#include <vconf.h>
 
 #include "calendar_list.h"
 
@@ -89,6 +90,7 @@ static int __cal_vcalendar_parse_status(int type, calendar_list_h list, calendar
 static int __cal_vcalendar_parse_summary(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont);
 static int __cal_vcalendar_parse_rrule(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont);
 static int __cal_vcalendar_parse_dtend(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont);
+static int __cal_vcalendar_parse_due(int type, calendar_list_h list, calendar_record_h record, char *prop, char *cont);
 
 static int __cal_vcalendar_parse_completed(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont);
 static int __cal_vcalendar_parse_percent(int type, calendar_list_h list, calendar_record_h event, char *prop, char *cont);
@@ -133,7 +135,7 @@ struct _vcalendar_func _vevent_funcs[VEVE_MAX] =
 	{ "SUMMARY", __cal_vcalendar_parse_summary },
 	{ "RRULE", __cal_vcalendar_parse_rrule },
 	{ "DTEND", __cal_vcalendar_parse_dtend },
-	{ "DUE", __cal_vcalendar_parse_dtend },
+	{ "DUE", __cal_vcalendar_parse_due },
 	{ "ATTENDEE", __cal_vcalendar_parse_attendee },
 	{ "CATEGORIES", __cal_vcalendar_parse_categories },
 	{ "AALARM", __cal_vcalendar_parse_aalarm },
@@ -224,7 +226,7 @@ struct _vcalendar_func _vtodo_funcs[VTODO_MAX] =
 	{ "PRIORITY", __cal_vcalendar_parse_priority },
 	{ "STATUS", __cal_vcalendar_parse_status },
 	{ "SUMMARY", __cal_vcalendar_parse_summary },
-	{ "DUE", __cal_vcalendar_parse_dtend },
+	{ "DUE", __cal_vcalendar_parse_due },
 	{ "AALARM", __cal_vcalendar_parse_aalarm },
 	{ "X-", __cal_vcalendar_parse_extended },
 };
@@ -666,7 +668,7 @@ int __cal_vcalendar_parse_dtstart_value(char *q, calendar_time_s *caltime)
 	return CALENDAR_ERROR_NONE;
 }
 
-int __cal_vcalendar_parse_dtstart_time(calendar_list_h list, char *q, char *tzid, calendar_time_s *caltime)
+int __cal_vcalendar_parse_time_utime(calendar_list_h list, char *q, char *tzid, calendar_time_s *caltime)
 {
 	int len = 0;
 	int y, m, d, h, min, s;
@@ -689,7 +691,7 @@ int __cal_vcalendar_parse_dtstart_time(calendar_list_h list, char *q, char *tzid
 		break;
 
 	case CALENDAR_TIME_UTIME:
-		if (strlen(q) == strlen("YYYYMMDDTHHMMSSZ"))
+		if (strlen("YYYYMMDDTHHMMSSZ") == len)
 		{
 			sscanf(q, "%04d%02d%02dT%02d%02d%02dZ", &y, &m, &d, &h, &min, &s);
 			DBG("get GMT time[%04d/%02d/%02d %02d:%02d:%02d]", y, m, d, h, min, s);
@@ -700,7 +702,103 @@ int __cal_vcalendar_parse_dtstart_time(calendar_list_h list, char *q, char *tzid
 			DBG("get local time[%04d/%02d/%02d %02d:%02d:%02d]", y, m, d, h, min, s);
 		}
 
-		if (NULL == tzid || len == strlen("YYYYMMDDTHHMMSSZ"))
+		if (NULL == tzid || strlen("YYYYMMDDTHHMMSSZ") == len)
+		{
+			// Z means GMT
+			caltime->time.utime = _cal_time_convert_itol(NULL, y, m, d, h, min, s);
+		}
+		else
+		{
+			if (_cal_time_is_registered_tzid(tzid))
+			{
+				caltime->time.utime = _cal_time_convert_itol(tzid, y, m, d, h, min, s);
+			}
+			else
+			{
+				char *like_tzid = NULL;
+				calendar_record_h timezone = NULL;
+				// try get timezone info from the list
+				__cal_vcalendar_parse_get_tzid_from_list(list, tzid, &timezone);
+				if (timezone)
+				{
+					DBG("Found from the list");
+					_cal_time_get_like_tzid(tzid, timezone, &like_tzid);
+					caltime->time.utime = _cal_time_convert_itol(like_tzid, y, m, d, h, min, s);
+					DBG("[%s]", like_tzid);
+					CAL_FREE(like_tzid);
+					like_tzid = NULL;
+				}
+				else
+				{
+					DBG("Nowhere to find");
+					caltime->time.utime = _cal_time_convert_itol(tzid, y, m, d, h, min, s);
+				}
+			}
+		}
+		break;
+	}
+	return CALENDAR_ERROR_NONE;
+}
+
+int __cal_vcalendar_parse_time_due(int version, calendar_list_h list, char *q, char *tzid, calendar_time_s *caltime)
+{
+	int len = 0;
+	int y, m, d, h, min, s;
+
+	if (NULL == q || NULL == caltime)
+	{
+		ERR("Invalid parameter");
+		return CALENDAR_ERROR_INVALID_PARAMETER;
+	}
+
+	len = strlen(q);
+
+	switch (caltime->type)
+	{
+	case CALENDAR_TIME_LOCALTIME:
+		sscanf(q, "%04d%02d%02d", &y, &m, &d);
+		caltime->time.date.year = y;
+		caltime->time.date.month = m;
+		caltime->time.date.mday = d;
+		break;
+
+	case CALENDAR_TIME_UTIME:
+		if (strlen("YYYYMMDDTHHMMSSZ") == len)
+		{
+			sscanf(q, "%04d%02d%02dT%02d%02d%02dZ", &y, &m, &d, &h, &min, &s);
+			DBG("get GMT time[%04d/%02d/%02d %02d:%02d:%02d]", y, m, d, h, min, s);
+		}
+		else
+		{
+			sscanf(q, "%04d%02d%02dT%02d%02d%02d", &y, &m, &d, &h, &min, &s);
+			DBG("get local time[%04d/%02d/%02d %02d:%02d:%02d]", y, m, d, h, min, s);
+		}
+
+		if (1 == version)
+		{
+			if (strlen("YYYYMMDDTHHMMSSZ") == len)
+			{
+				int gety = 0, getm = 0, getd = 0;
+				char *tzid = vconf_get_str(VCONFKEY_SETAPPL_TIMEZONE_ID);
+				long long int lli = _cal_time_convert_itol(CAL_TZID_GMT, y, m, d, h, min, s);
+				_cal_time_utoi(lli, tzid, &gety, &getm, &getd, NULL, NULL, NULL);
+
+				caltime->type = CALENDAR_TIME_LOCALTIME;
+				caltime->time.date.year = gety;
+				caltime->time.date.month = getm;
+				caltime->time.date.mday = getd;
+			}
+			else
+			{
+				caltime->type = CALENDAR_TIME_LOCALTIME;
+				caltime->time.date.year = y;
+				caltime->time.date.month = m;
+				caltime->time.date.mday = d;
+			}
+			break;
+		}
+
+		if (NULL == tzid || strlen("YYYYMMDDTHHMMSSZ") == len)
 		{
 			// Z means GMT
 			caltime->time.utime = _cal_time_convert_itol(NULL, y, m, d, h, min, s);
@@ -775,7 +873,7 @@ static int __cal_vcalendar_parse_dtstart(int type, calendar_list_h list, calenda
 		else if (*t[i] >= '1' && *t[i] <= '9')
 		{
 			DBG("get time");
-			__cal_vcalendar_parse_dtstart_time(list, t[i], str_tzid, &caltime);
+			__cal_vcalendar_parse_time_utime(list, t[i], str_tzid, &caltime);
 		}
 		else
 		{
@@ -1645,7 +1743,76 @@ static int __cal_vcalendar_parse_dtend(int type, calendar_list_h list, calendar_
 		else if (*t[i] >= '1' && *t[i] <= '9')
 		{
 			DBG("get time");
-			__cal_vcalendar_parse_dtstart_time(list, t[i], str_tzid, &caltime);
+			__cal_vcalendar_parse_time_utime(list, t[i], str_tzid, &caltime);
+		}
+		else
+		{
+			ERR("Unable to parsing[%s]", t[i]);
+		}
+	}
+
+	if (NULL == str_tzid)
+	{
+		// if tzid is not set, set GMT
+		str_tzid = strdup(CAL_TZID_GMT);
+	}
+	switch (type)
+	{
+	case CALENDAR_BOOK_TYPE_EVENT:
+		ret = _cal_record_set_str(record, _calendar_event.end_tzid, str_tzid);
+		ret = _cal_record_set_caltime(record, _calendar_event.end_time, caltime);
+		break;
+	case CALENDAR_BOOK_TYPE_TODO:
+		ret = _cal_record_set_str(record, _calendar_todo.due_tzid, str_tzid);
+		ret = _cal_record_set_caltime(record, _calendar_todo.due_time, caltime);
+		break;
+	}
+	if (str_tzid) free(str_tzid);
+	g_strfreev(t);
+
+	return CALENDAR_ERROR_NONE;
+}
+
+static int __cal_vcalendar_parse_due(int type, calendar_list_h list, calendar_record_h record, char *prop, char *cont)
+{
+	int ret;
+	int i;
+	int len = 0;
+	char *p = (char *)cont;
+	char **t;
+	char *str_tzid = NULL;
+	int version = 1;
+
+	p++;
+
+	calendar_time_s caltime = {0};
+
+	t = g_strsplit_set(p, ";:", -1);
+	if (NULL == t)
+	{
+		ERR("g_strsplit_set() failed");
+		return CALENDAR_ERROR_OUT_OF_MEMORY;
+	}
+
+	len = g_strv_length(t);
+	for (i = 0; i < len; i++)
+	{
+		DBG("get string[%s]", t[i]);
+		if (!strncmp(t[i], "TZID=", strlen("TZID=")) && NULL == str_tzid)
+		{
+			str_tzid = __cal_vcalendar_parse_dtstart_tzid(t[i]);
+			DBG("str_tzid[%s]", str_tzid);
+		}
+		else if (!strncmp(t[i], "VALUE=", strlen("VALUE")))
+		{
+			DBG("get value");
+			version = 2;
+			__cal_vcalendar_parse_dtstart_value(t[i], &caltime);
+		}
+		else if (*t[i] >= '1' && *t[i] <= '9')
+		{
+			DBG("get time");
+			__cal_vcalendar_parse_time_due(version, list, t[i], str_tzid, &caltime);
 		}
 		else
 		{
