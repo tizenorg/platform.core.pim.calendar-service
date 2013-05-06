@@ -1,7 +1,7 @@
 Name:       calendar-service
 Summary:    DB library for calendar
-Version:    0.1.14
-Release:    86
+Version:    0.1.15
+Release:    1
 Group:      System/Libraries
 License:    Apache 2.0
 Source0:    %{name}-%{version}.tar.gz
@@ -64,17 +64,6 @@ ln -s ../calendar.service %{buildroot}/usr/lib/systemd/user/tizen-middleware.tar
 chown :6003 /opt/usr/data/calendar-svc
 
 mkdir -p /opt/usr/dbspace
-if [ -f /opt/usr/dbspace/.calendar-svc.db ]
-then
-        echo "calendar-svc.db exist"
-else
-		calendar-svc-initdb
-fi
-
-if [ -f %{_libdir}/rpm-plugins/msm.so ]
-then
-	chsmack -a 'calendar-service::db' /opt/usr/dbspace/.calendar-svc.db*
-fi
 
 chown :6003 /opt/usr/dbspace/.calendar-svc.db
 chown :6003 /opt/usr/dbspace/.calendar-svc.db-journal
@@ -89,8 +78,7 @@ chmod 660 /opt/usr/data/calendar-svc/.CALENDAR_SVC_*
 %files
 %manifest calendar-service.manifest
 %defattr(-,root,root,-)
-%{_bindir}/calendar-svc-initdb
-%{_libdir}/libcalendar-service-native.so.*
+#%{_libdir}/libcalendar-service-native.so.*
 %{_bindir}/calendar-serviced*
 %{_libdir}/libcalendar-service2.so.*
 %attr(0755,root,root) /etc/rc.d/init.d/calendar-serviced.sh
@@ -101,14 +89,16 @@ chmod 660 /opt/usr/data/calendar-svc/.CALENDAR_SVC_*
 /opt/usr/data/calendar-svc/.CALENDAR_SVC_EVENT_CHANGED
 /opt/usr/data/calendar-svc/.CALENDAR_SVC_TODO_CHANGED
 /usr/share/calendar-svc/dft-calendar
+%config(noreplace) /opt/usr/dbspace/.calendar-svc.db*
 /usr/lib/systemd/user/calendar.service
 /usr/lib/systemd/user/tizen-middleware.target.wants/calendar.service
 
 %files devel
 %defattr(-,root,root,-)
-%{_includedir}/calendar-service-native/*.h
+%{_includedir}/calendar-service/*.h
 %{_includedir}/calendar-service2/*.h
 %{_libdir}/*.so
 %{_libdir}/pkgconfig/calendar.pc
-%{_libdir}/pkgconfig/calendar-service-native.pc
+#%{_libdir}/pkgconfig/calendar-service-native.pc
 %{_libdir}/pkgconfig/calendar-service2.pc
+/opt/usr/data/calendar-svc/calendar-svc-initdb

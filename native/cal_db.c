@@ -279,7 +279,7 @@ static void __cal_db_initialize_view_table(void)
      * schedule_table(type=1) + rrule_table
      */
     snprintf(query, sizeof(query),
-                "CREATE TEMP VIEW %s AS "
+                "CREATE VIEW IF NOT EXISTS %s AS "
                 "SELECT A.*, "
                 "B.freq, B.range_type, B.until_type, B.until_utime, B.until_datetime, B.count, "
                 "B.interval, B.bysecond, B.byminute, B.byhour, B.byday, B.bymonthday, "
@@ -306,7 +306,7 @@ static void __cal_db_initialize_view_table(void)
      * schedule_table(type=2) + rrule_table
      */
     snprintf(query, sizeof(query),
-                "CREATE TEMP VIEW %s AS "
+                "CREATE VIEW IF NOT EXISTS %s AS "
                 "SELECT A.*, "
                 "B.freq, B.range_type, B.until_type, B.until_utime, B.until_datetime, B.count, "
                 "B.interval, B.bysecond, B.byminute, B.byhour, B.byday, B.bymonthday, "
@@ -336,7 +336,7 @@ static void __cal_db_initialize_view_table(void)
      * C = calendar_table
      */
     snprintf(query, sizeof(query),
-            "CREATE TEMP VIEW %s AS SELECT A.event_id, "
+            "CREATE VIEW IF NOT EXISTS %s AS SELECT A.event_id, "
             "B.dtstart_type, A.dtstart_utime, B.dtstart_datetime, "
             "B.dtend_type, A.dtend_utime, B.dtend_datetime, "
             "B.summary, B.description, "
@@ -360,7 +360,7 @@ static void __cal_db_initialize_view_table(void)
 
     // CAL_VIEW_TABLE_ALLDAY_INSTANCE  : CALENDAR_VIEW_INSTANCE_ALLDAY_CALENDAR
     snprintf(query, sizeof(query),
-            "CREATE TEMP VIEW %s AS SELECT A.event_id, "
+            "CREATE VIEW IF NOT EXISTS %s AS SELECT A.event_id, "
             "B.dtstart_type, B.dtstart_utime, A.dtstart_datetime, "
             "B.dtend_type, B.dtend_utime, A.dtend_datetime, "
             "B.summary, B.description, "
@@ -384,7 +384,7 @@ static void __cal_db_initialize_view_table(void)
 
     // event_calendar view  :  CALENDAR_VIEW_EVENT_CALENDAR
     snprintf(query, sizeof(query),
-                "CREATE TEMP VIEW %s AS "
+                "CREATE VIEW IF NOT EXISTS %s AS "
                 "SELECT A.* "
                 ", B.freq, B.range_type, B.until_type, B.until_utime, B.until_datetime, B.count, "
                 "B.interval, B.bysecond, B.byminute, B.byhour, B.byday, B.bymonthday, "
@@ -406,7 +406,7 @@ static void __cal_db_initialize_view_table(void)
 
     // todo_calendar view  : CALENDAR_VIEW_TODO_CALENDAR
     snprintf(query, sizeof(query),
-                "CREATE TEMP VIEW %s AS "
+                "CREATE VIEW IF NOT EXISTS %s AS "
                 "SELECT A.* "
                 ", B.freq, B.range_type, B.until_type, B.until_utime, B.until_datetime, B.count, "
                 "B.interval, B.bysecond, B.byminute, B.byhour, B.byday, B.bymonthday, "
@@ -428,7 +428,7 @@ static void __cal_db_initialize_view_table(void)
 
     // event_calendar_attendee view  :  CALENDAR_VIEW_EVENT_CALENDAR_ATTENDEE
     snprintf(query, sizeof(query),
-                "CREATE TEMP VIEW %s AS "
+                "CREATE VIEW IF NOT EXISTS %s AS "
                 "SELECT A.* "
                 ", D.freq, D.range_type, D.until_type, D.until_utime, D.until_datetime, D.count, "
                 "D.interval, D.bysecond, D.byminute, D.byhour, D.byday, D.bymonthday, "

@@ -290,7 +290,6 @@ static int __cal_record_event_clone( calendar_record_h record, calendar_record_h
     out_data->latitude = src_data->latitude;
     out_data->longitude = src_data->longitude;
     out_data->email_id = src_data->email_id;
-    //out_data->availability = src_data->availability;
     out_data->created_time = src_data->created_time;
     //out_data->completed_time = src_data->completed_time;
     //out_data->progress = src_data->progress;

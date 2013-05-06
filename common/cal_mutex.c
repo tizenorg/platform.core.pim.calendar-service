@@ -29,7 +29,7 @@ static pthread_mutex_t __cal_pims_ipc_call_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t __cal_inotify_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t __cal_pims_ipc_pubsub_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-static inline pthread_mutex_t* cts_mutex_get_mutex(int type)
+static inline pthread_mutex_t* __cal_mutex_get_mutex(int type)
 {
     pthread_mutex_t *ret_val;
 
@@ -62,7 +62,7 @@ void _cal_mutex_lock(int type)
     int ret;
     pthread_mutex_t *mutex;
 
-    mutex = cts_mutex_get_mutex(type);
+    mutex = __cal_mutex_get_mutex(type);
 
     if (mutex != NULL)
     {
@@ -76,7 +76,7 @@ void _cal_mutex_unlock(int type)
     int ret;
     pthread_mutex_t *mutex;
 
-    mutex = cts_mutex_get_mutex(type);
+    mutex = __cal_mutex_get_mutex(type);
 
     if (mutex != NULL)
     {

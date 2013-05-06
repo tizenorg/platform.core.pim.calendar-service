@@ -2,13 +2,12 @@
 
 prefix=@PREFIX@
 exec_prefix=@EXEC_PREFIX@
-libdir=@LIB_INSTALL_DIR@
-includedir=@INCLUDEDIR@/calendar-service2
+libdir=@LIBDIR@
+includedir=@INCLUDEDIR@
 
-Name: calendar-service2
-Description: calendar-service2 library
-Version: 0.1.8
+Name: @IMMIGRATION@
+Description: @IMMIGRATION@ library
+Version: @VERSION@
 Requires: glib-2.0 alarm-service
-Libs: -L${libdir} -lcalendar-service2
+Libs: -L${libdir} -l@IMMIGRATION@
 Cflags: -I${includedir}
-

@@ -27,3 +27,10 @@ make
 ./schema-header-gen ../schema.sql > ../schema.h
 
 make clean
+
+# Make DB
+cd ../db-gen
+make
+../initdb ../
+
+make clean

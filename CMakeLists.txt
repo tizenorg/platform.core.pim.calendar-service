@@ -6,14 +6,15 @@ PROJECT(calendar-service C CXX)
 #ENDIF("${CMAKE_BUILD_TYPE}" STREQUAL "")
 #MESSAGE("Build type: ${CMAKE_BUILD_TYPE}")
 
-SET(DEST_INCLUDE_DIR "include")
+SET(DEST_INCLUDE_DIR "include/calendar-service")
 SET(SRC_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/include")
 
 SET(PREFIX ${CMAKE_INSTALL_PREFIX})
 SET(EXEC_PREFIX "\${prefix}")
+SET(LIBDIR "\${prefix}/lib")
 SET(INCLUDEDIR "\${prefix}/${DEST_INCLUDE_DIR}")
 SET(VERSION_MAJOR 0)
-SET(VERSION "${VERSION_MAJOR}.1.14")
+SET(VERSION "${VERSION_MAJOR}.1.15")
 
 #INCLUDE_DIRECTORIES(${SRC_INCLUDE_DIR})
 SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} -I${CMAKE_SOURCE_DIR}/include")
@@ -34,15 +35,15 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EXTRA_CFLAGS}")
 
 ADD_DEFINITIONS("-DPREFIX=\"${PREFIX}\"")
 
-# pkgconfig file
-CONFIGURE_FILE(calendar.pc.in calendar.pc @ONLY)
-CONFIGURE_FILE(client/calendar-service2.pc.in  client/calendar-service2.pc @ONLY)
-CONFIGURE_FILE(native/calendar-service-native.pc.in native/calendar-service-native.pc @ONLY)
-CONFIGURE_FILE(native/calendar-service2.pc.in native/calendar-service2.pc @ONLY)
+#header
+FILE(GLOB HEADER_FILES ${SRC_INCLUDE_DIR}/calendar*.h)
+INSTALL(FILES ${HEADER_FILES} DESTINATION ${INCLUDEDIR})
+INSTALL(FILES ${HEADER_FILES} DESTINATION ${INCLUDEDIR}2)
 
 # for immigration
-SET(IMMIGRATION "calendar")
-INSTALL(FILES ${IMMIGRATION}.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig)
+SET(IMMIGRATION "calendar-service2")
+CONFIGURE_FILE(calendar.pc.in calendar.pc @ONLY)
+INSTALL(FILES calendar.pc DESTINATION lib/pkgconfig)
 
 FILE(GLOB NOTI_FILES ${CMAKE_SOURCE_DIR}/.CALENDAR_SVC_*_CHANGED)
 INSTALL(FILES ${NOTI_FILES} DESTINATION /opt/usr/data/calendar-svc)
@@ -50,5 +51,5 @@ INSTALL(FILES ${NOTI_FILES} DESTINATION /opt/usr/data/calendar-svc)
 ADD_SUBDIRECTORY(schema)
 ADD_SUBDIRECTORY(client)
 ADD_SUBDIRECTORY(server)
-ADD_SUBDIRECTORY(native)
+#ADD_SUBDIRECTORY(native)
 ADD_SUBDIRECTORY(dft)

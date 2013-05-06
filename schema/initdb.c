@@ -25,21 +25,37 @@
 
 #include "schema.h"
 
-#define CALS_DB_PATH "/opt/usr/dbspace/.calendar-svc.db"
-#define CALS_DB_JOURNAL_PATH "/opt/usr/dbspace/.calendar-svc.db-journal"
+#define CALS_DB_NAME ".calendar-svc.db"
+#define CALS_DB_JOURNAL_NAME ".calendar-svc.db-journal"
+#define CALS_DB_PATH "/opt/usr/dbspace/"CALS_DB_NAME
+#define CALS_DB_JOURNAL_PATH "/opt/usr/dbspace/"CALS_DB_JOURNAL_NAME
 
 // For Security
 #define CALS_SECURITY_FILE_GROUP 6003
 #define CALS_SECURITY_DEFAULT_PERMISSION 0660
 #define CALS_SECURITY_DIR_DEFAULT_PERMISSION 0770
 
-static inline int remake_db_file()
+static inline int remake_db_file(char* db_path)
 {
 	int ret, fd;
 	char *errmsg;
 	sqlite3 *db;
+	char db_file[256]={0,};
+	char db_journal_file[256]={0,};
 
-	ret = db_util_open(CALS_DB_PATH, &db, 0);
+	if(db_path == NULL)
+	{
+	    snprintf(db_file,sizeof(db_file),CALS_DB_PATH);
+	    snprintf(db_journal_file,sizeof(db_journal_file),CALS_DB_JOURNAL_PATH);
+	}
+	else
+	{
+	    snprintf(db_file,sizeof(db_file),"%s%s",db_path, CALS_DB_NAME);
+	    snprintf(db_journal_file,sizeof(db_journal_file),"%s%s", db_path, CALS_DB_JOURNAL_NAME);
+	}
+
+	ret = db_util_open(db_file, &db, 0);
+
 	if (SQLITE_OK != ret)
 	{
 		printf("db_util_open() Failed(%d)\n", ret);
@@ -54,7 +70,7 @@ static inline int remake_db_file()
 
 	db_util_close(db);
 
-	fd = open(CALS_DB_PATH, O_CREAT | O_RDWR, 0660);
+	fd = open(db_file, O_CREAT | O_RDWR, 0660);
 	if (-1 == fd)
 	{
 		printf("open Failed\n");
@@ -71,7 +87,8 @@ static inline int remake_db_file()
 	fchmod(fd, CALS_SECURITY_DEFAULT_PERMISSION);
 	close(fd);
 
-	fd = open(CALS_DB_JOURNAL_PATH, O_CREAT | O_RDWR, 0660);
+	fd = open(db_journal_file, O_CREAT | O_RDWR, 0660);
+
 	if (-1 == fd)
 	{
 		printf("open Failed\n");
@@ -91,28 +108,45 @@ static inline int remake_db_file()
 	return 0;
 }
 
-static inline int check_db_file(void)
+static inline int check_db_file(char* db_path)
 {
-	int fd = open(CALS_DB_PATH, O_RDONLY);
+    int fd = -1;
+
+    char db_file[256]={0,};
+    if(db_path == NULL)
+    {
+        snprintf(db_file,sizeof(db_file),CALS_DB_PATH);
+    }
+    else
+    {
+        snprintf(db_file,sizeof(db_file),"%s%s",db_path, CALS_DB_NAME);
+    }
+
+    fd = open(db_file, O_RDONLY);
+
 	if (-1 == fd)
 	{
-		printf("DB file(%s) is not exist\n", CALS_DB_PATH);
+		printf("DB file(%s) is not exist\n", db_file);
 		return -1;
 	}
-
+	printf("DB file(%s) \n", db_file);
 	close(fd);
 	return 0;
 }
 
-static inline int check_schema(void)
+static inline int check_schema(char* db_path)
 {
-	if (check_db_file())
-		remake_db_file();
-
+	if (check_db_file(db_path))
+		remake_db_file(db_path);
 	return 0;
 }
 
 int main(int argc, char **argv)
 {
-	return check_schema();
+    char *tmp = NULL;
+    if(argc > 1)
+    {
+        tmp = argv[1];
+    }
+	return check_schema(tmp);
 }
