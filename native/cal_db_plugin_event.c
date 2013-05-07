@@ -2746,6 +2746,53 @@ static int __cal_db_event_exception_get_records(int original_id, GList **out_lis
 
         __cal_db_event_get_stmt(stmt, false, record);
 
+		cal_event_s *event = (cal_event_s *)record;
+		if (NULL == record)
+		{
+            sqlite3_finalize(stmt);
+            return ret;
+        }
+
+		cal_rrule_s *rrule = NULL;
+		if (_cal_db_rrule_get_rrule(event->index, &rrule) == CALENDAR_ERROR_NONE )
+		{
+			_cal_db_rrule_set_rrule_to_event(rrule, record);
+			CAL_FREE(rrule);
+		}
+
+		GList *l = NULL;
+		_cal_db_alarm_get_records(event->index, &l);
+		if (l) event->alarm_list = l;
+
+		l = NULL;
+		_cal_db_attendee_get_records(event->index, &l);
+		if (l) event->attendee_list = l;
+
+		l = NULL;
+		__cal_db_event_exception_get_records(event->index, &l);
+		if (l) event->exception_list = l;
+
+		l = NULL;
+		_cal_db_extended_get_records(event->index, CALENDAR_RECORD_TYPE_EVENT, &l);
+		if (l) event->extended_list = l;
+
+		event->has_alarm = 0;
+		if (event->alarm_list)
+		{
+			if (g_list_length(event->alarm_list) != 0)
+			{
+				event->has_alarm = 1;
+			}
+		}
+		event->has_attendee = 0;
+		if (event->attendee_list)
+		{
+			if (g_list_length(event->attendee_list) != 0)
+			{
+				event->has_attendee = 1;
+			}
+		}
+
         list = g_list_append(list, record);
     }
     sqlite3_finalize(stmt);
