@@ -58,6 +58,9 @@ mkdir -p %{buildroot}/usr/lib/systemd/user/tizen-middleware.target.wants
 install %{SOURCE1} %{buildroot}/usr/lib/systemd/user/
 ln -s ../calendar.service %{buildroot}/usr/lib/systemd/user/tizen-middleware.target.wants/
 
+mkdir -p %{buildroot}/opt/usr/dbspace/.calendar-svc.db
+mkdir -p %{buildroot}/opt/usr/dbspace/.calendar-svc.db-journal
+
 %post
 /sbin/ldconfig
 
