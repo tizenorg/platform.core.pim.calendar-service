@@ -1,2 +1,5 @@
+* Tue Jun 04 2013 Xavier Roche <xavrock.os@gmail.com> accepted/tizen/20130523.195513@52e84ea
+- Fix hardcoded library path in CMakelists
+
 * Thu May 23 2013 Rusty Lynch <rusty.lynch@intel.com> submit/tizen/20130517.045114@007bfae
 - Fix install section of spec
