@@ -54,9 +54,9 @@ mkdir -p %{buildroot}/etc/rc.d/rc5.d/
 ln -s ../init.d/calendar-serviced.sh %{buildroot}/etc/rc.d/rc3.d/S85calendar-serviced
 ln -s ../init.d/calendar-serviced.sh %{buildroot}/etc/rc.d/rc5.d/S85calendar-serviced
 
-mkdir -p %{buildroot}/usr/lib/systemd/user/tizen-middleware.target.wants
-install %{SOURCE1} %{buildroot}/usr/lib/systemd/user/
-ln -s ../calendar.service %{buildroot}/usr/lib/systemd/user/tizen-middleware.target.wants/
+mkdir -p %{buildroot}%{_unitdir_user}/tizen-middleware.target.wants
+install %{SOURCE1} %{buildroot}%{_unitdir_user}/
+ln -s ../calendar.service %{buildroot}%{_unitdir_user}/tizen-middleware.target.wants/
 
 mkdir -p %{buildroot}/opt/usr/dbspace/.calendar-svc.db
 mkdir -p %{buildroot}/opt/usr/dbspace/.calendar-svc.db-journal
@@ -93,8 +93,8 @@ chmod 660 /opt/usr/data/calendar-svc/.CALENDAR_SVC_*
 /opt/usr/data/calendar-svc/.CALENDAR_SVC_TODO_CHANGED
 /usr/share/calendar-svc/dft-calendar
 %config(noreplace) /opt/usr/dbspace/.calendar-svc.db*
-/usr/lib/systemd/user/calendar.service
-/usr/lib/systemd/user/tizen-middleware.target.wants/calendar.service
+%{_unitdir_user}/calendar.service
+%{_unitdir_user}/tizen-middleware.target.wants/calendar.service
 
 %files devel
 %defattr(-,root,root,-)
