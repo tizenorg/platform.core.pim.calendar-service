@@ -1,3 +1,7 @@
+* Wed Jun 05 2013 Baptiste DURAND <baptiste.durand@eurogiciel.fr> accepted/tizen/20130604.123440@69ea7f5
+- Fix Error build of initdb
+- Revert "Fix install section of spec"
+
 * Tue Jun 04 2013 Xavier Roche <xavrock.os@gmail.com> accepted/tizen/20130523.195513@52e84ea
 - Fix hardcoded library path in CMakelists
 
