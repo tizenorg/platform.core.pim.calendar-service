@@ -6,6 +6,7 @@ Group:      System/Libraries
 License:    Apache 2.0
 Source0:    %{name}-%{version}.tar.gz
 Source1:    calendar.service
+Source1001: 	calendar-service.manifest
 Requires(post): /sbin/ldconfig
 Requires(post): /usr/bin/sqlite3, /bin/chown
 Requires(postun): /sbin/ldconfig
@@ -38,6 +39,7 @@ DB library for calendar (developement files)
 
 %prep
 %setup -q
+cp %{SOURCE1001} .
 
 
 %build
@@ -76,7 +78,7 @@ chmod 660 /opt/usr/data/calendar-svc/.CALENDAR_SVC_*
 %postun -p /sbin/ldconfig
 
 %files
-%manifest calendar-service.manifest
+%manifest %{name}.manifest
 %defattr(-,root,root,-)
 #%{_libdir}/libcalendar-service-native.so.*
 %{_bindir}/calendar-serviced*
@@ -94,6 +96,7 @@ chmod 660 /opt/usr/data/calendar-svc/.CALENDAR_SVC_*
 %{_unitdir_user}/tizen-middleware.target.wants/calendar.service
 
 %files devel
+%manifest %{name}.manifest
 %defattr(-,root,root,-)
 %{_includedir}/calendar-service/*.h
 %{_includedir}/calendar-service2/*.h
