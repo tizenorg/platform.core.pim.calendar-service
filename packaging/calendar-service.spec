@@ -2,7 +2,7 @@ Name:       calendar-service
 Summary:    DB library for calendar
 Version:    0.1.15
 Release:    1
-Group:      System/Libraries
+Group:      Social & Content/Calendar
 License:    Apache 2.0
 Source0:    %{name}-%{version}.tar.gz
 Source1:    calendar.service
@@ -30,7 +30,7 @@ DB library for calendar
 
 %package devel
 Summary:    DB library for calendar
-Group:      Development/Libraries
+Group:      Social & Content/Calendar
 Requires:   %{name} = %{version}-%{release}
 Requires:   pkgconfig(alarm-service)
 
