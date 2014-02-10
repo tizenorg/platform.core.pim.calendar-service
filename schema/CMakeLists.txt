@@ -9,7 +9,7 @@ EXECUTE_PROCESS(COMMAND ./generator.sh WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_
 SET(INITDBFILE initdb.c)
 SET(TOOLLIB  calendar-service2)
 
-pkg_check_modules(initdb_pkgs REQUIRED db-util dlog)
+pkg_check_modules(initdb_pkgs REQUIRED db-util dlog libtzplatform-config)
 
 UNSET(EXTRA_CFLAGS)
 FOREACH(flag ${initdb_pkgs_CFLAGS})
@@ -23,8 +23,3 @@ ADD_EXECUTABLE(${TARGET} ${INITDBFILE})
 SET_TARGET_PROPERTIES(${TARGET} PROPERTIES COMPILE_FLAGS ${EXTRA_CFLAGS})
 TARGET_LINK_LIBRARIES(${TARGET} ${initdb_pkgs_LDFLAGS})
 
-#INSTALL(TARGETS ${TARGET} DESTINATION bin)
-INSTALL(TARGETS ${TARGET} DESTINATION /opt/usr/data/calendar-svc)
-
-FILE(GLOB DB_FILES ${CMAKE_SOURCE_DIR}/schema/.calendar-svc.db*)
-INSTALL(FILES ${DB_FILES} DESTINATION /opt/usr/dbspace)

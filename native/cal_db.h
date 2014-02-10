@@ -16,14 +16,16 @@
  * limitations under the License.
  *
  */
+#include <tzplatform_config.h> 
+
 #ifndef __CALENDAR_SVC_DB_H__
 #define __CALENDAR_SVC_DB_H__
 
 #include "calendar_view.h"
 #include "calendar_list.h"
 
-#define CAL_DB_PATH "/opt/usr/dbspace/.calendar-svc.db"
-#define CAL_DB_JOURNAL_PATH "/opt/usr/dbspace/.calendar-svc.db-journal"
+#define CAL_DB_PATH tzplatform_mkpath(TZ_USER_DB,".calendar-svc.db")
+#define CAL_DB_JOURNAL_PATH tzplatform_mkpath(TZ_USER_DB,".calendar-svc.db-journal")
 
 // For Security
 #define CAL_SECURITY_FILE_GROUP 6003

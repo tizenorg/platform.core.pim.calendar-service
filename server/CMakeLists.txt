@@ -66,7 +66,7 @@ SET(LIBSRCS
 )
 
 INCLUDE(FindPkgConfig)
-pkg_check_modules(calserver_pkgs REQUIRED pims-ipc db-util appsvc alarm-service capi-base-common icu-i18n alarm-service)
+pkg_check_modules(calserver_pkgs REQUIRED pims-ipc db-util appsvc alarm-service capi-base-common icu-i18n alarm-service libtzplatform-config)
 
 FOREACH(flag ${calserver_pkgs_CFLAGS})
 	SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} ${flag}")

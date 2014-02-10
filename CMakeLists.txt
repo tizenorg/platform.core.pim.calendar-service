@@ -20,7 +20,7 @@ SET(VERSION "${VERSION_MAJOR}.1.15")
 SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} -I${CMAKE_SOURCE_DIR}/include")
 
 INCLUDE(FindPkgConfig)
-pkg_check_modules(pkgs REQUIRED glib-2.0 sqlite3 vconf dlog db-util alarm-service icu-i18n appsvc bundle)
+pkg_check_modules(pkgs REQUIRED glib-2.0 sqlite3 vconf dlog db-util alarm-service icu-i18n appsvc bundle libtzplatform-config)
 
 FOREACH(flag ${pkgs_CFLAGS})
 	SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} ${flag}")
@@ -44,9 +44,6 @@ INSTALL(FILES ${HEADER_FILES} DESTINATION ${INCLUDEDIR}2)
 SET(IMMIGRATION "calendar-service2")
 CONFIGURE_FILE(calendar.pc.in calendar.pc @ONLY)
 INSTALL(FILES calendar.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig)
-
-FILE(GLOB NOTI_FILES ${CMAKE_SOURCE_DIR}/.CALENDAR_SVC_*_CHANGED)
-INSTALL(FILES ${NOTI_FILES} DESTINATION /opt/usr/data/calendar-svc)
 
 ADD_SUBDIRECTORY(schema)
 ADD_SUBDIRECTORY(client)

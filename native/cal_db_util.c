@@ -27,6 +27,9 @@
 
 #include "cal_db_util.h"
 
+#define CAL_SECURITY_FILE_GROUP 6003
+#define CAL_SECURITY_DEFAULT_PERMISSION 0660
+
 static TLS sqlite3 *calendar_db_handle;
 static TLS int transaction_cnt = 0;
 static TLS int transaction_ver = 0;
@@ -38,29 +41,74 @@ static TLS bool calendar_change=false;
 
 static inline void __cal_db_util_notify_event_change(void)
 {
+        int ret;
 	int fd = open(CAL_NOTI_EVENT_CHANGED, O_TRUNC | O_RDWR);
 	if (0 <= fd) {
 		close(fd);
 		event_change = false;
 	}
+	ret = fchown(fd, getuid(), CAL_SECURITY_FILE_GROUP);
+    	if (-1 == ret)
+    	{
+    	    printf("Failed to fchown\n");
+    	    close(fd);
+    	    return -1;
+    	}
+    	ret = fchmod(fd, CAL_SECURITY_DEFAULT_PERMISSION);
+        if (-1 == ret)
+        {
+               printf("Failed to fchmod\n");
+               close(fd);
+               return -1;
+        }
 }
 
 static inline void __cal_db_util_notify_todo_change(void)
 {
+        int ret;
 	int fd = open(CAL_NOTI_TODO_CHANGED, O_TRUNC | O_RDWR);
 	if (0 <= fd) {
 		close(fd);
 		todo_change = false;
 	}
+	ret = fchown(fd, getuid(), CAL_SECURITY_FILE_GROUP);
+    	if (-1 == ret)
+    	{
+    	    printf("Failed to fchown\n");
+    	    close(fd);
+    	    return -1;
+    	}
+    	ret = fchmod(fd, CAL_SECURITY_DEFAULT_PERMISSION);
+        if (-1 == ret)
+        {
+               printf("Failed to fchmod\n");
+               close(fd);
+               return -1;
+        }
 }
 
 static inline void __cal_db_util_notify_calendar_change(void)
 {
+        int ret;
 	int fd = open(CAL_NOTI_CALENDAR_CHANGED, O_TRUNC | O_RDWR);
 	if (0 <= fd) {
 		close(fd);
 		calendar_change = false;
 	}
+	ret = fchown(fd, getuid(), CAL_SECURITY_FILE_GROUP);
+    	if (-1 == ret)
+    	{
+    	    printf("Failed to fchown\n");
+    	    close(fd);
+    	    return -1;
+    	}
+    	ret = fchmod(fd, CAL_SECURITY_DEFAULT_PERMISSION);
+        if (-1 == ret)
+        {
+               printf("Failed to fchmod\n");
+               close(fd);
+               return -1;
+        }
 }
 
 static inline void __cal_db_util_cancel_changes(void)

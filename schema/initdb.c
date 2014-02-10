@@ -16,6 +16,9 @@
  * limitations under the License.
  *
  */
+
+#include <tzplatform_config.h>
+
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -25,10 +28,12 @@
 
 #include "schema.h"
 
+#include <tzplatform_config.h>
+
 #define CALS_DB_NAME ".calendar-svc.db"
 #define CALS_DB_JOURNAL_NAME ".calendar-svc.db-journal"
-#define CALS_DB_PATH "/opt/usr/dbspace/"CALS_DB_NAME
-#define CALS_DB_JOURNAL_PATH "/opt/usr/dbspace/"CALS_DB_JOURNAL_NAME
+#define CALS_DB_PATH tzplatform_mkpath(TZ_USER_DB,".calendar-svc.db")
+#define CALS_DB_JOURNAL_PATH tzplatform_mkpath(TZ_USER_DB,".calendar-svc.db-journal")
 
 // For Security
 #define CALS_SECURITY_FILE_GROUP 6003

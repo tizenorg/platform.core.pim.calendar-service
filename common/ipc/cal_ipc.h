@@ -17,12 +17,14 @@
  *
  */
 
+#include <tzplatform_config.h>
+
 #ifndef __CAL_IPC_H__
 #define __CAL_IPC_H__
 
 #define CAL_IPC_SERVICE                             "cal_svc_ipc"
-#define CAL_IPC_SOCKET_PATH                         "/opt/usr/data/calendar-svc/."CAL_IPC_SERVICE
-#define CAL_IPC_SOCKET_PATH_FOR_SUBSCRIPTION        "/opt/usr/data/calendar-svc/."CAL_IPC_SERVICE"_for_subscription"
+#define CAL_IPC_SOCKET_PATH                         tzplatform_mkpath3(TZ_USER_DATA,"calendar-svc/.",CAL_IPC_SERVICE)
+#define CAL_IPC_SOCKET_PATH_FOR_SUBSCRIPTION        tzplatform_mkpath4(TZ_USER_DATA,"calendar-svc/.",CAL_IPC_SERVICE,"_for_subscription")
 #define CAL_IPC_MODULE                              "cal_ipc_module"
 #define CAL_IPC_MODULE_FOR_SUBSCRIPTION             CAL_IPC_MODULE"_for_subscription"
 
