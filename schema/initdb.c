@@ -16,19 +16,22 @@
  * limitations under the License.
  *
  */
+
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <string.h>
 #include <sqlite3.h>
 #include <db-util.h>
-
+#include "cal_typedef.h"
 #include "schema.h"
+
+#include <tzplatform_config.h>
 
 #define CALS_DB_NAME ".calendar-svc.db"
 #define CALS_DB_JOURNAL_NAME ".calendar-svc.db-journal"
-#define CALS_DB_PATH "/opt/usr/dbspace/"CALS_DB_NAME
-#define CALS_DB_JOURNAL_PATH "/opt/usr/dbspace/"CALS_DB_JOURNAL_NAME
+#define CALS_DB_PATH tzplatform_mkpath(TZ_USER_DB, ".calendar-svc.db")
+#define CALS_DB_JOURNAL_PATH tzplatform_mkpath(TZ_USER_DB, ".calendar-svc.db-journal")
 
 // For Security
 #define CALS_SECURITY_FILE_GROUP 6003
@@ -122,22 +125,24 @@ static inline int check_db_file(char* db_path)
         snprintf(db_file,sizeof(db_file),"%s%s",db_path, CALS_DB_NAME);
     }
 
-    fd = open(db_file, O_RDONLY);
+     fd = open(db_file, O_RDONLY);
 
-	if (-1 == fd)
-	{
-		printf("DB file(%s) is not exist\n", db_file);
-		return -1;
-	}
-	printf("DB file(%s) \n", db_file);
-	close(fd);
-	return 0;
+     if (-1 == fd)
+     {
+	printf("DB file(%s) is not exist\n", db_file);
+	return -1;
+     }
+     printf("DB file(%s) \n", db_file);
+     close(fd);
+     return 0;
 }
+
 
 static inline int check_schema(char* db_path)
 {
 	if (check_db_file(db_path))
 		remake_db_file(db_path);
+
 	return 0;
 }
 

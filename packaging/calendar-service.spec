@@ -24,6 +24,7 @@ BuildRequires: pkgconfig(capi-base-common)
 BuildRequires: pkgconfig(contacts-service2)
 BuildRequires: pkgconfig(pims-ipc)
 BuildRequires: pkgconfig(bundle)
+BuildRequires: pkgconfig(libtzplatform-config)
 
 %description
 DB library for calendar
@@ -63,18 +64,6 @@ ln -s ../calendar.service %{buildroot}%{_unitdir_user}/tizen-middleware.target.w
 %post
 /sbin/ldconfig
 
-chown :6003 /opt/usr/data/calendar-svc
-
-mkdir -p /opt/usr/dbspace
-
-chown :6003 /opt/usr/dbspace/.calendar-svc.db
-chown :6003 /opt/usr/dbspace/.calendar-svc.db-journal
-chown :6003 /opt/usr/data/calendar-svc/.CALENDAR_SVC_*
-
-chmod 660 /opt/usr/dbspace/.calendar-svc.db
-chmod 660 /opt/usr/dbspace/.calendar-svc.db-journal
-chmod 660 /opt/usr/data/calendar-svc/.CALENDAR_SVC_*
-
 %postun -p /sbin/ldconfig
 
 %files
@@ -86,12 +75,7 @@ chmod 660 /opt/usr/data/calendar-svc/.CALENDAR_SVC_*
 %attr(0755,root,root) /etc/rc.d/init.d/calendar-serviced.sh
 /etc/rc.d/rc3.d/S85calendar-serviced
 /etc/rc.d/rc5.d/S85calendar-serviced
-%dir %attr(0775,root,root) /opt/usr/data/calendar-svc/
-/opt/usr/data/calendar-svc/.CALENDAR_SVC_CALENDAR_CHANGED
-/opt/usr/data/calendar-svc/.CALENDAR_SVC_EVENT_CHANGED
-/opt/usr/data/calendar-svc/.CALENDAR_SVC_TODO_CHANGED
 /usr/share/calendar-svc/dft-calendar
-%config(noreplace) /opt/usr/dbspace/.calendar-svc.db*
 %{_unitdir_user}/calendar.service
 %{_unitdir_user}/tizen-middleware.target.wants/calendar.service
 
@@ -104,4 +88,3 @@ chmod 660 /opt/usr/data/calendar-svc/.CALENDAR_SVC_*
 %{_libdir}/pkgconfig/calendar.pc
 #%{_libdir}/pkgconfig/calendar-service-native.pc
 %{_libdir}/pkgconfig/calendar-service2.pc
-/opt/usr/data/calendar-svc/calendar-svc-initdb

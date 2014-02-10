@@ -58,4 +58,6 @@ int _cal_db_util_get_next_ver(void);
 
 int _cal_db_util_get_transaction_ver(void);
 
+void cal_db_util_set_permission(int fd);
+
 #endif  //__CALENDAR_SVC_DB_UTIL_H__
