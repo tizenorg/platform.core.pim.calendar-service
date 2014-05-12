@@ -2,4 +2,7 @@
  <request>
     <domain name="_"/>
  </request>
+ <assign>
+    <filesystem path="/opt/usr/dbspace/.calendar-svc.db*" label="User" />
+ </assign>
 </manifest>
