@@ -1453,9 +1453,10 @@ static int __cal_vcalendar_parse_rrule_ver1(calendar_record_h record, char *p)
 						len = strlen(r) + strlen(t[i]) + 2;
 						len += (nth_week == 0) ? 0 : 8; // 8 is buf
 						q = calloc(len, sizeof(char));
-						if (NULL == r)
+						if (NULL == q)
 						{
 							ERR("calloc() failed");
+                                                        CAL_FREE(r);
 							g_strfreev(t);
 							return CALENDAR_ERROR_DB_FAILED;
 						}
