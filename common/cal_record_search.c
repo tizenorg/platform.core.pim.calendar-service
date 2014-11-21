@@ -151,6 +151,8 @@ static int __cal_record_search_clone( calendar_record_h record, calendar_record_
         else
         {
             ASSERT_NOT_REACHED("invalid parameter (property:%d)",src->property_id);
+            CAL_FREE(out_data);
+            CAL_FREE(dest);
             return CALENDAR_ERROR_INVALID_PARAMETER;
         }
 
