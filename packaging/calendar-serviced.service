@@ -1,0 +1,13 @@
+[Unit]
+Description=Calendar Service daemon
+After=tizen-runtime.target contacts-service.service
+Requires=tizen-runtime.target contacts-service.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/calendar-serviced
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target

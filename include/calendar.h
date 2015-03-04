@@ -16,6 +16,18 @@
  * limitations under the License.
  *
  */
+#ifndef __TIZEN_SOCIAL_CALENDAR_H__
+#define __TIZEN_SOCIAL_CALENDAR_H__
 
-long long int _convert_to_utime(char *date, char *time);
-int _convert_to_datetime(char *date, int *y, int *m, int *d);
+#include <calendar_errors.h>
+#include <calendar_view.h>
+#include <calendar_db.h>
+#include <calendar_filter.h>
+#include <calendar_list.h>
+#include <calendar_query.h>
+#include <calendar_record.h>
+#include <calendar_service.h>
+#include <calendar_vcalendar.h>
+#include <calendar_reminder.h>
+
+#endif /* __TIZEN_SOCIAL_CALENDAR_H__ */

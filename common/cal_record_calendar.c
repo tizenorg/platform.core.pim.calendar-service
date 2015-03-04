@@ -69,9 +69,7 @@ static void __cal_record_calendar_struct_init(cal_calendar_s *record)
 static int __cal_record_calendar_create( calendar_record_h* out_record )
 {
 	cal_calendar_s *temp = NULL;
-	int ret= CALENDAR_ERROR_NONE, type = 0;
-
-	type = CAL_RECORD_TYPE_CALENDAR;
+	int ret= CALENDAR_ERROR_NONE;
 
 	temp = (cal_calendar_s*)calloc(1,sizeof(cal_calendar_s));
 	retvm_if(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "malloc(cal_calendar_s) Failed(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
@@ -99,13 +97,13 @@ static void __cal_record_calendar_struct_free(cal_calendar_s *record)
 
 static int __cal_record_calendar_destroy( calendar_record_h record, bool delete_child )
 {
-    int ret = CALENDAR_ERROR_NONE;
+	int ret = CALENDAR_ERROR_NONE;
 
 	cal_calendar_s *temp = (cal_calendar_s*)(record);
 
-    __cal_record_calendar_struct_free(temp);
+	__cal_record_calendar_struct_free(temp);
 
-    return ret;
+	return ret;
 }
 
 static int __cal_record_calendar_clone( calendar_record_h record, calendar_record_h* out_record )
@@ -137,8 +135,9 @@ static int __cal_record_calendar_clone( calendar_record_h record, calendar_recor
 	out_data->sync_data2 = SAFE_STRDUP(src_data->sync_data2);
 	out_data->sync_data3 = SAFE_STRDUP(src_data->sync_data3);
 	out_data->sync_data4 = SAFE_STRDUP(src_data->sync_data4);
+	out_data->mode = src_data->mode;
 
-    *out_record = (calendar_record_h)out_data;
+	*out_record = (calendar_record_h)out_data;
 
 	return CALENDAR_ERROR_NONE;
 }
@@ -176,7 +175,7 @@ static int __cal_record_calendar_get_str( calendar_record_h record, unsigned int
 		*out_str = SAFE_STRDUP(cal_rec->sync_data4);
 		break;
 	default:
-	    ASSERT_NOT_REACHED("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)",property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -216,7 +215,7 @@ static int __cal_record_calendar_get_str_p( calendar_record_h record, unsigned i
 		*out_str = (cal_rec->sync_data4);
 		break;
 	default:
-	    ASSERT_NOT_REACHED("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)",property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -234,9 +233,6 @@ static int __cal_record_calendar_get_int( calendar_record_h record, unsigned int
 	case CAL_PROPERTY_CALENDAR_VISIBILITY:
 		*out_value = (cal_rec->visibility);
 		break;
-	case CAL_PROPERTY_CALENDAR_IS_DELETED:
-		*out_value = (cal_rec->is_deleted);
-		break;
 	case CAL_PROPERTY_CALENDAR_ACCOUNT_ID:
 		*out_value = (cal_rec->account_id);
 		break;
@@ -244,10 +240,13 @@ static int __cal_record_calendar_get_int( calendar_record_h record, unsigned int
 		*out_value = (cal_rec->store_type);
 		break;
 	case CAL_PROPERTY_CALENDAR_SYNC_EVENT:
-	    *out_value = (cal_rec->sync_event);
-	    break;
+		*out_value = (cal_rec->sync_event);
+		break;
+	case CAL_PROPERTY_CALENDAR_MODE:
+		*out_value = (cal_rec->mode);
+		break;
 	default:
-	    ASSERT_NOT_REACHED("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)",property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -296,7 +295,7 @@ static int __cal_record_calendar_set_str( calendar_record_h record, unsigned int
 		cal_rec->sync_data4 = SAFE_STRDUP(value);
 		break;
 	default:
-	    ASSERT_NOT_REACHED("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)",property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -306,28 +305,48 @@ static int __cal_record_calendar_set_str( calendar_record_h record, unsigned int
 static int __cal_record_calendar_set_int( calendar_record_h record, unsigned int property_id, int value )
 {
 	cal_calendar_s *cal_rec = (cal_calendar_s*)(record);
-	switch( property_id )
-	{
+	switch( property_id ) {
 	case CAL_PROPERTY_CALENDAR_ID:
 		(cal_rec->index) = value;
 		break;
 	case CAL_PROPERTY_CALENDAR_VISIBILITY:
 		(cal_rec->visibility) = value;
 		break;
-	case CAL_PROPERTY_CALENDAR_IS_DELETED:
-		(cal_rec->is_deleted) = value;
-		break;
 	case CAL_PROPERTY_CALENDAR_ACCOUNT_ID:
+		retvm_if(cal_rec->index > 0, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter : property_id(%d) is a write-once value (calendar)", property_id);
 		(cal_rec->account_id) = value;
 		break;
 	case CAL_PROPERTY_CALENDAR_STORE_TYPE:
-		(cal_rec->store_type) = value;
+		switch (value) {
+		case CALENDAR_BOOK_TYPE_NONE:
+		case CALENDAR_BOOK_TYPE_EVENT:
+		case CALENDAR_BOOK_TYPE_TODO:
+			(cal_rec->store_type) = value;
+			break;
+		default:
+			ERR("Invalid parameter : store type is invalid value (%d)", value);
+			return CALENDAR_ERROR_INVALID_PARAMETER;
+		}
 		break;
-    case CAL_PROPERTY_CALENDAR_SYNC_EVENT:
-        (cal_rec->sync_event) = value;
-        break;
+	case CAL_PROPERTY_CALENDAR_SYNC_EVENT:
+		switch (value) {
+		case CALENDAR_BOOK_SYNC_EVENT_FOR_ME:
+		case CALENDAR_BOOK_SYNC_EVENT_FOR_EVERY_AND_REMAIN:
+		case CALENDAR_BOOK_SYNC_EVENT_FOR_EVERY_AND_DELETE:
+			(cal_rec->sync_event) = value;
+			break;
+		default:
+			ERR("Invalid parameter : sync event is invalid value (%d)", value);
+			return CALENDAR_ERROR_INVALID_PARAMETER;
+		}
+		break;
+	case CAL_PROPERTY_CALENDAR_MODE:
+		retvm_if (value != CALENDAR_BOOK_MODE_NONE && value != CALENDAR_BOOK_MODE_RECORD_READONLY,
+				CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter : mode type is invalid value (%d)", value);
+		(cal_rec->mode) = value;
+		break;
 	default:
-	    ASSERT_NOT_REACHED("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)",property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 

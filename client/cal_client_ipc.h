@@ -25,11 +25,13 @@
 bool _cal_client_ipc_is_call_inprogress(void);
 
 int _cal_client_ipc_call(char *module, char *function, pims_ipc_h data_in,
-        pims_ipc_data_h *data_out);
+		pims_ipc_data_h *data_out);
 int _cal_client_ipc_call_async(char *module, char *function, pims_ipc_h data_in,
-        pims_ipc_call_async_cb callback, void *userdata);
+		pims_ipc_call_async_cb callback, void *userdata);
 
 void _cal_client_ipc_set_change_version(int version);
 int _cal_client_ipc_get_change_version(void);
+
+int cal_client_ipc_client_check_permission(int permission, bool *result);
 
 #endif // __CAL_CLIENT_IPC_H__

@@ -20,7 +20,7 @@
 #ifndef __CAL_SERVER_REMINDER_H__
 #define __CAL_SERVER_REMINDER_H__
 
-void _cal_server_reminder_publish(void);
-void _cal_server_reminder_add_callback_data(char *key, char *value);
+void _cal_server_reminder_publish(char *p);
+int _cal_server_reminder_add_callback_data(char **p, char *key, char *value);
 
 #endif  //__CAL_SERVER_REMINDER_H__

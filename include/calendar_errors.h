@@ -17,8 +17,8 @@
  *
  */
 
-#ifndef __TIZEN_SOCAIL_CALENDAR_ERROR_H__
-#define __TIZEN_SOCAIL_CALENDAR_ERROR_H__
+#ifndef __TIZEN_SOCIAL_CALENDAR_ERROR_H__
+#define __TIZEN_SOCIAL_CALENDAR_ERROR_H__
 
 #include <tizen.h>
 
@@ -27,24 +27,34 @@ extern "C" {
 #endif
 
 /**
- * @addtogroup CAPI_SOCIAL_CALENDAR_SVC_LIST_MODULE
+ * @file calendar_errors.h
+ */
+
+/**
+ * @addtogroup CAPI_SOCIAL_CALENDAR_SVC_COMMON_MODULE
  * @{
  */
 
+/**
+ * @brief Enumeration for calendar errors.
+ * @since_tizen 2.3
+ */
 typedef enum
 {
-    CALENDAR_ERROR_NONE                 = TIZEN_ERROR_NONE,                     /**< Successful */
-    CALENDAR_ERROR_DB_FAILED            = TIZEN_ERROR_SOCIAL_CLASS | 0x02,      /**< No access to database */
-    CALENDAR_ERROR_DB_RECORD_NOT_FOUND  = TIZEN_ERROR_SOCIAL_CLASS | 0x05,      /**< Not found database */
-    CALENDAR_ERROR_OUT_OF_MEMORY        = TIZEN_ERROR_OUT_OF_MEMORY,            /**< Out of memory */
-    CALENDAR_ERROR_INVALID_PARAMETER    = TIZEN_ERROR_INVALID_PARAMETER,        /**< Invalid parameter */
-    CALENDAR_ERROR_NO_DATA              = TIZEN_ERROR_SOCIAL_CLASS | 0x03,      /**< Requested data does not exist */
-    CALENDAR_ERROR_ITERATOR_END         = TIZEN_ERROR_SOCIAL_CLASS | 0x04,      /**< Iterator is on last position */
-    CALENDAR_ERROR_NOW_IN_PROGRESS      = TIZEN_ERROR_NOW_IN_PROGRESS,          /**< Operation now in progress */
-    CALENDAR_ERROR_ALREADY_IN_PROGRESS  = TIZEN_ERROR_ALREADY_IN_PROGRESS,      /**< Operation already in progress */
-    CALENDAR_ERROR_NOT_PERMITTED        = TIZEN_ERROR_NOT_PERMITTED,            /**< Operation not permitted */
-    CALENDAR_ERROR_IPC                  = TIZEN_ERROR_SOCIAL_CLASS | 0xBF,      /**< Unknown IPC error */
-	CALENDAR_ERROR_FILE_NO_SPACE        = TIZEN_ERROR_FILE_NO_SPACE_ON_DEVICE,  /**< FS Full */
+	CALENDAR_ERROR_NONE                 = TIZEN_ERROR_NONE,                     /**< Successful */
+	CALENDAR_ERROR_OUT_OF_MEMORY        = TIZEN_ERROR_OUT_OF_MEMORY,            /**< Out of memory */
+	CALENDAR_ERROR_INVALID_PARAMETER    = TIZEN_ERROR_INVALID_PARAMETER,        /**< Invalid parameter */
+	CALENDAR_ERROR_NO_DATA              = TIZEN_ERROR_NO_DATA,                  /**< Requested data does not exist */
+	CALENDAR_ERROR_NOW_IN_PROGRESS      = TIZEN_ERROR_NOW_IN_PROGRESS,          /**< Operation now in progress */
+	CALENDAR_ERROR_ALREADY_IN_PROGRESS  = TIZEN_ERROR_ALREADY_IN_PROGRESS,      /**< Operation already in progress */
+	CALENDAR_ERROR_NOT_PERMITTED        = TIZEN_ERROR_NOT_PERMITTED,            /**< Operation not permitted */
+	CALENDAR_ERROR_FILE_NO_SPACE        = TIZEN_ERROR_FILE_NO_SPACE_ON_DEVICE,	/**< FS is full */
+	CALENDAR_ERROR_PERMISSION_DENIED    = TIZEN_ERROR_PERMISSION_DENIED,        /**< Permission denied */
+	CALENDAR_ERROR_DB_FAILED            = TIZEN_ERROR_CALENDAR | 0x02,			/**< No access to the database */
+	CALENDAR_ERROR_ITERATOR_END         = TIZEN_ERROR_CALENDAR | 0x04,          /**< Iterator is on the last position */
+	CALENDAR_ERROR_DB_RECORD_NOT_FOUND  = TIZEN_ERROR_CALENDAR | 0x05,          /**< Database not found */
+	CALENDAR_ERROR_IPC                  = TIZEN_ERROR_CALENDAR | 0xBF,          /**< Unknown IPC error */
+	CALENDAR_ERROR_SYSTEM               = TIZEN_ERROR_CALENDAR | 0xEF,          /**< Error from another modules */
 } calendar_error_e;
 
 /**
@@ -55,5 +65,5 @@ typedef enum
 }
 #endif
 
-#endif /* __TIZEN_SOCAIL_CALENDAR_ERROR_H__ */
+#endif /* __TIZEN_SOCIAL_CALENDAR_ERROR_H__ */
 

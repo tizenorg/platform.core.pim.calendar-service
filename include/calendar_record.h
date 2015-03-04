@@ -17,10 +17,10 @@
  *
  */
 
-#ifndef __TIZEN_SOCAIL_CALENDAR_RECORD_H__
-#define __TIZEN_SOCAIL_CALENDAR_RECORD_H__
+#ifndef __TIZEN_SOCIAL_CALENDAR_RECORD_H__
+#define __TIZEN_SOCIAL_CALENDAR_RECORD_H__
 
-#include <calendar_types2.h>
+#include <calendar_types.h>
 
 #ifndef API
 #define API __attribute__ ((visibility("default")))
@@ -31,322 +31,409 @@ extern "C" {
 #endif
 
 /**
+ * @file calendar_record.h
+ */
+
+/**
  * @addtogroup CAPI_SOCIAL_CALENDAR_SVC_RECORD_MODULE
  * @{
  */
 
 /**
- * @brief Creates a handle to the record.
+ * @brief Creates a record handle.
  *
- * @remarks @a record must be released with calendar_record_destroy() by you.
+ * @since_tizen 2.3
  *
- * @param[in]	view_uri	The view uri
- * @param[out]	record    	The record handle
+ * @remarks You must release @a record using calendar_record_destroy().
  *
- * @return  0 on success, otherwise a negative error value.
+ * @param[in]	view_uri    The view URI
+ * @param[out]	out_record  The record handle
+ *
+ * @return  @c 0 on success,
+ *          otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE                Successful
  * @retval  #CALENDAR_ERROR_OUT_OF_MEMORY       Out of memory
- * @retval  #CALENDAR_ERROR_INVALID_PARAMETER       Invalid parameter
+ * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
+ * @retval  #CALENDAR_ERROR_NOT_PERMITTED       Operation not permitted
+ *
+ * @pre     calendar_connect() should be called to initialize.
  *
  * @see calendar_record_destroy()
  */
-API int calendar_record_create( const char* view_uri, calendar_record_h* out_record );
+int calendar_record_create( const char* view_uri, calendar_record_h* out_record );
 
 /**
  * @brief Destroys a record handle and releases all its resources.
  *
- * @param[in]	record  	The record handle
+ * @since_tizen 2.3
  *
- * @return  0 on success, otherwise a negative error value.
- * @retval  #CALENDAR_ERROR_NONE                    Successful
- * @retval  #CALENDAR_ERROR_INVALID_PARAMETER       Invalid parameter
+ * @param[in]	record  	    The record handle
+ * @param[in]	delete_child    If @c true, child records are destroyed automatically,
+ *                              otherwise @c false
  *
- * @see calendar_list_create()
+ * @return  @c 0 on success,
+ *          otherwise a negative error value
+ * @retval  #CALENDAR_ERROR_NONE                 Successful
+ * @retval  #CALENDAR_ERROR_INVALID_PARAMETER    Invalid parameter
+ * @retval  #CALENDAR_ERROR_NOT_PERMITTED        Operation not permitted
+ *
+ * @see calendar_record_create()
  */
-API int calendar_record_destroy( calendar_record_h record, bool delete_child );
+int calendar_record_destroy( calendar_record_h record, bool delete_child );
 
 /**
- * @brief	Makes a clone of a record handle.
+ * @brief Makes a clone of a record handle.
  *
- * @remarks @a cloned_record must be released with calendar_record_destroy() by you.
+ * @since_tizen 2.3
  *
- * @param[in]	record  			The record handle
- * @param[out]	cloned_record    	The cloned record handle
+ * @remarks You must release @a cloned_record using calendar_record_destroy().
  *
- * @return  0 on success, otherwise a negative error value.
+ * @param[in]	record          The record handle
+ * @param[out]	out_record      The cloned record handle
+ *
+ * @return  @c 0 on success,
+ *          otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE                    Successful
  * @retval  #CALENDAR_ERROR_INVALID_PARAMETER       Invalid parameter
+ * @retval  #CALENDAR_ERROR_NOT_PERMITTED           Operation not permitted
  *
  * @see calendar_record_destroy()
  */
-API int calendar_record_clone( calendar_record_h record, calendar_record_h* out_record );
+int calendar_record_clone( calendar_record_h record, calendar_record_h* out_record );
 
 /**
- * @brief	Gets uri string from a record handle.
+ * @brief Gets a URI string from a record.
  *
- * @param[in]   record			The record handle
- * @param[out]  uri  			The uri of record
+ * @since_tizen 2.3
  *
- * @return 0 on success, otherwise a negative error value.
+ * @param[in]   record   The record handle
+ * @param[out]  uri      The URI of the record
+ *
+ * @return @c 0 on success,
+ *         otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE                 Successful
  * @retval  #CALENDAR_ERROR_INVALID_PARAMETER    Invalid parameter
  */
-API int calendar_record_get_uri_p( calendar_record_h record, char** uri );
+int calendar_record_get_uri_p( calendar_record_h record, char** uri );
 
 /**
- * @brief	Gets a string from a record handle.
+ * @brief Gets a string from a record.
  *
- * @remarks   @a value must be released with free() by you.
+ * @since_tizen 2.3
  *
- * @param[in]   record			The record handle
- * @param[in]   property_id		The property ID
- * @param[out]  value  			The value to be returned
+ * @remarks You must release @a value using free().
  *
- * @return 0 on success, otherwise a negative error value.
- * @retval  #CALENDAR_ERROR_NONE                 Successful
- * @retval  #CALENDAR_ERROR_INVALID_PARAMETER    Invalid parameter
+ * @param[in]   record        The record handle
+ * @param[in]   property_id   The property ID
+ * @param[out]  out_str       The result value
+ *
+ * @return @c 0 on success,
+ *         otherwise a negative error value
+ * @retval  #CALENDAR_ERROR_NONE                Successful
+ * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
+ * @retval  #CALENDAR_ERROR_NOT_PERMITTED       Operation not permitted
  *
  * @see calendar_record_get_str_p()
  * @see calendar_record_set_str()
  */
-API int calendar_record_get_str( calendar_record_h record, unsigned int property_id, char** out_str );
+int calendar_record_get_str( calendar_record_h record, unsigned int property_id, char** out_str );
 
 /**
- * @brief	Gets a string pointer from a record handle.
+ * @brief Gets a string pointer from a record.
  *
- * @remarks   @a value MUST NOT be released by you.
+ * @since_tizen 2.3
  *
- * @param[in]   record			The record handle
- * @param[in]   property_id		The property ID
- * @param[out]  value  			The value to be returned
+ * @remarks You MUST NOT release @a value.
  *
- * @return 0 on success, otherwise a negative error value.
- * @retval  #CALENDAR_ERROR_NONE                 Successful
- * @retval  #CALENDAR_ERROR_INVALID_PARAMETER    Invalid parameter
+ * @param[in]   record         The record handle
+ * @param[in]   property_id	   The property ID
+ * @param[out]  out_str        The result value
+ *
+ * @return @c 0 on success,
+ *         otherwise a negative error value
+ * @retval  #CALENDAR_ERROR_NONE                Successful
+ * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
+ * @retval  #CALENDAR_ERROR_NOT_PERMITTED       Operation not permitted
  *
  * @see calendar_record_get_str()
  * @see calendar_record_set_str()
  */
-API int calendar_record_get_str_p( calendar_record_h record, unsigned int property_id, char** out_str );
+int calendar_record_get_str_p( calendar_record_h record, unsigned int property_id, char** out_str );
 
 /**
- * @brief   Gets a integer from a record handle.
+ * @brief Gets an integer value from a record.
  *
- * @param[in]   record			The record handle
- * @param[in]   property_id		The property ID
- * @param[out]  value  			The value to be returned
+ * @since_tizen 2.3
  *
- * @return 0 on success, otherwise a negative error value.
+ * @param[in]   record          The record handle
+ * @param[in]   property_id     The property ID
+ * @param[out]  out_value       The result value
+ *
+ * @return @c 0 on success,
+ *         otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE                Successful
  * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
+ * @retval  #CALENDAR_ERROR_NOT_PERMITTED       Operation not permitted
  *
  * @see calendar_record_set_int()
  */
-API int calendar_record_get_int( calendar_record_h record, unsigned int property_id, int* out_value );
+int calendar_record_get_int( calendar_record_h record, unsigned int property_id, int* out_value );
 
 /**
- * @brief   Gets a double from a record handle.
+ * @brief Gets a double value from a record.
  *
- * @param[in]   record			The record handle
- * @param[in]   property_id		The property ID
- * @param[out]  value  			The value to be returned
+ * @since_tizen 2.3
  *
- * @return 0 on success, otherwise a negative error value.
+ * @param[in]   record          The record handle
+ * @param[in]   property_id     The property ID
+ * @param[out]  out_value       The result value
+ *
+ * @return @c 0 on success,
+ *         otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE                Successful
  * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
+ * @retval  #CALENDAR_ERROR_NOT_PERMITTED       Operation not permitted
  *
  * @see calendar_record_set_double()
  */
-API int calendar_record_get_double( calendar_record_h record, unsigned int property_id, double* out_value );
+int calendar_record_get_double( calendar_record_h record, unsigned int property_id, double* out_value );
 
 /**
- * @brief   Gets a long long integer from a record handle.
+ * @brief Gets a long long integer value from a record.
  *
- * @param[in]   record			The record handle
- * @param[in]   property_id		The property ID
- * @param[out]  value  			The value to be returned
+ * @since_tizen 2.3
  *
- * @return 0 on success, otherwise a negative error value.
+ * @param[in]   record          The record handle
+ * @param[in]   property_id	    The property ID
+ * @param[out]  out_value       The result value
+ *
+ * @return @c 0 on success,
+ *         otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE                Successful
  * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
+ * @retval  #CALENDAR_ERROR_NOT_PERMITTED       Operation not permitted
  *
  * @see calendar_record_set_lli()
  */
-API int calendar_record_get_lli( calendar_record_h record, unsigned int property_id, long long int* out_value );
+int calendar_record_get_lli( calendar_record_h record, unsigned int property_id, long long int* out_value );
 
 /**
- * @brief   Gets a caltime_caltime_s from a record handle.
+ * @brief Gets a calendar_caltime_s value from a record.
  *
- * @param[in]   record			The record handle
- * @param[in]   property_id		The property ID
- * @param[out]  value  			The value to be returned
+ * @since_tizen 2.3
  *
- * @return 0 on success, otherwise a negative error value.
+ * @param[in]   record          The record handle
+ * @param[in]   property_id     The property ID
+ * @param[out]  out_value       The result value
+ *
+ * @return @c 0 on success,
+ *         otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE                Successful
  * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
+ * @retval  #CALENDAR_ERROR_NOT_PERMITTED       Operation not permitted
  *
  * @see calendar_record_set_caltime()
  */
-API int calendar_record_get_caltime( calendar_record_h record, unsigned int property_id, calendar_time_s* out_value );
+int calendar_record_get_caltime( calendar_record_h record, unsigned int property_id, calendar_time_s* out_value );
 
 /**
- * @brief   Sets a string to a record handle.
+ * @brief Sets a string to a record.
  *
- * @param[in]	record			The record handle
- * @param[in]	property_id		The property ID
- * @param[in]	value  			The value to set
+ * @since_tizen 2.3
  *
- * @return      0 on success, otherwise a negative error value.
- * @retval      #CALENDAR_ERROR_NONE                    Successful
- * @retval      #CALENDAR_ERROR_INVALID_PARAMETER       Invalid parameter
+ * @param[in]	record          The record handle
+ * @param[in]	property_id     The property ID
+ * @param[in]	value           The value to be set
+ *
+ * @return      @c 0 on success,
+ *              otherwise a negative error value
+ * @retval      #CALENDAR_ERROR_NONE                  Successful
+ * @retval      #CALENDAR_ERROR_INVALID_PARAMETER     Invalid parameter
+ * @retval  	#CALENDAR_ERROR_NOT_PERMITTED         Operation not permitted
  *
  * @see calendar_record_get_str()
  * @see calendar_record_get_str_p()
  */
-API int calendar_record_set_str( calendar_record_h record, unsigned int property_id, const char* value );
+int calendar_record_set_str( calendar_record_h record, unsigned int property_id, const char* value );
 
 /**
- * @brief   Sets a integer to a record handle.
+ * @brief Sets an integer value to a record.
  *
- * @param[in]	record			The record handle
- * @param[in]	property_id		The property ID
- * @param[in]	value  			The value to set
+ * @since_tizen 2.3
  *
- * @return      0 on success, otherwise a negative error value.
- * @retval      #CALENDAR_ERROR_NONE                    Successful
- * @retval      #CALENDAR_ERROR_INVALID_PARAMETER       Invalid parameter
+ * @param[in]	record          The record handle
+ * @param[in]	property_id	    The property ID
+ * @param[in]	value           The value to be set
  *
- * @see calendar_record_get_double()
- */
-API int calendar_record_set_int( calendar_record_h record, unsigned int property_id, int value );
-
-/**
- * @brief   Sets a double to a record handle.
- *
- * @param[in]	record			The record handle
- * @param[in]	property_id		The property ID
- * @param[in]	value  			The value to set
- *
- * @return      0 on success, otherwise a negative error value.
- * @retval      #CALENDAR_ERROR_NONE                    Successful
- * @retval      #CALENDAR_ERROR_INVALID_PARAMETER       Invalid parameter
+ * @return      @c 0 on success,
+ *              otherwise a negative error value
+ * @retval      #CALENDAR_ERROR_NONE                  Successful
+ * @retval      #CALENDAR_ERROR_INVALID_PARAMETER     Invalid parameter
+ * @retval  	#CALENDAR_ERROR_NOT_PERMITTED         Operation not permitted
  *
  * @see calendar_record_get_int()
  */
-API int calendar_record_set_double( calendar_record_h record, unsigned int property_id, double value );
+int calendar_record_set_int( calendar_record_h record, unsigned int property_id, int value );
 
 /**
- * @brief   Sets a long long integer to a record handle.
+ * @brief Sets a double value to a record.
  *
- * @param[in]	record			The record handle
- * @param[in]	property_id		The property ID
- * @param[in]	value  			The value to set
+ * @since_tizen 2.3
  *
- * @return      0 on success, otherwise a negative error value.
- * @retval      #CALENDAR_ERROR_NONE                    Successful
- * @retval      #CALENDAR_ERROR_INVALID_PARAMETER       Invalid parameter
+ * @param[in]	record          The record handle
+ * @param[in]	property_id     The property ID
+ * @param[in]	value           The value to be set
+ *
+ * @return      @c 0 on success,
+ *              otherwise a negative error value
+ * @retval      #CALENDAR_ERROR_NONE                  Successful
+ * @retval      #CALENDAR_ERROR_INVALID_PARAMETER     Invalid parameter
+ * @retval  	#CALENDAR_ERROR_NOT_PERMITTED         Operation not permitted
+ *
+ * @see calendar_record_get_double()
+ */
+int calendar_record_set_double( calendar_record_h record, unsigned int property_id, double value );
+
+/**
+ * @brief Sets a long long integer value to a record.
+ *
+ * @since_tizen 2.3
+ *
+ * @param[in]	record          The record handle
+ * @param[in]	property_id     The property ID
+ * @param[in]	value           The value to be set
+ *
+ * @return      @c 0 on success,
+ *              otherwise a negative error value
+ * @retval      #CALENDAR_ERROR_NONE                  Successful
+ * @retval      #CALENDAR_ERROR_INVALID_PARAMETER     Invalid parameter
+ * @retval  	#CALENDAR_ERROR_NOT_PERMITTED         Operation not permitted
  *
  * @see calendar_record_get_lli()
  */
-API int calendar_record_set_lli( calendar_record_h record, unsigned int property_id, long long int value );
+int calendar_record_set_lli( calendar_record_h record, unsigned int property_id, long long int value );
 
 /**
- * @brief   Sets a long calendar_time_s to a record handle.
+ * @brief Sets a calendar_time_s value to a record.
  *
- * @param[in]	record			The record handle
- * @param[in]	property_id		The property ID
- * @param[in]	value  			The value to set
+ * @since_tizen 2.3
  *
- * @return      0 on success, otherwise a negative error value.
- * @retval      #CALENDAR_ERROR_NONE                    Successful
- * @retval      #CALENDAR_ERROR_INVALID_PARAMETER       Invalid parameter
+ * @param[in]	record          The record handle
+ * @param[in]	property_id     The property ID
+ * @param[in]	value           The value to be set
+ *
+ * @return      @c 0 on success,
+ *              otherwise a negative error value
+ * @retval      #CALENDAR_ERROR_NONE                  Successful
+ * @retval      #CALENDAR_ERROR_INVALID_PARAMETER     Invalid parameter
+ * @retval  	#CALENDAR_ERROR_NOT_PERMITTED         Operation not permitted
  *
  * @see calendar_record_get_caltime()
  */
-API int calendar_record_set_caltime( calendar_record_h record, unsigned int property_id, calendar_time_s value );
+int calendar_record_set_caltime( calendar_record_h record, unsigned int property_id, calendar_time_s value );
 
 /**
- * @brief       Adds a child record handle to a parent record handle.
+ * @brief Adds a child record to the parent record.
+ *
+ * @since_tizen 2.3
  *
  * @param[in]	record          The parent record handle
- * @param[in]	property_id		The property ID
- * @param[in]	child_record	The child record handle to be added to parent record handle
+ * @param[in]	property_id     The property ID
+ * @param[in]	child_record    The handle of the child record to be added to the parent record
  *
- * @return  0 on success, otherwise a negative error value.
- * @retval  #CALENDAR_ERROR_NONE                    Successful
- * @retval  #CALENDAR_ERROR_INVALID_PARAMETER       Invalid parameter
+ * @return  @c 0 on success,
+ *          otherwise a negative error value
+ * @retval  #CALENDAR_ERROR_NONE                  Successful
+ * @retval  #CALENDAR_ERROR_INVALID_PARAMETER     Invalid parameter
+ * @retval  #CALENDAR_ERROR_NOT_PERMITTED		  Operation not permitted
  *
  * @see calendar_record_remove_child_record()
  */
-API int calendar_record_add_child_record( calendar_record_h record, unsigned int property_id, calendar_record_h child_record );
+int calendar_record_add_child_record( calendar_record_h record, unsigned int property_id, calendar_record_h child_record );
 
 /**
- * @brief       Removes a child record handle from a parent record handle.
+ * @brief Removes a child record from the parent record.
  *
- * @param[in]	record          The parent record handle
- * @param[in]	property_id		The property ID
- * @param[in]	child_record	The child record handle to be removed from parent record handle
+ * @since_tizen 2.3
  *
- * @return  0 on success, otherwise a negative error value.
- * @retval  #CALENDAR_ERROR_NONE                    Successful
- * @retval  #CALENDAR_ERROR_INVALID_PARAMETER       Invalid parameter
+ * @param[in]	record        The parent record handle
+ * @param[in]	property_id	  The property ID
+ * @param[in]	child_record  The handle of the child record to be removed from the parent record
  *
- * @see calendar_record_add_child_record()
- */
-API int calendar_record_remove_child_record( calendar_record_h record, unsigned int property_id, calendar_record_h child_record );
-
-/**
- * @brief   Gets a number of child record handle from a parent record handle.
- *
- * @param[in]	record          The parent record handle
- * @param[in]	property_id		The property ID
- * @param[out]	count			The child record count
- *
- * @return 0 on success, otherwise a negative error value.
+ * @return  @c 0 on success,
+ *          otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE                Successful
  * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
+ * @retval  #CALENDAR_ERROR_NOT_PERMITTED		Operation not permitted
+ *
+ * @see calendar_record_add_child_record()
+ */
+int calendar_record_remove_child_record( calendar_record_h record, unsigned int property_id, calendar_record_h child_record );
+
+/**
+ * @brief Gets the number of child records in a record.
+ *
+ * @since_tizen 2.3
+ *
+ * @param[in]	record          The parent record handle
+ * @param[in]	property_id	    The property ID
+ * @param[out]	count           The child record count
+ *
+ * @return @c 0 on success,
+ *         otherwise a negative error value
+ * @retval  #CALENDAR_ERROR_NONE                Successful
+ * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
+ * @retval  #CALENDAR_ERROR_NOT_PERMITTED       Operation not permitted
  *
  * @see calendar_record_add_child_record()
  * @see calendar_record_remove_child_record()
  */
-API int calendar_record_get_child_record_count( calendar_record_h record, unsigned int property_id,unsigned int* count );
+int calendar_record_get_child_record_count( calendar_record_h record, unsigned int property_id,unsigned int* count );
 
 /**
- * @brief	Gets a child record handle pointer from a parent record handle.
+ * @brief Gets a child record handle pointer from the parent record.
  *
- * @remarks   @a child_record MUST NOT be released by you. \n It is released when the parent record handle destroyed.
+ * @since_tizen 2.3
  *
- * @param[in]   record			The record handle
- * @param[in]   property_id		The property ID
- * @param[in]   index			The index of child record
- * @param[out]  child_record  	The child record handle pointer to be returned
+ * @remarks You MUST NOT release @a child_record. \n It is released when the parent record handle is destroyed.
  *
- * @return 0 on success, otherwise a negative error value.
- * @retval  #CALENDAR_ERROR_NONE                 Successful
- * @retval  #CALENDAR_ERROR_INVALID_PARAMETER    Invalid parameter
+ * @param[in]   record          The record handle
+ * @param[in]   property_id	    The property ID
+ * @param[in]   index           The index of the child record
+ * @param[out]  child_record    The child record handle pointer
+ *
+ * @return @c 0 on success,
+ *         otherwise a negative error value
+ * @retval  #CALENDAR_ERROR_NONE                Successful
+ * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
+ * @retval  #CALENDAR_ERROR_NOT_PERMITTED       Operation not permitted
  *
  * @see calendar_record_add_child_record()
  * @see calendar_record_remove_child_record()
  * @see calendar_record_get_child_record_count()
  */
-API int calendar_record_get_child_record_at_p( calendar_record_h record, unsigned int property_id, int index, calendar_record_h* child_record );
+int calendar_record_get_child_record_at_p( calendar_record_h record, unsigned int property_id, int index, calendar_record_h* child_record );
 
 /**
- * @brief	Makes a clone of a child record list handle from a parent record handle.
+ * @brief Makes a clone of a given record's child record list.
  *
- * @remarks   @a cloned_list MUST be released with calendar_list_destroy() by you.
+ * @since_tizen 2.3
  *
- * @param[in]   record			The record handle
- * @param[in]   property_id		The property ID
- * @param[out]  cloned_list  	The cloned list handle
+ * @remarks You must release @a cloned_list using calendar_list_destroy().
  *
- * @return 0 on success, otherwise a negative error value.
- * @retval  #CALENDAR_ERROR_NONE                 Successful
- * @retval  #CALENDAR_ERROR_INVALID_PARAMETER    Invalid parameter
+ * @param[in]   record          The record handle
+ * @param[in]   property_id     The property ID
+ * @param[out]  out_list  	    The cloned list handle
+ *
+ * @return @c 0 on success,
+ *         otherwise a negative error value
+ * @retval  #CALENDAR_ERROR_NONE                Successful
+ * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
+ * @retval  #CALENDAR_ERROR_NOT_PERMITTED       Operation not permitted
  *
  * @see calendar_list_destroy()
  */
-API int calendar_record_clone_child_record_list( calendar_record_h record, unsigned int property_id, calendar_list_h* out_list );
+int calendar_record_clone_child_record_list( calendar_record_h record, unsigned int property_id, calendar_list_h* out_list );
 
 /**
  * @}
@@ -356,5 +443,5 @@ API int calendar_record_clone_child_record_list( calendar_record_h record, unsig
 }
 #endif
 
-#endif /* __TIZEN_SOCAIL_CALENDAR_RECORD_H__ */
+#endif /* __TIZEN_SOCIAL_CALENDAR_RECORD_H__ */
 

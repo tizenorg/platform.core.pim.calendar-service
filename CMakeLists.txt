@@ -1,11 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT(calendar-service C CXX)
 
-#IF("${CMAKE_BUILD_TYPE}" STREQUAL "")
-#	SET(CMAKE_BUILD_TYPE "Release")
-#ENDIF("${CMAKE_BUILD_TYPE}" STREQUAL "")
-#MESSAGE("Build type: ${CMAKE_BUILD_TYPE}")
-
 SET(DEST_INCLUDE_DIR "include/calendar-service")
 SET(SRC_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/include")
 
@@ -13,40 +8,46 @@ SET(PREFIX ${CMAKE_INSTALL_PREFIX})
 SET(EXEC_PREFIX "\${prefix}")
 SET(LIBDIR ${LIB_INSTALL_DIR})
 SET(INCLUDEDIR "\${prefix}/${DEST_INCLUDE_DIR}")
-SET(VERSION_MAJOR 0)
-SET(VERSION "${VERSION_MAJOR}.1.15")
+
+EXECUTE_PROCESS(COMMAND build-util/generator.sh)
 
 #INCLUDE_DIRECTORIES(${SRC_INCLUDE_DIR})
 SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} -I${CMAKE_SOURCE_DIR}/include")
 
 INCLUDE(FindPkgConfig)
-pkg_check_modules(pkgs REQUIRED glib-2.0 sqlite3 vconf dlog db-util alarm-service icu-i18n appsvc bundle libtzplatform-config)
+pkg_check_modules(pkgs REQUIRED
+	glib-2.0
+	db-util
+	sqlite3
+	vconf
+	alarm-service
+	icu-i18n
+	contacts-service2
+	security-server
+	capi-appfw-package-manager
+	libtzplatform-config
+	)
 
 FOREACH(flag ${pkgs_CFLAGS})
 	SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} ${flag}")
 ENDFOREACH(flag)
 
-SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} -fvisibility=hidden")
+SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} -fvisibility=hidden -fdata-sections -ffunction-sections -Wl,--gc-sections")
 
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS}")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EXTRA_CFLAGS}")
 #SET(CMAKE_C_FLAGS_DEBUG "-O0 -g")
-#SET(CMAKE_C_FLAGS_RELEASE "-mabi=aapcs-linux -march=armv7-a -msoft-float -O2")
 
 ADD_DEFINITIONS("-DPREFIX=\"${PREFIX}\"")
 
-#header
+# Install header file
 FILE(GLOB HEADER_FILES ${SRC_INCLUDE_DIR}/calendar*.h)
-INSTALL(FILES ${HEADER_FILES} DESTINATION ${INCLUDEDIR})
 INSTALL(FILES ${HEADER_FILES} DESTINATION ${INCLUDEDIR}2)
 
-# for immigration
-SET(IMMIGRATION "calendar-service2")
-CONFIGURE_FILE(calendar.pc.in calendar.pc @ONLY)
-INSTALL(FILES calendar.pc DESTINATION ${LIB_INSTALL_DIR}/pkgconfig)
+# Install DB file
+FILE(GLOB DB_FILES ${CMAKE_SOURCE_DIR}/build-util/.calendar-svc.db*)
+INSTALL(FILES ${DB_FILES} DESTINATION /opt/usr/dbspace)
 
-ADD_SUBDIRECTORY(schema)
+#ADD_SUBDIRECTORY(schema)
 ADD_SUBDIRECTORY(client)
 ADD_SUBDIRECTORY(server)
-#ADD_SUBDIRECTORY(native)
-ADD_SUBDIRECTORY(dft)

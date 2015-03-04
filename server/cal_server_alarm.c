@@ -19,12 +19,15 @@
 
 #include <stdlib.h>
 
-#include <appsvc.h>
+#include <sys/time.h>
+#include <unistd.h>
+
 #include <alarm.h>
 #include <vconf.h>
+#include <app.h>
 
 #include "cal_internal.h"
-#include "calendar2.h"
+#include "calendar.h"
 #include "cal_time.h"
 #include "cal_typedef.h"
 #include "cal_inotify.h"
@@ -34,10 +37,60 @@
 #include "cal_db_query.h"
 #include "cal_server_reminder.h"
 
-static struct timeval stv; // check time
-static struct timeval etv; // check time
+#define CAL_SEARCH_LOOP_MAX 4
 
-static int __cal_server_alarm_unset_alerted_alarmmgr_id(int alarm_id);
+#define COLOR_CYAN "\033[0;36m"
+#define COLOR_END "\033[0;m"
+
+struct _alarm_data_s
+{
+	int event_id;
+	long long int alert_utime; // to compare
+	int unit;
+	int tick;
+	int type; // utime, local
+	long long int time;
+	int record; // todo, event
+	char datetime[32];
+	int system_type;
+};
+
+// this api is necessary for repeat instance.
+static int __cal_server_alarm_unset_alerted_alarmmgr_id(int alarm_id)
+{
+	int ret = CALENDAR_ERROR_NONE;
+	char query[CAL_DB_SQL_MAX_LEN] = {0};
+	cal_db_util_error_e dbret = CAL_DB_OK;
+
+	ret = _cal_db_util_begin_trans();
+	if (CALENDAR_ERROR_NONE != ret)
+	{
+		ERR("_cal_db_util_begin_trans() failed");
+		return CALENDAR_ERROR_DB_FAILED;
+	}
+
+	DBG("alarm_id(%d)", alarm_id);
+
+	snprintf(query, sizeof(query), "UPDATE %s SET alarm_id = 0 WHERE alarm_id =%d ",
+			CAL_TABLE_ALARM, alarm_id);
+
+	dbret = _cal_db_util_query_exec(query);
+	if (CAL_DB_OK != dbret)
+	{
+		ERR("_cal_db_util_query_exec() Failed(%d)", dbret);
+		switch (dbret)
+		{
+		case CAL_DB_ERROR_NO_SPACE:
+			_cal_db_util_end_trans(false);
+			return CALENDAR_ERROR_FILE_NO_SPACE;
+		default:
+			_cal_db_util_end_trans(false);
+			return CALENDAR_ERROR_DB_FAILED;
+		}
+	}
+	_cal_db_util_end_trans(true);
+	return CALENDAR_ERROR_NONE;
+}
 
 static int __cal_server_alarm_clear_all_cb(alarm_id_t alarm_id, void *data)
 {
@@ -54,277 +107,23 @@ static int __cal_server_alarm_clear_all_cb(alarm_id_t alarm_id, void *data)
 	return CALENDAR_ERROR_NONE;
 }
 
-struct _normal_data_s
-{
-	int id;
-	long long int alarm_utime;
-	int tick;
-	int unit;
-	int alarm_id;
-	int record_type;
-};
-
-struct _allday_data_s
-{
-	int id;
-	int alarm_datetime;
-	int tick;
-	int unit;
-	int alarm_id;
-	int record_type;
-};
-
-static int __cal_server_alarm_get_next_list_normal_event(long long int from_utime, long long int to_utime, GList **list, int *count)
-{
-	int index;
-    char query[CAL_DB_SQL_MAX_LEN] = {0};
-    sqlite3_stmt *stmt = NULL;
-
-	DBG("searching normal event (%lld) ~ (%lld)", from_utime, to_utime);
-
-	snprintf(query, sizeof(query),
-			"SELECT A.event_id, B.alarm_time, "
-			"B.remind_tick, B.remind_tick_unit, B.alarm_id "
-			"FROM %s as A, "                       // A is normal instance
-			"%s as B ON A.event_id = B.event_id, " // B is alarm
-			"%s as C ON B.event_id = C.id "        // c is schedule
-			"WHERE C.has_alarm == 1 AND C.type = %d "
-			"AND B.remind_tick_unit = %d AND B.alarm_time = %lld "
-			"UNION "
-			"SELECT A.event_id, A.dtstart_utime - (B.remind_tick * B.remind_tick_unit), "
-			"B.remind_tick, B.remind_tick_unit, B.alarm_id "
-			"FROM %s as A, "                       // A is normal instance
-			"%s as B ON A.event_id = B.event_id, " // B is alarm
-			"%s as C ON B.event_id = C.id "        // c is schedule
-			"WHERE C.has_alarm = 1 AND C.type = %d "
-			"AND B.remind_tick_unit > %d "
-			"AND (A.dtstart_utime - (B.remind_tick * B.remind_tick_unit)) >= %lld "
-			"AND (A.dtstart_utime - (B.remind_tick * B.remind_tick_unit)) < %lld "
-			"ORDER BY (A.dtstart_utime - (B.remind_tick * B.remind_tick_unit))",
-			CAL_TABLE_NORMAL_INSTANCE, CAL_TABLE_ALARM, CAL_TABLE_SCHEDULE,
-			CALENDAR_BOOK_TYPE_EVENT,
-			CALENDAR_ALARM_TIME_UNIT_SPECIFIC, from_utime,
-			CAL_TABLE_NORMAL_INSTANCE, CAL_TABLE_ALARM, CAL_TABLE_SCHEDULE,
-			CALENDAR_BOOK_TYPE_EVENT,
-			CALENDAR_ALARM_TIME_UNIT_SPECIFIC,
-			from_utime, to_utime);
-
-	stmt = _cal_db_util_query_prepare(query);
-	if (NULL == stmt)
-	{
-		DBG("query[%s]", query);
-		ERR("_cal_db_util_query_prepare() Failed");
-		return CALENDAR_ERROR_DB_FAILED;
-	}
-
-	*count = 0;
-	while (CAL_DB_ROW  == _cal_db_util_stmt_step(stmt))
-	{
-		struct _normal_data_s *nd = calloc(1, sizeof(struct _normal_data_s));
-
-		index = 0;
-		nd->id = sqlite3_column_int(stmt, index++);
-		nd->alarm_utime = sqlite3_column_int64(stmt, index++);
-		nd->tick = sqlite3_column_int(stmt, index++);
-		nd->unit = sqlite3_column_int(stmt, index++);
-		nd->alarm_id = sqlite3_column_int(stmt, index++);
-
-		*list = g_list_append(*list, nd);
-		(*count)++;
-	}
-	sqlite3_finalize(stmt);
-	return CALENDAR_ERROR_NONE;
-}
-
-static int __cal_server_alarm_get_next_list_normal_todo(long long int from_utime, long long int to_utime, GList **list, int *count)
-{
-	int index;
-    char query[CAL_DB_SQL_MAX_LEN] = {0};
-    sqlite3_stmt *stmt = NULL;
-
-	DBG("searching normal todo (%lld) ~ (%lld)", from_utime, to_utime);
-
-	snprintf(query, sizeof(query),
-			"SELECT B.id, A.alarm_time, "
-			"A.remind_tick, A.remind_tick_unit, A.alarm_id "
-			"FROM %s as A, "                          // A is alarm
-			"%s as B ON A.event_id = B.id "           // B is schedule
-			"WHERE B.has_alarm == 1 AND B.type = %d "
-			"AND A.remind_tick_unit = %d AND A.alarm_time = %lld "
-			"UNION "
-			"SELECT B.id, B.dtend_utime - (A.remind_tick * A.remind_tick_unit), "
-			"A.remind_tick, A.remind_tick_unit, A.alarm_id "
-			"FROM %s as A, "                          // A is alarm
-			"%s as B ON A.event_id = B.id "           // B is schedule
-			"WHERE B.has_alarm = 1 AND B.type = %d "
-			"AND A.remind_tick_unit > %d "
-			"AND (B.dtend_utime - (A.remind_tick * A.remind_tick_unit)) >= %lld "
-			"AND (B.dtend_utime - (A.remind_tick * A.remind_tick_unit)) < %lld "
-			"ORDER BY (B.dtend_utime - (A.remind_tick * A.remind_tick_unit))",
-			CAL_TABLE_ALARM, CAL_TABLE_SCHEDULE,
-			CALENDAR_BOOK_TYPE_TODO,
-			CALENDAR_ALARM_TIME_UNIT_SPECIFIC, from_utime,
-			CAL_TABLE_ALARM, CAL_TABLE_SCHEDULE,
-			CALENDAR_BOOK_TYPE_TODO,
-			CALENDAR_ALARM_TIME_UNIT_SPECIFIC,
-			from_utime, to_utime);
-
-	stmt = _cal_db_util_query_prepare(query);
-	if (NULL == stmt)
-	{
-		DBG("query[%s]", query);
-		ERR("_cal_db_util_query_prepare() Failed");
-		return CALENDAR_ERROR_DB_FAILED;
-	}
-
-	*count = 0;
-	while (CAL_DB_ROW  == _cal_db_util_stmt_step(stmt))
-	{
-		struct _normal_data_s *nd = calloc(1, sizeof(struct _normal_data_s));
-
-		index = 0;
-		nd->id = sqlite3_column_int(stmt, index++);
-		nd->alarm_utime = sqlite3_column_int64(stmt, index++);
-		nd->tick = sqlite3_column_int(stmt, index++);
-		nd->unit = sqlite3_column_int(stmt, index++);
-		nd->alarm_id = sqlite3_column_int(stmt, index++);
-
-		*list = g_list_append(*list, nd);
-		(*count)++;
-	}
-	sqlite3_finalize(stmt);
-	return CALENDAR_ERROR_NONE;
-}
-
-static int __cal_server_alarm_get_next_list_allday_event(int from_datetime, int to_datetime, GList **list, int *count)
-{
-	int index;
-    char query[CAL_DB_SQL_MAX_LEN] = {0};
-    sqlite3_stmt *stmt = NULL;
-
-	DBG("searching allday (%d) ~ (%d)", from_datetime, to_datetime);
-
-	snprintf(query, sizeof(query),
-			"SELECT A.event_id, B.alarm_time, "
-			"B.remind_tick, B.remind_tick_unit, B.alarm_id "
-			"FROM %s as A, "                       // A is allday instance
-			"%s as B ON A.event_id = B.event_id, " // B is alarm
-			"%s as C ON B.event_id = C.id "        // C is schedule
-			"WHERE C.has_alarm == 1 AND C.type = %d "
-			"AND B.remind_tick_unit = %d AND B.alarm_time = %d "
-			"UNION "
-			"SELECT A.event_id, A.dtstart_datetime, "
-			"B.remind_tick, B.remind_tick_unit, B.alarm_id "
-			"FROM %s as A, "                       // A is allday instance
-			"%s as B ON A.event_id = B.event_id, " // B is alarm
-			"%s as C ON B.event_id = C.id "        // C is schedule
-			"WHERE C.has_alarm = 1 AND C.type = %d "
-			"AND B.remind_tick_unit > %d "
-			"AND A.dtstart_datetime - (B.remind_tick * B.remind_tick_unit)/86400 > %d "
-			"AND A.dtstart_datetime - (B.remind_tick * B.remind_tick_unit)/86400 <= %d ",
-			CAL_TABLE_ALLDAY_INSTANCE, CAL_TABLE_ALARM, CAL_TABLE_SCHEDULE,
-			CALENDAR_BOOK_TYPE_EVENT,
-			CALENDAR_ALARM_TIME_UNIT_SPECIFIC, from_datetime,
-			CAL_TABLE_ALLDAY_INSTANCE, CAL_TABLE_ALARM, CAL_TABLE_SCHEDULE,
-			CALENDAR_BOOK_TYPE_EVENT,
-			CALENDAR_ALARM_TIME_UNIT_SPECIFIC,
-			from_datetime, to_datetime);
-
-	stmt = _cal_db_util_query_prepare(query);
-	if (NULL == stmt)
-	{
-		DBG("query[%s]", query);
-		ERR("_cal_db_util_query_prepare() Failed");
-		return CALENDAR_ERROR_DB_FAILED;
-	}
-
-	*count = 0;
-	while (CAL_DB_ROW  == _cal_db_util_stmt_step(stmt))
-	{
-		struct _allday_data_s *ad = calloc(1, sizeof(struct _allday_data_s));
-
-		index = 0;
-		ad->id = sqlite3_column_int(stmt, index++);
-		ad->alarm_datetime = sqlite3_column_int(stmt, index++);
-		ad->tick = sqlite3_column_int(stmt, index++);
-		ad->unit = sqlite3_column_int(stmt, index++);
-		ad->alarm_id = sqlite3_column_int(stmt, index++);
-
-		*list = g_list_append(*list, ad);
-		(*count)++;
-	}
-	sqlite3_finalize(stmt);
-	return CALENDAR_ERROR_NONE;
-}
-
-static int __cal_server_alarm_get_next_list_allday_todo(int from_datetime, int to_datetime, GList **list, int *count)
-{
-	int index;
-    char query[CAL_DB_SQL_MAX_LEN] = {0};
-    sqlite3_stmt *stmt = NULL;
-
-	DBG("searching allday todo(%d) ~ (%d)", from_datetime, to_datetime);
-
-	snprintf(query, sizeof(query),
-			"SELECT A.event_id, A.alarm_time, "
-			"A.remind_tick, A.remind_tick_unit, A.alarm_id "
-			"FROM %s as A, "                // A is alarm
-			"%s as B ON A.event_id = B.id " // B is schedule
-			"WHERE B.has_alarm == 1 AND B.type = %d "
-			"AND A.remind_tick_unit = %d AND A.alarm_time = %d "
-			"UNION "
-			"SELECT A.event_id, B.dtend_datetime, "
-			"A.remind_tick, A.remind_tick_unit, A.alarm_id "
-			"FROM %s as A, "                // A is alarm
-			"%s as B ON A.event_id = B.id " // B is schedule
-			"WHERE B.has_alarm = 1 AND B.type = %d "
-			"AND A.remind_tick_unit > %d "
-			"AND B.dtend_datetime - (A.remind_tick * A.remind_tick_unit)/86400 > %d "
-			"AND B.dtend_datetime - (A.remind_tick * A.remind_tick_unit)/86400 <= %d ",
-			CAL_TABLE_ALARM, CAL_TABLE_SCHEDULE,
-			CALENDAR_BOOK_TYPE_TODO,
-			CALENDAR_ALARM_TIME_UNIT_SPECIFIC, from_datetime,
-			CAL_TABLE_ALARM, CAL_TABLE_SCHEDULE,
-			CALENDAR_BOOK_TYPE_TODO,
-			CALENDAR_ALARM_TIME_UNIT_SPECIFIC,
-			from_datetime, to_datetime);
-
-	stmt = _cal_db_util_query_prepare(query);
-	if (NULL == stmt)
-	{
-		DBG("query[%s]", query);
-		ERR("_cal_db_util_query_prepare() Failed");
-		return CALENDAR_ERROR_DB_FAILED;
-	}
-
-	*count = 0;
-	while (CAL_DB_ROW  == _cal_db_util_stmt_step(stmt))
-	{
-		struct _allday_data_s *ad = calloc(1, sizeof(struct _allday_data_s));
-
-		index = 0;
-		ad->id = sqlite3_column_int(stmt, index++);
-		ad->alarm_datetime = sqlite3_column_int(stmt, index++);
-		ad->tick = sqlite3_column_int(stmt, index++);
-		ad->unit = sqlite3_column_int(stmt, index++);
-		ad->alarm_id = sqlite3_column_int(stmt, index++);
-
-		*list = g_list_append(*list, ad);
-		(*count)++;
-	}
-	sqlite3_finalize(stmt);
-	return CALENDAR_ERROR_NONE;
-}
-
 static int __cal_server_alarm_update_alarm_id(int alarm_id, int event_id, int tick, int unit)
 {
-    char query[CAL_DB_SQL_MAX_LEN] = {0};
-    cal_db_util_error_e dbret = CAL_DB_OK;
+	int ret = CALENDAR_ERROR_NONE;
+	char query[CAL_DB_SQL_MAX_LEN] = {0};
+	cal_db_util_error_e dbret = CAL_DB_OK;
+
+	ret = _cal_db_util_begin_trans();
+	if (CALENDAR_ERROR_NONE != ret)
+	{
+		ERR("_cal_db_util_begin_trans() failed");
+		return CALENDAR_ERROR_DB_FAILED;
+	}
 
 	DBG("Update alarm_id(%d) in alarm table", alarm_id);
 	snprintf(query, sizeof(query), "UPDATE %s SET "
-			"alarm_id = %d "
-			"WHERE event_id = %d AND remind_tick = %d AND remind_tick_unit = %d",
+			"alarm_id =%d "
+			"WHERE event_id =%d AND remind_tick =%d AND remind_tick_unit =%d",
 			CAL_TABLE_ALARM,
 			alarm_id,
 			event_id, tick, unit);
@@ -336,446 +135,529 @@ static int __cal_server_alarm_update_alarm_id(int alarm_id, int event_id, int ti
 		switch (dbret)
 		{
 		case CAL_DB_ERROR_NO_SPACE:
+			_cal_db_util_end_trans(false);
 			return CALENDAR_ERROR_FILE_NO_SPACE;
 		default:
+			_cal_db_util_end_trans(false);
 			return CALENDAR_ERROR_DB_FAILED;
 		}
 	}
-
+	_cal_db_util_end_trans(true);
 	return CALENDAR_ERROR_NONE;
 }
 
-static GFunc __cal_server_alarm_print_list_normal(gpointer data, gpointer user_data)
+static long long int __cal_server_alarm_get_alert_utime(const char *field, int event_id, time_t current)
 {
-	struct _normal_data_s *normal = (struct _normal_data_s *)data;
-	DBG("%02d:%lld", normal->id, normal->alarm_utime);
-	return 0;
-}
+	char query[CAL_DB_SQL_MAX_LEN] = {0};
+	snprintf(query, sizeof(query), "SELECT %s FROM %s "
+			"WHERE event_id=%d AND %s>%ld ORDER BY %s LIMIT 1",
+			field, CAL_TABLE_NORMAL_INSTANCE, event_id, field, current, field);
 
-static GFunc __cal_server_alarm_print_list_allday_todo(gpointer data, gpointer user_data)
-{
-	struct _allday_data_s *allday = (struct _allday_data_s *)data;
-	DBG("%02d:%d", allday->id, allday->alarm_datetime);
-	return 0;
-}
-
-static int __cal_server_alarm_get_list_with_alarmmgr_id(int alarm_id, GList **normal_list, GList **allday_list)
-{
-	int index;
-    char query[CAL_DB_SQL_MAX_LEN] = {0};
-    sqlite3_stmt *stmt = NULL;
-	struct _normal_data_s *nd;
-	struct _allday_data_s *ad;
-
-	snprintf(query, sizeof(query),
-			"SELECT A.type, A.dtstart_type, A.dtend_type, B.remind_tick, B.remind_tick_unit "
-			"FROM %s as A, "                // schedule
-			"%s as B ON A.id = B.event_id " // alarm
-			"WHERE B.alarm_id = %d",
-			CAL_TABLE_SCHEDULE,
-			CAL_TABLE_ALARM,
-			alarm_id);
-
+	sqlite3_stmt *stmt = NULL;
 	stmt = _cal_db_util_query_prepare(query);
-	if (NULL == stmt)
-	{
-		DBG("query[%s]", query);
-		ERR("_cal_db_util_query_prepare() Failed");
-		return CALENDAR_ERROR_DB_FAILED;
+
+	long long int utime = 0;
+	if (CAL_DB_ROW == _cal_db_util_stmt_step(stmt))
+		utime = sqlite3_column_int(stmt, 0);
+
+	sqlite3_finalize(stmt);
+	return utime;
+}
+
+static int __cal_server_alarm_get_alert_localtime(const char *field, int event_id, time_t current)
+{
+	char query[CAL_DB_SQL_MAX_LEN] = {0};
+	struct tm st = {0};
+	tzset();
+	localtime_r(&current, &st);
+	time_t mod_current = timegm(&st);
+	snprintf(query, sizeof(query), "SELECT %s FROM %s "
+			"WHERE event_id=%d AND strftime('%%s', %s)>%ld ORDER BY %s LIMIT 1",
+			field, CAL_TABLE_ALLDAY_INSTANCE, event_id, field, mod_current, field);
+
+	sqlite3_stmt *stmt = NULL;
+	stmt = _cal_db_util_query_prepare(query);
+
+	const char *datetime = NULL;
+	if (CAL_DB_ROW == _cal_db_util_stmt_step(stmt))
+		datetime = (const char *)sqlite3_column_text(stmt, 0);
+
+	if (NULL == datetime || '\0' == *datetime) {
+		ERR("Invalid datetime [%s]", datetime);
+		sqlite3_finalize(stmt);
+		return 0;
 	}
 
+	int y = 0, m = 0, d = 0;
+	int h = 0, n = 0, s = 0;
+	sscanf(datetime, CAL_FORMAT_LOCAL_DATETIME, &y, &m, &d, &h, &n, &s);
+	sqlite3_finalize(stmt);
+
+	st.tm_year = y - 1900;
+	st.tm_mon = m - 1;
+	st.tm_mday = d;
+	st.tm_hour = h;
+	st.tm_min = n;
+	st.tm_sec = s;
+
+	return (long long int)mktime(&st);
+}
+
+/*
+ * to get aler time, time(NULL) is not accurate. 1 secs diff could be occured.
+ * so, searching DB is neccessary to find alert time.
+ */
+static int __cal_server_alarm_get_alert_time(int alarm_id, time_t *tt_alert)
+{
+	retvm_if(NULL == tt_alert, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: tt_alert is NULL");
+
+	char query[CAL_DB_SQL_MAX_LEN] = {0};
+	snprintf(query, sizeof(query), "SELECT A.event_id, A.remind_tick_unit, A.remind_tick, "
+			"A.alarm_type, A.alarm_utime, A.alarm_datetime, B.system_type, "
+			"B.type, B.dtstart_type, B.dtend_type "
+			"FROM %s as A, %s as B ON A.event_id = B.id WHERE alarm_id =%d ",
+			CAL_TABLE_ALARM, CAL_TABLE_SCHEDULE, alarm_id);
+
+	sqlite3_stmt *stmt = NULL;
+	stmt = _cal_db_util_query_prepare(query);
+	retvm_if (NULL == stmt, CALENDAR_ERROR_DB_FAILED, "_cal_db_util_query_prepare() Failed");
+
+	int event_id = 0;
+	int unit = 0;
+	int tick = 0;
 	int type = 0;
+	long long int utime = 0;
+	const char *datetime = NULL;
+	int system_type = 0;
+	int record_type = 0;
 	int dtstart_type = 0;
 	int dtend_type = 0;
-	int tick = 0;
-	int unit = 0;
-	if (CAL_DB_ROW  == _cal_db_util_stmt_step(stmt))
-	{
-		index = 0;
+	struct tm st = {0};
+
+	if (CAL_DB_ROW == _cal_db_util_stmt_step(stmt)) {
+		int index = 0;
+		event_id = sqlite3_column_int(stmt, index++);
+		unit = sqlite3_column_int(stmt, index++);
+		tick = sqlite3_column_int(stmt, index++);
 		type = sqlite3_column_int(stmt, index++);
+		utime = sqlite3_column_int64(stmt, index++);
+		datetime = (const char *)sqlite3_column_text(stmt, index++);
+		system_type = sqlite3_column_int(stmt, index++);
+		record_type = sqlite3_column_int(stmt, index++);
 		dtstart_type = sqlite3_column_int(stmt, index++);
 		dtend_type = sqlite3_column_int(stmt, index++);
-		tick = sqlite3_column_int(stmt, index++);
-		unit = sqlite3_column_int(stmt, index++);
-	}
-	else
-	{
-		ERR("No record");
-	}
-	sqlite3_finalize(stmt);
-	stmt = NULL;
-
-	if ((type == CALENDAR_BOOK_TYPE_EVENT && dtstart_type == CALENDAR_TIME_UTIME)
-			|| (type == CALENDAR_BOOK_TYPE_TODO && dtend_type == CALENDAR_TIME_UTIME))
-	{
-		long long int now_utime;
-		now_utime = _cal_time_get_now();
-		now_utime -= now_utime % 60;
-
-		snprintf(query, sizeof(query),
-				"SELECT A.event_id, A.dtstart_utime, "
-				"B.remind_tick, B.remind_tick_unit, "
-				"C.type "
-				"FROM %s as A, "                       // A is normal instance
-				"%s as B ON A.event_id = B.event_id, " // B is alarm
-				"%s as C ON B.event_id = C.id "        // c is schedule
-				"WHERE C.has_alarm == 1 AND C.type = %d "
-				"AND B.remind_tick_unit = %d "
-				"AND B.alarm_time = %lld "
-				"UNION "
-				"SELECT A.event_id, A.dtstart_utime, "
-				"B.remind_tick, B.remind_tick_unit, "
-				"C.type "
-				"FROM %s as A, "                       // A is normal instance
-				"%s as B ON A.event_id = B.event_id, " // B is alarm
-				"%s as C ON B.event_id = C.id "        // c is schedule
-				"WHERE C.has_alarm = 1 AND C.type = %d "
-				"AND B.remind_tick_unit > %d "
-				"AND (A.dtstart_utime - (B.remind_tick * B.remind_tick_unit)) >= %lld "
-				"AND (A.dtstart_utime - (B.remind_tick * B.remind_tick_unit)) < %lld "
-				"UNION "
-				"SELECT B.id, B.dtend_utime, "
-				"A.remind_tick, A.remind_tick_unit, "
-				"B.type "
-				"FROM %s as A, "                          // A is alarm
-				"%s as B ON A.event_id = B.id "           // B is schedule
-				"WHERE B.has_alarm == 1 AND B.type = %d "
-				"AND A.remind_tick_unit = %d "
-				"AND A.alarm_time = %lld "
-				"UNION "
-				"SELECT B.id, B.dtend_utime, "
-				"A.remind_tick, A.remind_tick_unit, "
-				"B.type "
-				"FROM %s as A, "                          // A is alarm
-				"%s as B ON A.event_id = B.id "           // B is schedule
-				"WHERE B.has_alarm = 1 AND B.type = %d "
-				"AND A.remind_tick_unit > %d "
-				"AND (B.dtend_utime - (A.remind_tick * A.remind_tick_unit)) >= %lld "
-				"AND (B.dtend_utime - (A.remind_tick * A.remind_tick_unit)) < %lld ",
-			CAL_TABLE_NORMAL_INSTANCE, CAL_TABLE_ALARM, CAL_TABLE_SCHEDULE,
-			CALENDAR_BOOK_TYPE_EVENT,
-			CALENDAR_ALARM_TIME_UNIT_SPECIFIC,
-			now_utime,
-			CAL_TABLE_NORMAL_INSTANCE, CAL_TABLE_ALARM, CAL_TABLE_SCHEDULE,
-			CALENDAR_BOOK_TYPE_EVENT,
-			CALENDAR_ALARM_TIME_UNIT_SPECIFIC,
-			now_utime, now_utime + 60,
-			CAL_TABLE_ALARM, CAL_TABLE_SCHEDULE,
-			CALENDAR_BOOK_TYPE_TODO,
-			CALENDAR_ALARM_TIME_UNIT_SPECIFIC,
-			now_utime,
-			CAL_TABLE_ALARM, CAL_TABLE_SCHEDULE,
-			CALENDAR_BOOK_TYPE_TODO,
-			CALENDAR_ALARM_TIME_UNIT_SPECIFIC,
-			now_utime, now_utime + 60);
-
-		stmt = _cal_db_util_query_prepare(query);
-		if (NULL == stmt)
-		{
-			DBG("query[%s]", query);
-			ERR("_cal_db_util_query_prepare() Failed");
-			return CALENDAR_ERROR_DB_FAILED;
-		}
-
-		while (CAL_DB_ROW == _cal_db_util_stmt_step(stmt))
-		{
-			index = 0;
-			nd = calloc(1, sizeof(struct _normal_data_s));
-			nd->id = sqlite3_column_int(stmt, index++);
-			nd->alarm_utime = sqlite3_column_int64(stmt, index++); // dtstart, dtend
-			nd->tick = sqlite3_column_int(stmt, index++);
-			nd->unit = sqlite3_column_int(stmt, index++);
-			nd->record_type = sqlite3_column_int(stmt, index++); // event, todo
-			*normal_list = g_list_append(*normal_list, nd);
-			DBG("(%d)", nd->id);
-		}
-	}
-	else
-	{
-		int now_datetime;
-		time_t now_timet = time(NULL);
-		struct tm start_tm = {0};
-		now_timet -= now_timet % 60;
-		gmtime_r(&now_timet, &start_tm);
-		now_datetime = (start_tm.tm_year + 1900) * 10000
-			+ (start_tm.tm_mon + 1) * 100
-			+ (start_tm.tm_mday);
-
-		snprintf(query, sizeof(query),
-				"SELECT A.event_id, A.dtstart_datetime, "
-				"B.remind_tick, B.remind_tick_unit, "
-				"C.type "
-				"FROM %s as A, "                       // A is allday instance
-				"%s as B ON A.event_id = B.event_id, " // B is alarm
-				"%s as C ON B.event_id = C.id "        // C is schedule
-				"WHERE C.has_alarm == 1 AND C.type = %d "
-				"AND B.remind_tick_unit = %d "
-				"AND B.alarm_time = %d "
-				"UNION "
-				"SELECT A.event_id, A.dtstart_datetime, "
-				"B.remind_tick, B.remind_tick_unit, "
-				"C.type "
-				"FROM %s as A, "                       // A is allday instance
-				"%s as B ON A.event_id = B.event_id, " // B is alarm
-				"%s as C ON B.event_id = C.id "        // C is schedule
-				"WHERE C.has_alarm = 1 AND C.type = %d "
-				"AND B.remind_tick_unit > %d "
-				"AND A.dtstart_datetime - (B.remind_tick * B.remind_tick_unit)/86400 = %d "
-				"UNION "
-				"SELECT A.event_id, B.dtend_datetime, "
-				"A.remind_tick, A.remind_tick_unit, "
-				"B.type "
-				"FROM %s as A, "                // A is alarm
-				"%s as B ON A.event_id = B.id " // B is schedule
-				"WHERE B.has_alarm == 1 AND B.type = %d "
-				"AND A.remind_tick_unit = %d AND A.alarm_time = %d "
-				"UNION "
-				"SELECT A.event_id, B.dtend_datetime, "
-				"A.remind_tick, A.remind_tick_unit, "
-				"B.type "
-				"FROM %s as A, "                // A is alarm
-				"%s as B ON A.event_id = B.id " // B is schedule
-				"WHERE B.has_alarm = 1 AND B.type = %d "
-				"AND A.remind_tick_unit > %d "
-				"AND B.dtend_datetime - (A.remind_tick * A.remind_tick_unit)/86400 = %d ",
-			CAL_TABLE_ALLDAY_INSTANCE, CAL_TABLE_ALARM, CAL_TABLE_SCHEDULE,
-			CALENDAR_BOOK_TYPE_EVENT,
-			CALENDAR_ALARM_TIME_UNIT_SPECIFIC,
-			now_datetime,
-			CAL_TABLE_ALLDAY_INSTANCE, CAL_TABLE_ALARM, CAL_TABLE_SCHEDULE,
-			CALENDAR_BOOK_TYPE_EVENT,
-			CALENDAR_ALARM_TIME_UNIT_SPECIFIC,
-			now_datetime,
-			CAL_TABLE_ALARM, CAL_TABLE_SCHEDULE,
-			CALENDAR_BOOK_TYPE_TODO,
-			CALENDAR_ALARM_TIME_UNIT_SPECIFIC,
-			now_datetime,
-			CAL_TABLE_ALARM, CAL_TABLE_SCHEDULE,
-			CALENDAR_BOOK_TYPE_TODO,
-			CALENDAR_ALARM_TIME_UNIT_SPECIFIC,
-			now_datetime);
-
-		stmt = _cal_db_util_query_prepare(query);
-		if (NULL == stmt)
-		{
-			DBG("query[%s]", query);
-			ERR("_cal_db_util_query_prepare() Failed");
-			return CALENDAR_ERROR_DB_FAILED;
-		}
-
-		const unsigned char *temp;
-		while (CAL_DB_ROW == _cal_db_util_stmt_step(stmt))
-		{
-			index = 0;
-			ad = calloc(1, sizeof(struct _allday_data_s));
-			ad->id = sqlite3_column_int(stmt, index++);
-			temp = sqlite3_column_text(stmt, index++); // dtstart, dtend
-			ad->alarm_datetime = atoi((const char *)temp);
-			ad->tick = sqlite3_column_int(stmt, index++);
-			ad->unit = sqlite3_column_int(stmt, index++);
-			ad->record_type = sqlite3_column_int(stmt, index++);
-			*allday_list = g_list_append(*allday_list, ad);
-		}
-	}
-	sqlite3_finalize(stmt);
-	return CALENDAR_ERROR_NONE;
-}
-
-// this api is necessary for repeat instance.
-static int __cal_server_alarm_unset_alerted_alarmmgr_id(int alarm_id)
-{
-    char query[CAL_DB_SQL_MAX_LEN] = {0};
-    cal_db_util_error_e dbret = CAL_DB_OK;
-
-	DBG("alarm_id(%d)", alarm_id);
-
-	snprintf(query, sizeof(query),
-			"UPDATE %s SET alarm_id = 0 WHERE alarm_id = %d ",
-			CAL_TABLE_ALARM, alarm_id);
-
-	dbret = _cal_db_util_query_exec(query);
-	if (CAL_DB_OK != dbret)
-	{
-		ERR("_cal_db_util_query_exec() Failed(%d)", dbret);
-		switch (dbret)
-		{
-		case CAL_DB_ERROR_NO_SPACE:
-			return CALENDAR_ERROR_FILE_NO_SPACE;
-		default:
-			return CALENDAR_ERROR_DB_FAILED;
-		}
 	}
 
-	return CALENDAR_ERROR_NONE;
-}
-
-static int __cal_server_alarm_alert_with_pkgname(const char *pkgname, char *id, char *time, char *tick, char *unit, char *type)
-{
-	int ret = CALENDAR_ERROR_NONE;
-	int index;
-    char query[CAL_DB_SQL_MAX_LEN] = {0};
-	const char *key;
-	const char *value;
-    sqlite3_stmt *stmt = NULL;
-    cal_db_util_error_e dbret = CAL_DB_OK;
-
-	if (NULL == pkgname)
-	{
-		ERR("Invalid parameter: pkgname is NULL");
+	if (NULL == tt_alert) {
+		ERR("Invalid parameter: tt_alert is NULL");
+		sqlite3_finalize(stmt);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	// get user key, value
-	snprintf(query, sizeof(query), "SELECT key, value FROM %s WHERE pkgname = '%s' ",
-			CAL_REMINDER_ALERT, pkgname);
-    stmt = _cal_db_util_query_prepare(query);
-    if (NULL == stmt)
-    {
-        ERR("_cal_db_util_query_prepare() Failed");
-        return CALENDAR_ERROR_DB_FAILED;
-    }
+	if (CALENDAR_ALARM_TIME_UNIT_SPECIFIC == unit) {
+		if (CALENDAR_TIME_UTIME == type) {
+			*tt_alert = utime;
 
-    while(CAL_DB_ROW == _cal_db_util_stmt_step(stmt))
-    {
-		index = 0;
-		key = (const char *)sqlite3_column_text(stmt, index++);
-		value = (const char *)sqlite3_column_text(stmt, index++);
-	}
+		} else {
+			int y = 0, m = 0, d = 0;
+			int h = 0, n = 0, s = 0;
+			sscanf(datetime, CAL_FORMAT_LOCAL_DATETIME, &y, &m, &d, &h, &n, &s);
 
-	// run appsvc
-	DBG("[%s][%s][%s][%s]", id, time, tick, unit);
-
-	bundle *b;
-	b = bundle_create();
-	appsvc_set_pkgname(b, pkgname);
-	appsvc_set_operation(b, APPSVC_OPERATION_DEFAULT);
-	if (key && value) appsvc_add_data(b, key, value);
-	appsvc_add_data(b, "id", id);
-	appsvc_add_data(b, "time", time);
-	appsvc_add_data(b, "tick", tick);
-	appsvc_add_data(b, "unit", unit);
-	appsvc_add_data(b, "type", type);
-	ret = appsvc_run_service(b, 0, NULL, NULL);
-	bundle_free(b);
-
-	sqlite3_finalize(stmt);
-
-	// if no app, delete from the table
-	if (APPSVC_RET_ELAUNCH == ret)
-	{
-		DBG("Deleted no responce pkg[%s]", pkgname);
-		snprintf(query, sizeof(query), "DELETE FROM %s WHERE pkgname = '%s' ",
-				CAL_REMINDER_ALERT, pkgname);
-		dbret = _cal_db_util_query_exec(query);
-		if (CAL_DB_OK != dbret)
-		{
-			ERR("_cal_db_util_query_exec() failed(ret:%d)", ret);
-			switch (dbret)
-			{
-			case CAL_DB_ERROR_NO_SPACE:
-				return CALENDAR_ERROR_FILE_NO_SPACE;
-			default:
-				return CALENDAR_ERROR_DB_FAILED;
-			}
+			st.tm_year = y - 1900;
+			st.tm_mon = m - 1;
+			st.tm_mday = d;
+			st.tm_hour = h;
+			st.tm_min = n;
+			st.tm_sec = s;
+			*tt_alert = (long long int)mktime(&st);
+			DBG("datetime[%s] to %02d:%02d:%02d (%lld)", datetime, h, n, s, *tt_alert);
 		}
-
-	}
-	return CALENDAR_ERROR_NONE;
-}
-
-static int __cal_server_alarm_alert(char *id, char *time, char *tick, char *unit, char *type)
-{
-	int index;
-    char query[CAL_DB_SQL_MAX_LEN] = {0};
-    sqlite3_stmt *stmt = NULL;
-
-	snprintf(query, sizeof(query), "SELECT pkgname FROM %s WHERE onoff = 1 ",
-			CAL_REMINDER_ALERT);
-    stmt = _cal_db_util_query_prepare(query);
-    if (NULL == stmt)
-    {
-        ERR("_cal_db_util_query_prepare() Failed");
-        return CALENDAR_ERROR_DB_FAILED;
-    }
-
-    while(CAL_DB_ROW == _cal_db_util_stmt_step(stmt))
-    {
-		index = 0;
-		const char *pkgname = (const char *)sqlite3_column_text(stmt, index++);
-		DBG("pkgname[%s]", pkgname);
-		__cal_server_alarm_alert_with_pkgname(pkgname, id, time, tick, unit, type);
-	}
-	sqlite3_finalize(stmt);
-
-	return CALENDAR_ERROR_NONE;
-}
-
-static int __cal_server_alarm_noti_with_appsvc(int alarm_id, GList *normal_list, GList *allday_list)
-{
-	char buf_id[128] = {0};
-	char buf_time[128] = {0};
-	char buf_tick[128] = {0};
-	char buf_unit[128] = {0};
-	char buf_type[128] = {0};
-	GList *l = NULL;
-
-	l = g_list_first(normal_list);
-	if (NULL == l) DBG("normal list is NULL");
-	while (l)
-	{
-		struct _normal_data_s *nd = (struct _normal_data_s *)l->data;
-		snprintf(buf_id, sizeof(buf_id), "%d", nd->id);
-		snprintf(buf_time, sizeof(buf_time), "%lld", nd->alarm_utime);
-		snprintf(buf_tick, sizeof(buf_tick), "%d", nd->tick);
-		snprintf(buf_unit, sizeof(buf_unit), "%d", nd->unit);
-		snprintf(buf_type, sizeof(buf_type), "%d", nd->record_type);
-
-		__cal_server_alarm_alert(buf_id, buf_time, buf_tick, buf_unit, buf_type);
-		l = g_list_next(l);
-	}
-
-	l = NULL;
-	l = g_list_first(allday_list);
-	if (NULL == l) DBG("allday list is NULL");
-	while (l)
-	{
-		struct _allday_data_s *ad = (struct _allday_data_s *)l->data;
-		snprintf(buf_id, sizeof(buf_id), "%d",  ad->id);
-		snprintf(buf_time, sizeof(buf_time), "%d", ad->alarm_datetime);
-		snprintf(buf_tick, sizeof(buf_tick), "%d", ad->tick);
-		snprintf(buf_unit, sizeof(buf_unit), "%d", ad->unit);
-		snprintf(buf_type, sizeof(buf_type), "%d", ad->record_type);
-
-		__cal_server_alarm_alert(buf_id, buf_time, buf_tick, buf_unit, buf_type);
-		l = g_list_next(l);
-	}
-	return CALENDAR_ERROR_NONE;
-}
-
-static int __cal_server_alarm_register_next_normal(long long int now_utime, GList *normal_list)
-{
-	int ret;
-	int alarm_id;
-	struct _normal_data_s *nd;
-
-	GList *l = g_list_first(normal_list);
-
-	// try to save the first record.
-	// if alarm id exists, it means updated record is not earilier than already registerd one.
-	nd = (struct _normal_data_s *)l->data;
-	if (NULL == nd)
-	{
-		ERR("No data");
-		return CALENDAR_ERROR_DB_FAILED;
-	}
-
-	if (nd->alarm_id > 0)
-	{
-		DBG("Already registered this id");
+		sqlite3_finalize(stmt);
 		return CALENDAR_ERROR_NONE;
 	}
+	sqlite3_finalize(stmt);
 
-	DBG("new is earilier than registered.");
+	// not specific
+
+	time_t current = time(NULL);
+	current += (tick * unit);
+	current -= 2; // in case time passed
+
+	switch (record_type)
+	{
+	case CALENDAR_BOOK_TYPE_EVENT:
+		switch (dtstart_type)
+		{
+		case CALENDAR_TIME_UTIME:
+			utime = __cal_server_alarm_get_alert_utime("dtstart_utime", event_id, current);
+			break;
+
+		case CALENDAR_TIME_LOCALTIME:
+			utime = __cal_server_alarm_get_alert_localtime("dtstart_datetime", event_id, current);
+			break;
+		}
+		break;
+
+	case CALENDAR_BOOK_TYPE_TODO:
+		switch (dtend_type)
+		{
+		case CALENDAR_TIME_UTIME:
+			utime = __cal_server_alarm_get_alert_utime("dtend_utime", event_id, current);
+			break;
+
+		case CALENDAR_TIME_LOCALTIME:
+			utime = __cal_server_alarm_get_alert_localtime("dtend_datetime", event_id, current);
+			break;
+		}
+		break;
+	}
+	DBG("alert_time(%lld) = utime(%lld) - (tick(%d) * unit(%d))", *tt_alert, utime, datetime, tick, unit);
+
+	*tt_alert = utime - (tick * unit);
+	return CALENDAR_ERROR_NONE;
+}
+
+static void __cal_server_alarm_get_upcoming_specific_utime(time_t utime, bool get_all, GList **l) // case 1
+{
+	char query_specific_utime[CAL_DB_SQL_MAX_LEN] = {0};
+	snprintf(query_specific_utime, sizeof(query_specific_utime),
+			// alarm utime(normal event + todo)
+			"SELECT event_id, remind_tick_unit, remind_tick, alarm_type, alarm_utime, alarm_datetime "
+			"FROM %s "
+			"WHERE remind_tick_unit =%d AND alarm_type =%d AND alarm_utime %s %ld %s",
+			CAL_TABLE_ALARM,
+			CALENDAR_ALARM_TIME_UNIT_SPECIFIC, CALENDAR_TIME_UTIME,
+			true == get_all ? "=" : ">",
+			utime,
+			true == get_all ? "" : "ORDER BY alarm_utime ASC LIMIT 1");
+
+	sqlite3_stmt *stmt = NULL;
+	stmt = _cal_db_util_query_prepare(query_specific_utime);
+	if (NULL == stmt) {
+		ERR("_cal_db_util_query_prepare() Failed");
+		ERR("[%s]", query_specific_utime);
+		return;
+	}
+
+	while (CAL_DB_ROW == _cal_db_util_stmt_step(stmt)) {
+		struct _alarm_data_s *ad = calloc(1, sizeof(struct _alarm_data_s));
+
+		int index = 0;
+		ad->event_id = sqlite3_column_int(stmt, index++);
+		ad->unit = sqlite3_column_int(stmt, index++);
+		ad->tick = sqlite3_column_int(stmt, index++);
+		ad->type = sqlite3_column_int(stmt, index++);
+		ad->time = (long long int)sqlite3_column_int64(stmt, index++);
+		snprintf(ad->datetime, sizeof(ad->datetime), "%s", (const char *)sqlite3_column_text(stmt, index++));
+		*l = g_list_append(*l, ad);
+		DBG("found id(%d) unit(%d) tick(%d) type(%d) time(%lld) [%s]",
+				ad->event_id, ad->unit, ad->tick, ad->type, ad->time, ad->datetime);
+		ad->alert_utime = ad->time;
+		if (false == get_all) break;
+	}
+	sqlite3_finalize(stmt);
+}
+
+static void __cal_server_alarm_get_upcoming_specific_localtime(const char *datetime, bool get_all, GList **l)
+{
+	char query_specific_localtime[CAL_DB_SQL_MAX_LEN] = {0};
+	snprintf(query_specific_localtime, sizeof(query_specific_localtime),
+			"SELECT event_id, remind_tick_unit, remind_tick, "
+			"alarm_type, alarm_utime, alarm_datetime "
+			"FROM %s "
+			"WHERE remind_tick_unit=%d AND alarm_type=%d AND alarm_datetime %s '%s' %s",
+			CAL_TABLE_ALARM,
+			CALENDAR_ALARM_TIME_UNIT_SPECIFIC, CALENDAR_TIME_LOCALTIME,
+			true == get_all ? "=" : ">",
+			datetime,
+			true == get_all ? "" : "ORDER BY alarm_datetime ASC LIMIT 1");
+
+	sqlite3_stmt *stmt = NULL;
+	stmt = _cal_db_util_query_prepare(query_specific_localtime);
+	if (NULL == stmt) {
+		ERR("_cal_db_util_query_prepare() Failed");
+		ERR("[%s]", query_specific_localtime);
+		return;
+	}
+
+	while (CAL_DB_ROW == _cal_db_util_stmt_step(stmt)) {
+		struct _alarm_data_s *ad = calloc(1, sizeof(struct _alarm_data_s));
+
+		int index = 0;
+		ad->event_id = sqlite3_column_int(stmt, index++);
+		ad->unit = sqlite3_column_int(stmt, index++);
+		ad->tick = sqlite3_column_int(stmt, index++);
+		ad->type = sqlite3_column_int(stmt, index++);
+		ad->time = (long long int)sqlite3_column_int64(stmt, index++);
+		snprintf(ad->datetime, sizeof(ad->datetime), "%s", (const char *)sqlite3_column_text(stmt, index++));
+		*l = g_list_append(*l, ad);
+		DBG("found id(%d) unit(%d) tick(%d) type(%d) time(%lld) [%s]",
+				ad->event_id, ad->unit, ad->tick, ad->type, ad->time, ad->datetime);
+
+		int y = 0, m = 0, d = 0;
+		int h = 0, n = 0, s = 0;
+		sscanf(ad->datetime, CAL_FORMAT_LOCAL_DATETIME, &y, &m, &d, &h, &n, &s);
+
+		struct tm st = {0};
+		st.tm_year = y - 1900;
+		st.tm_mon = m -1;
+		st.tm_mday = d;
+		st.tm_hour = h;
+		st.tm_min = n;
+		st.tm_sec = s;
+		ad->alert_utime = (long long int)mktime(&st);
+		if (false == get_all) break;
+	}
+	sqlite3_finalize(stmt);
+}
+
+static void __cal_server_alarm_get_upcoming_nonspecific_event_utime(time_t utime, bool get_all, GList **l)
+{
+	char query_nonspecific_event_utime[CAL_DB_SQL_MAX_LEN] = {0};
+	snprintf(query_nonspecific_event_utime, sizeof(query_nonspecific_event_utime),
+			// A:alarm B:normal instance
+			"SELECT A.event_id, A.remind_tick_unit, A.remind_tick, A.alarm_type, B.dtstart_utime, A.alarm_datetime "
+			"FROM %s as A, %s as B ON A.event_id = B.event_id "
+			"WHERE A.remind_tick_unit >%d AND (B.dtstart_utime - (A.remind_tick_unit * A.remind_tick)) %s %ld %s",
+			CAL_TABLE_ALARM, CAL_TABLE_NORMAL_INSTANCE,
+			CALENDAR_ALARM_TIME_UNIT_SPECIFIC,
+			true == get_all ? "=" : ">",
+			utime,
+			true == get_all ? "" : "ORDER BY (B.dtstart_utime - (A.remind_tick_unit * A.remind_tick)) LIMIT 1");
+
+	sqlite3_stmt *stmt = NULL;
+	stmt = _cal_db_util_query_prepare(query_nonspecific_event_utime);
+	if (NULL == stmt) {
+		ERR("_cal_db_util_query_prepare() Failed");
+		ERR("[%s]", query_nonspecific_event_utime);
+		return;
+	}
+
+	while (CAL_DB_ROW == _cal_db_util_stmt_step(stmt)) {
+		struct _alarm_data_s *ad = calloc(1, sizeof(struct _alarm_data_s));
+
+		int index = 0;
+		ad->event_id = sqlite3_column_int(stmt, index++);
+		ad->unit = sqlite3_column_int(stmt, index++);
+		ad->tick = sqlite3_column_int(stmt, index++);
+		ad->type = sqlite3_column_int(stmt, index++);
+		ad->time = (long long int)sqlite3_column_int64(stmt, index++);
+		snprintf(ad->datetime, sizeof(ad->datetime), "%s", (const char *)sqlite3_column_text(stmt, index++));
+		*l = g_list_append(*l, ad);
+		DBG("found id(%d) unit(%d) tick(%d) type(%d) time(%lld) [%s]",
+				ad->event_id, ad->unit, ad->tick, ad->type, ad->time, ad->datetime);
+
+		ad->alert_utime = ad->time - (ad->tick * ad->unit);
+		if (false == get_all) break;
+	}
+	sqlite3_finalize(stmt);
+}
+
+static void __cal_server_alarm_get_upcoming_nonspecific_event_localtime(const char *datetime, bool get_all, GList **l)
+{
+	char query_nonspecific_event_localtime[CAL_DB_SQL_MAX_LEN] = {0};
+	snprintf(query_nonspecific_event_localtime, sizeof(query_nonspecific_event_localtime),
+			// A:alarm B:allday
+			"SELECT A.event_id, A.remind_tick_unit, A.remind_tick, A.alarm_type, A.alarm_utime, B.dtstart_datetime "
+			"FROM %s as A, %s as B ON A.event_id = B.event_id "
+			"WHERE A.remind_tick_unit >%d AND "
+			"(strftime('%%s', B.dtstart_datetime) - (A.remind_tick_unit * A.remind_tick) - strftime('%%s', '%s') %s 0) %s",
+			CAL_TABLE_ALARM, CAL_TABLE_ALLDAY_INSTANCE,
+			CALENDAR_ALARM_TIME_UNIT_SPECIFIC,
+			datetime,
+			true == get_all ? "=" : ">",
+			true == get_all ? "" : "ORDER BY (strftime('%s', B.dtstart_datetime) - (A.remind_tick_unit * A.remind_tick)) LIMIT 1 ");
+	sqlite3_stmt *stmt = NULL;
+	stmt = _cal_db_util_query_prepare(query_nonspecific_event_localtime);
+	if (NULL == stmt) {
+		ERR("_cal_db_util_query_prepare() Failed");
+		ERR("[%s]", query_nonspecific_event_localtime);
+		return;
+	}
+
+	while (CAL_DB_ROW == _cal_db_util_stmt_step(stmt)) {
+		struct _alarm_data_s *ad = calloc(1, sizeof(struct _alarm_data_s));
+
+		int index = 0;
+		ad->event_id = sqlite3_column_int(stmt, index++);
+		ad->unit = sqlite3_column_int(stmt, index++);
+		ad->tick = sqlite3_column_int(stmt, index++);
+		ad->type = sqlite3_column_int(stmt, index++);
+		ad->time = (long long int)sqlite3_column_int64(stmt, index++);
+		snprintf(ad->datetime, sizeof(ad->datetime), "%s", (const char *)sqlite3_column_text(stmt, index++));
+		*l = g_list_append(*l, ad);
+		DBG("found id(%d) unit(%d) tick(%d) type(%d) time(%lld) [%s]",
+				ad->event_id, ad->unit, ad->tick, ad->type, ad->time, ad->datetime);
+
+		int y = 0, m = 0, d = 0;
+		int h = 0, n = 0, s = 0;
+		sscanf(ad->datetime, CAL_FORMAT_LOCAL_DATETIME, &y, &m, &d, &h, &n, &s);
+
+		struct tm st = {0};
+		st.tm_year = y - 1900;
+		st.tm_mon = m -1;
+		st.tm_mday = d;
+		st.tm_hour = h;
+		st.tm_min = n;
+		st.tm_sec = s;
+		ad->alert_utime = (long long int)mktime(&st) - (ad->tick * ad->unit);
+		if (false == get_all) break;
+	}
+	sqlite3_finalize(stmt);
+}
+
+static void __cal_server_alarm_get_upcoming_nonspecific_todo_utime(time_t utime, bool get_all, GList **l)
+{
+	char query_nonspecific_todo_utime[CAL_DB_SQL_MAX_LEN] = {0};
+	snprintf(query_nonspecific_todo_utime, sizeof(query_nonspecific_todo_utime),
+			// A:alarm B:todo(normal)
+			"SELECT A.event_id, A.remind_tick_unit, A.remind_tick, A.alarm_type, B.dtend_utime, A.alarm_datetime "
+			"FROM %s as A, %s as B ON A.event_id = B.id "
+			"WHERE A.remind_tick_unit >%d AND B.type =%d "
+			"AND (B.dtend_utime - (A.remind_tick_unit * A.remind_tick)) %s %ld %s",
+			CAL_TABLE_ALARM, CAL_TABLE_SCHEDULE,
+			CALENDAR_ALARM_TIME_UNIT_SPECIFIC, CALENDAR_BOOK_TYPE_TODO,
+			true == get_all ? "=" : ">",
+			utime,
+			true == get_all ? "" : "ORDER BY (B.dtend_utime - (A.remind_tick_unit * A.remind_tick)) LIMIT 1 ");
+
+	sqlite3_stmt *stmt = NULL;
+	stmt = _cal_db_util_query_prepare(query_nonspecific_todo_utime);
+	if (NULL == stmt) {
+		ERR("_cal_db_util_query_prepare() Failed");
+		ERR("[%s]", query_nonspecific_todo_utime);
+		return;
+	}
+
+	while (CAL_DB_ROW == _cal_db_util_stmt_step(stmt)) {
+		struct _alarm_data_s *ad = calloc(1, sizeof(struct _alarm_data_s));
+
+		int index = 0;
+		ad->event_id = sqlite3_column_int(stmt, index++);
+		ad->unit = sqlite3_column_int(stmt, index++);
+		ad->tick = sqlite3_column_int(stmt, index++);
+		ad->type = sqlite3_column_int(stmt, index++);
+		ad->time = (long long int)sqlite3_column_int64(stmt, index++);
+		snprintf(ad->datetime, sizeof(ad->datetime), "%s", (const char *)sqlite3_column_text(stmt, index++));
+		*l = g_list_append(*l, ad);
+		DBG("found id(%d) unit(%d) tick(%d) type(%d) time(%lld) [%s]",
+				ad->event_id, ad->unit, ad->tick, ad->type, ad->time, ad->datetime);
+
+		ad->alert_utime = ad->time - (ad->tick * ad->unit);
+		if (false == get_all) break;
+	}
+	sqlite3_finalize(stmt);
+}
+
+static void __cal_server_alarm_get_upcoming_nonspecific_todo_localtime(const char *datetime, bool get_all, GList **l)
+{
+	char query_nonspecific_todo_localtime[CAL_DB_SQL_MAX_LEN] = {0};
+	snprintf(query_nonspecific_todo_localtime, sizeof(query_nonspecific_todo_localtime),
+			// A:alarm B:todo(allday)
+			"SELECT A.event_id, A.remind_tick_unit, A.remind_tick, A.alarm_type, A.alarm_utime, B.dtend_datetime "
+			"FROM %s as A, %s as B ON A.event_id = B.id "
+			"WHERE A.remind_tick_unit >%d AND B.type =%d "
+			"AND (strftime('%%s', B.dtend_datetime) - (A.remind_tick_unit * A.remind_tick) - strftime('%%s', '%s') %s 0) %s",
+			CAL_TABLE_ALARM, CAL_TABLE_SCHEDULE,
+			CALENDAR_ALARM_TIME_UNIT_SPECIFIC, CALENDAR_BOOK_TYPE_TODO,
+			datetime,
+			true == get_all ? "=" : ">",
+			true == get_all ? "" : "ORDER BY (strftime('%s', B.dtend_datetime) - (A.remind_tick_unit * A.remind_tick)) LIMIT 1 ");
+
+	sqlite3_stmt *stmt = NULL;
+	stmt = _cal_db_util_query_prepare(query_nonspecific_todo_localtime);
+	if (NULL == stmt) {
+		ERR("_cal_db_util_query_prepare() Failed");
+		ERR("[%s]", query_nonspecific_todo_localtime);
+		return;
+	}
+
+	while (CAL_DB_ROW == _cal_db_util_stmt_step(stmt)) {
+		struct _alarm_data_s *ad = calloc(1, sizeof(struct _alarm_data_s));
+
+		int index = 0;
+		ad->event_id = sqlite3_column_int(stmt, index++);
+		ad->unit = sqlite3_column_int(stmt, index++);
+		ad->tick = sqlite3_column_int(stmt, index++);
+		ad->type = sqlite3_column_int(stmt, index++);
+		ad->time = (long long int)sqlite3_column_int64(stmt, index++);
+		snprintf(ad->datetime, sizeof(ad->datetime), "%s", (const char *)sqlite3_column_text(stmt, index++));
+		*l = g_list_append(*l, ad);
+		DBG("found id(%d) unit(%d) tick(%d) type(%d) time(%lld) [%s]",
+				ad->event_id, ad->unit, ad->tick, ad->type, ad->time, ad->datetime);
+
+		int y = 0, m = 0, d = 0;
+		int h = 0, n = 0, s = 0;
+		sscanf(ad->datetime, CAL_FORMAT_LOCAL_DATETIME, &y, &m, &d, &h, &n, &s);
+
+		struct tm st = {0};
+		st.tm_year = y - 1900;
+		st.tm_mon = m -1;
+		st.tm_mday = d;
+		st.tm_hour = h;
+		st.tm_min = n;
+		st.tm_sec = s;
+		ad->alert_utime = (long long int)mktime(&st) - (ad->tick * ad->unit);
+		if (false == get_all) break;
+	}
+	sqlite3_finalize(stmt);
+}
+
+static int __cal_server_alarm_get_alert_list(time_t utime, GList **list)
+{
+	ENTER();
+	retvm_if (NULL == list, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: list is NULL");
+
+	tzset();
+	struct tm st_local = {0};
+	localtime_r(&utime, &st_local);
+	char datetime[32] = {0};
+	snprintf(datetime, sizeof(datetime), CAL_FORMAT_LOCAL_DATETIME,
+			st_local.tm_year +1900, st_local.tm_mon + 1, st_local.tm_mday,
+			st_local.tm_hour, st_local.tm_min, st_local.tm_sec);
+	DBG("get alert to register with given time (%ld) datetime[%s]", utime, datetime);
+
+	GList *l = NULL;
+
+	__cal_server_alarm_get_upcoming_specific_utime(utime, true, &l);
+	__cal_server_alarm_get_upcoming_nonspecific_event_utime(utime, true, &l);
+	__cal_server_alarm_get_upcoming_nonspecific_todo_utime(utime, true, &l);
+
+	__cal_server_alarm_get_upcoming_specific_localtime(datetime, true, &l);
+	__cal_server_alarm_get_upcoming_nonspecific_event_localtime(datetime, true, &l);
+	__cal_server_alarm_get_upcoming_nonspecific_todo_localtime(datetime, true, &l);
+
+	*list = l;
+
+	return CALENDAR_ERROR_NONE;
+}
+
+static gint __cal_server_alarm_sort_cb(gconstpointer a, gconstpointer b)
+{
+	struct _alarm_data_s *p1 = (struct _alarm_data_s *)a;
+	struct _alarm_data_s *p2 = (struct _alarm_data_s *)b;
+	DBG("%lld) > (%lld)",p1->alert_utime, p2->alert_utime);
+
+	return p1->alert_utime > p2->alert_utime ? 1 : -1;
+}
+
+static GFunc __cal_server_alarm_print_cb(gpointer data, gpointer user_data)
+{
+	struct _alarm_data_s *ad = (struct _alarm_data_s *)data;
+	DBG("id(%d) unit(%d) tick(%d) type(%d) time(%lld) datetime[%s]",
+			ad->event_id, ad->unit, ad->tick, ad->type, ad->time, ad->datetime);
+	return 0;
+}
+
+static int __cal_server_alarm_register(GList *alarm_list)
+{
+	ENTER();
+	retvm_if (NULL == alarm_list, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: alarm list is NULL");
+
+	int ret = CALENDAR_ERROR_NONE;
+	GList *l = g_list_first(alarm_list);
+	struct _alarm_data_s *ad = (struct _alarm_data_s *)l->data;
+	retvm_if (NULL == ad, CALENDAR_ERROR_DB_FAILED, "No data");
 
 	// clear all alarm which set by mine.
 	ret = alarmmgr_enum_alarm_ids(__cal_server_alarm_clear_all_cb, NULL);
@@ -785,12 +667,7 @@ static int __cal_server_alarm_register_next_normal(long long int now_utime, GLis
 		return ret;
 	}
 
-	// register new list
-	long long int mod_alarm_utime; // del seconds
-	mod_alarm_utime = nd->alarm_utime - (nd->alarm_utime % 60);
-//	ret = alarmmgr_add_alarm(ALARM_TYPE_VOLATILE, (time_t)(mod_alarm_utime - now_utime), 0, NULL, &alarm_id);
-
-///////////////////////////////////////
+	time_t mod_time = (time_t)ad->alert_utime;
 	alarm_entry_t *alarm_info = NULL;
 	alarm_info = alarmmgr_create_alarm();
 	if (NULL == alarm_info)
@@ -798,327 +675,291 @@ static int __cal_server_alarm_register_next_normal(long long int now_utime, GLis
 		ERR("Failed to create alarm");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
-	char *tzid = NULL;
-	tzid = vconf_get_str(VCONFKEY_SETAPPL_TIMEZONE_ID);
+	tzset();
+	struct tm st_alarm = {0};
 
-	alarm_date_t alarm_date;
-	_cal_time_utoi(mod_alarm_utime, tzid,
-			&alarm_date.year, &alarm_date.month, &alarm_date.day,
-			&alarm_date.hour, &alarm_date.min, &alarm_date.sec);
-	DBG("tzid[%s] datetime(%04d/%02d/%02d %02d:%02d:%02d", tzid,
-			alarm_date.year, alarm_date.month, alarm_date.day,
-			alarm_date.hour, alarm_date.min, alarm_date.sec);
+	switch (ad->system_type)
+	{
+	case CALENDAR_SYSTEM_EAST_ASIAN_LUNISOLAR:
+		gmtime_r(&mod_time, &st_alarm);
+		break;
 
-	alarmmgr_set_time(alarm_info, alarm_date);
+	default:
+		tzset();
+		localtime_r(&mod_time, &st_alarm);
+		break;
+	}
+
+	alarm_date_t date = {0};
+	date.year = st_alarm.tm_year + 1900;
+	date.month = st_alarm.tm_mon + 1;
+	date.day = st_alarm.tm_mday;
+	date.hour = st_alarm.tm_hour;
+	date.min = st_alarm.tm_min;
+	date.sec = st_alarm.tm_sec;
+	alarmmgr_set_time(alarm_info, date);
+	DBG(COLOR_CYAN" >>> registered record id (%d) at %04d/%02d/%02d %02d:%02d:%02d "COLOR_END" (utime(%lld), datetime[%s], tick(%d) unit(%d))",
+			ad->event_id, date.year, date.month, date.day, date.hour, date.min, date.sec,
+			ad->time, ad->datetime, ad->tick, ad->unit);
+
+	int alarm_id = 0;
 	ret = alarmmgr_add_alarm_with_localtime(alarm_info, NULL, &alarm_id);
-	if (tzid) free(tzid);
-///////////////////////////////////////
-
 	if (ret < 0)
 	{
-		ERR("alarmmgr_add_alarm_appsvc failed (%d)", ret);
+		ERR("alarmmgr_add_alarm_with_localtime failed (%d)", ret);
+		alarmmgr_free_alarm(alarm_info);
 		return ret;
 	}
-	DBG("Get normal alarmmgr id (%d)", alarm_id);
-	__cal_server_alarm_update_alarm_id(alarm_id, nd->id, nd->tick, nd->unit);
-
+	DBG("alarmmgr id (%d)", alarm_id);
+	__cal_server_alarm_update_alarm_id(alarm_id, ad->event_id, ad->tick, ad->unit);
+	alarmmgr_free_alarm(alarm_info);
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_server_alarm_register_next_allday(time_t now_timet, GList *allday_list)
+static bool __app_matched_cb(app_control_h app_control, const char *package, void *user_data)
 {
-	int ret;
-	int alarm_id;
-	struct _allday_data_s *ad;
-	time_t alarm_timet;
+	retvm_if (NULL == user_data, true, "Invalid parameter: user_data is NULL");
 
-	GList *l = g_list_first(allday_list);
-	alarm_id = 0;
-	ad = (struct _allday_data_s *)l->data;
-	if (NULL == ad)
-	{
-		ERR("No data");
-		return CALENDAR_ERROR_DB_FAILED;
+	int ret = 0;
+	char *mime = NULL;
+	ret = app_control_get_mime(app_control, &mime);
+	retvm_if(APP_CONTROL_ERROR_NONE != ret, true, "app_control_get_mime() is failed(%d)", ret);
+
+	const char *reminder_mime = "application/x-tizen.calendar.reminder";
+	if (strncmp(mime, reminder_mime, strlen(reminder_mime))) { // not same
+		DBG("get mime[%s] is not [%s]", mime, reminder_mime);
+		free(mime);
+		return true;
+	}
+	free(mime);
+
+	GList *alarm_list = (GList *)user_data;
+	int len = 0;
+	len = g_list_length(alarm_list);
+	if (0 == len) {
+		DBG("len is 0, no alarm list");
+		return true;
 	}
 
-	if (ad->alarm_id > 0)
-	{
-		DBG("Already registered this id");
+	app_control_h b = NULL;
+	app_control_create(&b);
+	app_control_set_operation(b,  APP_CONTROL_OPERATION_DEFAULT);
+	app_control_set_app_id(b, package);
+
+	// data
+	char **ids = NULL;
+	ids = calloc(len, sizeof(char *));
+	if (NULL == ids) {
+		ERR("calloc() is failed");
+		app_control_destroy(b);
+		return CALENDAR_ERROR_DB_FAILED;
+	}
+	GList *l = g_list_first(alarm_list);
+	int i;
+	for (i = 0; i < len; i++) {
+		struct _alarm_data_s *ad = (struct _alarm_data_s *)l->data;
+		if (NULL == ad) {
+			ERR("No data");
+			l = g_list_next(l);
+			continue;
+		}
+		DBG("pkg[%s] time[%lld] tick[%d] unit[%d] record_type[%d]",
+				package, ad->time, ad->tick, ad->unit, ad->record);
+
+		char buf_event_id[128] = {0};
+		char buf_time[128] = {0};
+		char buf_tick[128] = {0};
+		char buf_unit[128] = {0};
+		char buf_record_type[128] = {0};
+		snprintf(buf_event_id, sizeof(buf_event_id), "%d", ad->event_id);
+		snprintf(buf_time, sizeof(buf_time), "%lld", ad->time);
+		snprintf(buf_tick, sizeof(buf_tick), "%d", ad->tick);
+		snprintf(buf_unit, sizeof(buf_unit), "%d", ad->unit);
+		snprintf(buf_record_type, sizeof(buf_record_type), "%d", ad->record);
+
+		char *p = NULL;
+		_cal_server_reminder_add_callback_data(&p, "id", buf_event_id);
+		_cal_server_reminder_add_callback_data(&p, "time", buf_time);
+		_cal_server_reminder_add_callback_data(&p, "tick", buf_tick);
+		_cal_server_reminder_add_callback_data(&p, "unit", buf_unit);
+		_cal_server_reminder_add_callback_data(&p, "type", buf_record_type);
+
+		app_control_add_extra_data(b, buf_event_id, p); // key: id, value: id=4&time=123123&..
+		DBG("value[%s]", p);
+		free(p);
+
+		// append ids
+		ids[i] = strdup(buf_event_id);
+
+		l = g_list_next(l);
+	}
+	app_control_add_extra_data_array(b, "ids", (const char **)ids, len);
+	app_control_send_launch_request (b, NULL, NULL);
+	app_control_destroy(b);
+
+	// free ids
+	for (i = 0; i < len; i++) {
+		free(ids[i]);
+		ids[i] = NULL;
+	}
+	free(ids);
+
+	return true;
+}
+
+static void __cal_server_alarm_noti_with_control(GList *alarm_list)
+{
+	retm_if(NULL == alarm_list, "No alarm list");
+
+	app_control_h app_control = NULL;
+	app_control_create(&app_control);
+	app_control_set_operation(app_control, APP_CONTROL_OPERATION_VIEW);
+	app_control_set_mime(app_control, "application/x-tizen.calendar.reminder");
+	app_control_foreach_app_matched(app_control, __app_matched_cb, alarm_list);
+	app_control_destroy(app_control);
+}
+
+static void __cal_server_alarm_noti_with_callback(GList *alarm_list)
+{
+	retm_if(NULL == alarm_list, "No alarm list");
+
+	GList *l = g_list_first(alarm_list);
+	while (l) {
+		struct _alarm_data_s *ad = (struct _alarm_data_s *)l->data;
+		if (NULL == ad) {
+			ERR("No data");
+			l = g_list_next(l);
+			continue;
+		}
+		DBG("callback time[%lld] tick[%d] unit[%d] record_type[%d]",
+				ad->time, ad->tick, ad->unit, ad->record);
+
+		char buf_event_id[128] = {0};
+		char buf_time[128] = {0};
+		char buf_tick[128] = {0};
+		char buf_unit[128] = {0};
+		char buf_record_type[128] = {0};
+		snprintf(buf_event_id, sizeof(buf_event_id), "%d", ad->event_id);
+		snprintf(buf_time, sizeof(buf_time), "%lld", ad->time);
+		snprintf(buf_tick, sizeof(buf_tick), "%d", ad->tick);
+		snprintf(buf_unit, sizeof(buf_unit), "%d", ad->unit);
+		snprintf(buf_record_type, sizeof(buf_record_type), "%d", ad->record);
+
+		char *p = NULL;
+		_cal_server_reminder_add_callback_data(&p, "id", buf_event_id);
+		_cal_server_reminder_add_callback_data(&p, "time", buf_time);
+		_cal_server_reminder_add_callback_data(&p, "tick", buf_tick);
+		_cal_server_reminder_add_callback_data(&p, "unit", buf_unit);
+		_cal_server_reminder_add_callback_data(&p, "type", buf_record_type);
+		_cal_server_reminder_publish(p);
+		free(p);
+
+		l = g_list_next(l);
+	}
+}
+
+static int __cal_server_alarm_register_with_alarmmgr(time_t utime)
+{
+	tzset();
+	struct tm st_local = {0};
+	localtime_r(&utime, &st_local);
+	char datetime[32] = {0};
+	snprintf(datetime, sizeof(datetime), CAL_FORMAT_LOCAL_DATETIME,
+			st_local.tm_year +1900, st_local.tm_mon + 1, st_local.tm_mday,
+			st_local.tm_hour, st_local.tm_min, st_local.tm_sec);
+	DBG("search alarm to register with given time (%ld) datetime[%s]", utime, datetime);
+
+	GList *l = NULL;
+
+	__cal_server_alarm_get_upcoming_specific_utime(utime, false, &l);
+	__cal_server_alarm_get_upcoming_nonspecific_event_utime(utime, false, &l);
+	__cal_server_alarm_get_upcoming_nonspecific_todo_utime(utime, false, &l);
+
+	__cal_server_alarm_get_upcoming_specific_localtime(datetime, false, &l);
+	__cal_server_alarm_get_upcoming_nonspecific_event_localtime(datetime, false, &l);
+	__cal_server_alarm_get_upcoming_nonspecific_todo_localtime(datetime, false, &l);
+
+	if (NULL == l) {
+		DBG("No alarm list");
 		return CALENDAR_ERROR_NONE;
 	}
 
-	DBG("new is earilier than registered.");
+	l = g_list_sort(l, __cal_server_alarm_sort_cb);
+	g_list_foreach(l, (GFunc)__cal_server_alarm_print_cb, NULL);
+	__cal_server_alarm_register(l);
 
-	// clear all alarm which set by mine.
-	ret = alarmmgr_enum_alarm_ids(__cal_server_alarm_clear_all_cb, NULL);
-	if (ret != ALARMMGR_RESULT_SUCCESS)
-	{
-		ERR("alarmmgr_enum_alarm_ids() failed");
-		return ret;
-	}
-
-	// register new list
-//	ret = alarmmgr_add_alarm(ALARM_TYPE_VOLATILE, (time_t)(alarm_timet - (ad->tick * ad->unit) - now_timet), 0, NULL, &alarm_id);
-
-///////////////////////////////////////
-	alarm_entry_t *alarm_info = NULL;
-	alarm_info = alarmmgr_create_alarm();
-	if (NULL == alarm_info)
-	{
-		ERR("Failed to create alarm");
-		return CALENDAR_ERROR_DB_FAILED;
-	}
-	char *tzid = NULL;
-	tzid = vconf_get_str(VCONFKEY_SETAPPL_TIMEZONE_ID);
-
-	alarm_date_t alarm_date;
-	_cal_time_utoi((long long int)(alarm_timet - (ad->tick * ad->unit)), tzid,
-			&alarm_date.year, &alarm_date.month, &alarm_date.day,
-			&alarm_date.hour, &alarm_date.min, &alarm_date.sec);
-	alarmmgr_set_time(alarm_info, alarm_date);
-	ret = alarmmgr_add_alarm_with_localtime(alarm_info, NULL, &alarm_id);
-	if (tzid) free(tzid);
-///////////////////////////////////////
-
-	if (ret < 0)
-	{
-		ERR("alarmmgr_add_alarm_appsvc failed (%d)", ret);
-		return ret;
-	}
-	DBG("Get allday alarmmgr id (%d)", alarm_id);
-	__cal_server_alarm_update_alarm_id(alarm_id, ad->id, ad->tick, ad->unit);
-
-	return CALENDAR_ERROR_NONE;
-}
-
-static gint __cal_server_alarm_normal_sort_cb(gconstpointer a, gconstpointer b)
-{
-	struct _normal_data_s *p1 = (struct _normal_data_s *)a;
-	struct _normal_data_s *p2 = (struct _normal_data_s *)b;
-
-	return p1->alarm_utime - p2->alarm_utime > 0 ? 1 : -1;
-}
-
-static gint __cal_server_alarm_allday_sort_cb(gconstpointer a, gconstpointer b)
-{
-	struct _allday_data_s *p1 = (struct _allday_data_s *)a;
-	struct _allday_data_s *p2 = (struct _allday_data_s *)b;
-
-	return p1->alarm_datetime - p2->alarm_datetime > 0 ? 1 : -1;
-}
-
-static int __cal_server_alarm_register_with_alarmmgr(long long int now_utime)
-{
-	GList *normal_list = NULL;
-	GList *allday_list = NULL;
-	int event_count;
-	int todo_count;
-	int loop_count;
-
-	gettimeofday(&stv, NULL); // check time
-
-	// for normal
-	long long int from_utime, to_utime;
-
-	event_count = 0;
-	todo_count = 0;
-	to_utime = now_utime - (now_utime %  60) + 60;
-
-	// searching 3months, next 6months, next 12months
-	for (loop_count = 1; loop_count < 4; loop_count++)
-	{
-		from_utime = to_utime;
-		to_utime = from_utime + (60 * 60 * 24 * 30 * 3 * loop_count);
-		__cal_server_alarm_get_next_list_normal_event(from_utime, to_utime, &normal_list, &event_count);
-		__cal_server_alarm_get_next_list_normal_todo(from_utime, to_utime, &normal_list, &todo_count);
-		if (event_count + todo_count > 0)
-		{
-			break;
-		}
-	}
-	DBG("event count(%d) todo count(%d)", event_count, todo_count);
-
-	if (event_count + todo_count > 0)
-	{
-		normal_list = g_list_sort(normal_list, __cal_server_alarm_normal_sort_cb);
-		DBG("after sorting");
-		g_list_foreach(normal_list, (GFunc)__cal_server_alarm_print_list_normal, NULL);
-		__cal_server_alarm_register_next_normal(now_utime, normal_list);
-
-	}
-	if (normal_list)
-	{
-		g_list_free_full(normal_list, free);
-		normal_list = NULL;
-	}
-
-	// for allday
-	DBG("allday");
-	time_t now_timet;
-	time_t from_timet, to_timet;
-	int from_datetime, to_datetime;
-	struct tm datetime_tm;
-	now_timet = (time_t)now_utime;
-
-	event_count = 0;
-	todo_count = 0;
-	to_timet = now_timet;
-
-	// searching 3months, next 6months, next 12months
-	for (loop_count = 1; loop_count < 4; loop_count++)
-	{
-		from_timet = to_timet;
-		gmtime_r(&from_timet, &datetime_tm);
-		from_datetime = (1900 + datetime_tm.tm_year) * 10000 + (datetime_tm.tm_mon + 1) * 100 + datetime_tm.tm_mday;
-
-		to_timet = from_timet + (60 * 60 * 24 * 30 * 3 * loop_count);
-		gmtime_r(&to_timet, &datetime_tm);
-		to_datetime = (1900 + datetime_tm.tm_year) * 10000 + (datetime_tm.tm_mon + 1) * 100 + datetime_tm.tm_mday;
-
-		__cal_server_alarm_get_next_list_allday_event(from_datetime, to_datetime, &allday_list, &event_count);
-		__cal_server_alarm_get_next_list_allday_todo(from_datetime, to_datetime, &allday_list, &todo_count);
-
-		if (event_count + todo_count > 0)
-		{
-			break;
-		}
-	}
-	DBG("event count(%d) todo count(%d)", event_count, todo_count);
-
-	if (event_count + todo_count > 0)
-	{
-		allday_list = g_list_sort(allday_list, __cal_server_alarm_allday_sort_cb);
-		DBG("after sorting");
-		g_list_foreach(allday_list, (GFunc)__cal_server_alarm_print_list_allday_todo, NULL);
-		__cal_server_alarm_register_next_allday(now_timet, allday_list);
-	}
-	if (allday_list)
-	{
-		g_list_free_full(allday_list, free);
-		allday_list = NULL;
-	}
-
-	int diff;
-	gettimeofday(&etv, NULL);
-	diff = ((int)etv.tv_sec *1000 + (int)etv.tv_usec/1000)
-		-((int)stv.tv_sec *1000 + (int)stv.tv_usec/1000);
-	DBG("registering time diff %ld(%d.%d)",diff, diff/1000, diff%1000); // time check
-	return 0;
-}
-
-static int __cal_server_alarm_callback(char *id, char *time, char *tick, char *unit, char *type)
-{
-	_cal_server_reminder_add_callback_data("id", id);
-	_cal_server_reminder_add_callback_data("time", time);
-	_cal_server_reminder_add_callback_data("tick", tick);
-	_cal_server_reminder_add_callback_data("unit", unit);
-	_cal_server_reminder_add_callback_data("type", type);
-
-	return CALENDAR_ERROR_NONE;
-}
-
-static int __cal_server_alarm_noti_callback(int alarm_id, GList *normal_list, GList *allday_list)
-{
-	char buf_id[128] = {0};
-	char buf_time[128] = {0};
-	char buf_tick[128] = {0};
-	char buf_unit[128] = {0};
-	char buf_type[128] = {0};
-	GList *l = NULL;
-
-	l = g_list_first(normal_list);
-	if (NULL == l) DBG("normal list is NULL");
-	while (l)
-	{
-		struct _normal_data_s *nd = (struct _normal_data_s *)l->data;
-		snprintf(buf_id, sizeof(buf_id), "%d", nd->id);
-		snprintf(buf_time, sizeof(buf_time), "%lld", nd->alarm_utime);
-		snprintf(buf_tick, sizeof(buf_tick), "%d", nd->tick);
-		snprintf(buf_unit, sizeof(buf_unit), "%d", nd->unit);
-		snprintf(buf_type, sizeof(buf_type), "%d", nd->record_type);
-
-		__cal_server_alarm_callback(buf_id, buf_time, buf_tick, buf_unit, buf_type);
-		_cal_server_reminder_publish();
+	// free list
+	l = g_list_first(l);
+	while(l) {
+		struct _alarm_data_s *ad = (struct _alarm_data_s *)l->data;
+		free(ad);
 		l = g_list_next(l);
 	}
-
-	l = NULL;
-	l = g_list_first(allday_list);
-	if (NULL == l) DBG("allday list is NULL");
-	while (l)
-	{
-		struct _allday_data_s *ad = (struct _allday_data_s *)l->data;
-		snprintf(buf_id, sizeof(buf_id), "%d",  ad->id);
-		snprintf(buf_time, sizeof(buf_time), "%d", ad->alarm_datetime);
-		snprintf(buf_tick, sizeof(buf_tick), "%d", ad->tick);
-		snprintf(buf_unit, sizeof(buf_unit), "%d", ad->unit);
-		snprintf(buf_type, sizeof(buf_type), "%d", ad->record_type);
-
-		__cal_server_alarm_callback(buf_id, buf_time, buf_tick, buf_unit, buf_type);
-		_cal_server_reminder_publish();
-		l = g_list_next(l);
-	}
-	return 0;
+	g_list_free(l);
+	return CALENDAR_ERROR_NONE;
 }
 
 static int _alert_cb(alarm_id_t alarm_id, void *data)
 {
-	GList *normal_list = NULL;
-	GList *allday_list = NULL;
+	ENTER();
+	GList *l = NULL;
 
-	__cal_server_alarm_get_list_with_alarmmgr_id(alarm_id, &normal_list, &allday_list);
+	DBG("alarm_id (%ld)", alarm_id);
+	time_t tt_alert = 0;
+	__cal_server_alarm_get_alert_time(alarm_id, &tt_alert);
+	__cal_server_alarm_get_alert_list(tt_alert, &l);
 	__cal_server_alarm_unset_alerted_alarmmgr_id(alarm_id);
-	__cal_server_alarm_noti_with_appsvc(alarm_id, normal_list, allday_list);
-	__cal_server_alarm_noti_callback(alarm_id, normal_list, allday_list);
-
-	if (normal_list)
-	{
-		g_list_free_full(normal_list, free);
-		normal_list = NULL;
-	}
-	if (allday_list)
-	{
-		g_list_free_full(allday_list, free);
-		allday_list = NULL;
-	}
-
-	__cal_server_alarm_register_with_alarmmgr(_cal_time_get_now());
+	__cal_server_alarm_noti_with_callback(l);
+	__cal_server_alarm_noti_with_control(l);
+	__cal_server_alarm_register_with_alarmmgr(tt_alert);
+	LEAVE();
 	return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
 static void __cal_server_alarm_timechange_cb(keynode_t *node, void *data)
 {
-	time_t t;
+	ENTER();
+	int t = 0;
+	int ret;
+
 	if (node) {
 		t = vconf_keynode_get_int(node);
 	}
 	else
 	{
-		vconf_get_int(VCONFKEY_SYSTEM_TIMECHANGE, (int *)&t);
+		ret = vconf_get_int(VCONFKEY_SYSTEM_TIMECHANGE, &t);
+		warn_if(0 < ret, "vconf_get_int() Failed");
 	}
 
-	DBG("systme changed time(%ld)", t);
-	__cal_server_alarm_register_with_alarmmgr((long long int)t);
+	if (t < 0)
+	{
+		__cal_server_alarm_register_with_alarmmgr(time(NULL));
+	}
+	else
+	{
+		DBG("system changed time(%ld)", t);
+		__cal_server_alarm_register_with_alarmmgr((time_t)t);
+	}
 }
 
-int __cal_server_alarm_set_timechange(void)
+void __cal_server_alarm_set_timechange(void)
 {
-	int ret;
-
-	ret = vconf_notify_key_changed(VCONFKEY_SYSTEM_TIMECHANGE,
+	vconf_notify_key_changed(VCONFKEY_SYSTEM_TIME_CHANGED,
 			__cal_server_alarm_timechange_cb, NULL);
-	if (ret < 0)
-	{
-		ERR("vconf_ignore_key_changed() failed");
-		return ret;
-	}
-	return CALENDAR_ERROR_NONE;
+
+	vconf_notify_key_changed(VCONFKEY_TELEPHONY_NITZ_GMT,
+			__cal_server_alarm_timechange_cb, NULL);
+	vconf_notify_key_changed(VCONFKEY_TELEPHONY_NITZ_EVENT_GMT,
+			__cal_server_alarm_timechange_cb, NULL);
+	vconf_notify_key_changed(VCONFKEY_TELEPHONY_NITZ_ZONE,
+			__cal_server_alarm_timechange_cb, NULL);
 }
 
 static void __changed_cb(const char* view_uri, void* data)
 {
-	__cal_server_alarm_register_with_alarmmgr(_cal_time_get_now());
+	ENTER();
+	__cal_server_alarm_register_with_alarmmgr(time(NULL));
 }
 
 static int __cal_server_alarm_set_inotify(calendar_db_changed_cb callback)
@@ -1130,6 +971,7 @@ static int __cal_server_alarm_set_inotify(calendar_db_changed_cb callback)
 
 int _cal_server_alarm(void)
 {
+	ENTER();
 	int ret;
 
 	__cal_server_alarm_set_timechange();
@@ -1141,7 +983,7 @@ int _cal_server_alarm(void)
 	ret = alarmmgr_set_cb(_alert_cb, NULL);
 	retvm_if(ret < 0, ret, "alarmmgr_set_cb() failed");
 
-	__cal_server_alarm_register_with_alarmmgr(_cal_time_get_now());
+	__cal_server_alarm_register_with_alarmmgr(time(NULL));
 
 	return CALENDAR_ERROR_NONE;
 }

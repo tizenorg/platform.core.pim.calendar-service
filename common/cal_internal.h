@@ -22,12 +22,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#define EVENT_UPDATE "calendar_event_update"
-#define CALENDARBOOK_UPDATE "calendar_book_update"
-#define TASK_UPDATE "task_update"
-
-#define PKG_CALENDAR_APP "org.tizen.calendar"
-
 #ifndef API
 #define API __attribute__ ((visibility("default")))
 #endif
@@ -38,51 +32,48 @@
 
 #define LOG_TAG "CALENDAR_SVC"
 #include <dlog.h>
+
+#define COLOR_GREEN "\033[0;32m"
+#define COLOR_END		"\033[0;m"
+
+#define ENTER() SLOGD(COLOR_GREEN"BEGIN >>>>"COLOR_END)
+#define LEAVE() SLOGD(COLOR_GREEN"END <<<<"COLOR_END)
+
 #define DLOG(prio, fmt, arg...) \
-  do { SLOG(prio, LOG_TAG, fmt, ##arg); } while(0);
+	do { SLOG(prio, LOG_TAG, fmt, ##arg); } while(0);
 #define INFO(fmt, arg...) SLOGI(fmt, ##arg)
-#define WARN(fmt, arg...) SLOGW("%s:%d " fmt, __FUNCTION__, __LINE__, ##arg)
-#define ERR(fmt, arg...) SLOGE("%s:%d " fmt, __FUNCTION__, __LINE__, ##arg)
-#define DBG(fmt, arg...) SLOGD("%s:" fmt, __FUNCTION__, ##arg)
-#define VERBOSE(fmt, arg...) SLOGV(fmt, ##arg)
+#define WARN(fmt, arg...) SLOGW(fmt, ##arg)
+#define ERR(fmt, arg...) SLOGE(fmt, ##arg)
+#define DBG(fmt, arg...) SLOGD(fmt, ##arg)
+#define SEC_INFO(fmt, arg...) SECURE_LOGI(fmt, ##arg)
+#define SEC_ERR(fmt, arg...) SECURE_LOGE(fmt, ##arg)
+#define SEC_DBG(fmt, arg...) SECURE_LOGD(fmt, ##arg)
 
 //#define CAL_DEBUGGING
 #ifdef CAL_DEBUGGING
-    #if defined(CAL_IPC_SERVER)
-    #define CAL_FN_CALL DBG("SERVER:>>>>>>>>%s called", __FUNCTION__)
-    #define CAL_FN_END DBG("SERVER:<<<<<<<<%s ended", __FUNCTION__)
-    #define CAL_FN_CALL_VERBOSE VERBOSE("SERVER:>>>>>>>>%s called", __FUNCTION__)
-    #elif defined(CAL_IPC_CLIENT)
-    #define CAL_FN_CALL DBG("CLIENT:>>>>>>>>%s called", __FUNCTION__)
-    #define CAL_FN_END DBG("CLIENT:<<<<<<<<%s ended", __FUNCTION__)
-    #define CAL_FN_CALL_VERBOSE VERBOSE("CLIENT:>>>>>>>>%s called", __FUNCTION__)
-    #else
-    #define CAL_FN_CALL DBG(">>>>>>>>%s called", __FUNCTION__)
-    #define CAL_FN_END DBG("<<<<<<<<%s ended", __FUNCTION__)
-    #define CAL_FN_CALL_VERBOSE VERBOSE(">>>>>>>>%s called", __FUNCTION__)
-    #endif
+#if defined(CAL_IPC_SERVER)
+#define CAL_FN_CALL DBG("SERVER:>>>>>>>>%s called", __FUNCTION__)
+#define CAL_FN_END DBG("SERVER:<<<<<<<<%s ended", __FUNCTION__)
+#elif defined(CAL_IPC_CLIENT)
+#define CAL_FN_CALL DBG("CLIENT:>>>>>>>>%s called", __FUNCTION__)
+#define CAL_FN_END DBG("CLIENT:<<<<<<<<%s ended", __FUNCTION__)
+#else
+#define CAL_FN_CALL DBG(">>>>>>>>%s called", __FUNCTION__)
+#define CAL_FN_END DBG("<<<<<<<<%s ended", __FUNCTION__)
+#endif
 
-    #if defined(CAL_IPC_SERVER)
-    #define CAL_DBG(fmt, arg...) DBG("SERVER:%d " fmt, __LINE__, ##arg)
-    #define CAL_VERBOSE(fmt, arg...) VERBOSE("SERVER:%d " fmt, __LINE__, ##arg)
-    #elif defined(CAL_IPC_CLIENT)
-    #define CAL_DBG(fmt, arg...) DBG("CLIENT:%d " fmt, __LINE__, ##arg)
-    #define CAL_VERBOSE(fmt, arg...) VERBOSE("CLIENT:%d " fmt, __LINE__, ##arg)
-    #else
-    #define CAL_DBG(fmt, arg...) DBG("%d " fmt, __LINE__, ##arg)
-    #define CAL_VERBOSE(fmt, arg...) VERBOSE("%d " fmt, __LINE__, ##arg)
-    #endif
+#if defined(CAL_IPC_SERVER)
+#define CAL_DBG(fmt, arg...) DBG("SERVER:%d " fmt, __LINE__, ##arg)
+#elif defined(CAL_IPC_CLIENT)
+#define CAL_DBG(fmt, arg...) DBG("CLIENT:%d " fmt, __LINE__, ##arg)
+#else
+#define CAL_DBG(fmt, arg...) DBG("%d " fmt, __LINE__, ##arg)
+#endif
 #else /* CAL_DEBUGGING */
 #define CAL_FN_CALL
 #define CAL_FN_END
 #define CAL_DBG(fmt, arg...)
 #endif /* CAL_DEBUGGING */
-
-
-#define TMDUMP(_X_)\
-{\
-	ERR("tm(%d/%d/%d %d:%d)",(_X_).tm_year+1900,(_X_).tm_mon+1,(_X_).tm_mday,(_X_).tm_hour,(_X_).tm_min);\
-}
 
 #define warn_if(expr, fmt, arg...) do { \
 	if (expr) { \
@@ -115,12 +106,12 @@
 } while (0)
 
 #define retex_if(expr, val, fmt, arg...) do { \
-	  if(expr) { \
-		 ERR(fmt, ##arg); \
-		 val; \
-		 goto CATCH; \
-	  } \
-	} while (0);
+	if(expr) { \
+		ERR(fmt, ##arg); \
+		val; \
+		goto CATCH; \
+	} \
+} while (0);
 
 #define CAL_PROFILE
 #ifdef CAL_PROFILE
@@ -132,16 +123,12 @@
 #endif
 
 #define CAL_FREE(ptr) \
- do { \
-  if (ptr) \
-    free(ptr); \
-  ptr = NULL; \
- } while(0)
+	do { \
+		if (ptr) \
+		free(ptr); \
+		ptr = NULL; \
+	} while(0)
 
-#define ASSERT_NOT_REACHED(fmt, arg...) do { \
-	ERR(fmt, ##arg); \
-	g_assert_not_reached(); \
-} while(0)
 
 // Thread-local storage
 #if defined(CAL_IPC_SERVER)

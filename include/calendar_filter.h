@@ -17,10 +17,10 @@
  *
  */
 
-#ifndef __TIZEN_SOCAIL_CALENDAR_FILTER_H__
-#define __TIZEN_SOCAIL_CALENDAR_FILTER_H__
+#ifndef __TIZEN_SOCIAL_CALENDAR_FILTER_H__
+#define __TIZEN_SOCIAL_CALENDAR_FILTER_H__
 
-#include <calendar_types2.h>
+#include <calendar_types.h>
 
 #ifndef API
 #define API __attribute__ ((visibility("default")))
@@ -31,149 +31,184 @@ extern "C" {
 #endif
 
 /**
+ * @file calendar_filter.h
+ */
+
+/**
  * @addtogroup CAPI_SOCIAL_CALENDAR_SVC_FILTER_MODULE
  * @{
  */
 
 /**
- * @brief   Creates a handle to filter.
+ * @brief Creates a filter handle.
  *
- * @remarks		@a filter must be released with calendar_filter_destroy() by you.
+ * @since_tizen 2.3
  *
- * @param[in]   view_uri			The view URI of a filter
- * @param[out]  filter				The filter handle
+ * @remarks You must release @a filter using calendar_filter_destroy().
  *
- * @return  0 on success, otherwise a negative error value.
+ * @param[in]   view_uri     The view URI of a filter
+ * @param[out]  filter       The filter handle
+ *
+ * @return  @c 0 on success,
+ *          otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE                Successful
  * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
  * @retval  #CALENDAR_ERROR_OUT_OF_MEMORY       Out of memory
  *
+ * @pre     calendar_connect() should be called to initialize.
+ *
  * @see calendar_filter_destroy()
  */
-API int calendar_filter_create( const char* view_uri, calendar_filter_h* filter );
+int calendar_filter_create( const char* view_uri, calendar_filter_h* filter );
 
 /**
- * @brief   Destroys a filter handle.
+ * @brief Destroys a filter handle.
  *
- * @param[in]   filter    The filter handle
+ * @since_tizen 2.3
  *
- * @return  0 on success, otherwise a negative error value.
+ * @param[in]   filter   The filter handle
+ *
+ * @return  @c 0 on success,
+ *          otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE                Successful
  * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
  *
  * @see calendar_filter_create()
  */
-API int	calendar_filter_destroy( calendar_filter_h filter );
+int	calendar_filter_destroy( calendar_filter_h filter );
 
 /**
- * @brief		Adds a condition for string type property
+ * @brief Adds a condition for the string type property.
  *
- * @param[in]   filter			The filter handle
- * @param[in]   property_id		The property ID to add a condition
- * @param[in]   match			The match flag
- * @param[in]   match_value		The match value
+ * @since_tizen 2.3
  *
- * @return  0 on success, otherwise a negative error value.
+ * @param[in]   filter          The filter handle
+ * @param[in]   property_id     The property ID to add a condition
+ * @param[in]   match           The match flag
+ * @param[in]   match_value     The match value
+ *
+ * @return  @c 0 on success,
+ *          otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE                Successful
  * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
  *
  * @see calendar_filter_add_operator()
  */
-API int	calendar_filter_add_str( calendar_filter_h filter, unsigned int property_id, calendar_match_str_flag_e match, const char* match_value );
+int	calendar_filter_add_str( calendar_filter_h filter, unsigned int property_id, calendar_match_str_flag_e match, const char* match_value );
 
 /**
- * @brief		Adds a condition for integer type property
+ * @brief Adds a condition for the integer type property.
  *
- * @param[in]   filter			The filter handle
- * @param[in]   property_id		The property ID to add a condition
- * @param[in]   match			The match flag
- * @param[in]   match_value		The match value
+ * @since_tizen 2.3
  *
- * @return  0 on success, otherwise a negative error value.
+ * @param[in]   filter          The filter handle
+ * @param[in]   property_id     The property ID to add a condition
+ * @param[in]   match           The match flag
+ * @param[in]   match_value     The match value
+ *
+ * @return  @c 0 on success,
+ *          otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE                Successful
  * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
  *
  * @see calendar_filter_add_operator()
  */
-API int	calendar_filter_add_int( calendar_filter_h filter, unsigned int property_id, calendar_match_int_flag_e match, int match_value );
+int	calendar_filter_add_int( calendar_filter_h filter, unsigned int property_id, calendar_match_int_flag_e match, int match_value );
 
 /**
- * @brief		Adds a condition for double type property
+ * @brief Adds a condition for the double type property.
  *
- * @param[in]   filter			The filter handle
- * @param[in]   property_id		The property ID to add a condition
- * @param[in]   match			The match flag
- * @param[in]   match_value		The match value
+ * @since_tizen 2.3
  *
- * @return  0 on success, otherwise a negative error value.
+ * @param[in]   filter          The filter handle
+ * @param[in]   property_id     The property ID to add a condition
+ * @param[in]   match           The match flag
+ * @param[in]   match_value     The match value
+ *
+ * @return  @c 0 on success,
+ *          otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE                Successful
  * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
  *
  * @see calendar_filter_add_operator()
  */
-API int	calendar_filter_add_double( calendar_filter_h filter, unsigned int property_id, calendar_match_int_flag_e match, double match_value );
+int	calendar_filter_add_double( calendar_filter_h filter, unsigned int property_id, calendar_match_int_flag_e match, double match_value );
 
 /**
- * @brief		Adds a condition for long long int type property
+ * @brief Adds a condition for the long long int type property.
  *
- * @param[in]   filter			The filter handle
- * @param[in]   property_id		The property ID to add a condition
- * @param[in]   match			The match flag
- * @param[in]   match_value		The match value
+ * @since_tizen 2.3
  *
- * @return  0 on success, otherwise a negative error value.
+ * @param[in]   filter          The filter handle
+ * @param[in]   property_id     The property ID to add a condition
+ * @param[in]   match           The match flag
+ * @param[in]   match_value     The match value
+ *
+ * @return  @c 0 on success,
+ *          otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE                Successful
  * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
  *
  * @see calendar_filter_add_operator()
  */
-API int	calendar_filter_add_lli( calendar_filter_h filter, unsigned int property_id, calendar_match_int_flag_e match, long long int match_value );
+int	calendar_filter_add_lli( calendar_filter_h filter, unsigned int property_id, calendar_match_int_flag_e match, long long int match_value );
 
 /**
- * @brief		Adds a condition for calendar_time_s type property
+ * @brief Adds a condition for the calendar_time_s type property.
  *
- * @param[in]   filter			The filter handle
- * @param[in]   property_id		The property ID to add a condition
- * @param[in]   match			The match flag
- * @param[in]   match_value		The match value
+ * @since_tizen 2.3
  *
- * @return  0 on success, otherwise a negative error value.
+ * @param[in]   filter          The filter handle
+ * @param[in]   property_id     The property ID to add a condition
+ * @param[in]   match           The match flag
+ * @param[in]   match_value     The match value
+ *
+ * @return  @c 0 on success,
+ *          otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE                Successful
  * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
  *
  * @see calendar_filter_add_operator()
  */
-API int	calendar_filter_add_caltime( calendar_filter_h filter, unsigned int property_id, calendar_match_int_flag_e match, calendar_time_s match_value );
+int	calendar_filter_add_caltime( calendar_filter_h filter, unsigned int property_id, calendar_match_int_flag_e match, calendar_time_s match_value );
 
 /**
- * @brief		Adds a filter handle to filter handle.
+ * @brief Adds a child filter to a parent filter.
  *
- * @param[in]   parent_filter		The parent filter handle
- * @param[in]   child_filter		The child filter handle
+ * @since_tizen 2.3
  *
- * @return  0 on success, otherwise a negative error value.
+ * @param[in]   parent_filter      The parent filter handle
+ * @param[in]   child_filter       The child filter handle
+ *
+ * @return  @c 0 on success,
+ *          otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE                Successful
  * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
  *
  * @see calendar_filter_add_operator()
  */
+int calendar_filter_add_filter( calendar_filter_h parent_filter, calendar_filter_h child_filter);
 
-API int calendar_filter_add_filter( calendar_filter_h parent_filter, calendar_filter_h child_filter);
 /**
- * @brief		Adds a operator between conditions
+ * @brief Adds an operator between conditions.
  *
- * @param[in]   filter			The filter handle
- * @param[in]   operator_type	The operator type
+ * @since_tizen 2.3
  *
- * @return  0 on success, otherwise a negative error value.
+ * @param[in]   filter          The filter handle
+ * @param[in]   operator_type   The operator type
+ *
+ * @return  @c 0 on success,
+ *          otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE                Successful
  * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
  *
  * @see calendar_filter_add_str()
  * @see calendar_filter_add_int()
- * @see calendar_filter_add_bool()
+ * @see calendar_filter_add_double()
+ * @see calendar_filter_add_caltime()
+ * @see calendar_filter_add_filter()
  */
-API int calendar_filter_add_operator( calendar_filter_h filter, calendar_filter_operator_e operator_type );
+int calendar_filter_add_operator( calendar_filter_h filter, calendar_filter_operator_e operator_type );
 
 /**
  * @}
@@ -183,5 +218,5 @@ API int calendar_filter_add_operator( calendar_filter_h filter, calendar_filter_
 }
 #endif
 
-#endif /* __TIZEN_SOCAIL_CALENDAR_FILTER_H__ */
+#endif /* __TIZEN_SOCIAL_CALENDAR_FILTER_H__ */
 

@@ -32,10 +32,10 @@ static int __cal_record_alarm_clone( calendar_record_h record, calendar_record_h
 static int __cal_record_alarm_get_str( calendar_record_h record, unsigned int property_id, char** out_str );
 static int __cal_record_alarm_get_str_p( calendar_record_h record, unsigned int property_id, char** out_str );
 static int __cal_record_alarm_get_int( calendar_record_h record, unsigned int property_id, int* out_value );
-static int __cal_record_alarm_get_lli( calendar_record_h record, unsigned int property_id, long long int* out_value );
+static int __cal_record_alarm_get_caltime( calendar_record_h record, unsigned int property_id, calendar_time_s* out_value );
 static int __cal_record_alarm_set_str( calendar_record_h record, unsigned int property_id, const char* value );
 static int __cal_record_alarm_set_int( calendar_record_h record, unsigned int property_id, int value );
-static int __cal_record_alarm_set_lli( calendar_record_h record, unsigned int property_id, long long int value );
+static int __cal_record_alarm_set_caltime( calendar_record_h record, unsigned int property_id, calendar_time_s value );
 
 cal_record_plugin_cb_s _cal_record_alarm_plugin_cb = {
 	.create = __cal_record_alarm_create,
@@ -45,13 +45,13 @@ cal_record_plugin_cb_s _cal_record_alarm_plugin_cb = {
 	.get_str_p = __cal_record_alarm_get_str_p,
 	.get_int = __cal_record_alarm_get_int,
 	.get_double = NULL,
-	.get_lli = __cal_record_alarm_get_lli,
-	.get_caltime = NULL,
+	.get_lli = NULL,
+	.get_caltime = __cal_record_alarm_get_caltime,
 	.set_str = __cal_record_alarm_set_str,
 	.set_int = __cal_record_alarm_set_int,
 	.set_double = NULL,
-	.set_lli = __cal_record_alarm_set_lli,
-	.set_caltime = NULL,
+	.set_lli = NULL,
+	.set_caltime = __cal_record_alarm_set_caltime,
 	.add_child_record = NULL,
 	.remove_child_record = NULL,
 	.get_child_record_count = NULL,
@@ -67,9 +67,7 @@ static void __cal_record_alarm_struct_init(cal_alarm_s *record)
 static int __cal_record_alarm_create(calendar_record_h* out_record )
 {
 	cal_alarm_s *temp = NULL;
-	int ret= CALENDAR_ERROR_NONE, type = 0;
-
-	type = CAL_RECORD_TYPE_ALARM;
+	int ret= CALENDAR_ERROR_NONE;
 
 	temp = (cal_alarm_s*)calloc(1,sizeof(cal_alarm_s));
 	retvm_if(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "malloc(cal_alarm_s:sch) Failed(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
@@ -83,18 +81,19 @@ static int __cal_record_alarm_create(calendar_record_h* out_record )
 
 static void __cal_record_alarm_struct_free(cal_alarm_s *record)
 {
-	CAL_FREE(record->alarm_tone);
 	CAL_FREE(record->alarm_description);
+	CAL_FREE(record->alarm_summary);
+	CAL_FREE(record->alarm_attach);
 	CAL_FREE(record);
 }
 
 static int __cal_record_alarm_destroy( calendar_record_h record, bool delete_child )
 {
-    int ret = CALENDAR_ERROR_NONE;
+	int ret = CALENDAR_ERROR_NONE;
 
-    cal_alarm_s *temp = (cal_alarm_s*)(record);
+	cal_alarm_s *temp = (cal_alarm_s*)(record);
 
-    __cal_record_alarm_struct_free(temp);
+	__cal_record_alarm_struct_free(temp);
 
 	return ret;
 }
@@ -111,17 +110,17 @@ static int __cal_record_alarm_clone( calendar_record_h record, calendar_record_h
 
 	CAL_RECORD_COPY_COMMON(&(out_data->common), &(src_data->common));
 
-	out_data->alarm_id = src_data->alarm_id;
-	out_data->event_id = src_data->event_id;
-	out_data->alarm_type = src_data->alarm_type;
+	out_data->parent_id = src_data->parent_id;
 	out_data->is_deleted = src_data->is_deleted;
-	out_data->alarm_time = src_data->alarm_time;
 	out_data->remind_tick = src_data->remind_tick;
 	out_data->remind_tick_unit = src_data->remind_tick_unit;
-	out_data->alarm_tone = SAFE_STRDUP(src_data->alarm_tone);
 	out_data->alarm_description = SAFE_STRDUP(src_data->alarm_description);
+	out_data->alarm_summary = SAFE_STRDUP(src_data->alarm_summary);
+	out_data->alarm_action = src_data->alarm_action;
+	out_data->alarm_attach = SAFE_STRDUP(src_data->alarm_attach);
+	out_data->alarm = src_data->alarm;
 
-    *out_record = (calendar_record_h)out_data;
+	*out_record = (calendar_record_h)out_data;
 
 	return CALENDAR_ERROR_NONE;
 }
@@ -131,14 +130,17 @@ static int __cal_record_alarm_get_str( calendar_record_h record, unsigned int pr
 	cal_alarm_s *rec = (cal_alarm_s*)(record);
 	switch( property_id )
 	{
-	case CAL_PROPERTY_ALARM_TONE:
-		*out_str = SAFE_STRDUP(rec->alarm_tone);
-		break;
 	case CAL_PROPERTY_ALARM_DESCRIPTION:
 		*out_str = SAFE_STRDUP(rec->alarm_description);
 		break;
+	case CAL_PROPERTY_ALARM_SUMMARY:
+		*out_str = SAFE_STRDUP(rec->alarm_summary);
+		break;
+	case CAL_PROPERTY_ALARM_ATTACH:
+		*out_str = SAFE_STRDUP(rec->alarm_attach);
+		break;
 	default:
-	    ASSERT_NOT_REACHED("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)",property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -150,14 +152,17 @@ static int __cal_record_alarm_get_str_p( calendar_record_h record, unsigned int 
 	cal_alarm_s *rec = (cal_alarm_s*)(record);
 	switch( property_id )
 	{
-	case CAL_PROPERTY_ALARM_TONE:
-		*out_str = (rec->alarm_tone);
-		break;
 	case CAL_PROPERTY_ALARM_DESCRIPTION:
 		*out_str = (rec->alarm_description);
 		break;
+	case CAL_PROPERTY_ALARM_SUMMARY:
+		*out_str = (rec->alarm_summary);
+		break;
+	case CAL_PROPERTY_ALARM_ATTACH:
+		*out_str = (rec->alarm_attach);
+		break;
 	default:
-	    ASSERT_NOT_REACHED("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)",property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -169,42 +174,38 @@ static int __cal_record_alarm_get_int( calendar_record_h record, unsigned int pr
 	cal_alarm_s *rec = (cal_alarm_s*)(record);
 	switch( property_id )
 	{
-	case CAL_PROPERTY_ALARM_TYPE:
-		*out_value = (rec->alarm_type);
-		break;
 	case CAL_PROPERTY_ALARM_TICK:
 		*out_value = (rec->remind_tick);
 		break;
 	case CAL_PROPERTY_ALARM_TICK_UNIT:
 		*out_value = (rec->remind_tick_unit);
 		break;
-	case CAL_PROPERTY_ALARM_ID:
-		*out_value = (rec->alarm_id);
+	case CAL_PROPERTY_ALARM_PARENT_ID:
+		*out_value = (rec->parent_id);
 		break;
-	case CAL_PROPERTY_ALARM_EVENT_TODO_ID:
-	    *out_value = (rec->event_id);
-	    break;
+	case CAL_PROPERTY_ALARM_ACTION:
+		*out_value = (rec->alarm_action);
+		break;
 	default:
-	    ASSERT_NOT_REACHED("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)",property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_record_alarm_get_lli( calendar_record_h record, unsigned int property_id, long long int* out_value )
+static int __cal_record_alarm_get_caltime( calendar_record_h record, unsigned int property_id, calendar_time_s* out_value )
 {
 	cal_alarm_s *rec = (cal_alarm_s*)(record);
 	switch( property_id )
 	{
-	case CAL_PROPERTY_ALARM_TIME:
-		*out_value = (rec->alarm_time);
+	case CAL_PROPERTY_ALARM_ALARM:
+		*out_value = rec->alarm;
 		break;
 	default:
-	    ASSERT_NOT_REACHED("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)",property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-
 	return CALENDAR_ERROR_NONE;
 }
 
@@ -213,16 +214,20 @@ static int __cal_record_alarm_set_str( calendar_record_h record, unsigned int pr
 	cal_alarm_s *rec = (cal_alarm_s*)(record);
 	switch( property_id )
 	{
-	case CAL_PROPERTY_ALARM_TONE:
-		CAL_FREE(rec->alarm_tone);
-		rec->alarm_tone = SAFE_STRDUP(value);
-		break;
 	case CAL_PROPERTY_ALARM_DESCRIPTION:
 		CAL_FREE(rec->alarm_description);
 		rec->alarm_description = SAFE_STRDUP(value);
 		break;
+	case CAL_PROPERTY_ALARM_SUMMARY:
+		CAL_FREE(rec->alarm_summary);
+		rec->alarm_summary = SAFE_STRDUP(value);
+		break;
+	case CAL_PROPERTY_ALARM_ATTACH:
+		CAL_FREE(rec->alarm_attach);
+		rec->alarm_attach = SAFE_STRDUP(value);
+		break;
 	default:
-	    ASSERT_NOT_REACHED("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)",property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -234,41 +239,61 @@ static int __cal_record_alarm_set_int( calendar_record_h record, unsigned int pr
 	cal_alarm_s *rec = (cal_alarm_s*)(record);
 	switch( property_id )
 	{
-	case CAL_PROPERTY_ALARM_TYPE:
-		(rec->alarm_type)=value;
-		break;
 	case CAL_PROPERTY_ALARM_TICK:
 		(rec->remind_tick)=value;
 		break;
 	case CAL_PROPERTY_ALARM_TICK_UNIT:
-		(rec->remind_tick_unit)=value;
+		switch (value)
+		{
+		case CALENDAR_ALARM_NONE:
+		case CALENDAR_ALARM_TIME_UNIT_SPECIFIC:
+		case CALENDAR_ALARM_TIME_UNIT_MINUTE:
+		case CALENDAR_ALARM_TIME_UNIT_HOUR:
+		case CALENDAR_ALARM_TIME_UNIT_DAY:
+		case CALENDAR_ALARM_TIME_UNIT_WEEK:
+			(rec->remind_tick_unit)=value;
+			break;
+		default:
+			ERR("invalid parameter (value:%d)", value);
+			return CALENDAR_ERROR_INVALID_PARAMETER;
+		}
 		break;
-	case CAL_PROPERTY_ALARM_ID:
-		(rec->alarm_id) = value;
+	case CAL_PROPERTY_ALARM_PARENT_ID:
+		(rec->parent_id) = value;
 		break;
-    case CAL_PROPERTY_ALARM_EVENT_TODO_ID:
-        (rec->event_id) = value;
-        break;
+	case CAL_PROPERTY_ALARM_ACTION:
+		switch (value)
+		{
+		case CALENDAR_ALARM_ACTION_AUDIO:
+		case CALENDAR_ALARM_ACTION_DISPLAY:
+		case CALENDAR_ALARM_ACTION_EMAIL:
+			(rec->alarm_action) = value;
+			break;
+		default:
+			ERR("invalid parameter (value:%d)", value);
+			return CALENDAR_ERROR_INVALID_PARAMETER;
+		}
+		break;
 	default:
-	    ASSERT_NOT_REACHED("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)",property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_record_alarm_set_lli( calendar_record_h record, unsigned int property_id, long long int value )
+static int __cal_record_alarm_set_caltime( calendar_record_h record, unsigned int property_id, calendar_time_s value )
 {
 	cal_alarm_s *rec = (cal_alarm_s*)(record);
 	switch( property_id )
 	{
-	case CAL_PROPERTY_ALARM_TIME:
-		(rec->alarm_time) = value;
+	case CAL_PROPERTY_ALARM_ALARM:
+		rec->alarm = value;
 		break;
 	default:
-	    ASSERT_NOT_REACHED("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)",property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-
 	return CALENDAR_ERROR_NONE;
+
 }

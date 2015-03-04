@@ -17,10 +17,10 @@
  *
  */
 
-#ifndef __TIZEN_SOCAIL_CALENDAR_LIST_H__
-#define __TIZEN_SOCAIL_CALENDAR_LIST_H__
+#ifndef __TIZEN_SOCIAL_CALENDAR_LIST_H__
+#define __TIZEN_SOCIAL_CALENDAR_LIST_H__
 
-#include <calendar_types2.h>
+#include <calendar_types.h>
 
 #ifndef API
 #define API __attribute__ ((visibility("default")))
@@ -36,145 +36,182 @@ extern "C" {
  */
 
 /**
- * @brief Creates a handle to the calendar list.
+ * @brief Creates a calendar list handle.
  *
- * @remarks @a calendar_list must be released with calendar_list_destroy() by you.
+ * @since_tizen 2.3
  *
- * @param[out]  calendar_list    The calendar list handle
+ * @remarks You must release @a calendar_list using calendar_list_destroy().
  *
- * @return  0 on success, otherwise a negative error value.
+ * @param[out]  out_list   The calendar list handle
+ *
+ * @return  @c 0 on success,
+ *          otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE                Successful
  * @retval  #CALENDAR_ERROR_OUT_OF_MEMORY       Out of memory
- * @retval  #CALENDAR_ERROR_INVALID_PARAMETER       Invalid parameter
+ * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
  *
  * @see calendar_list_destroy()
  */
-API int calendar_list_create( calendar_list_h* out_list );
+int calendar_list_create( calendar_list_h* out_list );
 
 /**
  * @brief Destroys a calendar list handle and releases all its resources.
  *
- * @param[in]   calendar_list  The calendar list handle
+ * @since_tizen 2.3
  *
- * @return  0 on success, otherwise a negative error value.
- * @retval  #CALENDAR_ERROR_NONE                    Successful
- * @retval  #CALENDAR_ERROR_INVALID_PARAMETER       Invalid parameter
+ * @param[in]   list            The calendar list handle
+ * @param[in]   delete_record   If @c true, child records are destroyed automatically,
+ *                              otherwise @c false
+ *
+ * @return  @c 0 on success,
+ *          otherwise a negative error value
+ * @retval  #CALENDAR_ERROR_NONE                   Successful
+ * @retval  #CALENDAR_ERROR_INVALID_PARAMETER      Invalid parameter
  *
  * @see calendar_list_create()
  */
-API int calendar_list_destroy( calendar_list_h list, bool delete_record );
+int calendar_list_destroy( calendar_list_h list, bool delete_record );
 
 
 /**
- * @brief      Retrieves count of calendar entity from a calendar list.
+ * @brief Retrieves the number of calendar entities in a calendar list.
  *
- * @param[in]	calendar_list				The calendar list handle
- * @param[out]	count						The count of calendar entity
+ * @since_tizen 2.3
  *
- * @return  0 on success, otherwise a negative error value.
+ * @param[in]	list     The calendar list handle
+ * @param[out]	count    The count of the calendar entity
+ *
+ * @return  @c 0 on success,
+ *          otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE                Successful
  * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
  *
  * @see calendar_list_add()
  */
-API int calendar_list_get_count( calendar_list_h list, int *count );
+int calendar_list_get_count( calendar_list_h list, int *count );
 
 /**
- * @brief      Adds a record handle to calendar list handle.
+ * @brief Adds a record to the calendar list.
  *
- * @param[in]	calendar_list				The calendar list handle
- * @param[in]	record						The record handle
+ * @since_tizen 2.3
  *
- * @return  0 on success, otherwise a negative error value.
+ * @param[in]	list    The calendar list handle
+ * @param[in]	record  The record handle
+ *
+ * @return  @c 0 on success,
+ *          otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE                Successful
  * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
  *
  * @see calendar_list_remove()
  */
-API int calendar_list_add( calendar_list_h list, calendar_record_h record );
+int calendar_list_add( calendar_list_h list, calendar_record_h record );
 
 /**
- * @brief      Removes a record handle to calendar list handle.
- * @details    If the record is current record then current record is changed the next record.\n
- * If the record is the last record then current record will be NULL.
+ * @brief Removes a record from the calendar list.
+ * @details If the record is the current record, then the current record is changed to the next record.\n
+ *          If the record is the last record then the current record will be @c NULL.
  *
- * @param[in]	calendar_list				The calendar list handle
- * @param[in]	record						The record handle
+ * @since_tizen 2.3
  *
- * @return  0 on success, otherwise a negative error value.
+ * @param[in]	list    The calendar list handle
+ * @param[in]	record  The record handle
+ *
+ * @return  @c 0 on success,
+ *          otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE                Successful
  * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
+ * @retval  #CALENDAR_ERROR_NO_DATA             Requested data does not exist
  *
  * @see calendar_list_add()
  */
-API int calendar_list_remove( calendar_list_h list, calendar_record_h record );
+int calendar_list_remove( calendar_list_h list, calendar_record_h record );
 
 /**
- * @brief		Retrieves a record handle from calendar list handle.
- * @details		The default current record is the first record
- * @remarks		The @a record handle MUST NOT destroyed by you.
- * It is destroyed automatically when the @a calendar_list is destroyed.
+ * @brief Retrieves a record from the calendar list.
+ * @details The default current record is the first record.
  *
- * @param[in]	calendar_list				The calendar list handle
- * @param[out]	record						The record handle
+ * @since_tizen 2.3
  *
- * @return  0 on success, otherwise a negative error value.
+ * @remarks You MUST NOT destroy the @a record handle.
+ *          It is destroyed automatically when the @a list is destroyed.
+ *
+ * @param[in]	list        The calendar list handle
+ * @param[out]	record      The record handle
+ *
+ * @return  @c 0 on success,
+ *          otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE                Successful
  * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
+ * @retval  #CALENDAR_ERROR_NO_DATA             Requested data does not exist
  */
-API int calendar_list_get_current_record_p( calendar_list_h list, calendar_record_h* record );
+int calendar_list_get_current_record_p( calendar_list_h list, calendar_record_h* record );
 
 /**
- * @brief		Moves a calendar list to previous position.
+ * @brief Moves a calendar list to the previous position.
  *
- * @param[in]	calendar_list				The calendar list handle
+ * @since_tizen 2.3
  *
- * @return  0 on success, otherwise a negative error value.
+ * @param[in]  list  The calendar list handle
+ *
+ * @return  @c 0 on success,
+ *          otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE                Successful
  * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
+ * @retval  #CALENDAR_ERROR_NO_DATA             Requested data does not exist
  *
  * @see calendar_list_next()
  */
-API int calendar_list_prev( calendar_list_h list );
+int calendar_list_prev( calendar_list_h list );
 
 /**
- * @brief		Moves a calendar list to next position.
+ * @brief Moves a calendar list to the next position.
  *
- * @param[in]	calendar_list				The calendar list handle
+ * @since_tizen 2.3
  *
- * @return  0 on success, otherwise a negative error value.
+ * @param[in]  list  The calendar list handle
+ *
+ * @return  @c 0 on success,
+ *          otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE                Successful
  * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
+ * @retval  #CALENDAR_ERROR_NO_DATA             Requested data does not exist
  *
  * @see calendar_list_prev()
  */
-API int calendar_list_next( calendar_list_h list );
+int calendar_list_next( calendar_list_h list );
 
 /**
- * @brief		Moves a calendar list to the first position.
+ * @brief Moves a calendar list to the first position.
  *
- * @param[in]	calendar_list				The calendar list handle
+ * @since_tizen 2.3
  *
- * @return  0 on success, otherwise a negative error value.
+ * @param[in]  list  The calendar list handle
+ *
+ * @return  @c 0 on success,
+ *          otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE                Successful
  * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
  *
  * @see calendar_list_last()
  */
-API int calendar_list_first( calendar_list_h list );
+int calendar_list_first( calendar_list_h list );
 
 /**
- * @brief		Moves a calendar lis tto the last position.
+ * @brief Moves a calendar list to the last position.
  *
- * @param[in]	calendar_list				The calendar list handle
+ * @since_tizen 2.3
  *
- * @return  0 on success, otherwise a negative error value.
+ * @param[in]  list  The calendar list handle
+ *
+ * @return  @c 0 on success,
+ *          otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE                Successful
  * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
  *
  * @see calendar_list_first()
  */
-API int calendar_list_last( calendar_list_h list );
+int calendar_list_last( calendar_list_h list );
 
 /**
  * @}
@@ -184,5 +221,5 @@ API int calendar_list_last( calendar_list_h list );
 }
 #endif
 
-#endif /* __TIZEN_SOCAIL_CALENDAR_LIST_H__ */
+#endif /* __TIZEN_SOCIAL_CALENDAR_LIST_H__ */
 

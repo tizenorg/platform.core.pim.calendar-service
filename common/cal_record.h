@@ -27,19 +27,20 @@ extern "C" {
 
 typedef enum
 {
-    CAL_RECORD_TYPE_INVALID = 0,
-    CAL_RECORD_TYPE_CALENDAR,
-    CAL_RECORD_TYPE_EVENT ,
-    CAL_RECORD_TYPE_TODO,
-    CAL_RECORD_TYPE_TIMEZONE,
-    CAL_RECORD_TYPE_ATTENDEE,
-    CAL_RECORD_TYPE_ALARM,
-    CAL_RECORD_TYPE_INSTANCE_NORMAL,
-    CAL_RECORD_TYPE_INSTANCE_ALLDAY,
-    CAL_RECORD_TYPE_UPDATED_INFO,
-    CAL_RECORD_TYPE_SEARCH,
-    CAL_RECORD_TYPE_EXTENDED,
-
+	CAL_RECORD_TYPE_INVALID = 0,
+	CAL_RECORD_TYPE_CALENDAR,
+	CAL_RECORD_TYPE_EVENT ,
+	CAL_RECORD_TYPE_TODO,
+	CAL_RECORD_TYPE_TIMEZONE,
+	CAL_RECORD_TYPE_ATTENDEE,
+	CAL_RECORD_TYPE_ALARM,
+	CAL_RECORD_TYPE_INSTANCE_NORMAL,
+	CAL_RECORD_TYPE_INSTANCE_ALLDAY,
+	CAL_RECORD_TYPE_INSTANCE_NORMAL_EXTENDED,
+	CAL_RECORD_TYPE_INSTANCE_ALLDAY_EXTENDED,
+	CAL_RECORD_TYPE_UPDATED_INFO,
+	CAL_RECORD_TYPE_SEARCH,
+	CAL_RECORD_TYPE_EXTENDED,
 } cal_record_type_e;
 
 typedef int (*cal_record_create_cb)( calendar_record_h* out_record );
@@ -90,45 +91,45 @@ typedef struct {
 } cal_record_plugin_cb_s;
 
 typedef struct {
-    cal_record_type_e type;
-    cal_record_plugin_cb_s *plugin_cb;
-    const char* view_uri;
+	cal_record_type_e type;
+	cal_record_plugin_cb_s *plugin_cb;
+	const char* view_uri;
 	unsigned int properties_max_count;
 	unsigned char *properties_flags;
 	unsigned char property_flag;
 } cal_record_s;
 
 #define CAL_RECORD_INIT_COMMON(common, intype, cb, uri) do {\
-    (common)->type = (intype);\
-    (common)->plugin_cb = (cb);\
-    (common)->view_uri = (uri);\
-    (common)->properties_max_count = 0;\
-    (common)->properties_flags = NULL;\
-    (common)->property_flag = 0;\
+	(common)->type = (intype);\
+	(common)->plugin_cb = (cb);\
+	(common)->view_uri = (uri);\
+	(common)->properties_max_count = 0;\
+	(common)->properties_flags = NULL;\
+	(common)->property_flag = 0;\
 } while (0)
 
 #define CAL_RECORD_COPY_COMMON(dst, src) do {\
-    (dst)->type = (src)->type;\
-    (dst)->plugin_cb = (src)->plugin_cb;\
-    (dst)->view_uri = (src)->view_uri;\
-    (dst)->properties_max_count = (src)->properties_max_count;\
+	(dst)->type = (src)->type;\
+	(dst)->plugin_cb = (src)->plugin_cb;\
+	(dst)->view_uri = (src)->view_uri;\
+	(dst)->properties_max_count = (src)->properties_max_count;\
 	if ((src)->properties_flags) \
-    {\
-        (dst)->properties_flags  = calloc((dst)->properties_max_count, sizeof(char));\
-            if ((dst)->properties_flags)\
-                memcpy((dst)->properties_flags,(src)->properties_flags,sizeof(char)*(dst)->properties_max_count);\
-    }\
-    (dst)->property_flag = (src)->property_flag;\
+	{\
+		(dst)->properties_flags  = calloc((dst)->properties_max_count, sizeof(char));\
+		if ((dst)->properties_flags)\
+		memcpy((dst)->properties_flags,(src)->properties_flags,sizeof(char)*(dst)->properties_max_count);\
+	}\
+	(dst)->property_flag = (src)->property_flag;\
 } while (0)
 
 #define CAL_RECORD_RESET_COMMON(src) do {\
-    if ((src)->properties_flags) \
-    {\
-        free((src)->properties_flags); \
-        (src)->properties_max_count = 0;\
-        (src)->properties_flags = NULL;\
-        (src)->property_flag = 0;\
-    }\
+	if ((src)->properties_flags) \
+	{\
+		free((src)->properties_flags); \
+		(src)->properties_max_count = 0;\
+		(src)->properties_flags = NULL;\
+		(src)->property_flag = 0;\
+	}\
 } while (0)
 
 cal_record_plugin_cb_s* _cal_record_get_plugin_cb(cal_record_type_e type);

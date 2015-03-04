@@ -20,6 +20,7 @@
 #include <fcntl.h>
 #include <stdbool.h>
 #include <db-util.h>
+#include <sys/time.h>
 
 #include "cal_internal.h"
 #include "cal_typedef.h"
@@ -118,9 +119,9 @@ static inline void __cal_db_util_notify_calendar_change(void)
 
 static inline void __cal_db_util_cancel_changes(void)
 {
-    event_change = false;
-    calendar_change = false;
-    todo_change = false;
+	event_change = false;
+	calendar_change = false;
+	todo_change = false;
 }
 
 int _cal_db_util_notify(cal_noti_type_e type)
@@ -200,17 +201,44 @@ int _cal_db_util_last_insert_id(void)
 	return sqlite3_last_insert_rowid(calendar_db_handle);
 }
 
+#define __CAL_QUERY_RETRY_TIME 2
+
 int _cal_db_util_query_get_first_int_result(const char *query, GSList *bind_text, int *result)
 {
 	int ret;
 	int index;
 	char *text = NULL;
+	struct timeval from, now, diff;
+	bool retry = false;
 	sqlite3_stmt *stmt = NULL;
 	retvm_if(NULL == calendar_db_handle, CALENDAR_ERROR_DB_FAILED, "Database is not opended");
 
-	ret = sqlite3_prepare_v2(calendar_db_handle, query, strlen(query), &stmt, NULL);
-	retvm_if(SQLITE_OK != ret, CALENDAR_ERROR_DB_FAILED,
-			"sqlite3_prepare_v2(%s) failed(%s).", query, sqlite3_errmsg(calendar_db_handle));
+	gettimeofday(&from, NULL);
+	do
+	{
+		ret = sqlite3_prepare_v2(calendar_db_handle, query, strlen(query), &stmt, NULL);
+		if (SQLITE_BUSY == ret || SQLITE_LOCKED == ret)
+		{
+			ERR("sqlite3_prepare_v2(%s) failed(%s).", query, sqlite3_errmsg(calendar_db_handle));
+			gettimeofday(&now, NULL);
+			timersub(&now, &from, &diff);
+			retry = (diff.tv_sec < __CAL_QUERY_RETRY_TIME) ? true : false;
+			if (retry)
+			{
+				usleep(50 * 1000); // 50ms
+			}
+		}
+		else
+		{
+			retry = false;
+		}
+	} while(retry);
+
+	if (SQLITE_OK != ret)
+	{
+		ERR("sqlite3_prepare_v2(%s) failed(%s).", query, sqlite3_errmsg(calendar_db_handle));
+		return CALENDAR_ERROR_DB_FAILED;
+	}
 
 	if (bind_text)
 	{
@@ -224,17 +252,39 @@ int _cal_db_util_query_get_first_int_result(const char *query, GSList *bind_text
 		}
 	}
 
-	ret = sqlite3_step(stmt);
-	if (SQLITE_ROW != ret)
+	retry = false;
+	gettimeofday(&from, NULL);
+	do
 	{
-		ERR("sqlite3_step() failed(%d, %s).", ret, sqlite3_errmsg(calendar_db_handle));
-		sqlite3_finalize(stmt);
-		if (SQLITE_DONE == ret)
-		    return CALENDAR_ERROR_DB_RECORD_NOT_FOUND;
-		return CALENDAR_ERROR_DB_FAILED;
-	}
+		ret = sqlite3_step(stmt);
+		if (SQLITE_ROW != ret)
+		{
+			if (SQLITE_DONE == ret)
+			{
+				sqlite3_finalize(stmt);
+				return CALENDAR_ERROR_DB_RECORD_NOT_FOUND;
+			}
+			else if (SQLITE_BUSY == ret || SQLITE_LOCKED == ret)
+			{
+				ERR("sqlite3_step fail(%d, %s)", ret, sqlite3_errmsg(calendar_db_handle));
+				gettimeofday(&now, NULL);
+				timersub(&now, &from, &diff);
+				retry = (diff.tv_sec < __CAL_QUERY_RETRY_TIME) ? true : false;
+				if (retry)
+				{
+					usleep(50 * 1000); // 50ms
+				}
+			}
+			else
+			{
+				ERR("sqlite3_step() failed(%d, %s).", ret, sqlite3_errmsg(calendar_db_handle));
+				retry = false;
+			}
+		}
+		else
+			if (result) *result = sqlite3_column_int(stmt, 0);
+	} while(retry);
 
-	if (result) *result = sqlite3_column_int(stmt, 0);
 	sqlite3_finalize(stmt);
 
 	return CALENDAR_ERROR_NONE;
@@ -243,47 +293,56 @@ int _cal_db_util_query_get_first_int_result(const char *query, GSList *bind_text
 cal_db_util_error_e _cal_db_util_query_exec(char *query)
 {
 	int ret;
-	char *err_msg = NULL;
+	sqlite3_stmt *stmt = NULL;
 
 	retvm_if(NULL == calendar_db_handle, CALENDAR_ERROR_DB_FAILED, "Database is not opended");
-	//CALS_DBG("query : %s", query);
 
-	ret = sqlite3_exec(calendar_db_handle, query, NULL, NULL, &err_msg);
-	if (SQLITE_OK != ret) {
-		ERR("sqlite3_exec(%s) failed(%d, %s).", query, ret, err_msg);
-		sqlite3_free(err_msg);
-		switch (ret) {
-		case SQLITE_BUSY:
-		case SQLITE_LOCKED:
-			return CAL_DB_ERROR_LOCKED;
-		case SQLITE_IOERR:
-			return CAL_DB_ERROR_IOERR;
-		case SQLITE_FULL:
-			return CAL_DB_ERROR_NO_SPACE;
-		default:
-			return CAL_DB_ERROR_FAIL;
-		}
-	}
-	if (err_msg)
-	{
-	    sqlite3_free(err_msg);
+	stmt = _cal_db_util_query_prepare(query);
+	retvm_if(NULL == stmt, CAL_DB_ERROR_FAIL, "_cal_db_util_query_prepare() Failed");
+
+	ret = _cal_db_util_stmt_step(stmt);
+
+	if (CAL_DB_DONE != ret) {
+		sqlite3_finalize(stmt);
+		ERR("_cal_db_util_stmt_step() Failed(%d)", ret);
+		SEC_ERR("[ %s ]", query);
+		return ret;
 	}
 
+	sqlite3_finalize(stmt);
 	return CAL_DB_OK;
 }
 
 sqlite3_stmt* _cal_db_util_query_prepare(char *query)
 {
 	int ret = -1;
+	struct timeval from, now, diff;
+	bool retry = false;
 	sqlite3_stmt *stmt = NULL;
 
 	retvm_if(NULL == query, NULL, "Invalid query");
 	retvm_if(NULL == calendar_db_handle, NULL, "Database is not opended");
 	//CALS_DBG("prepare query : %s", query);
 
-	ret = sqlite3_prepare_v2(calendar_db_handle, query, strlen(query), &stmt, NULL);
-	retvm_if(SQLITE_OK != ret, NULL,
-			"sqlite3_prepare_v2(%s) Failed(%s).", query, sqlite3_errmsg(calendar_db_handle));
+	gettimeofday(&from, NULL);
+	do
+	{
+		ret = sqlite3_prepare_v2(calendar_db_handle, query, strlen(query), &stmt, NULL);
+		if (SQLITE_BUSY == ret || SQLITE_LOCKED == ret)
+		{
+			gettimeofday(&now, NULL);
+			timersub(&now, &from, &diff);
+			retry = (diff.tv_sec < __CAL_QUERY_RETRY_TIME) ? true : false;
+			if (retry)
+			{
+				usleep(50 * 1000); // 50ms
+			}
+		}
+		else
+		{
+			retry = false;
+		}
+	} while(retry);
 
 	return stmt;
 }
@@ -291,33 +350,56 @@ sqlite3_stmt* _cal_db_util_query_prepare(char *query)
 cal_db_util_error_e _cal_db_util_stmt_step(sqlite3_stmt *stmt)
 {
 	int ret;
-	ret = sqlite3_step(stmt);
-    switch (ret) {
-    case SQLITE_BUSY:
-    case SQLITE_LOCKED:
-        ret = CAL_DB_ERROR_LOCKED;
-        break;
-    case SQLITE_IOERR:
-        ret = CAL_DB_ERROR_IOERR;
-        break;
-    case SQLITE_FULL:
-        ret = CAL_DB_ERROR_NO_SPACE;
-        break;
-    case SQLITE_CONSTRAINT:
-        ret = CAL_DB_ERROR_ALREADY_EXIST;
-        break;
-    case SQLITE_ROW:
-        ret = CAL_DB_ROW;
-        break;
-    case SQLITE_DONE:
-        ret = CAL_DB_DONE;
-        break;
-    default:
-        ERR("sqlite3_step() Failed(%d)", ret);
-        ret = CAL_DB_ERROR_FAIL;
-        break;
-    }
-    return ret;
+	struct timeval from, now, diff;
+	bool retry = false;
+
+	gettimeofday(&from, NULL);
+	do
+	{
+		ret = sqlite3_step(stmt);
+		if (SQLITE_BUSY == ret || SQLITE_LOCKED == ret)
+		{
+			gettimeofday(&now, NULL);
+			timersub(&now, &from, &diff);
+			retry = (diff.tv_sec < __CAL_QUERY_RETRY_TIME) ? true : false;
+			if (retry)
+			{
+				usleep(50 * 1000); // 50ms
+			}
+		}
+		else
+		{
+			retry = false;
+		}
+	} while(retry);
+
+	switch (ret)
+	{
+	case SQLITE_BUSY:
+	case SQLITE_LOCKED:
+		ret = CAL_DB_ERROR_LOCKED;
+		break;
+	case SQLITE_IOERR:
+		ret = CAL_DB_ERROR_IOERR;
+		break;
+	case SQLITE_FULL:
+		ret = CAL_DB_ERROR_NO_SPACE;
+		break;
+	case SQLITE_CONSTRAINT:
+		ret = CAL_DB_ERROR_ALREADY_EXIST;
+		break;
+	case SQLITE_ROW:
+		ret = CAL_DB_ROW;
+		break;
+	case SQLITE_DONE:
+		ret = CAL_DB_DONE;
+		break;
+	default:
+		ERR("sqlite3_step() Failed(%d)", ret);
+		ret = CAL_DB_ERROR_FAIL;
+		break;
+	}
+	return ret;
 }
 
 #define CAL_COMMIT_TRY_MAX 500000
@@ -380,6 +462,7 @@ int _cal_db_util_end_trans(bool is_success)
 		warn_if(CAL_DB_OK != ret, "cal_query_exec(version up) Failed(%d).", ret);
 	}
 
+	INFO("start commit");
 	progress = 100000;
 	ret = _cal_db_util_query_exec("COMMIT TRANSACTION");
 	// !! check error code
@@ -388,6 +471,8 @@ int _cal_db_util_end_trans(bool is_success)
 		ret = _cal_db_util_query_exec("COMMIT TRANSACTION");
 		progress *= 2;
 	}
+	INFO("%s", (CAL_DB_OK == ret)?"commit": "rollback");
+
 	if (CAL_DB_OK != ret) {
 		int tmp_ret;
 		ERR("cal_query_exec() Failed(%d)", ret);
@@ -428,5 +513,5 @@ int _cal_db_util_get_next_ver(void)
 
 int _cal_db_util_get_transaction_ver(void)
 {
-    return transaction_ver;
+	return transaction_ver;
 }

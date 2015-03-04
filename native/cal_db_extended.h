@@ -20,8 +20,9 @@
 #ifndef __CALENDAR_SVC_DB_EXTENDED_H__
 #define __CALENDAR_SVC_DB_EXTENDED_H__
 
-int _cal_db_extended_get_records(int record_id, calendar_record_type_e record_type, GList **out_list);
-int _cal_db_extended_convert_gtoh(GList *glist, int record_id, calendar_record_type_e record_type, calendar_list_h *hlist);
+int _cal_db_extended_get_records(int record_id, calendar_record_type_e record_type, cal_list_s *list);
 int _cal_db_extended_delete_with_id(int record_id, calendar_record_type_e record_type);
+int _cal_db_extended_insert_record(calendar_record_h record, int record_id, calendar_record_type_e record_type, int *id);
+int _cal_db_extended_insert_records(cal_list_s *list_s, int record_id, calendar_record_type_e record_type);
 
 #endif  //__CALENDAR_SVC_DB_EXTENDED_H__

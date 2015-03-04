@@ -23,22 +23,21 @@
 #include <string.h>
 #include <sqlite3.h>
 #include <db-util.h>
-#include "cal_typedef.h"
-#include "schema.h"
 
-#include <tzplatform_config.h>
+#include "cal_internal.h"
+#include "schema.h"
 
 #define CALS_DB_NAME ".calendar-svc.db"
 #define CALS_DB_JOURNAL_NAME ".calendar-svc.db-journal"
-#define CALS_DB_PATH tzplatform_mkpath(TZ_USER_DB, ".calendar-svc.db")
-#define CALS_DB_JOURNAL_PATH tzplatform_mkpath(TZ_USER_DB, ".calendar-svc.db-journal")
+#define CALS_DB_PATH "/opt/usr/dbspace/"CALS_DB_NAME
+#define CALS_DB_JOURNAL_PATH "/opt/usr/dbspace/"CALS_DB_JOURNAL_NAME
 
 // For Security
-#define CALS_SECURITY_FILE_GROUP 6003
+#define CALS_SECURITY_FILE_GROUP 5000
 #define CALS_SECURITY_DEFAULT_PERMISSION 0660
 #define CALS_SECURITY_DIR_DEFAULT_PERMISSION 0770
 
-static inline int remake_db_file(char* db_path)
+static inline int __remake_db_file(char* db_path)
 {
 	int ret, fd;
 	char *errmsg;
@@ -48,26 +47,26 @@ static inline int remake_db_file(char* db_path)
 
 	if(db_path == NULL)
 	{
-	    snprintf(db_file,sizeof(db_file),CALS_DB_PATH);
-	    snprintf(db_journal_file,sizeof(db_journal_file),CALS_DB_JOURNAL_PATH);
+		snprintf(db_file,sizeof(db_file),CALS_DB_PATH);
+		snprintf(db_journal_file,sizeof(db_journal_file),CALS_DB_JOURNAL_PATH);
 	}
 	else
 	{
-	    snprintf(db_file,sizeof(db_file),"%s%s",db_path, CALS_DB_NAME);
-	    snprintf(db_journal_file,sizeof(db_journal_file),"%s%s", db_path, CALS_DB_JOURNAL_NAME);
+		snprintf(db_file,sizeof(db_file),"%s%s",db_path, CALS_DB_NAME);
+		snprintf(db_journal_file,sizeof(db_journal_file),"%s%s", db_path, CALS_DB_JOURNAL_NAME);
 	}
 
 	ret = db_util_open(db_file, &db, 0);
 
 	if (SQLITE_OK != ret)
 	{
-		printf("db_util_open() Failed(%d)\n", ret);
+		ERR("db_util_open() Failed(%d) ", ret);
 		return -1;
 	}
 
 	ret = sqlite3_exec(db, schema_query, NULL, 0, &errmsg);
 	if (SQLITE_OK != ret) {
-		printf("remake calendar DB file is Failed : %s\n", errmsg);
+		ERR("remake calendar DB file is Failed : %s ", errmsg);
 		sqlite3_free(errmsg);
 	}
 
@@ -76,14 +75,14 @@ static inline int remake_db_file(char* db_path)
 	fd = open(db_file, O_CREAT | O_RDWR, 0660);
 	if (-1 == fd)
 	{
-		printf("open Failed\n");
+		ERR("open Failed ");
 		return -1;
 	}
 
 	ret = fchown(fd, getuid(), CALS_SECURITY_FILE_GROUP);
 	if (-1 == ret)
 	{
-		printf("Failed to fchown\n");
+		ERR("Failed to fchown ");
 		close(fd);
 		return -1;
 	}
@@ -94,14 +93,14 @@ static inline int remake_db_file(char* db_path)
 
 	if (-1 == fd)
 	{
-		printf("open Failed\n");
+		ERR("open Failed ");
 		return -1;
 	}
 
 	ret = fchown(fd, getuid(), CALS_SECURITY_FILE_GROUP);
 	if (-1 == ret)
 	{
-		printf("Failed to fchown\n");
+		ERR("Failed to fchown ");
 		close(fd);
 		return -1;
 	}
@@ -111,47 +110,33 @@ static inline int remake_db_file(char* db_path)
 	return 0;
 }
 
-static inline int check_db_file(char* db_path)
+static inline int __check_db_file(char* db_path)
 {
-    int fd = -1;
+	int fd = -1;
 
-    char db_file[256]={0,};
-    if(db_path == NULL)
-    {
-        snprintf(db_file,sizeof(db_file),CALS_DB_PATH);
-    }
-    else
-    {
-        snprintf(db_file,sizeof(db_file),"%s%s",db_path, CALS_DB_NAME);
-    }
+	char db_file[256]={0,};
+	if(db_path == NULL)
+	{
+		snprintf(db_file,sizeof(db_file),CALS_DB_PATH);
+	}
+	else
+	{
+		snprintf(db_file,sizeof(db_file),"%s%s",db_path, CALS_DB_NAME);
+	}
 
-     fd = open(db_file, O_RDONLY);
-
-     if (-1 == fd)
-     {
-	printf("DB file(%s) is not exist\n", db_file);
-	return -1;
-     }
-     printf("DB file(%s) \n", db_file);
-     close(fd);
-     return 0;
-}
-
-
-static inline int check_schema(char* db_path)
-{
-	if (check_db_file(db_path))
-		remake_db_file(db_path);
-
+	fd = open(db_file, O_RDONLY);
+	if (fd < 0)
+	{
+		ERR("DB file(%s) is not exist(err:%d) ", db_file, fd);
+		return -1;
+	}
+	close(fd);
 	return 0;
 }
 
-int main(int argc, char **argv)
+int _cal_server_schema_check(void)
 {
-    char *tmp = NULL;
-    if(argc > 1)
-    {
-        tmp = argv[1];
-    }
-	return check_schema(tmp);
+	if (__check_db_file(NULL))
+		__remake_db_file(NULL);
+	return 0;
 }

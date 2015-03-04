@@ -1,0 +1,35 @@
+<manifest>
+	<define>
+		<domain name="calendar-service"/>
+		<provide>
+			<label name="calendar-service::initdb" />
+			<label name="calendar-service::db" />
+			<label name="calendar-service::svc" />
+		</provide>
+		<request>
+			<smack request="calendar-service::initdb" type="rwxatl"/>
+			<smack request="calendar-service::db" type="rwxatl"/>
+			<smack request="calendar-service::svc" type="rwxatl"/>
+			<smack request="sys-assert::core" type="rwxat"/>
+			<smack request="contacts-service::svc" type="rw"/>
+			<smack request="pkgmgr" type="r"/>
+			<smack request="pkgmgr::db" type="rw"/>
+			<smack request="libaccounts-svc" type="r"/>
+			<smack request="libaccounts-svc::db" type="rl"/>
+			<smack request="libaccounts-svc::check_read" type="r"/>
+			<smack request="alarm-server::alarm" type="rw"/>
+			<smack request="security-server::api-cookie-check" type="w"/>
+		</request>
+	</define>
+	<assign>
+		<filesystem path="/usr/lib/*" label="_" exec_label="none"/>
+		<filesystem path="/opt/usr/dbspace/.calendar-svc.db" label="calendar-service::db" />
+		<filesystem path="/opt/usr/dbspace/.calendar-svc.db-journal" label="calendar-service::db" />
+		<filesystem path="/opt/usr/data/calendar-svc/.CALENDAR_SVC_CALENDAR_CHANGED" label="calendar-service::svc" />
+		<filesystem path="/opt/usr/data/calendar-svc/.CALENDAR_SVC_EVENT_CHANGED" label="calendar-service::svc" />
+		<filesystem path="/opt/usr/data/calendar-svc/.CALENDAR_SVC_TODO_CHANGED" label="calendar-service::svc" />
+	</assign>
+	<request>
+		<domain name="calendar-service" />
+	</request>
+</manifest>

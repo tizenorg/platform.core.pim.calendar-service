@@ -17,10 +17,10 @@
  *
  */
 
-#ifndef __TIZEN_SOCAIL_CALENDAR_REMINDER_H__
-#define __TIZEN_SOCAIL_CALENDAR_REMINDER_H__
+#ifndef __TIZEN_SOCIAL_CALENDAR_REMINDER_H__
+#define __TIZEN_SOCIAL_CALENDAR_REMINDER_H__
 
-#include <calendar_types2.h>
+#include <calendar_types.h>
 
 #ifndef API
 #define API __attribute__ ((visibility("default")))
@@ -31,106 +31,64 @@ extern "C" {
 #endif
 
 /**
+ * @file calendar_reminder.h
+ */
+
+/**
  * @addtogroup CAPI_SOCIAL_CALENDAR_SVC_REMINDER_MODULE
  * @{
  */
 
 /**
- * @brief   Adds a receiver to get noti when alarm alerts.
+ * @brief Called when an alarm is alerted.
  *
- * @remarks If failed to run appsvc, added receiver will be removed from the table.
+ * @since_tizen 2.3
  *
- * @param[in]   pkgname			    The package name to add.
- * @param[in]   extra_data_key		The user defined key to be passed via appsvc.
- * @param[in]   extra_data_value	THe user defined value to be passed via appsvc.
+ * @param[in]   param  Value string like id=value&time=value&tick=value&unit=value&type=value
+ * @param[in]   user_data   The user data passed from the callback registration function
  *
- * @return  0 on success, otherwise a negative error value.
- * @retval  #CALENDAR_ERROR_NONE        Successful
- * @retval  #CALENDAR_ERROR_DB_FAILED   Database operation failure
- *
- * @see calendar_reminder_remove_receiver()
+ * @see calendar_reminder_add_cb()
  */
-API int calendar_reminder_add_receiver(const char *pkgname, const char *extra_data_key, const char *extra_data_value);
+typedef void (*calendar_reminder_cb)(const char *param, void* user_data);
 
 /**
- * @brief   Removes a receiver to get noti when alarm alerts.
+ * @brief Adds a callback to get a notification when an alarm alerts.
  *
- * @param[in]   pkgname			    The package name to add.
+ * @since_tizen 2.3
  *
- * @return  0 on success, otherwise a negative error value.
- * @retval  #CALENDAR_ERROR_NONE        Successful
- * @retval  #CALENDAR_ERROR_DB_FAILED   Database operation failure
+ * @privlevel public
+ * @privilege %http://tizen.org/privilege/calendar.read
  *
- * @see calendar_reminder_remove_receiver()
- */
-API int calendar_reminder_remove_receiver(const char *pkgname);
-
-/**
- * @brief   Activates a receiver to get noti when alarm alerts.
+ * @param[in]   callback     The callback to be added
+ * @param[in]   user_data	 The user data
  *
- * @param[in]   pkgname			    The package name to add.
- *
- * @return  0 on success, otherwise a negative error value.
- * @retval  #CALENDAR_ERROR_NONE        Successful
- * @retval  #CALENDAR_ERROR_DB_FAILED   Database operation failure
- *
- * @see calendar_reminder_remove_receiver()
- */
-API int calendar_reminder_activate_receiver(const char *pkgname);
-
-/**
- * @brief   Deactivates a receiver to get noti when alarm alerts.
- *
- * @param[in]   pkgname			    The package name to add.
- *
- * @return  0 on success, otherwise a negative error value.
- * @retval  #CALENDAR_ERROR_NONE        Successful
- * @retval  #CALENDAR_ERROR_DB_FAILED   Database operation failure
- *
- * @see calendar_reminder_remove_receiver()
- */
-API int calendar_reminder_deactivate_receiver(const char *pkgname);
-
-/**
- * @brief   Check whether receiver exist in the table or not.
- *
- * @param[in]   pkgname			    The package name to add.
- *
- * @return  0 on success, otherwise a negative error value.
- * @retval  #CALENDAR_ERROR_NONE        Successful
- * @retval  #CALENDAR_ERROR_DB_FAILED   Database operation failure
- *
- * @see calendar_reminder_remove_receiver()
- */
-API int calendar_reminder_has_receiver(const char *pkgname);
-
-/**
- * @brief   Adds callback to get noti when alarm alerts.
- *
- * @param[in]   callback			    Callback to add.
- * @param[in]   user_data				The user data
- *
- * @return  0 on success, otherwise a negative error value.
- * @retval  #CALENDAR_ERROR_NONE        Successful
- * @retval  #CALENDAR_ERROR_DB_FAILED   Database operation failure
+ * @return  @c 0 on success,
+ *          otherwise a negative error value
+ * @retval  #CALENDAR_ERROR_NONE            Successful
+ * @retval  #CALENDAR_ERROR_OUT_OF_MEMORY   Out of memory
+ * @retval  #CALENDAR_ERROR_NOT_PERMITTED   Operation not permitted
+ * @retval  #CALENDAR_ERROR_IPC             Unknown IPC error
  *
  * @see calendar_reminder_remove_cb()
  */
-API int calendar_reminder_add_cb(calendar_reminder_cb callback, void *user_data);
+int calendar_reminder_add_cb(calendar_reminder_cb callback, void *user_data);
 
 /**
- * @brief   Removes callback to get noti when alarm alerts.
+ * @brief Removes a callback to get a notification when an alarm alerts.
  *
- * @param[in]   callback			    Callback to remove.
- * @param[in]   user_data				The user data
+ * @since_tizen 2.3
  *
- * @return  0 on success, otherwise a negative error value.
+ * @param[in]   callback       The callback to be removed
+ * @param[in]   user_data      The user data
+ *
+ * @return  @c 0 on success,
+ *          otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE        Successful
  * @retval  #CALENDAR_ERROR_DB_FAILED   Database operation failure
  *
  * @see calendar_reminder_add_cb()
  */
-API int calendar_reminder_remove_cb(calendar_reminder_cb callback, void *user_data);
+int calendar_reminder_remove_cb(calendar_reminder_cb callback, void *user_data);
 
 /**
  * @}
@@ -140,5 +98,5 @@ API int calendar_reminder_remove_cb(calendar_reminder_cb callback, void *user_da
 }
 #endif
 
-#endif /* __TIZEN_SOCAIL_CALENDAR_REMINDER_H__ */
+#endif /* __TIZEN_SOCIAL_CALENDAR_REMINDER_H__ */
 

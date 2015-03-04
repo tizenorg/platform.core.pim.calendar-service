@@ -22,7 +22,7 @@
 
 #include "calendar_service.h"
 #include "calendar_db.h"
-#include "calendar_types2.h"
+#include "calendar_types.h"
 #include "calendar_reminder.h"
 
 #include "cal_internal.h"
@@ -38,288 +38,11 @@
 
 #include "cal_client_ipc.h"
 
-#define CAL_IPC_DATA_FREE(ptr) \
-    do { \
-        if (ptr) \
-        pims_ipc_data_destroy(ptr); \
-        ptr = NULL; \
-    } while(0)
-
-API int calendar_reminder_add_receiver(const char *pkgname, const char *extra_data_key, const char *extra_data_value)
-{
-	int ret = CALENDAR_ERROR_NONE;
-    pims_ipc_data_h indata = NULL;
-    pims_ipc_data_h outdata = NULL;
-
-	retvm_if(NULL == pkgname, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-
-	// make data
-    indata = pims_ipc_data_create(0);
-    if (indata == NULL)
-    {
-        ERR("ipc data created fail !");
-        ret = CALENDAR_ERROR_OUT_OF_MEMORY;
-        return ret;
-    }
-    ret = _cal_ipc_marshal_char(pkgname, indata);
-    if (ret != CALENDAR_ERROR_NONE)
-    {
-        ERR("marshal fail");
-        CAL_IPC_DATA_FREE(indata);
-        return ret;
-    }
-    ret = _cal_ipc_marshal_char(extra_data_key, indata);
-    if (ret != CALENDAR_ERROR_NONE)
-    {
-        ERR("marshal fail");
-        CAL_IPC_DATA_FREE(indata);
-        return ret;
-    }
-    ret = _cal_ipc_marshal_char(extra_data_value, indata);
-    if (ret != CALENDAR_ERROR_NONE)
-    {
-        ERR("marshal fail");
-        CAL_IPC_DATA_FREE(indata);
-        return ret;
-    }
-
-	// ipc call
-    if (_cal_client_ipc_call(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_REGISTER_REMINDER, indata, &outdata) != 0)
-    {
-        ERR("pims_ipc_call failed");
-        CAL_IPC_DATA_FREE(indata);
-        return CALENDAR_ERROR_IPC;
-    }
-    CAL_IPC_DATA_FREE(indata);
-
-	if (outdata)
-    {
-        // check outdata
-        unsigned int size = 0;
-        ret = *(int*) pims_ipc_data_get(outdata,&size);
-
-        pims_ipc_data_destroy(outdata);
-    }
-    else
-    {
-        ERR("ipc outdata is NULL");
-        return CALENDAR_ERROR_IPC;
-    }
-
-    return ret;
-}
-
-API int calendar_reminder_remove_receiver(const char *pkgname)
-{
-	int ret = CALENDAR_ERROR_NONE;
-    pims_ipc_data_h indata = NULL;
-    pims_ipc_data_h outdata = NULL;
-
-	retvm_if(NULL == pkgname, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-
-	// make data
-    indata = pims_ipc_data_create(0);
-    if (indata == NULL)
-    {
-        ERR("ipc data created fail !");
-        ret = CALENDAR_ERROR_OUT_OF_MEMORY;
-        return ret;
-    }
-    ret = _cal_ipc_marshal_char(pkgname, indata);
-    if (ret != CALENDAR_ERROR_NONE)
-    {
-        ERR("marshal fail");
-        CAL_IPC_DATA_FREE(indata);
-        return ret;
-    }
-
-	// ipc call
-    if (_cal_client_ipc_call(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_UNREGISTER_REMINDER, indata, &outdata) != 0)
-    {
-        ERR("pims_ipc_call failed");
-        CAL_IPC_DATA_FREE(indata);
-        return CALENDAR_ERROR_IPC;
-    }
-    CAL_IPC_DATA_FREE(indata);
-
-	if (outdata)
-    {
-        // check outdata
-        unsigned int size = 0;
-        ret = *(int*) pims_ipc_data_get(outdata,&size);
-
-        pims_ipc_data_destroy(outdata);
-    }
-    else
-    {
-        ERR("ipc outdata is NULL");
-        return CALENDAR_ERROR_IPC;
-    }
-
-    return ret;
-}
-
-API int calendar_reminder_activate_receiver(const char *pkgname)
-{
-	int ret = CALENDAR_ERROR_NONE;
-    pims_ipc_data_h indata = NULL;
-    pims_ipc_data_h outdata = NULL;
-
-	retvm_if(NULL == pkgname, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-
-	// make data
-    indata = pims_ipc_data_create(0);
-    if (indata == NULL)
-    {
-        ERR("ipc data created fail !");
-        ret = CALENDAR_ERROR_OUT_OF_MEMORY;
-        return ret;
-    }
-    ret = _cal_ipc_marshal_char(pkgname, indata);
-    if (ret != CALENDAR_ERROR_NONE)
-    {
-        ERR("marshal fail");
-        CAL_IPC_DATA_FREE(indata);
-        return ret;
-    }
-
-	// ipc call
-    if (_cal_client_ipc_call(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_ACTIVATE_REMINDER, indata, &outdata) != 0)
-    {
-        ERR("pims_ipc_call failed");
-        CAL_IPC_DATA_FREE(indata);
-        return CALENDAR_ERROR_IPC;
-    }
-    CAL_IPC_DATA_FREE(indata);
-
-	if (outdata)
-    {
-        // check outdata
-        unsigned int size = 0;
-        ret = *(int*) pims_ipc_data_get(outdata,&size);
-
-        pims_ipc_data_destroy(outdata);
-    }
-    else
-    {
-        ERR("ipc outdata is NULL");
-        return CALENDAR_ERROR_IPC;
-    }
-
-    return ret;
-}
-
-API int calendar_reminder_deactivate_receiver(const char *pkgname)
-{
-	int ret = CALENDAR_ERROR_NONE;
-    pims_ipc_data_h indata = NULL;
-    pims_ipc_data_h outdata = NULL;
-
-	retvm_if(NULL == pkgname, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-
-	// make data
-    indata = pims_ipc_data_create(0);
-    if (indata == NULL)
-    {
-        ERR("ipc data created fail !");
-        ret = CALENDAR_ERROR_OUT_OF_MEMORY;
-        return ret;
-    }
-    ret = _cal_ipc_marshal_char(pkgname, indata);
-    if (ret != CALENDAR_ERROR_NONE)
-    {
-        ERR("marshal fail");
-        CAL_IPC_DATA_FREE(indata);
-        return ret;
-    }
-
-	// ipc call
-    if (_cal_client_ipc_call(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_DEACTIVATE_REMINDER, indata, &outdata) != 0)
-    {
-        ERR("pims_ipc_call failed");
-        CAL_IPC_DATA_FREE(indata);
-        return CALENDAR_ERROR_IPC;
-    }
-    CAL_IPC_DATA_FREE(indata);
-
-	if (outdata)
-    {
-        // check outdata
-        unsigned int size = 0;
-        ret = *(int*) pims_ipc_data_get(outdata,&size);
-
-        pims_ipc_data_destroy(outdata);
-    }
-    else
-    {
-        ERR("ipc outdata is NULL");
-        return CALENDAR_ERROR_IPC;
-    }
-
-    return ret;
-}
-
-API int calendar_reminder_has_receiver(const char *pkgname)
-{
-	int ret = CALENDAR_ERROR_NONE;
-    pims_ipc_data_h indata = NULL;
-    pims_ipc_data_h outdata = NULL;
-
-	retvm_if(NULL == pkgname, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-
-	// make data
-    indata = pims_ipc_data_create(0);
-    if (indata == NULL)
-    {
-        ERR("ipc data created fail !");
-        ret = CALENDAR_ERROR_OUT_OF_MEMORY;
-        return ret;
-    }
-    ret = _cal_ipc_marshal_char(pkgname, indata);
-    if (ret != CALENDAR_ERROR_NONE)
-    {
-        ERR("marshal fail");
-        CAL_IPC_DATA_FREE(indata);
-        return ret;
-    }
-
-	// ipc call
-    if (_cal_client_ipc_call(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_HAS_REMINDER, indata, &outdata) != 0)
-    {
-        ERR("pims_ipc_call failed");
-        CAL_IPC_DATA_FREE(indata);
-        return CALENDAR_ERROR_IPC;
-    }
-    CAL_IPC_DATA_FREE(indata);
-
-	if (outdata)
-    {
-        // check outdata
-        unsigned int size = 0;
-        ret = *(int*) pims_ipc_data_get(outdata,&size);
-
-        pims_ipc_data_destroy(outdata);
-    }
-    else
-    {
-        ERR("ipc outdata is NULL");
-        return CALENDAR_ERROR_IPC;
-    }
-
-    return ret;
-}
-
-// for reminder callback
-
 typedef struct {
 	calendar_reminder_cb cb;
 	void *user_data;
 } callback_info_s;
 
-typedef struct {
-	char *view_uri;
-	GSList *callbacks;
-} subscribe_info_s;
 
 static pims_ipc_h __ipc = NULL;
 static GSList *__subscribe_list = NULL;
@@ -327,11 +50,9 @@ static GSList *__subscribe_list = NULL;
 int _cal_client_reminder_create_for_subscribe(void)
 {
 	_cal_mutex_lock(CAL_MUTEX_PIMS_IPC_PUBSUB);
-	if (!__ipc)
-	{
+	if (!__ipc) {
 		__ipc = pims_ipc_create_for_subscribe(CAL_IPC_SOCKET_PATH_FOR_SUBSCRIPTION);
-		if (!__ipc)
-		{
+		if (!__ipc) {
 			ERR("pims_ipc_create_for_subscribe");
 			_cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
 			return CALENDAR_ERROR_IPC;
@@ -357,28 +78,23 @@ static void __cal_client_reminder_subscribe_callback(pims_ipc_h ipc, pims_ipc_da
 	unsigned int size = 0;
 	const char *str = NULL;
 	int len = 0;
-	subscribe_info_s *info = user_data;
 
-	if (data)
-	{
+	if (data) {
 		len = (int)pims_ipc_data_get(data, &size);
-		if (0 == len)
-		{
+		if (0 == len) {
 			ERR("pims_ipc_data_get() failed");
 			return;
 		}
 		str = (const char *)pims_ipc_data_get(data, &size);
-		if (!str)
-		{
+		if (!str) {
 			ERR("pims_ipc_data_get() failed");
 			return;
 		}
 	}
-	if (info)
-	{
+
+	if (__subscribe_list) {
 		GSList *l = NULL;
-		for (l = info->callbacks; l; l = l->next)
-		{
+		for (l = __subscribe_list; l; l = l->next) {
 			callback_info_s *cb_info = l->data;
 			if (NULL == cb_info) continue;
 
@@ -390,88 +106,82 @@ static void __cal_client_reminder_subscribe_callback(pims_ipc_h ipc, pims_ipc_da
 API int calendar_reminder_add_cb(calendar_reminder_cb callback, void *user_data)
 {
 	GSList *it = NULL;
-	subscribe_info_s *info = NULL;
 	callback_info_s *cb_info = NULL;
+	int ret;
+	bool result = false;
+
+	if (NULL == callback) {
+		ERR("Invalid parameter: callback is NULL");
+		return CALENDAR_ERROR_INVALID_PARAMETER;
+	}
+
+	ret = cal_client_ipc_client_check_permission(CAL_PERMISSION_READ, &result);
+	retvm_if(CALENDAR_ERROR_NONE != ret, ret, "ctsvc_ipc_client_check_permission fail (%d)", ret);
+	retvm_if(result == false, CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied (calendar read)");
 
 	_cal_mutex_lock(CAL_MUTEX_PIMS_IPC_PUBSUB);
 
-	for (it = __subscribe_list; it; it = it->next)
-	{
-		if (NULL == it->data) continue;
-
-		info = it->data;
-		if (strcmp(info->view_uri, CAL_NOTI_REMINDER_CAHNGED) == 0)
-			break;
-		else
-			info = NULL;
-	}
-	if (NULL == info)
-	{
-		info = calloc(1, sizeof(subscribe_info_s));
-		if (NULL == info)
-		{
-			ERR("calloc() failed");
-			_cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
-			return CALENDAR_ERROR_OUT_OF_MEMORY;
-		}
+	if (!__subscribe_list) {
 		if (pims_ipc_subscribe(__ipc, CAL_IPC_MODULE_FOR_SUBSCRIPTION, (char *)CAL_NOTI_REMINDER_CAHNGED,
-					__cal_client_reminder_subscribe_callback, (void *)info) != 0)
-		{
+					__cal_client_reminder_subscribe_callback, NULL) != 0) {
 			ERR("pims_ipc_subscribe() failed");
-			free(info);
 			_cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
 			return CALENDAR_ERROR_IPC;
 		}
-		info->view_uri = strdup(CAL_NOTI_REMINDER_CAHNGED);
-		__subscribe_list = g_slist_append(__subscribe_list, info);
+	}
+
+	// Check duplication
+	for (it = __subscribe_list; it; it = it->next) {
+		if (NULL == it->data) continue;
+
+		callback_info_s *cb_info = it->data;
+		if (callback == cb_info->cb && user_data == cb_info->user_data) {
+			ERR("The same callback(%s) is already exist");
+			_cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+			return CALENDAR_ERROR_INVALID_PARAMETER;
+		}
 	}
 
 	cb_info = calloc(1, sizeof(callback_info_s));
 	cb_info->user_data = user_data;
 	cb_info->cb = callback;
-	info->callbacks = g_slist_append(info->callbacks, cb_info);
+	__subscribe_list = g_slist_append(__subscribe_list, cb_info);
 
 	_cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+
 	return CALENDAR_ERROR_NONE;
 }
 
 API int calendar_reminder_remove_cb(calendar_reminder_cb callback, void *user_data)
 {
 	GSList *it = NULL;
-	subscribe_info_s *info = NULL;
+
+	if (NULL == callback) {
+		ERR("Invalid parameter: callback is NULL");
+		return CALENDAR_ERROR_INVALID_PARAMETER;
+	}
 
 	_cal_mutex_lock(CAL_MUTEX_PIMS_IPC_PUBSUB);
 
-	for (it = __subscribe_list; it; it = it->next)
-	{
+	for (it = __subscribe_list; it; it = it->next) {
 		if (NULL == it->data) continue;
 
-		info = it->data;
-		if (strcmp(info->view_uri, CAL_NOTI_REMINDER_CAHNGED) == 0)
+		callback_info_s *cb_info = it->data;
+		if (callback == cb_info->cb && user_data == cb_info->user_data) {
+			__subscribe_list = g_slist_remove(__subscribe_list, cb_info);
+			free(cb_info);
 			break;
-		else
-			info = NULL;
-	}
-	if (info)
-	{
-		GSList *l = NULL;
-		for (l = info->callbacks; l; l = l->next)
-		{
-			callback_info_s *cb_info = l->data;
-			if (callback == cb_info->cb && user_data == cb_info->user_data)
-			{
-				info->callbacks = g_slist_remove(info->callbacks, cb_info);
-				break;
-			}
-		}
-		if (g_slist_length(info->callbacks) == 0)
-		{
-			__subscribe_list = g_slist_remove(__subscribe_list, info);
-			free(info->view_uri);
-			free(info);
 		}
 	}
+
+	if (g_slist_length(__subscribe_list) == 0) {
+		pims_ipc_unsubscribe(__ipc, CAL_IPC_MODULE_FOR_SUBSCRIPTION, (char *)CAL_NOTI_REMINDER_CAHNGED);
+		g_slist_free(__subscribe_list);
+		__subscribe_list = NULL;
+	}
+
 	_cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+
 	return CALENDAR_ERROR_NONE;
 }
 

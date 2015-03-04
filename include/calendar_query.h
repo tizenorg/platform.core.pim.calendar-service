@@ -17,10 +17,10 @@
  *
  */
 
-#ifndef __TIZEN_SOCAIL_CALENDAR_QUERY_H__
-#define __TIZEN_SOCAIL_CALENDAR_QUERY_H__
+#ifndef __TIZEN_SOCIAL_CALENDAR_QUERY_H__
+#define __TIZEN_SOCIAL_CALENDAR_QUERY_H__
 
-#include <calendar_types2.h>
+#include <calendar_types.h>
 
 #ifndef API
 #define API __attribute__ ((visibility("default")))
@@ -31,91 +31,120 @@ extern "C" {
 #endif
 
 /**
+ * @file calendar_query.h
+ */
+
+/**
  * @addtogroup CAPI_SOCIAL_CALENDAR_SVC_QUERY_MODULE
  * @{
  */
 
 /**
- * @brief   Creates a query handle.
+ * @brief Creates a query handle.
  *
- * @remarks		@a query must be released with calendar_query_destroy() by you.
+ * @since_tizen 2.3
  *
- * @param[in]   view_uri			The view URI of a query
- * @param[out]  query				The filter handle
+ * @remarks You must release @a query using calendar_query_destroy().
  *
- * @return  0 on success, otherwise a negative error value.
+ * @param[in]   view_uri   The view URI of a query
+ * @param[out]  query	   The filter handle
+ *
+ * @return  @c 0 on success,
+ *          otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE                Successful
  * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
  * @retval  #CALENDAR_ERROR_OUT_OF_MEMORY       Out of memory
  *
- * @see calendar_filter_destroy()
+ * @pre     calendar_connect() should be called to initialize.
+ *
+ * @see calendar_query_destroy()
  */
-API int calendar_query_create( const char* view_uri, calendar_query_h* query );
+int calendar_query_create( const char* view_uri, calendar_query_h* query );
 
 /**
- * @brief   Destroys a query handle.
+ * @brief Destroys a query handle.
  *
- * @param[in]   query    The query handle
+ * @since_tizen 2.3
  *
- * @return  0 on success, otherwise a negative error value.
- * @retval  #CALENDAR_ERROR_NONE                Successful
- * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
+ * @param[in] query   The query handle
+ *
+ * @return  @c 0 on success,
+ *          otherwise a negative error value
+ * @retval  #CALENDAR_ERROR_NONE               Successful
+ * @retval  #CALENDAR_ERROR_INVALID_PARAMETER  Invalid parameter
  *
  * @see calendar_query_create()
  */
-API int calendar_query_destroy( calendar_query_h query );
+int calendar_query_destroy( calendar_query_h query );
 
 /**
- * @brief		Adds property IDs for projection.
+ * @brief Adds property IDs for projection.
  *
- * @param[in]   query				The query handle
- * @param[in]   property_id_array	The property ID array
- * @param[in]   count				The number of property IDs
+ * @details Property IDs can be of one of the properties of view_uri which is used in calendar_query_create().
  *
- * @return  0 on success, otherwise a negative error value.
+ * @since_tizen 2.3
+ *
+ * @param[in]   query               The query handle
+ * @param[in]   property_id_array   The property ID array
+ * @param[in]   count               The number of property IDs
+ *
+ * @return  @c 0 on success,
+ *          otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE                Successful
  * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
  */
-API int calendar_query_set_projection(calendar_query_h query, unsigned int property_id_array[], int count);
+int calendar_query_set_projection(calendar_query_h query, unsigned int property_id_array[], int count);
 
 /**
- * @brief       Set distinct option  for projection.
+ * @brief Sets the "distinct" option for projection.
  *
- * @param[in]   query           The query handle
- * @param[in]   set             Set or unset
+ * @since_tizen 2.3
  *
- * @return  0 on success, otherwise a negative error value.
+ * @param[in]   query   The query handle
+ * @param[in]   set     If @c true it is set,
+ *                      otherwise if @c false it is unset
+ *
+ * @return  @c 0 on success,
+ *          otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE                Successful
  * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
  */
-API int calendar_query_set_distinct(calendar_query_h query, bool set);
+int calendar_query_set_distinct(calendar_query_h query, bool set);
 
 /**
- * @brief		Sets a filter handle to query handle.
+ * @brief Sets the filter for a query.
  *
- * @param[in]   query			The query handle
- * @param[in]   filter			The filter handle
+ * @since_tizen 2.3
  *
- * @return  0 on success, otherwise a negative error value.
+ * @param[in]  query    The query handle
+ * @param[in]  filter   The filter handle
+ *
+ * @return  @c 0 on success,
+ *          otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE                Successful
  * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
+ * @retval  #CALENDAR_ERROR_NO_DATA             Requested data does not exist
  *
  * @see calendar_query_add_operator()
  */
-API int calendar_query_set_filter(calendar_query_h query, calendar_filter_h filter);
+int calendar_query_set_filter(calendar_query_h query, calendar_filter_h filter);
 
 /**
- * @brief		Sets sort mode.
+ * @brief Sets the sort mode for a query.
  *
- * @param[in]   query			The query handle
- * @param[in]   property_id		The property ID to sort
- * @param[in]   is_ascending	Ascending or decending
+ * @since_tizen 2.3
  *
- * @return  0 on success, otherwise a negative error value.
+ * @param[in]   query           The query handle
+ * @param[in]   property_id     The property ID to sort
+ * @param[in]   is_ascending    If @c true it sorts in the ascending order,
+ *                              otherwise if @c false it sorts in the descending order
+ *
+ * @return  @c 0 on success,
+ *          otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE                Successful
  * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
  */
-API int calendar_query_set_sort(calendar_query_h query, unsigned int property_id, bool is_ascending);
+int calendar_query_set_sort(calendar_query_h query, unsigned int property_id, bool is_ascending);
 
 
 /**
@@ -126,5 +155,5 @@ API int calendar_query_set_sort(calendar_query_h query, unsigned int property_id
 }
 #endif
 
-#endif /* __TIZEN_SOCAIL_CALENDAR_QUERY_H__ */
+#endif /* __TIZEN_SOCIAL_CALENDAR_QUERY_H__ */
 

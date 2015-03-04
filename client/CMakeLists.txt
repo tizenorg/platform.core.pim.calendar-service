@@ -18,7 +18,9 @@ SET(SRCS
 	${CMAKE_SOURCE_DIR}/common/ipc/cal_ipc_marshal_calendar.c
 	${CMAKE_SOURCE_DIR}/common/ipc/cal_ipc_marshal_event.c
 	${CMAKE_SOURCE_DIR}/common/ipc/cal_ipc_marshal_instance_allday.c
+	${CMAKE_SOURCE_DIR}/common/ipc/cal_ipc_marshal_instance_allday_extended.c
 	${CMAKE_SOURCE_DIR}/common/ipc/cal_ipc_marshal_instance_normal.c
+        ${CMAKE_SOURCE_DIR}/common/ipc/cal_ipc_marshal_instance_normal_extended.c
 	${CMAKE_SOURCE_DIR}/common/ipc/cal_ipc_marshal_search.c
 	${CMAKE_SOURCE_DIR}/common/ipc/cal_ipc_marshal_timezone.c
 	${CMAKE_SOURCE_DIR}/common/ipc/cal_ipc_marshal_todo.c
@@ -35,6 +37,8 @@ SET(SRCS
     ${CMAKE_SOURCE_DIR}/common/cal_record_updated_info.c
     ${CMAKE_SOURCE_DIR}/common/cal_record_instance_normal.c
     ${CMAKE_SOURCE_DIR}/common/cal_record_instance_allday.c
+    ${CMAKE_SOURCE_DIR}/common/cal_record_instance_normal_extended.c
+    ${CMAKE_SOURCE_DIR}/common/cal_record_instance_allday_extended.c
     ${CMAKE_SOURCE_DIR}/common/cal_record_extended.c
     ${CMAKE_SOURCE_DIR}/common/cal_view.c
     ${CMAKE_SOURCE_DIR}/common/cal_filter.c
@@ -49,7 +53,11 @@ SET(SRCS
 )
 
 INCLUDE(FindPkgConfig)
-pkg_check_modules(service2_pkgs REQUIRED pims-ipc dlog capi-base-common)
+pkg_check_modules(service2_pkgs REQUIRED
+	pims-ipc
+	dlog
+	capi-base-common
+	)
 
 FOREACH(flag ${service2_pkgs_CFLAGS})
 	SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} ${flag}")
@@ -66,8 +74,8 @@ ADD_DEFINITIONS("-DPREFIX=\"${PREFIX}\"")
 #SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS}")
 
 ADD_LIBRARY(${CALSVC2} SHARED ${SRCS})
-SET_TARGET_PROPERTIES(${CALSVC2} PROPERTIES SOVERSION ${VERSION_MAJOR})
-SET_TARGET_PROPERTIES(${CALSVC2} PROPERTIES VERSION ${VERSION})
+SET_TARGET_PROPERTIES(${CALSVC2} PROPERTIES SOVERSION ${MAJORVER})
+SET_TARGET_PROPERTIES(${CALSVC2} PROPERTIES VERSION ${FULLVER})
 TARGET_LINK_LIBRARIES(${CALSVC2} ${service2_pkgs_LDFLAGS})
 
 INSTALL(TARGETS ${CALSVC2} DESTINATION ${LIB_INSTALL_DIR})

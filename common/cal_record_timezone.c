@@ -36,46 +36,44 @@ static int __cal_record_timezone_set_str( calendar_record_h record, unsigned int
 static int __cal_record_timezone_set_int( calendar_record_h record, unsigned int property_id, int value );
 
 cal_record_plugin_cb_s _cal_record_timezone_plugin_cb = {
-		.create = __cal_record_timezone_create,
-		.destroy = __cal_record_timezone_destroy,
-		.clone = __cal_record_timezone_clone,
-		.get_str = __cal_record_timezone_get_str,
-		.get_str_p = __cal_record_timezone_get_str_p,
-		.get_int = __cal_record_timezone_get_int,
-		.get_double = NULL,
-		.get_lli = NULL,
-		.get_caltime = NULL,
-		.set_str = __cal_record_timezone_set_str,
-		.set_int = __cal_record_timezone_set_int,
-		.set_double = NULL,
-		.set_lli = NULL,
-		.set_caltime = NULL,
-		.add_child_record = NULL,
-		.remove_child_record = NULL,
-		.get_child_record_count = NULL,
-		.get_child_record_at_p = NULL,
-		.clone_child_record_list = NULL
+	.create = __cal_record_timezone_create,
+	.destroy = __cal_record_timezone_destroy,
+	.clone = __cal_record_timezone_clone,
+	.get_str = __cal_record_timezone_get_str,
+	.get_str_p = __cal_record_timezone_get_str_p,
+	.get_int = __cal_record_timezone_get_int,
+	.get_double = NULL,
+	.get_lli = NULL,
+	.get_caltime = NULL,
+	.set_str = __cal_record_timezone_set_str,
+	.set_int = __cal_record_timezone_set_int,
+	.set_double = NULL,
+	.set_lli = NULL,
+	.set_caltime = NULL,
+	.add_child_record = NULL,
+	.remove_child_record = NULL,
+	.get_child_record_count = NULL,
+	.get_child_record_at_p = NULL,
+	.clone_child_record_list = NULL
 };
 
 static void __cal_record_timezone_struct_init(cal_timezone_s *record)
 {
 	memset(record,0,sizeof(cal_timezone_s));
-    record->calendar_id = DEFAULT_EVENT_CALENDAR_BOOK_ID;
+	record->calendar_id = DEFAULT_EVENT_CALENDAR_BOOK_ID;
 }
 
 static int __cal_record_timezone_create( calendar_record_h* out_record )
 {
 	cal_timezone_s *temp = NULL;
-	int ret= CALENDAR_ERROR_NONE, type = 0;
-
-	type = CAL_RECORD_TYPE_TIMEZONE;
+	int ret= CALENDAR_ERROR_NONE;
 
 	temp = (cal_timezone_s*)calloc(1,sizeof(cal_timezone_s));
 	retvm_if(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "malloc(cal_timezone_s) Failed(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
 
 	__cal_record_timezone_struct_init(temp);
 
-    *out_record = (calendar_record_h)temp;
+	*out_record = (calendar_record_h)temp;
 
 	return ret;
 }
@@ -90,11 +88,11 @@ static void __cal_record_timezone_struct_free(cal_timezone_s *record)
 
 static int __cal_record_timezone_destroy( calendar_record_h record, bool delete_child )
 {
-    int ret = CALENDAR_ERROR_NONE;
+	int ret = CALENDAR_ERROR_NONE;
 
 	cal_timezone_s *temp = (cal_timezone_s*)(record);
 
-    __cal_record_timezone_struct_free(temp);
+	__cal_record_timezone_struct_free(temp);
 
 	return ret;
 }
@@ -127,7 +125,7 @@ static int __cal_record_timezone_clone( calendar_record_h record, calendar_recor
 	out_data->day_light_bias = src_data->day_light_bias;
 	out_data->calendar_id = src_data->calendar_id;
 
-    *out_record = (calendar_record_h)out_data;
+	*out_record = (calendar_record_h)out_data;
 
 	return CALENDAR_ERROR_NONE;
 }
@@ -144,7 +142,7 @@ static int __cal_record_timezone_get_str( calendar_record_h record, unsigned int
 		*out_str = SAFE_STRDUP(rec->day_light_name);
 		break;
 	default:
-	    ASSERT_NOT_REACHED("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)",property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -163,7 +161,7 @@ static int __cal_record_timezone_get_str_p( calendar_record_h record, unsigned i
 		*out_str = (rec->day_light_name);
 		break;
 	default:
-	    ASSERT_NOT_REACHED("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)",property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -215,7 +213,7 @@ static int __cal_record_timezone_get_int( calendar_record_h record, unsigned int
 		*out_value = (rec->calendar_id);
 		break;
 	default:
-	    ASSERT_NOT_REACHED("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)",property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -236,7 +234,7 @@ static int __cal_record_timezone_set_str( calendar_record_h record, unsigned int
 		rec->day_light_name = SAFE_STRDUP(value);
 		break;
 	default:
-	    ASSERT_NOT_REACHED("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)",property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -288,7 +286,7 @@ static int __cal_record_timezone_set_int( calendar_record_h record, unsigned int
 		(rec->calendar_id) = value;
 		break;
 	default:
-	    ASSERT_NOT_REACHED("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)",property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 

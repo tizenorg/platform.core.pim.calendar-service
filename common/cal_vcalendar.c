@@ -34,11 +34,15 @@
 
 #define ICALENAR_BUFFER_MAX (1024*1024)
 
+/*
+ * vcalendar should not have multi version: ver1.0 or 2.0 only.
+ * could have multi timezone events: MULTI BEGIN:VCALENDAR.
+ */
 API int calendar_vcalendar_make_from_records(calendar_list_h list, char **vcalendar_stream)
 {
 	int ret;
 	cal_make_s *b;
-	char *ical;
+	char *ical = NULL;
 
 	retvm_if(list == NULL, CALENDAR_ERROR_INVALID_PARAMETER,
 			"Invalid argument: calendar_list_h is NULL");
@@ -47,7 +51,7 @@ API int calendar_vcalendar_make_from_records(calendar_list_h list, char **vcalen
 
 	b = _cal_vcalendar_make_new();
 	retvm_if(!b, CALENDAR_ERROR_OUT_OF_MEMORY,
-			 "_cal_vcalendar_make_new() Failed");
+			"_cal_vcalendar_make_new() Failed");
 
 	ret = _cal_vcalendar_make_vcalendar(b, list);
 
@@ -66,6 +70,7 @@ API int calendar_vcalendar_make_from_records(calendar_list_h list, char **vcalen
 
 	if (!*ical) {
 		ERR("No ical data");
+		free(ical);
 		return CALENDAR_ERROR_NO_DATA;
 	}
 
@@ -74,15 +79,64 @@ API int calendar_vcalendar_make_from_records(calendar_list_h list, char **vcalen
 	return CALENDAR_ERROR_NONE;
 }
 
+static const char* __calendar_vcalendar_get_vcalendar_object(const char *original, char **pvcalendar_object)
+{
+	int len = 0;
+	const char *vcal_start = original;
+	const char *vcal_cursor = NULL;
+	bool new_line = false;
+	char *vcalendar_object = NULL;
+
+	retv_if(NULL == pvcalendar_object, original);
+	*pvcalendar_object = NULL;
+
+	while ('\n' == *vcal_start || '\r' == *vcal_start)
+		vcal_start++;
+
+	if (strncmp(vcal_start, "BEGIN:VCALENDAR", strlen("BEGIN:VCALENDAR")))
+		return vcal_start;
+
+	vcal_start += strlen("BEGIN:VCALENDAR");
+	while ('\n' == *vcal_start || '\r' == *vcal_start)
+		vcal_start++;
+	vcal_cursor = vcal_start;
+
+	while (*vcal_cursor) {
+		if (new_line) {
+			if (0 == strncmp(vcal_cursor, "END:VCALENDAR", strlen("END:VCALENDAR"))) {
+				vcal_cursor += strlen("END:VCALENDAR");
+				while ('\r' == *vcal_cursor || '\n' == *vcal_cursor) {
+					new_line = true;
+					vcal_cursor++;
+				}
+
+				len = (int)vcal_cursor - (int)vcal_start;
+				vcalendar_object = calloc(len + 1, sizeof(char));
+				memcpy(vcalendar_object, vcal_start, len);
+				*pvcalendar_object = vcalendar_object;
+
+				return vcal_cursor;
+			}
+			new_line = false;
+		}
+		vcal_cursor++;
+		while ('\r' == *vcal_cursor || '\n' == *vcal_cursor) {
+			new_line = true;
+			vcal_cursor++;
+		}
+	}
+	return vcal_cursor;
+}
+
 /*
  * parse from here
  */
-
 API int calendar_vcalendar_parse_to_calendar(const char* vcalendar_stream, calendar_list_h *out_list)
 {
-	char *prop, *cont;
-	char *stream = NULL;
-	char *cursor = NULL;
+	int count = 0;
+	const char *cursor = NULL;
+	char *vcalendar_object = NULL;
+	calendar_error_e err;
 	calendar_list_h list = NULL;
 
 	retvm_if(vcalendar_stream == NULL, CALENDAR_ERROR_INVALID_PARAMETER,
@@ -90,150 +144,121 @@ API int calendar_vcalendar_parse_to_calendar(const char* vcalendar_stream, calen
 	retvm_if(out_list == NULL, CALENDAR_ERROR_INVALID_PARAMETER,
 			"Invalid argument: calendar_list_h * is NULL");
 
-	stream  = strdup(vcalendar_stream);
-	cursor = stream;
+	// get vcalendar object
+	cursor = vcalendar_stream;
 
-	cursor = _cal_vcalendar_parse_remove_space(cursor);
-	if (cursor == NULL) {
-		ERR("_cal_vcalendar_parse_remove_space() failed");
-		CAL_FREE(stream);
-		return CALENDAR_ERROR_OUT_OF_MEMORY;
+	int ret = 0;
+	ret = calendar_list_create(&list);
+	retvm_if (CALENDAR_ERROR_NONE != ret, ret, "Failed to calendar_list_create()");
+
+	_cal_time_init();
+
+	while (NULL != (cursor = __calendar_vcalendar_get_vcalendar_object(cursor, &vcalendar_object))) {
+		if (NULL == vcalendar_object)
+			break;
+
+		err = _cal_vcalendar_parse_vcalendar_object(vcalendar_object, list, NULL);
+		if (CALENDAR_ERROR_NONE != err) {
+			ERR("_cal_vcalendar_parse_vcalendar_object() failed(%d)", err);
+			calendar_list_destroy(list, true);
+			free(vcalendar_object);
+			_cal_time_fini();
+			return err;
+		}
+		free(vcalendar_object);
 	}
-	_cal_vcalendar_parse_unfolding(cursor);
-
-	cursor = _cal_vcalendar_parse_read_line(cursor, &prop, &cont);
-	if (cursor == NULL) {
-		ERR("_cal_vcalendar_parse_read_line() failed");
-		CAL_FREE(prop);
-		CAL_FREE(cont);
-		CAL_FREE(stream);
-		return CALENDAR_ERROR_OUT_OF_MEMORY;
+	calendar_list_get_count(list, &count);
+	if (count <= 0) {
+		calendar_list_destroy(list, true);
+		_cal_time_fini();
+		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-
-	if (strncmp(prop, "BEGIN", strlen("BEGIN")) ||
-			strncmp(cont + 1, "VCALENDAR", strlen("VCALENDAR"))) {
-		ERR("Failed to find BEGIN:VCALDENDAR [%s][%s]", prop, cont);
-		CAL_FREE(prop);
-		CAL_FREE(cont);
-		return -1;
-	}
-	CAL_FREE(prop);
-	CAL_FREE(cont);
-
-	_cal_vcalendar_parse_vcalendar(&list, cursor);
-	if (list == NULL) {
-		ERR("No schedules");
-		CAL_FREE(stream);
-		return CALENDAR_ERROR_NO_DATA;
-	}
-
 	calendar_list_first(list);
 	*out_list = list;
-
-	CAL_FREE(stream);
+	_cal_time_fini();
 	return CALENDAR_ERROR_NONE;
 }
 
 API int calendar_vcalendar_parse_to_calendar_foreach(const char *vcalendar_file_path, calendar_vcalendar_parse_cb callback, void *user_data)
 {
-    FILE *file;
-	int ret = CALENDAR_ERROR_NONE;
-    int buf_size, len;
-    char *stream;
-    char buf[1024];
+	FILE *file;
+	int buf_size, len;
+	char *stream;
+	char buf[1024];
+	vcalendar_foreach_s *foreach_data = NULL;
 
-    retvm_if(vcalendar_file_path == NULL, CALENDAR_ERROR_INVALID_PARAMETER,
-            "Invalid argument: vcalendar_file_path is NULL");
-    retvm_if(callback == NULL, CALENDAR_ERROR_INVALID_PARAMETER,
-            "Invalid argument: callback is NULL");
+	retvm_if(vcalendar_file_path == NULL, CALENDAR_ERROR_INVALID_PARAMETER,
+			"Invalid argument: vcalendar_file_path is NULL");
+	retvm_if(callback == NULL, CALENDAR_ERROR_INVALID_PARAMETER,
+			"Invalid argument: callback is NULL");
 
-    file = fopen(vcalendar_file_path, "r");
+	int ret = 0;
+	calendar_list_h list = NULL;
+	ret = calendar_list_create(&list);
+	retvm_if (CALENDAR_ERROR_NONE != ret, ret, "Failed to calendar_list_create()");
 
-    retvm_if(file == NULL, CALENDAR_ERROR_INVALID_PARAMETER,
-            "Invalid argument: no file");
+	file = fopen(vcalendar_file_path, "r");
+	if (file == NULL) {
+		ERR("Invalid argument: no file");
+		calendar_list_destroy(list, true);
+		return CALENDAR_ERROR_INVALID_PARAMETER;
+	}
 
-    len = 0;
-    buf_size = ICALENAR_BUFFER_MAX;
-    stream = malloc(ICALENAR_BUFFER_MAX);
+	len = 0;
+	buf_size = ICALENAR_BUFFER_MAX;
+	stream = malloc(ICALENAR_BUFFER_MAX);
 
-    while (fgets(buf, sizeof(buf), file))
-    {
-        if (len + sizeof(buf) < buf_size)
-        {
-            len += snprintf(stream + len, strlen(buf) +1, "%s", buf);
-        }
-        else
-        {
-            char *new_stream;
-            buf_size *= 2;
-            new_stream = realloc(stream, buf_size);
-            if (new_stream)
-            {
-                stream = new_stream;
-            } else
-            {
-                if (stream) free(stream);
-                fclose(file);
-                ERR("out of memory");
-                return CALENDAR_ERROR_OUT_OF_MEMORY;
-            }
-            len += snprintf(stream + len, strlen(buf) +1, "%s", buf);
-        }
+	foreach_data = calloc(1, sizeof(vcalendar_foreach_s));
+	foreach_data->callback = callback;
+	foreach_data->user_data = user_data;
+	foreach_data->ret = true;
 
-        if (!strncmp(buf, "END:VCALENDAR", strlen("END:VCALENDAR")))
-        {
-            DBG("end vcalendar");
-            calendar_list_h list = NULL;
-            int count = 0, i = 0;
-
-            if (calendar_vcalendar_parse_to_calendar(stream, &list) != CALENDAR_ERROR_NONE)
-            {
-                ERR("calendar_vcalendar_parse_to_calendar fail");
-                if (stream) free(stream);
-                fclose(file);
-                return CALENDAR_ERROR_INVALID_PARAMETER;
-            }
-
-            ret = calendar_list_get_count(list, &count);
-			if (ret != CALENDAR_ERROR_NONE || count < 1)
-			{
-				ERR("calendar_list_get_count() failed");
-				calendar_list_destroy(list, true);
-				if (stream) free(stream);
-				fclose(file);
-				return ret;
+	while (fgets(buf, sizeof(buf), file)) {
+		if (len + sizeof(buf) < buf_size) {
+			len += snprintf(stream + len, strlen(buf) +1, "%s", buf);
+		}
+		else {
+			char *new_stream;
+			buf_size *= 2;
+			new_stream = realloc(stream, buf_size);
+			if (new_stream) {
+				stream = new_stream;
 			}
+			else {
+				free(stream);
+				fclose(file);
+				free(foreach_data);
+				calendar_list_destroy(list, true);
+				ERR("out of memory");
+				return CALENDAR_ERROR_OUT_OF_MEMORY;
+			}
+			len += snprintf(stream + len, strlen(buf) +1, "%s", buf);
+		}
 
-			DBG("vcalendar has count(%d)", count);
-            calendar_list_first(list);
-            for(i = 0; i < count; i++)
-            {
-                calendar_record_h record = NULL;
-                if (calendar_list_get_current_record_p(list,&record) != CALENDAR_ERROR_NONE)
-                {
-                    ERR("calendar_list_get_count fail");
-                    calendar_list_destroy(list, true);
-                    if (stream) free(stream);
-                    fclose(file);
-                    return CALENDAR_ERROR_INVALID_PARAMETER;
-                }
-                if (!callback(record, user_data))
-                {
-                    ERR("callback is false");
-                    calendar_list_destroy(list, true);
-                    if (stream) free(stream);
-                    fclose(file);
-                    return CALENDAR_ERROR_INVALID_PARAMETER;
-                }
-				calendar_list_next(list);
-            }
+		if (0 == strncmp(buf, "END:VCALENDAR", strlen("END:VCALENDAR"))) {
+			DBG("end vcalendar");
+			int err;
+			char *vcalendar_object = NULL;
+			__calendar_vcalendar_get_vcalendar_object(stream, &vcalendar_object);
+			err = _cal_vcalendar_parse_vcalendar_object(vcalendar_object, list, foreach_data);
+			if (CALENDAR_ERROR_NONE != err || false == foreach_data->ret) {
+				ERR("_cal_vcalendar_parse_vcalendar_object() failed(%d)", err);
+				calendar_list_destroy(list, true);
+				free(vcalendar_object);
+				free(stream);
+				free(foreach_data);
+				fclose(file);
+				return err;
+			}
+			free(vcalendar_object);
+			len = 0;
+		}
+	}
 
-            calendar_list_destroy(list, true);
-            len = 0;
-        }
-    }
-    if (stream) free(stream);
-    fclose(file);
+	calendar_list_destroy(list, true);
+	free(stream);
+	free(foreach_data);
+	fclose(file);
 
-    return CALENDAR_ERROR_NONE;
+	return CALENDAR_ERROR_NONE;
 }

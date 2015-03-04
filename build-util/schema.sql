@@ -15,11 +15,11 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
+PRAGMA user_version = 105;
 
 CREATE TABLE schedule_table
 (
 id INTEGER PRIMARY KEY AUTOINCREMENT,
-account_id INTEGER,
 type INTEGER,
 summary TEXT,
 description TEXT,
@@ -41,7 +41,6 @@ original_event_id INTEGER DEFAULT -1,
 latitude DOUBLE,
 longitude DOUBLE,
 email_id INTEGER,
-availability INTEGER,
 created_time INTEGER,
 completed_time INTEGER,
 progress INTEGER,
@@ -50,11 +49,11 @@ created_ver INTEGER,
 is_deleted INTEGER DEFAULT 0,
 dtstart_type INTEGER,
 dtstart_utime INTEGER,
-dtstart_datetime TEXT,
+dtstart_datetime DATE,
 dtstart_tzid TEXT,
 dtend_type INTEGER,
 dtend_utime INTEGER,
-dtend_datetime TEXT,
+dtend_datetime DATE,
 dtend_tzid TEXT,
 last_mod INTEGER,
 rrule_id INTEGER DEFAULT 0,
@@ -67,11 +66,24 @@ updated INTEGER,
 sync_data1 TEXT,
 sync_data2 TEXT,
 sync_data3 TEXT,
-sync_data4 TEXT
+sync_data4 TEXT,
+has_exception INTEGER DEFAULT 0,
+has_extended INTEGER DEFAULT 0,
+freq INTEGER DEFAULT 0,
+is_allday INTEGER DEFAULT 0
 );
 CREATE INDEX sch_idx1 ON schedule_table(type);
 CREATE INDEX sch_idx2 ON schedule_table(calendar_id);
-CREATE TRIGGER trg_sch_del AFTER DELETE ON schedule_table
+CREATE INDEX sch_idx3 ON schedule_table(sync_data4);
+
+CREATE TRIGGER trg_original_mod AFTER UPDATE OF is_deleted ON schedule_table
+ BEGIN
+   DELETE FROM normal_instance_table WHERE event_id = (SELECT rowid FROM schedule_table WHERE original_event_id = old.id);
+   DELETE FROM allday_instance_table WHERE event_id = (SELECT rowid FROM schedule_table WHERE original_event_id = old.id);
+   UPDATE schedule_table SET is_deleted = 1 WHERE original_event_id = old.id;
+ END;
+
+CREATE TRIGGER trg_schedule_del AFTER DELETE ON schedule_table
  BEGIN
    DELETE FROM rrule_table WHERE event_id = old.id;
    DELETE FROM alarm_table WHERE event_id = old.id;
@@ -83,11 +95,17 @@ CREATE TRIGGER trg_sch_del AFTER DELETE ON schedule_table
    DELETE FROM extended_table WHERE record_id = old.id AND record_type = 3;
  END;
 
-CREATE TRIGGER trig_original_mod AFTER UPDATE OF is_deleted ON schedule_table
+-- type + 1: is cal_record_type_e = cal_sch_type_e + 1
+CREATE TRIGGER trg_schedule_del2 AFTER DELETE ON schedule_table
+ WHEN old.is_deleted = 0 AND old.calendar_id = (SELECT id FROM calendar_table WHERE id = old.calendar_id)
  BEGIN
-   DELETE FROM normal_instance_table WHERE event_id = (SELECT rowid FROM schedule_table WHERE original_event_id = old.id);
-   DELETE FROM allday_instance_table WHERE event_id = (SELECT rowid FROM schedule_table WHERE original_event_id = old.id);
-   UPDATE schedule_table SET is_deleted = 1 WHERE original_event_id = old.id;
+   INSERT INTO deleted_table VALUES(old.id, old.type + 1, old.calendar_id, (SELECT ver FROM version_table) + 1, old.created_ver, old.original_event_id);
+ END;
+
+CREATE TRIGGER trg_schedule_del3 AFTER DELETE ON schedule_table
+ WHEN old.is_deleted = 1 AND old.calendar_id = (SELECT id FROM calendar_table WHERE id = old.calendar_id)
+ BEGIN
+   INSERT INTO deleted_table VALUES(old.id, old.type + 1, old.calendar_id, old.changed_ver, old.created_ver, old.original_event_id);
  END;
 
 CREATE TABLE rrule_table
@@ -120,16 +138,20 @@ dtstart_utime INTEGER,
 dtend_utime INTEGER
 );
 CREATE INDEX n_i_idx1 ON normal_instance_table(event_id, dtstart_utime);
-CREATE INDEX n_i_idx2 ON normal_instance_table(dtstart_utime);
+--CREATE INDEX n_i_idx2 ON normal_instance_table(dtstart_utime);
+CREATE INDEX n_i_idx3 ON normal_instance_table (dtend_utime, dtstart_utime);
+CREATE INDEX n_i_idx4 ON normal_instance_table (dtstart_utime, dtend_utime);
 
 CREATE TABLE allday_instance_table
 (
 event_id INTEGER,
-dtstart_datetime TEXT,
-dtend_datetime TEXT
+dtstart_datetime DATE,
+dtend_datetime DATE
 );
 CREATE INDEX a_i_idx1 ON allday_instance_table(event_id, dtstart_datetime);
-CREATE INDEX a_i_idx2 ON allday_instance_table(dtstart_datetime);
+--CREATE INDEX a_i_idx2 ON allday_instance_table(dtstart_datetime);
+CREATE INDEX a_i_idx3 ON allday_instance_table (dtend_datetime, dtstart_datetime);
+CREATE INDEX a_i_idx4 ON allday_instance_table (dtstart_datetime, dtend_datetime);
 
 CREATE TABLE attendee_table
 (
@@ -138,15 +160,18 @@ attendee_name TEXT,
 attendee_email TEXT,
 attendee_number TEXT,
 attendee_status INTEGER,
-attendee_type INTEGER,
 attendee_ct_index INTEGER,
 attendee_role INTEGER,
 attendee_rsvp INTEGER,
 attendee_group TEXT,
 attendee_delegator_uri TEXT,
-attendee_delegate_uri TEXT,
-attendee_uid TEXT
+attendee_uid TEXT,
+attendee_cutype INTEGER,
+attendee_delegatee_uri TEXT,
+attendee_member TEXT
 );
+
+CREATE INDEX attendee_idx1 on attendee_table(event_id);
 
 CREATE TABLE calendar_table
 (
@@ -166,7 +191,9 @@ sync_data1 TEXT,
 sync_data2 TEXT,
 sync_data3 TEXT,
 sync_data4 TEXT,
-deleted INTEGER DEFAULT 0
+deleted INTEGER DEFAULT 0,
+mode INTEGER DEFAULT 0,
+owner_label TEXT
 );
 
 CREATE TABLE timezone_table
@@ -198,23 +225,17 @@ CREATE TRIGGER trg_cal_del AFTER DELETE ON calendar_table
 CREATE TABLE alarm_table
 (
 event_id INTEGER,
-alarm_time INTEGER,
 remind_tick INTEGER,
 remind_tick_unit INTEGER,
-alarm_tone TEXT,
 alarm_description TEXT,
 alarm_type INTEGER,
-alarm_id INTEGER default 0
+alarm_id INTEGER DEFAULT 0,
+alarm_summary TEXT,
+alarm_action INTEGER DEFAULT 0,
+alarm_attach TEXT,
+alarm_utime INTEGER,
+alarm_datetime DATE
 );
-
-CREATE TABLE reminder_table
-(
-pkgname TEXT NOT NULL,
-onoff INTEGER default 1,
-key TEXT,
-value TEXT
-);
-INSERT INTO reminder_table VALUES('org.tizen.calendar', 1, NULL, NULL);
 
 CREATE TABLE extended_table
 (
@@ -230,16 +251,19 @@ CREATE TABLE deleted_table
 schedule_id INTEGER,
 schedule_type INTEGER,
 calendar_id INTEGER,
-deleted_ver INTEGER
+deleted_ver INTEGER,
+created_ver INTEGER,
+original_event_id INTEGER DEFAULT -1
 );
 CREATE INDEX deleted_schedule_ver_idx ON deleted_table(deleted_ver);
 
 CREATE TABLE version_table
 (
-ver INTEGER PRIMARY KEY
+ver INTEGER PRIMARY KEY,
+contacts_ver INTEGER DEFAULT 0
 );
-INSERT INTO version_table VALUES(0);
+INSERT INTO version_table VALUES(0, 0);
 
-INSERT INTO calendar_table VALUES(1,0,0,'Default event calendar'   ,0,'224.167.79.255',0,1,1,0,-1,1,0,0,0,0,0);
-INSERT INTO calendar_table VALUES(2,0,0,'Default todo calendar'    ,0,'41.177.227.255',0,1,1,0,-1,2,0,0,0,0,0);
-INSERT INTO calendar_table VALUES(3,0,0,'Default birthday calendar',0,'141.17.27.255' ,0,1,0,0,-1,1,0,0,0,0,0);
+INSERT INTO calendar_table VALUES(1,0,0,'Default event calendar'   ,0,'224.167.79.255',0,1,1,0,-1,1,0,0,0,0,0,0,'calendar');
+INSERT INTO calendar_table VALUES(2,0,0,'Default todo calendar'    ,0,'41.177.227.255',0,1,1,0,-1,2,0,0,0,0,0,0,'calendar');
+INSERT INTO calendar_table VALUES(3,0,0,'Default birthday calendar',0,'141.17.27.255' ,0,1,0,0,-1,1,0,0,0,0,0,0,'calendar');

@@ -28,17 +28,17 @@
 #define CAL_DB_JOURNAL_PATH tzplatform_mkpath(TZ_USER_DB, ".calendar-svc.db-journal")
 
 // For Security
-#define CAL_SECURITY_FILE_GROUP 6003
+#define CAL_SECURITY_FILE_GROUP 5000
 #define CAL_SECURITY_DEFAULT_PERMISSION 0660
 #define CAL_SECURITY_DIR_DEFAULT_PERMISSION 0770
 
 #define CAL_DB_SQL_MAX_LEN 2048
 #define CAL_DB_SQL_MIN_LEN 1024
+#define _BUFFER_ORDER 128
 
 // DB table
 #define CAL_TABLE_SCHEDULE "schedule_table"
 #define CAL_TABLE_ALARM "alarm_table"
-#define CAL_REMINDER_ALERT "reminder_table"
 #define CAL_TABLE_CALENDAR "calendar_table"
 #define CAL_TABLE_ATTENDEE "attendee_table"
 #define CAL_TABLE_TIMEZONE "timezone_table"
@@ -58,6 +58,17 @@
 #define CAL_VIEW_TABLE_EVENT_CALENDAR_ATTENDEE "event_calendar_attendee_view"
 #define CAL_VIEW_TABLE_NORMAL_INSTANCE "normal_instance_view"
 #define CAL_VIEW_TABLE_ALLDAY_INSTANCE "allday_instance_view"
+#define CAL_VIEW_TABLE_NORMAL_INSTANCE_EXTENDED "normal_instance_view_extended"
+#define CAL_VIEW_TABLE_ALLDAY_INSTANCE_EXTENDED "allday_instance_view_extended"
+
+#define CAL_QUERY_SCHEDULE_A_ALL "A.id, A.type, A.summary, A.description, A.location, A.categories, A.exdate, A.task_status, "\
+				"A.priority, A.timezone, A.contact_id, A.busy_status, A.sensitivity, A.uid, A.organizer_name, "\
+				"A.organizer_email, A.meeting_status, A.calendar_id, A.original_event_id, A.latitude, A.longitude, "\
+				"A.email_id, A.created_time, A.completed_time, A.progress, A.changed_ver, A.created_ver, A.is_deleted, "\
+				"A.dtstart_type, A.dtstart_utime, A.dtstart_datetime, A.dtstart_tzid, "\
+				"A.dtend_type, A.dtend_utime, A.dtend_datetime, A.dtend_tzid, "\
+				"A.last_mod, A.rrule_id, A.recurrence_id, A.rdate, A.has_attendee, A.has_alarm, A.system_type, A.updated, "\
+				"A.sync_data1, A.sync_data2, A.sync_data3, A.sync_data4, A.has_exception, A.has_extended, A.freq, A.is_allday "
 
 typedef int (*cal_db_insert_record_cb)( calendar_record_h record, int* id );
 typedef int (*cal_db_get_record_cb)( int id, calendar_record_h* out_record );
@@ -74,23 +85,27 @@ typedef int (*cal_db_replace_record)(calendar_record_h record, int record_id);
 typedef int (*cal_db_replace_records)(calendar_list_h record_list, int *record_id_array, int count);
 
 typedef struct {
-    bool is_query_only;
-    cal_db_insert_record_cb insert_record;
-    cal_db_get_record_cb get_record;
-    cal_db_update_record_cb update_record;
-    cal_db_delete_record_cb delete_record;
-    cal_db_get_all_records_cb get_all_records;
-    cal_db_get_records_with_query_cb get_records_with_query;
-    cal_db_insert_records_cb insert_records;
-    cal_db_update_records_cb update_records;
-    cal_db_delete_records_cb delete_records;
-    cal_db_get_count_cb get_count;
-    cal_db_get_count_with_query_cb get_count_with_query;
-    cal_db_replace_record replace_record;
-    cal_db_replace_records replace_records;
+	bool is_query_only;
+	cal_db_insert_record_cb insert_record;
+	cal_db_get_record_cb get_record;
+	cal_db_update_record_cb update_record;
+	cal_db_delete_record_cb delete_record;
+	cal_db_get_all_records_cb get_all_records;
+	cal_db_get_records_with_query_cb get_records_with_query;
+	cal_db_insert_records_cb insert_records;
+	cal_db_update_records_cb update_records;
+	cal_db_delete_records_cb delete_records;
+	cal_db_get_count_cb get_count;
+	cal_db_get_count_with_query_cb get_count_with_query;
+	cal_db_replace_record replace_record;
+	cal_db_replace_records replace_records;
 } cal_db_plugin_cb_s;
 
 int _cal_db_open(void);
 int _cal_db_close(void);
+
+int _cal_db_get_record( const char* view_uri, int record_id, calendar_record_h* record );
+int _cal_db_append_string(char **dst, char *src);
+void _cal_db_initialize_view_table(void);
 
 #endif // __CALENDAR_SVC_DB_H__

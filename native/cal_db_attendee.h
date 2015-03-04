@@ -22,8 +22,8 @@
 
 #include "cal_db.h"
 
-int _cal_db_attendee_get_records(int event_id, GList **out_list);
-int _cal_db_attendee_convert_gtoh(GList *glist, int id, calendar_list_h *hlist);
+int _cal_db_attendee_get_records(int event_id, cal_list_s *list);
 int _cal_db_attendee_delete_with_id(int event_id);
+int _cal_db_attendee_insert_records(cal_list_s *list_s, int event_id);
 
 #endif  //__CALENDAR_SVC_DB_ATTENDEE_H__

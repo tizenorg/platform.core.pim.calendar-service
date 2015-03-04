@@ -1,7 +1,7 @@
 #
 # Calendar Service
 #
-# Copyright (c) 2012 - 2013 Samsung Electronics Co., Ltd. All rights reserved.
+# Copyright (c) 2010 - 2012 Samsung Electronics Co., Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,19 +18,17 @@
 
 #!/bin/sh
 
-echo "###### API Generator #####"
+echo "###### DB Generator #####"
 
-cd header-gen
+cd build-util
 make
 
-# Schema
-./schema-header-gen ../schema.sql > ../schema.h
+# Make DB schema for generating DB file when running calendar server daemon
+echo "static const char *schema_query = \"\\" > ../server/schema.h
+./DB-schema-gen ./schema.sql >> ../server/schema.h
+echo \"\; >> ../server/schema.h
 
-make clean
-
-# Make DB
-cd ../db-gen
-make
-../initdb ../
+# Make DB file at builing time
+sqlite3 .calendar-svc.db < schema.sql
 
 make clean

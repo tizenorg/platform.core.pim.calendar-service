@@ -25,14 +25,14 @@
 
 typedef enum
 {
-    CAL_DB_ERROR_FAIL   = -1,
-    CAL_DB_ERROR_LOCKED = -204,         //SQLITE_BUSY, SQLITE_LOCKED
-    CAL_DB_ERROR_IOERR = -10,           //SQLITE_IOERR              /* Some kind of disk I/O error occurred */
-    CAL_DB_ERROR_NO_SPACE = -11,        //SQLITE_FULL               /* Insertion failed because database is full */
-    CAL_DB_ERROR_ALREADY_EXIST = -7,    //SQLITE_CONSTRAINT         /* Abort due to constraint violation */
-    CAL_DB_ROW = 1,                     //SQLITE_ROW    CAL_TRUE    /* sqlite3_step() has another row ready */
-    CAL_DB_DONE = 0,                    //SQLITE_DONE   CAL_SUCCESS /* sqlite3_step() has finished executing */
-    CAL_DB_OK = 0,                      //SQLITE_OK                 /* Successful result */
+	CAL_DB_ERROR_FAIL   = -1,
+	CAL_DB_ERROR_LOCKED = -204,         //SQLITE_BUSY, SQLITE_LOCKED
+	CAL_DB_ERROR_IOERR = -10,           //SQLITE_IOERR              /* Some kind of disk I/O error occurred */
+	CAL_DB_ERROR_NO_SPACE = -11,        //SQLITE_FULL               /* Insertion failed because database is full */
+	CAL_DB_ERROR_ALREADY_EXIST = -7,    //SQLITE_CONSTRAINT         /* Abort due to constraint violation */
+	CAL_DB_ROW = 1,                     //SQLITE_ROW    CAL_TRUE    /* sqlite3_step() has another row ready */
+	CAL_DB_DONE = 0,                    //SQLITE_DONE   CAL_SUCCESS /* sqlite3_step() has finished executing */
+	CAL_DB_OK = 0,                      //SQLITE_OK                 /* Successful result */
 } cal_db_util_error_e;
 
 int _cal_db_util_notify(cal_noti_type_e type);
@@ -48,7 +48,7 @@ sqlite3_stmt* _cal_db_util_query_prepare(char *query);
 cal_db_util_error_e _cal_db_util_stmt_step(sqlite3_stmt *stmt);
 
 static inline int _cal_db_util_stmt_bind_text(sqlite3_stmt *stmt, int pos, const char *str) {
-    return sqlite3_bind_text(stmt, pos, str, str ? strlen(str) : 0, SQLITE_STATIC);
+	return sqlite3_bind_text(stmt, pos, str, str ? strlen(str) : 0, SQLITE_STATIC);
 }
 
 int _cal_db_util_begin_trans(void);

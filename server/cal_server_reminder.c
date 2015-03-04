@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include <pims-ipc-svc.h>
 
-#include "calendar2.h"
+#include "calendar.h"
 #include "cal_internal.h" // DBG
 #include "cal_typedef.h"
 #include "cal_db.h"
@@ -32,10 +32,7 @@
 
 #define CAL_SUBSCRIBE_MAX_LEN 1024
 
-static __thread char *__data = NULL;
-static __thread int __len_data = 0;
-
-static gboolean __cal_server_reminder_publish_changes_with_data(unsigned char *data, int len)
+static gboolean __cal_server_reminder_publish_changes_with_data(char *data, int len)
 {
 	pims_ipc_data_h indata = NULL;
 	if (NULL == data)
@@ -53,44 +50,33 @@ static gboolean __cal_server_reminder_publish_changes_with_data(unsigned char *d
 	if (pims_ipc_data_put(indata, &len, sizeof(int)) != 0)
 	{
 		ERR("pims_ipc_data_put() failed");
+		pims_ipc_data_destroy(indata);
 		return false;
 	}
-	if (pims_ipc_data_put(indata, data, len + 1) != 0)
+	if (pims_ipc_data_put(indata, data, strlen(data) + 1) != 0)
 	{
 		ERR("pims_ipc_data_put() failed");
+		pims_ipc_data_destroy(indata);
 		return false;
 	}
 	if (pims_ipc_svc_publish(CAL_IPC_MODULE_FOR_SUBSCRIPTION, (char *)CAL_NOTI_REMINDER_CAHNGED, indata) != 0)
 	{
 		ERR("pims_ipc_svc_publish() failed");
+		pims_ipc_data_destroy(indata);
 		return false;
 	}
 	pims_ipc_data_destroy(indata);
 	return true;
 }
 
-void __cal_server_reminder_clear_changed_info(void)
+void _cal_server_reminder_publish(char *p)
 {
-	if (__data)
-	{
-		free(__data);
-		__data = NULL;
-		__len_data = 0;
-	}
+	retm_if (NULL == p, "Invalid parameter: p is NULL");
+	__cal_server_reminder_publish_changes_with_data(p, strlen(p));
 }
 
-void _cal_server_reminder_publish(void)
+int _cal_server_reminder_add_callback_data(char **p, char *key, char *value)
 {
-	if (__data)
-	{
-		__cal_server_reminder_publish_changes_with_data((unsigned char *)__data, __len_data);
-		__cal_server_reminder_clear_changed_info();
-	}
-}
-
-int _cal_server_reminder_add_callback_data(char *key, char *value)
-{
-	int len_data = 0;
 	int len_key = 0;
 	int len_value = 0;
 
@@ -103,36 +89,28 @@ int _cal_server_reminder_add_callback_data(char *key, char *value)
 	len_key = strlen(key);
 	len_value = strlen(value);
 	DBG("key[%s]value[%s]", key, value);
-	if (NULL == __data)
+
+	if (NULL == *p)
 	{
-		__len_data = len_key + len_value + 2;
-		__data = calloc(__len_data, sizeof(char));
-		if (NULL == __data)
-		{
+		int len = len_key + len_value + 2;
+		*p = calloc(len, sizeof(char));
+		if (NULL == *p) {
 			ERR("calloc() failed");
 			return CALENDAR_ERROR_DB_FAILED;
 		}
-		snprintf(__data, __len_data, "%s=%s", key, value);
-	}
-	else
-	{
-		char *p = NULL;
-		len_data = strlen(__data);
+		snprintf(*p, len, "%s=%s", key, value);
 
-		__len_data = len_data + len_key + len_value + 3;
-		p = calloc(__len_data, sizeof(char));
-		if (NULL == __data)
-		{
+	} else {
+		int len = strlen(*p) + len_key + len_value + 3;
+		char *temp = calloc(len, sizeof(char));
+		if (NULL == temp) {
 			ERR("recalloc() failed");
 			return CALENDAR_ERROR_DB_FAILED;
 		}
-		snprintf(p, __len_data, "%s&%s=%s", __data, key, value);
-		free(__data);
-		__data = p;
-
+		snprintf(temp, len, "%s&%s=%s", *p, key, value);
+		free(*p);
+		*p = temp;
 	}
-
-	DBG("data[%s]len(%d)", __data, __len_data);
 	return CALENDAR_ERROR_NONE;
 }
 

@@ -19,6 +19,8 @@ SET(SRCS
 	${CMAKE_SOURCE_DIR}/common/cal_record_updated_info.c
 	${CMAKE_SOURCE_DIR}/common/cal_record_instance_normal.c
 	${CMAKE_SOURCE_DIR}/common/cal_record_instance_allday.c
+	${CMAKE_SOURCE_DIR}/common/cal_record_instance_normal_extended.c
+	${CMAKE_SOURCE_DIR}/common/cal_record_instance_allday_extended.c
 	${CMAKE_SOURCE_DIR}/common/cal_record_extended.c
 	${CMAKE_SOURCE_DIR}/common/cal_view.c
 	${CMAKE_SOURCE_DIR}/common/cal_filter.c
@@ -40,18 +42,24 @@ SET(SRCS
 	${CMAKE_SOURCE_DIR}/native/cal_db_query.c
 	${CMAKE_SOURCE_DIR}/native/cal_db_plugin_calendar.c
 	${CMAKE_SOURCE_DIR}/native/cal_db_plugin_event.c
+	${CMAKE_SOURCE_DIR}/native/cal_db_event.c
+	${CMAKE_SOURCE_DIR}/native/cal_db_plugin_attendee.c
+	${CMAKE_SOURCE_DIR}/native/cal_db_plugin_alarm.c
 	${CMAKE_SOURCE_DIR}/native/cal_db_plugin_search.c
 	${CMAKE_SOURCE_DIR}/native/cal_db_plugin_timezone.c
 	${CMAKE_SOURCE_DIR}/native/cal_db_plugin_instance_normal.c
+	${CMAKE_SOURCE_DIR}/native/cal_db_plugin_instance_normal_extended.c
 	${CMAKE_SOURCE_DIR}/native/cal_db_plugin_instance_allday.c
+        ${CMAKE_SOURCE_DIR}/native/cal_db_plugin_instance_allday_extended.c
 	${CMAKE_SOURCE_DIR}/native/cal_db_plugin_todo.c
 	${CMAKE_SOURCE_DIR}/native/cal_db_plugin_extended.c
 	${CMAKE_SOURCE_DIR}/native/cal_db_extended.c
 	${CMAKE_SOURCE_DIR}/native/cal_reminder.c
+	${CMAKE_SOURCE_DIR}/native/cal_db_instance_helper.c
 )
 
 INCLUDE(FindPkgConfig)
-pkg_check_modules(servicenative_pkgs REQUIRED db-util appsvc alarm-service capi-base-common)
+pkg_check_modules(servicenative_pkgs REQUIRED db-util alarm-service capi-base-common)
 
 FOREACH(flag ${servicenative_pkgs_CFLAGS})
 	SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} ${flag}")
@@ -67,10 +75,10 @@ ADD_DEFINITIONS("-DPREFIX=\"${PREFIX}\"")
 
 #SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS}")
 
-ADD_LIBRARY(${CALSVCNATIVE} SHARED ${SRCS})
-SET_TARGET_PROPERTIES(${CALSVCNATIVE} PROPERTIES SOVERSION ${VERSION_MAJOR})
-SET_TARGET_PROPERTIES(${CALSVCNATIVE} PROPERTIES VERSION ${VERSION})
-TARGET_LINK_LIBRARIES(${CALSVCNATIVE} ${servicenative_pkgs_LDFLAGS})
+#ADD_LIBRARY(${CALSVCNATIVE} SHARED ${SRCS})
+#SET_TARGET_PROPERTIES(${CALSVCNATIVE} PROPERTIES SOVERSION ${VERSION_MAJOR})
+#SET_TARGET_PROPERTIES(${CALSVCNATIVE} PROPERTIES VERSION ${VERSION})
+#TARGET_LINK_LIBRARIES(${CALSVCNATIVE} ${servicenative_pkgs_LDFLAGS})
 
 INSTALL(TARGETS ${CALSVCNATIVE} DESTINATION ${LIB_INSTALL_DIR})
 

@@ -7,7 +7,7 @@ includedir=@INCLUDEDIR@
 
 Name: @CALSVC2@
 Description: @CALSVC2@ library
-Version: @VERSION@
-Requires: glib-2.0 alarm-service
+Version: @FULLVER@
+Requires: glib-2.0 alarm-service capi-base-common
 Libs: -L${libdir} -l@CALSVC2@
-Cflags: -I${includedir}
+Cflags: -I${includedir}2

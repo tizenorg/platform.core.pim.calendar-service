@@ -20,7 +20,8 @@
 #ifndef __CALENDAR_SVC_INOTIFY_H__
 #define __CALENDAR_SVC_INOTIFY_H__
 
-#include "calendar_types2.h"
+#include "calendar_db.h"
+#include "cal_typedef.h"
 
 #ifdef CAL_IPC_CLIENT
 void _cal_inotify_call_pending_callback(void);

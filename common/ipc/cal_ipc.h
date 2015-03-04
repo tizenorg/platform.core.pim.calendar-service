@@ -17,19 +17,19 @@
  *
  */
 
-#include <tzplatform_config.h>
-
 #ifndef __CAL_IPC_H__
 #define __CAL_IPC_H__
 
 #define CAL_IPC_SERVICE                             "cal_svc_ipc"
-#define CAL_IPC_SOCKET_PATH                         tzplatform_mkpath(TZ_USER_DATA, "calendar-svc/."CAL_IPC_SERVICE)
-#define CAL_IPC_SOCKET_PATH_FOR_SUBSCRIPTION        tzplatform_mkpath(TZ_USER_DATA, "calendar-svc/."CAL_IPC_SERVICE"_for_subscription")
+#define CAL_IPC_SOCKET_PATH                         "/tmp/."CAL_IPC_SERVICE
+#define CAL_IPC_SOCKET_PATH_FOR_SUBSCRIPTION        "/tmp/."CAL_IPC_SERVICE"_for_subscription"
 #define CAL_IPC_MODULE                              "cal_ipc_module"
 #define CAL_IPC_MODULE_FOR_SUBSCRIPTION             CAL_IPC_MODULE"_for_subscription"
 
 #define CAL_IPC_SERVER_CONNECT                      "connect"
 #define CAL_IPC_SERVER_DISCONNECT                   "disconnect"
+#define CAL_IPC_SERVER_CHECK_PERMISSION				"check_permission"
+
 #define CAL_IPC_SERVER_DB_INSERT_RECORD             "insert_record"
 #define CAL_IPC_SERVER_DB_GET_RECORD                "get_record"
 #define CAL_IPC_SERVER_DB_UPDATE_RECORD             "update_record"
@@ -48,11 +48,9 @@
 #define CAL_IPC_SERVER_DB_REPLACE_VCALENDARS        "replace_vcalendars"
 #define CAL_IPC_SERVER_DB_REPLACE_RECORD            "replace_record"
 #define CAL_IPC_SERVER_DB_REPLACE_RECORDS           "replace_records"
+#define CAL_IPC_SERVER_DB_CHANGES_EXCEPTION         "changes_exception"
 
-#define CAL_IPC_SERVER_DB_REGISTER_REMINDER         "register_reminder"
-#define CAL_IPC_SERVER_DB_UNREGISTER_REMINDER       "unregister_reminder"
-#define CAL_IPC_SERVER_DB_ACTIVATE_REMINDER         "activate_reminder"
-#define CAL_IPC_SERVER_DB_DEACTIVATE_REMINDER       "deactivate_reminder"
-#define CAL_IPC_SERVER_DB_HAS_REMINDER              "has_reminder"
-
+#ifdef CAL_MEMORY_TEST
+#define CAL_IPC_SERVER_DESTROY                      "destroy"
+#endif // #ifdef CAL_MEMORY_TEST
 #endif /*__CAL_IPC_H__*/

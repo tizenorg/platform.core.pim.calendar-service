@@ -65,16 +65,14 @@ static void __cal_record_attendee_struct_init(cal_attendee_s *record)
 static int __cal_record_attendee_create(calendar_record_h* out_record )
 {
 	cal_attendee_s *temp = NULL;
-	int ret= CALENDAR_ERROR_NONE, type = 0;
-
-	type = CAL_RECORD_TYPE_ATTENDEE;
+	int ret= CALENDAR_ERROR_NONE;
 
 	temp = (cal_attendee_s*)calloc(1,sizeof(cal_attendee_s));
 	retvm_if(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "malloc(cal_attendee_s:sch) Failed(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
 
 	__cal_record_attendee_struct_init(temp);
 
-    *out_record = (calendar_record_h)temp;
+	*out_record = (calendar_record_h)temp;
 
 	return ret;
 }
@@ -85,19 +83,20 @@ static void __cal_record_attendee_struct_free(cal_attendee_s *record)
 	CAL_FREE(record->attendee_uid);
 	CAL_FREE(record->attendee_group);
 	CAL_FREE(record->attendee_email);
-	CAL_FREE(record->attendee_delegate_uri);
+	CAL_FREE(record->attendee_delegatee_uri);
 	CAL_FREE(record->attendee_delegator_uri);
 	CAL_FREE(record->attendee_name);
+	CAL_FREE(record->attendee_member);
 	CAL_FREE(record);
 }
 
 static int __cal_record_attendee_destroy( calendar_record_h record, bool delete_child )
 {
-    int ret = CALENDAR_ERROR_NONE;
+	int ret = CALENDAR_ERROR_NONE;
 
-    cal_attendee_s *temp = (cal_attendee_s*)(record);
+	cal_attendee_s *temp = (cal_attendee_s*)(record);
 
-    __cal_record_attendee_struct_free(temp);
+	__cal_record_attendee_struct_free(temp);
 
 	return ret;
 }
@@ -114,8 +113,8 @@ static int __cal_record_attendee_clone( calendar_record_h record, calendar_recor
 
 	CAL_RECORD_COPY_COMMON(&(out_data->common), &(src_data->common));
 
-	out_data->event_id = src_data->event_id;
-	out_data->attendee_type = src_data->attendee_type;
+	out_data->parent_id = src_data->parent_id;
+	out_data->attendee_cutype = src_data->attendee_cutype;
 	out_data->attendee_ct_index = src_data->attendee_ct_index;
 	out_data->attendee_role = src_data->attendee_role;
 	out_data->attendee_status = src_data->attendee_status;
@@ -124,11 +123,12 @@ static int __cal_record_attendee_clone( calendar_record_h record, calendar_recor
 	out_data->attendee_uid = SAFE_STRDUP(src_data->attendee_uid);
 	out_data->attendee_group = SAFE_STRDUP(src_data->attendee_group);
 	out_data->attendee_email = SAFE_STRDUP(src_data->attendee_email);
-	out_data->attendee_delegate_uri = SAFE_STRDUP(src_data->attendee_delegate_uri);
+	out_data->attendee_delegatee_uri = SAFE_STRDUP(src_data->attendee_delegatee_uri);
 	out_data->attendee_delegator_uri = SAFE_STRDUP(src_data->attendee_delegator_uri);
 	out_data->attendee_name = SAFE_STRDUP(src_data->attendee_name);
+	out_data->attendee_member = SAFE_STRDUP(src_data->attendee_member);
 
-    *out_record = (calendar_record_h)out_data;
+	*out_record = (calendar_record_h)out_data;
 
 	return CALENDAR_ERROR_NONE;
 }
@@ -150,8 +150,8 @@ static int __cal_record_attendee_get_str( calendar_record_h record, unsigned int
 	case CAL_PROPERTY_ATTENDEE_EMAIL:
 		*out_str = SAFE_STRDUP(rec->attendee_email);
 		break;
-	case CAL_PROPERTY_ATTENDEE_DELEGATE_URI:
-		*out_str = SAFE_STRDUP(rec->attendee_delegate_uri);
+	case CAL_PROPERTY_ATTENDEE_DELEGATEE_URI:
+		*out_str = SAFE_STRDUP(rec->attendee_delegatee_uri);
 		break;
 	case CAL_PROPERTY_ATTENDEE_DELEGATOR_URI:
 		*out_str = SAFE_STRDUP(rec->attendee_delegator_uri);
@@ -159,8 +159,11 @@ static int __cal_record_attendee_get_str( calendar_record_h record, unsigned int
 	case CAL_PROPERTY_ATTENDEE_NAME:
 		*out_str = SAFE_STRDUP(rec->attendee_name);
 		break;
+	case CAL_PROPERTY_ATTENDEE_MEMBER:
+		*out_str = SAFE_STRDUP(rec->attendee_member);
+		break;
 	default:
-	    ASSERT_NOT_REACHED("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)",property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -184,8 +187,8 @@ static int __cal_record_attendee_get_str_p( calendar_record_h record, unsigned i
 	case CAL_PROPERTY_ATTENDEE_EMAIL:
 		*out_str = (rec->attendee_email);
 		break;
-	case CAL_PROPERTY_ATTENDEE_DELEGATE_URI:
-		*out_str = (rec->attendee_delegate_uri);
+	case CAL_PROPERTY_ATTENDEE_DELEGATEE_URI:
+		*out_str = (rec->attendee_delegatee_uri);
 		break;
 	case CAL_PROPERTY_ATTENDEE_DELEGATOR_URI:
 		*out_str = (rec->attendee_delegator_uri);
@@ -193,8 +196,11 @@ static int __cal_record_attendee_get_str_p( calendar_record_h record, unsigned i
 	case CAL_PROPERTY_ATTENDEE_NAME:
 		*out_str = (rec->attendee_name);
 		break;
+	case CAL_PROPERTY_ATTENDEE_MEMBER:
+		*out_str = (rec->attendee_member);
+		break;
 	default:
-	    ASSERT_NOT_REACHED("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)",property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -206,11 +212,8 @@ static int __cal_record_attendee_get_int( calendar_record_h record, unsigned int
 	cal_attendee_s *rec = (cal_attendee_s*)(record);
 	switch( property_id )
 	{
-	//case CAL_PROPERTY_CALENDAR_ID:
-	//	*out_value = (rec->event_id);
-	//	break;
-	case CAL_PROPERTY_ATTENDEE_TYPE:
-		*out_value = (rec->attendee_type);
+	case CAL_PROPERTY_ATTENDEE_CUTYPE:
+		*out_value = (rec->attendee_cutype);
 		break;
 	case CAL_PROPERTY_ATTENDEE_CT_INDEX:
 		*out_value = (rec->attendee_ct_index);
@@ -224,11 +227,11 @@ static int __cal_record_attendee_get_int( calendar_record_h record, unsigned int
 	case CAL_PROPERTY_ATTENDEE_RSVP:
 		*out_value = (rec->attendee_rsvp);
 		break;
-	case CAL_PROPERTY_ATTENDEE_EVENT_ID:
-	    *out_value = (rec->event_id);
-	    break;
+	case CAL_PROPERTY_ATTENDEE_PARENT_ID:
+		*out_value = (rec->parent_id);
+		break;
 	default:
-	    ASSERT_NOT_REACHED("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)",property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -256,9 +259,9 @@ static int __cal_record_attendee_set_str( calendar_record_h record, unsigned int
 		CAL_FREE(rec->attendee_email);
 		rec->attendee_email = SAFE_STRDUP(value);
 		break;
-	case CAL_PROPERTY_ATTENDEE_DELEGATE_URI:
-		CAL_FREE(rec->attendee_delegate_uri);
-		rec->attendee_delegate_uri = SAFE_STRDUP(value);
+	case CAL_PROPERTY_ATTENDEE_DELEGATEE_URI:
+		CAL_FREE(rec->attendee_delegatee_uri);
+		rec->attendee_delegatee_uri = SAFE_STRDUP(value);
 		break;
 	case CAL_PROPERTY_ATTENDEE_DELEGATOR_URI:
 		CAL_FREE(rec->attendee_delegator_uri);
@@ -268,8 +271,12 @@ static int __cal_record_attendee_set_str( calendar_record_h record, unsigned int
 		CAL_FREE(rec->attendee_name);
 		rec->attendee_name = SAFE_STRDUP(value);
 		break;
+	case CAL_PROPERTY_ATTENDEE_MEMBER:
+		CAL_FREE(rec->attendee_member);
+		rec->attendee_member = SAFE_STRDUP(value);
+		break;
 	default:
-	    ASSERT_NOT_REACHED("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)",property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -281,11 +288,8 @@ static int __cal_record_attendee_set_int( calendar_record_h record, unsigned int
 	cal_attendee_s *rec = (cal_attendee_s*)(record);
 	switch( property_id )
 	{
-	//case CAL_PROPERTY_CALENDAR_ID:
-	//	*out_value = (rec->event_id);
-	//	break;
-	case CAL_PROPERTY_ATTENDEE_TYPE:
-		(rec->attendee_type) = value;
+	case CAL_PROPERTY_ATTENDEE_CUTYPE:
+		(rec->attendee_cutype) = value;
 		break;
 	case CAL_PROPERTY_ATTENDEE_CT_INDEX:
 		(rec->attendee_ct_index) = value;
@@ -299,11 +303,11 @@ static int __cal_record_attendee_set_int( calendar_record_h record, unsigned int
 	case CAL_PROPERTY_ATTENDEE_RSVP:
 		(rec->attendee_rsvp) = value;
 		break;
-    case CAL_PROPERTY_ATTENDEE_EVENT_ID:
-        (rec->event_id) = value;
-        break;
+	case CAL_PROPERTY_ATTENDEE_PARENT_ID:
+		(rec->parent_id) = value;
+		break;
 	default:
-	    ASSERT_NOT_REACHED("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)",property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
