@@ -477,7 +477,7 @@ typedef struct
 			int hour;			/**< hour */
 			int minute;			/**< minute */
 			int second;			/**< second */
-			bool is_leap_month; /**< Deprecated since 2.x:leap month */
+			bool is_leap_month; /**< Deprecated since 2.4:leap month */
 		}date;
 	}time;
 }calendar_time_s;
