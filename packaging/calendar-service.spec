@@ -7,6 +7,11 @@ License:    Apache 2.0
 Source0:    %{name}-%{version}.tar.gz
 Source1:    calendar-serviced.service
 Source2:    calendar-serviced.socket
+
+%if "%{?tizen_profile_name}" == "wearable"
+ExcludeArch: %{arm} %ix86 x86_64
+%endif
+
 Requires(post): /sbin/ldconfig
 Requires(post): /usr/bin/sqlite3, /bin/chown
 Requires(post): contacts-service2
