@@ -112,7 +112,7 @@ static int __cal_server_contacts_set_new_event(int id, char *label, int date, ch
 	snprintf(buf, sizeof(buf), "%d", st.time.date.mday);
 
 	ret = calendar_record_create(_calendar_event._uri, &event);
-	retvm_if(CALENDAR_ERROR_NONE != ret, ret, "calendar_record_create() failed");
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "calendar_record_create() failed");
 	ret = calendar_record_set_str(event, _calendar_event.summary, label);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("calendar_record_set_str() failed:summary");
@@ -201,7 +201,7 @@ static int __cal_server_contacts_find_delete_event(int id, int **delete_ids, int
 	calendar_filter_h filter = NULL;
 
 	ret = calendar_query_create(_calendar_event._uri, &query);
-	retvm_if(CALENDAR_ERROR_NONE != ret, ret, "calendar_query_create() failed");
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "calendar_query_create() failed");
 	ret = calendar_filter_create(_calendar_event._uri, &filter);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("calendar_filter_create() failed");
@@ -243,7 +243,7 @@ static int __cal_server_contacts_find_delete_event(int id, int **delete_ids, int
 
 	calendar_list_first(list);
 	*delete_count = 0;
-	*delete_ids = (int*)calloc(count, sizeof(int));
+	*delete_ids = calloc(count, sizeof(int));
 	do {
 		if (calendar_list_get_current_record_p(list, &event) == CALENDAR_ERROR_NONE) {
 			if (event == NULL) {
@@ -527,7 +527,7 @@ int _cal_server_contacts(void)
 	int ret;
 
 	ret = contacts_db_add_changed_cb(_contacts_event._uri, __contacts_changed_cb, NULL);
-	retvm_if(CONTACTS_ERROR_NONE != ret, ret, "contacts_db_add_changed_cb() failed");
+	RETVM_IF(CONTACTS_ERROR_NONE != ret, ret, "contacts_db_add_changed_cb() failed");
 
 	return CALENDAR_ERROR_NONE;
 }
@@ -548,7 +548,7 @@ void _cal_server_contacts_delete(int account_id)
 	snprintf(buf, sizeof(buf), "%d", account_id);
 
 	ret = calendar_query_create(_calendar_event._uri, &query);
-	retm_if(CALENDAR_ERROR_NONE != ret, "calendar_query_create() failed");
+	RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_query_create() failed");
 	ret = calendar_filter_create(_calendar_event._uri, &filter);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("calendar_filter_create() failed");
@@ -644,7 +644,7 @@ void _cal_server_contacts_delete(int account_id)
 static gpointer  __cal_server_contacts_sync_main(gpointer user_data)
 {
 	int ret = CALENDAR_ERROR_NONE;
-	CAL_FN_CALL;
+	CAL_FN_CALL();
 
 	while(1) {
 		ret = calendar_connect();
@@ -654,7 +654,7 @@ static gpointer  __cal_server_contacts_sync_main(gpointer user_data)
 
 		while(1) {
 			if (__cal_server_contacts_sync() == false) {
-				CAL_DBG("end");
+				DBG("end");
 				break;
 			}
 		}
@@ -663,7 +663,7 @@ static gpointer  __cal_server_contacts_sync_main(gpointer user_data)
 		calendar_disconnect();
 
 		g_mutex_lock(&__cal_server_contacts_sync_mutex);
-		CAL_DBG("wait");
+		DBG("wait");
 		g_cond_wait(&__cal_server_contacts_sync_cond, &__cal_server_contacts_sync_mutex);
 		g_mutex_unlock(&__cal_server_contacts_sync_mutex);
 	}
@@ -673,7 +673,7 @@ static gpointer  __cal_server_contacts_sync_main(gpointer user_data)
 
 void _cal_server_contacts_sync_start(void)
 {
-	CAL_FN_CALL;
+	CAL_FN_CALL();
 
 	if (__cal_server_contacts_sync_thread == NULL) {
 		g_mutex_init(&__cal_server_contacts_sync_mutex);

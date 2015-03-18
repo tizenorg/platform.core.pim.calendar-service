@@ -129,11 +129,10 @@ static int __cal_db_alarm_get_all_records(int offset, int limit, calendar_list_h
 	char limitquery[CAL_DB_SQL_MAX_LEN] = {0};
 	sqlite3_stmt *stmt = NULL;
 
-	retvm_if(NULL == out_list, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == out_list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	ret = calendar_list_create(out_list);
-
-	retvm_if(CALENDAR_ERROR_NONE != ret, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "calendar_list_create() Fail(%d)", ret);
 
 	if (offset > 0) {
 		snprintf(offsetquery, sizeof(offsetquery), "OFFSET %d", offset);
@@ -352,7 +351,7 @@ static int __cal_db_alarm_get_records_with_query(calendar_query_h query, int off
 		ERR("_cal_db_util_query_prepare() Failed");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
-	CAL_DBG("%s",query_str);
+	DBG("%s",query_str);
 
 	// bind text
 	if (bind_text)	{
@@ -434,7 +433,7 @@ static int __cal_db_alarm_get_count(int *out_count)
 	int count = 0;
 	int ret;
 
-	retvm_if(NULL == out_count, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == out_count, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	snprintf(query, sizeof(query), "SELECT count(*) FROM %s ", CAL_TABLE_ALARM);
 
@@ -443,7 +442,7 @@ static int __cal_db_alarm_get_count(int *out_count)
 		ERR("_cal_db_util_query_get_first_int_result() failed");
 		return ret;
 	}
-	CAL_DBG("%s=%d",query,count);
+	DBG("%s=%d",query,count);
 
 	*out_count = count;
 	return CALENDAR_ERROR_NONE;
@@ -502,7 +501,7 @@ static int __cal_db_alarm_get_count_with_query(calendar_query_h query, int *out_
 		CAL_FREE(query_str);
 		return ret;
 	}
-	CAL_DBG("%s=%d",query_str,count);
+	DBG("%s=%d",query_str,count);
 
 	*out_count = count;
 

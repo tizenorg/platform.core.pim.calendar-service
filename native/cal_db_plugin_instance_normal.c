@@ -71,7 +71,7 @@ static int __cal_db_instance_normal_delete_record(int id)
 	cal_db_util_error_e dbret = CAL_DB_OK;
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 
-	retvm_if(id < 0, CALENDAR_ERROR_INVALID_PARAMETER,
+	RETVM_IF(id < 0, CALENDAR_ERROR_INVALID_PARAMETER,
 			"Invalid argument: id(%d) < 0", id);
 
 	snprintf(query, sizeof(query),
@@ -102,19 +102,15 @@ static int __cal_db_instance_normal_get_all_records(int offset, int limit, calen
 	char limitquery[CAL_DB_SQL_MAX_LEN] = {0};
 	sqlite3_stmt *stmt = NULL;
 
-	retvm_if(NULL == out_list, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == out_list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	ret = calendar_list_create(out_list);
-	retvm_if(CALENDAR_ERROR_NONE != ret, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "calendar_list_create() Fail(%d)", ret);
 
 	if (offset > 0)
-	{
 		snprintf(offsetquery, sizeof(offsetquery), "OFFSET %d", offset);
-	}
 	if (limit > 0)
-	{
 		snprintf(limitquery, sizeof(limitquery), "LIMIT %d", limit);
-	}
 
 	char *query_str = NULL;
 	_cal_db_append_string(&query_str, "SELECT * FROM");
@@ -270,7 +266,7 @@ static int __cal_db_instance_normal_get_records_with_query(calendar_query_h quer
 		ERR("_cal_db_util_query_prepare() Failed");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
-	CAL_DBG("%s",query_str);
+	DBG("%s",query_str);
 
 	// bind text
 	if (bind_text)
@@ -360,7 +356,7 @@ static int __cal_db_instance_normal_get_records_with_query(calendar_query_h quer
 
 static int __cal_db_instance_normal_get_count(int *out_count)
 {
-	retvm_if(NULL == out_count, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == out_count, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	char *query_str = NULL;
 	_cal_db_append_string(&query_str, "SELECT count(*) FROM");
@@ -375,7 +371,7 @@ static int __cal_db_instance_normal_get_count(int *out_count)
 		CAL_FREE(query_str);
 		return ret;
 	}
-	CAL_DBG("count(%d) str[%s]", count, query_str);
+	DBG("count(%d) str[%s]", count, query_str);
 	CAL_FREE(query_str);
 
 	*out_count = count;
@@ -449,7 +445,7 @@ static int __cal_db_instance_normal_get_count_with_query(calendar_query_h query,
 		CAL_FREE(query_str);
 		return ret;
 	}
-	CAL_DBG("count(%d) str[%s]", count, query_str);
+	DBG("count(%d) str[%s]", count, query_str);
 
 	if (out_count) *out_count = count;
 	if (bind_text)

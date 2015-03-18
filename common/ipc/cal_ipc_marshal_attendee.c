@@ -32,8 +32,8 @@ cal_ipc_marshal_record_plugin_cb_s _cal_ipc_record_attendee_plugin_cb = {
 static int __cal_ipc_unmarshal_attendee(const pims_ipc_data_h ipc_data, calendar_record_h record)
 {
 	cal_attendee_s* pattendee = NULL;
-	retv_if(ipc_data==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
-	retv_if(record==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(ipc_data==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(record==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
 
 	pattendee = (cal_attendee_s*) record;
 
@@ -120,8 +120,8 @@ static int __cal_ipc_marshal_attendee(const calendar_record_h record, pims_ipc_d
 {
 	cal_attendee_s* pattendee = (cal_attendee_s*) record;
 
-	retv_if(ipc_data==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
-	retv_if(pattendee==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(ipc_data==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(pattendee==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
 
 	// read only or primary/secondary key
 	if (_cal_ipc_marshal_int((pattendee->id),ipc_data) != CALENDAR_ERROR_NONE) {

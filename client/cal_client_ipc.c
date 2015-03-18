@@ -101,7 +101,7 @@ DATA_FREE:
 API int calendar_connect(void)
 {
 	int ret = 0;
-	CAL_FN_CALL;
+	CAL_FN_CALL();
 
 	_cal_mutex_lock(CAL_MUTEX_CONNECTION);
 	if (0 == calendar_connection_count) {
@@ -133,7 +133,7 @@ static int cal_ipc_disconnect(void)
 	int ret = CALENDAR_ERROR_NONE;
 	pims_ipc_data_h outdata = NULL;
 
-	retvm_if(NULL == calendar_ipc, CALENDAR_ERROR_IPC,
+	RETVM_IF(NULL == calendar_ipc, CALENDAR_ERROR_IPC,
 			"[GLOBAL_IPC_CHANNEL] calendar not connected");
 
 	if (pims_ipc_call(calendar_ipc, CAL_IPC_MODULE, CAL_IPC_SERVER_DISCONNECT, NULL, &outdata) != 0) {
@@ -164,7 +164,7 @@ API int calendar_disconnect(void)
 {
 	int ret = 0;
 
-	CAL_FN_CALL;
+	CAL_FN_CALL();
 	_cal_mutex_lock(CAL_MUTEX_CONNECTION);
 	if (1 == calendar_connection_count) {
 		_cal_client_reminder_destroy_for_subscribe();
@@ -197,7 +197,7 @@ API int calendar_connect_on_thread(void)
 	int ret = CALENDAR_ERROR_NONE;
 	pims_ipc_data_h outdata = NULL;
 
-	CAL_FN_CALL;
+	CAL_FN_CALL();
 
 	// ipc create
 	if (calendar_ipc_thread == NULL) {
@@ -273,9 +273,9 @@ API int calendar_disconnect_on_thread(void)
 	pims_ipc_data_h indata = NULL;
 	pims_ipc_data_h outdata = NULL;
 
-	retvm_if(calendar_ipc_thread==NULL,CALENDAR_ERROR_NOT_PERMITTED,"calendar_thread not connected");
+	RETVM_IF(calendar_ipc_thread==NULL,CALENDAR_ERROR_NOT_PERMITTED,"calendar_thread not connected");
 
-	CAL_FN_CALL;
+	CAL_FN_CALL();
 
 	// ipc call
 	if (pims_ipc_call(calendar_ipc_thread, CAL_IPC_MODULE, CAL_IPC_SERVER_DISCONNECT, indata, &outdata) != 0)
@@ -411,11 +411,11 @@ void _cal_client_ipc_set_change_version(int version)
 	if (calendar_ipc_thread == NULL)
 	{
 		calendar_change_version = version;
-		CAL_DBG("change_version=%d",version);
+		DBG("change_version=%d",version);
 		return ;
 	}
 	calendar_change_version_thread = version;
-	CAL_DBG("change_version=%d",version);
+	DBG("change_version=%d",version);
 }
 
 int _cal_client_ipc_get_change_version(void)

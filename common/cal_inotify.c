@@ -217,11 +217,11 @@ int _cal_inotify_initialize(void)
 
 	if (calendar_inoti_count > 1)
 	{
-		CAL_DBG("inotify count =%d",calendar_inoti_count);
+		DBG("inotify count =%d",calendar_inoti_count);
 		_cal_mutex_unlock(CAL_MUTEX_INOTIFY);
 		return CALENDAR_ERROR_NONE;
 	}
-	CAL_DBG("inotify count =%d",calendar_inoti_count);
+	DBG("inotify count =%d",calendar_inoti_count);
 	_cal_mutex_unlock(CAL_MUTEX_INOTIFY);
 #endif
 	inoti_fd = inotify_init();
@@ -238,9 +238,9 @@ int _cal_inotify_initialize(void)
 	}
 
 	ret = fcntl(inoti_fd, F_SETFD, FD_CLOEXEC);
-	warn_if(ret < 0, "fcntl failed(%d)", ret);
+	WARN_IF(ret < 0, "fcntl failed(%d)", ret);
 	ret = fcntl(inoti_fd, F_SETFL, O_NONBLOCK);
-	warn_if(ret < 0, "fcntl failed(%d)", ret);
+	WARN_IF(ret < 0, "fcntl failed(%d)", ret);
 
 	inoti_handler = _inotify_attach_handler(inoti_fd);
 	if (inoti_handler <= 0)
@@ -507,11 +507,11 @@ void _cal_inotify_finalize(void)
 
 	if (calendar_inoti_count > 0)
 	{
-		CAL_DBG("inotify count =%d",calendar_inoti_count);
+		DBG("inotify count =%d",calendar_inoti_count);
 		_cal_mutex_unlock(CAL_MUTEX_INOTIFY);
 		return ;
 	}
-	CAL_DBG("inotify count =%d",calendar_inoti_count);
+	DBG("inotify count =%d",calendar_inoti_count);
 	_cal_mutex_unlock(CAL_MUTEX_INOTIFY);
 #endif
 	if (inoti_handler)

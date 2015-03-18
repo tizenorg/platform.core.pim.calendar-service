@@ -1091,7 +1091,6 @@ cal_record_type_e _cal_view_get_type(const char *view_uri)
 		view_uri_info = g_hash_table_lookup(cal_uri_property_hash, view_uri);
 		if( view_uri_info ) {
 			type = view_uri_info->type;
-			//CAL_DBG("%s:%d",view_uri,type);
 		}
 		else
 		{

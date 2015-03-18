@@ -87,8 +87,8 @@ static int __cal_record_instance_normal_create( calendar_record_h* out_record )
 	cal_instance_normal_s *temp = NULL;
 	int ret= CALENDAR_ERROR_NONE;
 
-	temp = (cal_instance_normal_s*)calloc(1,sizeof(cal_instance_normal_s));
-	retvm_if(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "malloc(cal_instance_normal_s:sch) Failed(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
+	temp = calloc(1,sizeof(cal_instance_normal_s));
+	RETVM_IF(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "malloc(cal_instance_normal_s:sch) Failed(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
 
 	__cal_record_instance_normal_struct_init(temp);
 
@@ -124,7 +124,7 @@ static int __cal_record_instance_normal_clone( calendar_record_h record, calenda
 	src_data = (cal_instance_normal_s*)(record);
 
 	out_data = calloc(1, sizeof(cal_instance_normal_s));
-	retvm_if(NULL == out_data, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc(cal_instance_normal_s) Failed(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
+	RETVM_IF(NULL == out_data, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc(cal_instance_normal_s) Failed(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
 
 	CAL_RECORD_COPY_COMMON(&(out_data->common), &(src_data->common));
 

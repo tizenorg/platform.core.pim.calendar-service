@@ -110,7 +110,7 @@ static int __cal_server_calendar_delete_step1(__calendar_delete_data_s* data)
 	sqlite3_stmt *stmt = NULL;
 	int count = 0;
 
-	CAL_FN_CALL;
+	CAL_FN_CALL();
 
 	if (data->calendar_id_list == NULL)
 	{
@@ -163,7 +163,7 @@ static int __cal_server_calendar_delete_step2(__calendar_delete_data_s* data)
 	sqlite3_stmt *stmt = NULL;
 	int count = 0;
 
-	CAL_FN_CALL;
+	CAL_FN_CALL();
 
 	ret = _cal_db_util_begin_trans();
 	if (CALENDAR_ERROR_NONE != ret)
@@ -213,7 +213,7 @@ static int __cal_server_calendar_delete_step2(__calendar_delete_data_s* data)
 				id);
 
 		dbret = _cal_db_util_query_exec(query);
-		CAL_DBG("%s",query);
+		DBG("%s",query);
 		if (CAL_DB_OK != dbret)
 		{
 			ERR("_cal_db_util_query_exec() failed (%d)", dbret);
@@ -252,7 +252,7 @@ static int __cal_server_calendar_delete_step3(__calendar_delete_data_s* data)
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 
-	CAL_FN_CALL;
+	CAL_FN_CALL();
 
 	/* delete event table */
 	snprintf(query, sizeof(query), "DELETE FROM %s "
@@ -285,7 +285,7 @@ static bool  __cal_server_calendar_run(__calendar_delete_data_s* data)
 {
 	int ret = CALENDAR_ERROR_NONE;
 
-	CAL_FN_CALL;
+	CAL_FN_CALL();
 
 	if(data == NULL)
 	{
@@ -324,7 +324,7 @@ static gpointer  __cal_server_calendar_main(gpointer user_data)
 {
 	__calendar_delete_data_s *callback_data = NULL;
 	int ret = CALENDAR_ERROR_NONE;
-	CAL_FN_CALL;
+	CAL_FN_CALL();
 
 	while(1)
 	{
@@ -346,7 +346,7 @@ static gpointer  __cal_server_calendar_main(gpointer user_data)
 				if (__cal_server_calendar_run(callback_data) == false)
 				{
 					callback_data = NULL;
-					CAL_DBG("end");
+					DBG("end");
 					break;
 				}
 			}
@@ -359,7 +359,7 @@ static gpointer  __cal_server_calendar_main(gpointer user_data)
 		}
 
 		g_mutex_lock(&__cal_server_calendar_delete_mutex);
-		CAL_DBG("wait");
+		DBG("wait");
 		g_cond_wait(&__cal_server_calendar_delete_cond, &__cal_server_calendar_delete_mutex);
 		g_mutex_unlock(&__cal_server_calendar_delete_mutex);
 	}
@@ -369,7 +369,7 @@ static gpointer  __cal_server_calendar_main(gpointer user_data)
 
 void _cal_server_calendar_delete_start(void)
 {
-	CAL_FN_CALL;
+	CAL_FN_CALL();
 
 	if (__cal_server_calendar_delete_thread == NULL)
 	{

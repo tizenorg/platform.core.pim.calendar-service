@@ -82,7 +82,7 @@ void _cal_time_get_registered_tzid_with_offset(int offset, char *registered_tzid
 {
 	UErrorCode ec = U_ZERO_ERROR;
 
-	retm_if (NULL == registered_tzid, "Invalid parameter: registered_tzid is NULL");
+	RET_IF(NULL == registered_tzid);
 
 	StringEnumeration* s = TimeZone::createEnumeration(sec2ms(offset));
 	if (0 == s->count(ec)) {
@@ -389,7 +389,7 @@ int _cal_time_get_like_tzid(const char *tzid, calendar_record_h timezone, char *
 		tzid = CAL_TZID_GMT;
 	}
 
-	utzid = (UChar*)calloc(strlen(tzid) + 1, sizeof(UChar));
+	utzid = (UChar *)calloc(strlen(tzid) + 1, sizeof(UChar));
 	if (utzid == NULL)
 	{
 		ERR("Failed to calloc");
@@ -416,7 +416,7 @@ void _cal_time_set_caltime(UCalendar *ucal, calendar_time_s *ct)
 	{
 	case CALENDAR_TIME_UTIME:
 		ucal_setMillis(ucal, sec2ms(ct->time.utime), &status);
-		retm_if(U_FAILURE(status), "ucal_setMillis() failed(%s)",
+		RETM_IF(U_FAILURE(status), "ucal_setMillis() failed(%s)",
 				u_errorName(status));
 		break;
 
@@ -429,7 +429,7 @@ void _cal_time_set_caltime(UCalendar *ucal, calendar_time_s *ct)
 				ct->time.date.minute,
 				ct->time.date.second,
 				&status);
-		retm_if(U_FAILURE(status), "ucal_setMillis() failed(%s)",
+		RETM_IF(U_FAILURE(status), "ucal_setMillis() failed(%s)",
 				u_errorName(status));
 		break;
 
@@ -633,7 +633,7 @@ int _cal_time_get_next_date(calendar_time_s *today, calendar_time_s *next)
 	UChar *utzid = NULL;
 	const char *tzid = CAL_TZID_GMT;
 
-	utzid = (UChar*)calloc(strlen(tzid) + 1, sizeof(UChar));
+	utzid = (UChar *)calloc(strlen(tzid) + 1, sizeof(UChar));
 	if (utzid == NULL)
 	{
 		ERR("Failed to calloc");
@@ -844,7 +844,7 @@ int _cal_time_init(void)
 
 	if (NULL == _g_ucal_gmt) {
 		ucal = _cal_time_get_ucal(NULL, -1);
-		retvm_if (NULL == ucal, CALENDAR_ERROR_SYSTEM, "_cal_time_get_ucal() is failed");
+		RETVM_IF(NULL == ucal, CALENDAR_ERROR_SYSTEM, "_cal_time_get_ucal() is failed");
 		_g_ucal_gmt = ucal;
 	}
 	return CALENDAR_ERROR_NONE;
@@ -885,7 +885,7 @@ long long int _cal_time_convert_lli(char *p)
 void _cal_time_modify_caltime(calendar_time_s *caltime, long long int diff)
 {
 	UErrorCode status = U_ZERO_ERROR;
-	retm_if (NULL == caltime, "Invalid parameter: caltime is NULL");
+	RET_IF(NULL == caltime);
 
 	UCalendar *ucal = __get_gmt_ucal();
 	long long int lli = 0;
@@ -921,8 +921,8 @@ void _cal_time_modify_caltime(calendar_time_s *caltime, long long int diff)
 
 void _cal_time_get_nth_wday(long long int t, int *nth, int *wday)
 {
-	retm_if (NULL == nth, "Invalid parameter: nth is NULL");
-	retm_if (NULL == wday, "Invalid parameter: wday is NULL");
+	RET_IF(NULL == nth);
+	RET_IF(NULL == wday);
 
 	UErrorCode status = U_ZERO_ERROR;
 	UCalendar *ucal = __get_gmt_ucal();

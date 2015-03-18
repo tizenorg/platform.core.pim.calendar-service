@@ -71,8 +71,8 @@ static int __cal_record_calendar_create( calendar_record_h* out_record )
 	cal_calendar_s *temp = NULL;
 	int ret= CALENDAR_ERROR_NONE;
 
-	temp = (cal_calendar_s*)calloc(1,sizeof(cal_calendar_s));
-	retvm_if(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "malloc(cal_calendar_s) Failed(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
+	temp = calloc(1,sizeof(cal_calendar_s));
+	RETVM_IF(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "malloc(cal_calendar_s) Failed(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
 
 	__cal_record_calendar_struct_init(temp);
 
@@ -114,7 +114,7 @@ static int __cal_record_calendar_clone( calendar_record_h record, calendar_recor
 	src_data = (cal_calendar_s*)(record);
 
 	out_data = calloc(1, sizeof(cal_calendar_s));
-	retvm_if(NULL == out_data, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc(cal_calendar_s) Failed(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
+	RETVM_IF(NULL == out_data, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc(cal_calendar_s) Failed(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
 
 
 	CAL_RECORD_COPY_COMMON(&(out_data->common), &(src_data->common));
@@ -313,7 +313,7 @@ static int __cal_record_calendar_set_int( calendar_record_h record, unsigned int
 		(cal_rec->visibility) = value;
 		break;
 	case CAL_PROPERTY_CALENDAR_ACCOUNT_ID:
-		retvm_if(cal_rec->index > 0, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter : property_id(%d) is a write-once value (calendar)", property_id);
+		RETVM_IF(cal_rec->index > 0, CALENDAR_ERROR_INVALID_PARAMETER, "property_id(%d) is a write-once value (calendar)", property_id);
 		(cal_rec->account_id) = value;
 		break;
 	case CAL_PROPERTY_CALENDAR_STORE_TYPE:
@@ -341,7 +341,7 @@ static int __cal_record_calendar_set_int( calendar_record_h record, unsigned int
 		}
 		break;
 	case CAL_PROPERTY_CALENDAR_MODE:
-		retvm_if (value != CALENDAR_BOOK_MODE_NONE && value != CALENDAR_BOOK_MODE_RECORD_READONLY,
+		RETVM_IF(value != CALENDAR_BOOK_MODE_NONE && value != CALENDAR_BOOK_MODE_RECORD_READONLY,
 				CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter : mode type is invalid value (%d)", value);
 		(cal_rec->mode) = value;
 		break;

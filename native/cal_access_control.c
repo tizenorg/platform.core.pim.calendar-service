@@ -100,7 +100,7 @@ static void __cal_access_control_set_permission_info(calendar_permission_info_s 
 		return;
 	}
 	info->write_list = calloc(count +1, sizeof(int));
-	retm_if(NULL == info->write_list, "calloc() Fail");
+	RETM_IF(NULL == info->write_list, "calloc() Fail");
 	info->write_list[0] = -1;
 
 	snprintf(query, sizeof(query),
@@ -257,7 +257,7 @@ bool _cal_access_control_have_write_permission(int calendarbook_id)
 
 static void __cal_access_control_disconnected_cb(pims_ipc_h ipc, void *user_data)
 {
-	ENTER();
+	CAL_FN_CALL();
 	calendar_permission_info_s *info = NULL;
 
 	_cal_mutex_lock(CAL_MUTEX_ACCESS_CONTROL);

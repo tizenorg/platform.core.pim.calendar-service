@@ -162,7 +162,7 @@ static int __cal_db_search_get_records_with_query( calendar_query_h query, int o
 		ERR("_cal_db_util_query_prepare() Failed");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
-	CAL_DBG("%s",query_str);
+	DBG("%s",query_str);
 
 	// bind text
 	if (bind_text)
@@ -344,7 +344,7 @@ static int __cal_db_search_get_count_with_query(calendar_query_h query, int *out
 		CAL_FREE(query_str);
 		return ret;
 	}
-	CAL_DBG("count(%d) str[%s]", count, query_str);
+	DBG("count(%d) str[%s]", count, query_str);
 
 	if (out_count) *out_count = count;
 	if (bind_text)
@@ -435,7 +435,7 @@ static void __cal_db_search_get_property_stmt(sqlite3_stmt *stmt,
 			break;
 		}
 		ret = _cal_record_set_caltime(record,property,caltime_tmp);
-		warn_if (CALENDAR_ERROR_NONE != ret, "Failed to _cal_record_set_caltime()");
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "Failed to _cal_record_set_caltime()");
 	}
 	else
 	{
@@ -466,7 +466,7 @@ static int __cal_db_search_make_projection(calendar_query_h query, char **projec
 	cal_query_s *query_s = NULL;
 	cal_property_info_s *properties = NULL;
 
-	retv_if(NULL == query, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == query, CALENDAR_ERROR_INVALID_PARAMETER);
 	query_s = (cal_query_s *)query;
 
 	properties = &(query_s->properties[0]);

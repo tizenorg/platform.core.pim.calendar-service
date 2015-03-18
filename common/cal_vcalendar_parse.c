@@ -296,7 +296,7 @@ static inline char* __remove_invalid_space(char *src)
 
 static inline char* __crlf(char *p)
 {
-	ENTER();
+	CAL_FN_CALL();
 
 	while (VCAL_LF != *p) {
 		if ('\0' == *p) {
@@ -309,8 +309,9 @@ static inline char* __crlf(char *p)
 
 static void __get_rest_string(char *p, char **value)
 {
-	retm_if (NULL == p || '\0' == *p, "Invalid parameter: p is NULL");
-	retm_if (NULL == value, "Invalid parameter: p is NULL");
+	RET_IF(NULL == p);
+	RET_IF('\0' == *p);
+	RET_IF(NULL == value);
 
 	int i = 0;
 	while (VCAL_LF != *(p +i)) {
@@ -326,15 +327,15 @@ static void __get_rest_string(char *p, char **value)
 		i++;
 	}
 	char *v = calloc(i, sizeof(char));
-	retm_if (NULL == v, "calloc() is failed");
+	RETM_IF(NULL == v, "calloc() is failed");
 	snprintf(v, i, "%s", p);
 	*value = strdup(v);
 }
 
 static char* __get_value(char *cursor, char **value)
 {
-	retvm_if (NULL == cursor, NULL, "Invalid parameter: cursor is NULL");
-	retvm_if (NULL == value, NULL, "Invalid parameter: value is NULL");
+	RETV_IF(NULL == cursor, NULL);
+	RETV_IF(NULL == value, NULL);
 
 	int offset = 0;
 	while (':' != *(cursor + offset) && ';' != *(cursor + offset)) {
@@ -351,7 +352,7 @@ static char* __get_value(char *cursor, char **value)
 	}
 
 	char *p = calloc(i + 1, sizeof(char));
-	retvm_if (NULL == p, NULL, "calloc() is failed");
+	RETVM_IF(NULL == p, NULL, "calloc() is failed");
 
 	if (VCAL_CR == *(cursor + offset + i -1)) {
 		memcpy(p, cursor + offset, i -1);
@@ -367,7 +368,7 @@ static char* __get_value(char *cursor, char **value)
 
 static char* __check_word(char *src, const char *word)
 {
-	retvm_if (NULL == src, NULL, "Invalid parameter: src is NULL");
+	RETV_IF(NULL == src, NULL);
 
 	src = __remove_empty_line(src);
 	src = __remove_invalid_space(src);
@@ -409,7 +410,8 @@ static inline void __adjust_tzid(char *p)
 
 static void __unfolding(char *p)
 {
-	retm_if(p == NULL || '\0' == *p, "Invalid parameter: p is NULL");
+	RET_IF(p == NULL);
+	RET_IF('\0' == *p);
 
 	char *q = p;
 	while ('\0' != *p) {
@@ -448,7 +450,8 @@ static void __unfolding(char *p)
 
 static void __decode_escaped_char(char *p)
 {
-	retm_if (NULL == p || '\0' == *p, "Invalid parameter:p is NULL");
+	RET_IF(NULL == p);
+	RET_IF('\0' == *p);
 
 	DBG("Before [%s]", p);
 	char *q = p;
@@ -488,7 +491,8 @@ static void __decode_escaped_char(char *p)
 
 static void __decode_base64(char *p)
 {
-	retm_if (NULL == p || '\0' == *p, "Invalid parameter: p is NULL");
+	RET_IF(NULL == p);
+	RET_IF('\0' == *p);
 
 	DBG("Before [%s]", p);
 	guchar *buf = NULL;
@@ -531,7 +535,8 @@ static char __decode_hexa(char *p)
 
 static void __decode_quoted_printable(char *p)
 {
-	retm_if (NULL == p || '\0' == *p, "Invalid parameter: p is NULL");
+	RET_IF(NULL == p);
+	RET_IF('\0' == *p);
 
 	int i = 0, j = 0;
 	char ch;
@@ -572,7 +577,7 @@ static char* __decode_charset(char *p)
 {
 	char **t = NULL;
 	t =  g_strsplit(p, ":", 2);
-	retvm_if (NULL == t, NULL, "g_strsplit() is failed");
+	RETVM_IF(NULL == t, NULL, "g_strsplit() is failed");
 
 	if ('\0' == *t[0]) { // no param
 		g_strfreev(t);
@@ -615,7 +620,7 @@ static char* __decode_datetime(char *p, struct user_data *ud)
 {
 	char **t = NULL;
 	t =  g_strsplit(p, ":", -1);
-	retvm_if (NULL == t, NULL, "g_strsplit() is failed");
+	RETVM_IF(NULL == t, NULL, "g_strsplit() is failed");
 
 	if ('\0' == *t[0]) { // no param
 		g_strfreev(t);
@@ -629,7 +634,7 @@ static char* __decode_datetime(char *p, struct user_data *ud)
 	// param start
 	char **s = NULL;
 	s = g_strsplit(p, ";", -1);
-	retvm_if (NULL == s, p + strlen(p) - len_param, "g_strsplit() failed");
+	RETVM_IF(NULL == s, p + strlen(p) - len_param, "g_strsplit() failed");
 
 	int count_param = g_strv_length(s);
 	DBG("count_param(%d)", count_param);
@@ -668,9 +673,10 @@ static char* __decode_datetime(char *p, struct user_data *ud)
 
 static void __decode_duration(char *cursor, int len, int *tick, int *unit)
 {
-	retm_if (NULL == cursor || '\0' == *cursor, "Invalid parameter: cursor is NULL");
-	retm_if (NULL == tick, "Invalid parameter: tick is NULL");
-	retm_if (NULL == unit, "Invalid parameter: unit is NULL");
+	RET_IF(NULL == cursor );
+	RET_IF('\0' == *cursor);
+	RET_IF(NULL == tick);
+	RET_IF(NULL == unit);
 
 	char buf[8] = {0};
 	int sign = 1;
@@ -772,7 +778,7 @@ static bool __is_digit(char *p)
 
 static char* __get_index(char *cursor, const char **array, int len, int *index)
 {
-	retvm_if (NULL == index, NULL, "Invalid parameter: index is NULL");
+	RETV_IF(NULL == index, NULL);
 
 	int i;
 	char *new = NULL;
@@ -792,10 +798,10 @@ static char* __get_index(char *cursor, const char **array, int len, int *index)
 
 static int __get_version(char *value, int *version)
 {
-	ENTER();
+	CAL_FN_CALL();
 
-	retvm_if (NULL == value, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: value is NULL");
-	retvm_if (NULL == version, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: version is NULL");
+	RETV_IF(NULL == value, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == version, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	if (!strncmp(value, ":1.0", strlen(":1.0"))) {
 		*version = 1;
@@ -807,9 +813,10 @@ static int __get_version(char *value, int *version)
 
 static void __get_caltime(char *p, calendar_time_s *caltime, struct user_data *ud)
 {
-	retm_if (NULL == p || '\0' == *p, "Invalid parameter: p is NULL");
-	retm_if (NULL == caltime, "Invalid parameter: caltime is NULL");
-	retm_if (NULL == ud, "Invalid parameter: ud is NULL");
+	RET_IF(NULL == p);
+	RET_IF('\0' == *p);
+	RET_IF(NULL == caltime);
+	RET_IF(NULL == ud);
 
 	switch (strlen(p))
 	{
@@ -881,10 +888,10 @@ static void __get_caltime(char *p, calendar_time_s *caltime, struct user_data *u
  */
 static void __parse_tz(const char *tz, int *h, int *m)
 {
-	retm_if(NULL == tz, "Invalid parameter: tz is NULL");
+	RET_IF(NULL == tz);
 
 	char **t = g_strsplit(tz, ":", -1);
-	retm_if(NULL == t, "g_strsplit() is NULL");
+	RETM_IF(NULL == t, "g_strsplit() is NULL");
 
 	int sign = 0;
 	if (*t[0] == '-') sign = -1;
@@ -920,8 +927,8 @@ static void __parse_tz(const char *tz, int *h, int *m)
 
 static void __get_tz(char *value, char **tz)
 {
-	retm_if (NULL == value, "Invalid parameter: cursor is NULL");
-	retm_if (NULL == tz, "Invalid parameter: tz is NULL");
+	RET_IF(NULL == value);
+	RET_IF(NULL == tz);
 
 	int h = 0, m = 0;
 	__parse_tz(value +1, &h, &m); // +1 to skip ':'
@@ -945,9 +952,10 @@ static void __work_component_property_dtstamp(char *value, calendar_record_h rec
 
 static void __work_component_property_uid(char *value, calendar_record_h record, struct user_data *ud)
 {
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
-	retm_if (NULL == record, "Invalid parameter: record is NULL");
-	retm_if (NULL == ud, "Invalid parameter: ud is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == record);
+	RET_IF(NULL == ud);
 
 	int ret = 0;
 	value = __decode_charset(value);
@@ -955,27 +963,28 @@ static void __work_component_property_uid(char *value, calendar_record_h record,
 	{
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = _cal_record_set_str(record, _calendar_event.uid, value);
-		warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
 		break;
 	case CALENDAR_BOOK_TYPE_TODO:
 		ret = _cal_record_set_str(record, _calendar_todo.uid, value);
-		warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
 		break;
 	}
 }
 
 static void __work_component_property_recurrence_id(char *value, calendar_record_h record, struct user_data *ud)
 {
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
-	retm_if (NULL == record, "Invalid parameter: record is NULL");
-	retm_if (NULL == ud, "Invalid parameter: ud is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == record);
+	RET_IF(NULL == ud);
 
 	int ret = 0;
 	switch (ud->type)
 	{
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = _cal_record_set_str(record, _calendar_event.recurrence_id, value +1);
-		warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
 		break;
 	case CALENDAR_BOOK_TYPE_TODO:
 		DBG("Not supported in todo");
@@ -985,9 +994,10 @@ static void __work_component_property_recurrence_id(char *value, calendar_record
 
 static void __work_component_property_dtstart(char *value, calendar_record_h record, struct user_data *ud)
 {
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
-	retm_if (NULL == record, "Invalid parameter: record is NULL");
-	retm_if (NULL == ud, "Invalid parameter: ud is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == record);
+	RET_IF(NULL == ud);
 
 	value = __decode_datetime(value, ud);
 	calendar_time_s caltime = {0};
@@ -1002,48 +1012,50 @@ static void __work_component_property_dtstart(char *value, calendar_record_h rec
 	case CALENDAR_BOOK_TYPE_EVENT:
 		if (tzid && *tzid) {
 			ret = _cal_record_set_str(record, _calendar_event.start_tzid, tzid);
-			warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
+			WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
 		}
 		ret = _cal_record_set_caltime(record, _calendar_event.start_time, caltime);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() Failed(%d)", ret);
 		break;
 	case CALENDAR_BOOK_TYPE_TODO:
 		if (tzid && *tzid) {
 			ret = _cal_record_set_str(record, _calendar_todo.start_tzid, tzid);
-			warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
+			WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
 		}
 		ret = _cal_record_set_caltime(record, _calendar_todo.start_time, caltime);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() Failed(%d)", ret);
 		break;
 	}
 }
 
 static void __work_component_property_created(char *value, calendar_record_h record, struct user_data *ud)
 {
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
-	retm_if (NULL == record, "Invalid parameter: record is NULL");
-	retm_if (NULL == ud, "Invalid parameter: ud is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == record);
+	RET_IF(NULL == ud);
 
 	int ret = 0;
 	switch (ud->type)
 	{
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = _cal_record_set_lli(record, _calendar_event.created_time, _cal_time_convert_lli(value));
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_lli() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_lli() Failed(%d)", ret);
 		break;
 
 	case CALENDAR_BOOK_TYPE_TODO:
 		ret = _cal_record_set_lli(record, _calendar_todo.created_time, _cal_time_convert_lli(value));
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_lli() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_lli() Failed(%d)", ret);
 		break;
 	}
 }
 
 static void __work_component_property_description(char *value, calendar_record_h record, struct user_data *ud)
 {
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
-	retm_if (NULL == record, "Invalid parameter: record is NULL");
-	retm_if (NULL == ud, "Invalid parameter: ud is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == record);
+	RET_IF(NULL == ud);
 
 	int ret = 0;
 	value = __decode_charset(value);
@@ -1051,40 +1063,42 @@ static void __work_component_property_description(char *value, calendar_record_h
 	{
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = _cal_record_set_str(record, _calendar_event.description, value);
-		warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
 		break;
 	case CALENDAR_BOOK_TYPE_TODO:
 		ret = _cal_record_set_str(record, _calendar_todo.description, value);
-		warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
 		break;
 	}
 }
 
 static void __work_component_property_last_modified(char *value, calendar_record_h record, struct user_data *ud)
 {
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
-	retm_if (NULL == record, "Invalid parameter: record is NULL");
-	retm_if (NULL == ud, "Invalid parameter: ud is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == record);
+	RET_IF(NULL == ud);
 
 	int ret = 0;
 	switch (ud->type)
 	{
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = _cal_record_set_lli(record, _calendar_event.last_modified_time, _cal_time_convert_lli(value));
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_lli() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_lli() Failed(%d)", ret);
 		break;
 	case CALENDAR_BOOK_TYPE_TODO:
 		ret = _cal_record_set_lli(record, _calendar_todo.last_modified_time, _cal_time_convert_lli(value));
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_lli() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_lli() Failed(%d)", ret);
 		break;
 	}
 }
 
 static void __work_component_property_location(char *value, calendar_record_h record, struct user_data *ud)
 {
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
-	retm_if (NULL == record, "Invalid parameter: record is NULL");
-	retm_if (NULL == ud, "Invalid parameter: ud is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == record);
+	RET_IF(NULL == ud);
 
 	int ret = 0;
 	value = __decode_charset(value);
@@ -1092,11 +1106,11 @@ static void __work_component_property_location(char *value, calendar_record_h re
 	{
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = _cal_record_set_str(record, _calendar_event.location, value);
-		warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
 		break;
 	case CALENDAR_BOOK_TYPE_TODO:
 		ret = _cal_record_set_str(record, _calendar_todo.location, value);
-		warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
 		break;
 	}
 }
@@ -1153,10 +1167,11 @@ static int __decode_priority(char *value, struct user_data *ud)
 
 static void __work_component_property_priority(char *value, calendar_record_h record, struct user_data *ud)
 {
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
-	retm_if (NULL == record, "Invalid parameter: record is NULL");
-	retm_if (NULL == ud, "Invalid parameter: ud is NULL");
-	retm_if (*value < '0' || *value > '9', "out of range[%s]", value);
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == record);
+	RET_IF(NULL == ud);
+	RETM_IF(*value < '0' || *value > '9', "out of range[%s]", value);
 
 	int ret = 0;
 	int modified_priority = __decode_priority(value, ud);
@@ -1164,20 +1179,21 @@ static void __work_component_property_priority(char *value, calendar_record_h re
 	{
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = _cal_record_set_int(record, _calendar_event.priority, modified_priority);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 		break;
 	case CALENDAR_BOOK_TYPE_TODO:
 		ret = _cal_record_set_int(record, _calendar_todo.priority, modified_priority);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 		break;
 	}
 }
 
 static void __work_component_property_status(char *value, calendar_record_h record, struct user_data *ud)
 {
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
-	retm_if (NULL == record, "Invalid parameter: record is NULL");
-	retm_if (NULL == ud, "Invalid parameter: ud is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == record);
+	RET_IF(NULL == ud);
 
 	int ret = 0;
 	int status = 0;
@@ -1194,7 +1210,7 @@ static void __work_component_property_status(char *value, calendar_record_h reco
 			status = CALENDAR_EVENT_STATUS_NONE;
 		}
 		ret = _cal_record_set_int(record, _calendar_event.event_status, status);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 		break;
 	case CALENDAR_BOOK_TYPE_TODO:
 		if (!strncmp(value, ":NEEDS-ACTION", strlen(":NEEDS-ACTION"))) {
@@ -1211,16 +1227,17 @@ static void __work_component_property_status(char *value, calendar_record_h reco
 			status = CALENDAR_TODO_STATUS_NONE;
 		}
 		ret = _cal_record_set_int(record, _calendar_todo.todo_status, status);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 		break;
 	}
 }
 
 static void __work_component_property_summary(char *value, calendar_record_h record, struct user_data *ud)
 {
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
-	retm_if (NULL == record, "Invalid parameter: record is NULL");
-	retm_if (NULL == ud, "Invalid parameter: ud is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == record);
+	RET_IF(NULL == ud);
 
 	int ret = 0;
 	value = __decode_charset(value);
@@ -1228,18 +1245,19 @@ static void __work_component_property_summary(char *value, calendar_record_h rec
 	{
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = _cal_record_set_str(record, _calendar_event.summary, value);
-		warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
 		break;
 	case CALENDAR_BOOK_TYPE_TODO:
 		ret = _cal_record_set_str(record, _calendar_todo.summary, value);
-		warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
 		break;
 	}
 }
 
 static bool __is_wday_string(char *p)
 {
-	retvm_if (NULL == p || '\0' == *p, false, "Invalid parameter: p is NULL");
+	RETV_IF(NULL == p, false);
+	RETV_IF('0' == *p, false);
 
 	if ('S' == *p && 'U' == *(p +1)) {
 		return true;
@@ -1281,8 +1299,9 @@ static int __get_frequency(char *p)
 
 static void __set_bystr(int freq_mode, calendar_record_h record, char *bystr)
 {
-	retm_if (NULL == record, "Invalid parameter: record is NULL");
-	retm_if (NULL == bystr || '\0' == *bystr, "Invalid parameter: bystr is NULL");
+	RET_IF(NULL == record);
+	RET_IF(NULL == bystr);
+	RET_IF('\0' == *bystr);
 
 	DBG("bystr[%s]", bystr);
 	bystr[strlen(bystr) -1] = '\0'; // to remove ','
@@ -1291,23 +1310,23 @@ static void __set_bystr(int freq_mode, calendar_record_h record, char *bystr)
 	{
 	case VCAL_RECURRENCE_YEARLY_BYMONTH:
 		ret = _cal_record_set_str(record, _calendar_event.bymonth, bystr);
-		warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
 		break;
 	case VCAL_RECURRENCE_YEARLY_BYYEARDAY:
 		ret = _cal_record_set_str(record, _calendar_event.byyearday, bystr);
-		warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
 		break;
 	case VCAL_RECURRENCE_MONTHLY_BYMONTHDAY:
 		ret = _cal_record_set_str(record, _calendar_event.bymonthday, bystr);
-		warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
 		break;
 	case VCAL_RECURRENCE_MONTHLY_BYDAY:
 		ret = _cal_record_set_str(record, _calendar_event.byday, bystr);
-		warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
 		break;
 	case VCAL_RECURRENCE_WEEKLY:
 		ret = _cal_record_set_str(record, _calendar_event.byday, bystr);
-		warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
 		break;
 	case VCAL_RECURRENCE_DAILY:
 		break;
@@ -1325,16 +1344,17 @@ static void __set_bystr(int freq_mode, calendar_record_h record, char *bystr)
  */
 static void __work_component_property_rrule_ver_1(char *value, calendar_record_h record, struct user_data *ud)
 {
-	ENTER();
+	CAL_FN_CALL();
 
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
-	retm_if (NULL == record, "Invalid parameter: record is NULL");
-	retm_if (NULL == ud, "Invalid parameter: ud is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == record);
+	RET_IF(NULL == ud);
 
 	int ret = 0;
 	char **t = NULL;
 	t =  g_strsplit_set(value, ": ", -1);
-	retm_if (NULL == t, "g_strsplit_set() is failed");
+	RETM_IF(NULL == t, "g_strsplit_set() is failed");
 
 	// start
 	int len = g_strv_length(t);
@@ -1372,25 +1392,25 @@ static void __work_component_property_rrule_ver_1(char *value, calendar_record_h
 		} else if ('W' == *t[i] && 'K' == *(t[i] +1) && 'S' == *(t[i] +2) && 'T' == *(t[i] +3)) { // +4 is '='
 			if ('S' == *(t[i] +5) && 'U' == *(t[i] +6)) {
 				ret = _cal_record_set_int(record, _calendar_event.wkst, CALENDAR_SUNDAY);
-				warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 			} else if ('M' == *(t[i] +5)) {
 				ret = _cal_record_set_int(record, _calendar_event.wkst, CALENDAR_MONDAY);
-				warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 			} else if ('T' == *(t[i] +5) && 'U' == *(t[i] +6)) {
 				ret = _cal_record_set_int(record, _calendar_event.wkst, CALENDAR_TUESDAY);
-				warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 			} else if ('W' == *(t[i] +5)) {
 				ret = _cal_record_set_int(record, _calendar_event.wkst, CALENDAR_WEDNESDAY);
-				warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 			} else if ('T' == *(t[i] +5) && 'H' == *(t[i] +6)) {
 				ret = _cal_record_set_int(record, _calendar_event.wkst, CALENDAR_THURSDAY);
-				warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 			} else if ('F' == *(t[i] +5)) {
 				ret = _cal_record_set_int(record, _calendar_event.wkst, CALENDAR_FRIDAY);
-				warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 			} else if ('S' == *(t[i] +5) && 'A' == *(t[i] +6)) {
 				ret = _cal_record_set_int(record, _calendar_event.wkst, CALENDAR_SATURDAY);
-				warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 			} else {
 				ERR("Invalid parameter[ %s ]", t[i]);
 			}
@@ -1490,9 +1510,9 @@ static void __work_component_property_rrule_ver_1(char *value, calendar_record_h
 						break;
 					}
 					ret = _cal_record_set_int(record, _calendar_event.freq, frequency);
-					warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+					WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 					ret = _cal_record_set_int(record, _calendar_event.interval, interval);
-					warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+					WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 					DBG("frequency[%d] interval(%d)", frequency, interval);
 				}
 			} else {
@@ -1501,22 +1521,22 @@ static void __work_component_property_rrule_ver_1(char *value, calendar_record_h
 					calendar_time_s caltime = {0};
 					__get_caltime(t[i], &caltime, ud);
 					ret = _cal_record_set_int(record, _calendar_event.range_type, CALENDAR_RANGE_UNTIL);
-					warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+					WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 					ret = _cal_record_set_caltime(record, _calendar_event.until_time, caltime);
-					warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() is failed(%d)", ret);
+					WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() is failed(%d)", ret);
 
 				} else if ('#' == *t[i]) { // count
 					if (true == __is_digit(t[i] +1)) {
 						if (0 == atoi(t[i] +1)) {
 							DBG("endless");
 							ret = _cal_record_set_int(record, _calendar_event.range_type, CALENDAR_RANGE_NONE);
-							warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+							WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 						} else {
 							DBG("count (%d)", atoi(t[i] +1));
 							ret = _cal_record_set_int(record, _calendar_event.range_type, CALENDAR_RANGE_COUNT);
-							warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+							WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 							ret = _cal_record_set_int(record, _calendar_event.count, atoi(t[i] +1));
-							warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+							WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 						}
 					} else {
 						ERR("Unable to parse count[%s]", t[i]);
@@ -1539,11 +1559,17 @@ static void __work_component_property_rrule_ver_2(char *value, calendar_record_h
 {
 	int ret = 0;
 	char **t = NULL;
+
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == record);
+	RET_IF(NULL == ud);
+
 	t =  g_strsplit_set(value, ";:", -1);
-	retm_if (NULL == t, "g_strsplit_set() is failed");
+	RETM_IF(NULL == t, "g_strsplit_set() is failed");
 
 	ret = _cal_record_set_int(record, _calendar_event.range_type, CALENDAR_RANGE_NONE);
-	warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+	WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 
 	// start
 	int len = g_strv_length(t);
@@ -1566,67 +1592,67 @@ static void __work_component_property_rrule_ver_2(char *value, calendar_record_h
 			}
 			DBG("frequency(%d) [%s]", frequency, t[i] + strlen("FREQ") + 1);
 			ret = _cal_record_set_int(record, _calendar_event.freq, frequency);
-			warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+			WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 
 		} else if (!strncmp(t[i], "UNTIL=", strlen("UNTIL="))) {
 			calendar_time_s caltime = {0};
 			__get_caltime(t[i] + strlen("UNTIL="), &caltime, ud);
 			ret = _cal_record_set_caltime(record, _calendar_event.until_time, caltime);
-			warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() is failed(%d)", ret);
+			WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() is failed(%d)", ret);
 			ret = _cal_record_set_int(record, _calendar_event.range_type, CALENDAR_RANGE_UNTIL);
-			warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+			WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 		} else if (!strncmp(t[i], "COUNT=", strlen("COUNT="))) {
 			int count = atoi(t[i] + strlen("COUNT="));
 			if (count < 1) count = 1;
 			ret = _cal_record_set_int(record,  _calendar_event.count, count);
-			warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+			WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 			ret = _cal_record_set_int(record, _calendar_event.range_type, CALENDAR_RANGE_COUNT);
-			warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+			WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 		} else if (!strncmp(t[i], "INTERVAL=", strlen("INTERVAL="))) {
 			int interval = atoi(t[i] + strlen("INTERVAL="));
 			if (interval < 1) interval = 1;
 			ret = _cal_record_set_int(record, _calendar_event.interval, interval);
-			warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+			WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 		} else if (!strncmp(t[i], "BYYEARDAY=", strlen("BYYEARDAY="))) {
 			ret = _cal_record_set_str(record, _calendar_event.byyearday, t[i] + strlen("BYYEARDAY="));
-			warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() is failed(%d)", ret);
+			WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() is failed(%d)", ret);
 		} else if (!strncmp(t[i], "BYWEEKNO=", strlen("BYWEEKNO="))) {
 			ret = _cal_record_set_str(record, _calendar_event.byweekno, t[i] + strlen("BYWEEKNO="));
-			warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() is failed(%d)", ret);
+			WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() is failed(%d)", ret);
 		} else if (!strncmp(t[i], "BYMONTH=", strlen("BYMONTH="))) {
 			ret = _cal_record_set_str(record, _calendar_event.bymonth, t[i] + strlen("BYMONTH="));
-			warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() is failed(%d)", ret);
+			WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() is failed(%d)", ret);
 		} else if (!strncmp(t[i], "BYMONTHDAY=", strlen("BYMONTHDAY="))) {
 			ret = _cal_record_set_str(record, _calendar_event.bymonthday, t[i] + strlen("BYMONTHDAY="));
-			warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() is failed(%d)", ret);
+			WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() is failed(%d)", ret);
 		} else if (!strncmp(t[i], "BYDAY=", strlen("BYDAY="))) {
 			ret = _cal_record_set_str(record, _calendar_event.byday, t[i] + strlen("BYDAY="));
-			warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() is failed(%d)", ret);
+			WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() is failed(%d)", ret);
 		} else if (!strncmp(t[i], "BYSETPOS=", strlen("BYSETPOS="))) {
 			ret = _cal_record_set_str(record, _calendar_event.bysetpos, t[i] + strlen("BYSETPOS="));
-			warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() is failed(%d)", ret);
+			WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() is failed(%d)", ret);
 		} else if (!strncmp(t[i], "WKST=", strlen("WKST="))) {
 			if (!strncmp(t[i] + strlen("WKST="), "SU", strlen("SU"))) {
 				ret = _cal_record_set_int(record, _calendar_event.wkst, CALENDAR_SUNDAY);
-				warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 			} else if (!strncmp(t[i] + strlen("WKST="), "MO", strlen("MO"))) {
 				ret = _cal_record_set_int(record, _calendar_event.wkst, CALENDAR_MONDAY);
-				warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 			} else if (!strncmp(t[i] + strlen("WKST="), "TU", strlen("TU"))) {
 				ret = _cal_record_set_int(record, _calendar_event.wkst, CALENDAR_TUESDAY);
-				warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 			} else if (!strncmp(t[i] + strlen("WKST="), "WE", strlen("WE"))) {
 				ret = _cal_record_set_int(record, _calendar_event.wkst, CALENDAR_WEDNESDAY);
-				warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 			} else if (!strncmp(t[i] + strlen("WKST="), "TH", strlen("TH"))) {
 				ret = _cal_record_set_int(record, _calendar_event.wkst, CALENDAR_THURSDAY);
-				warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 			} else if (!strncmp(t[i] + strlen("WKST="), "FR", strlen("FR"))) {
 				ret = _cal_record_set_int(record, _calendar_event.wkst, CALENDAR_FRIDAY);
-				warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 			} else if (!strncmp(t[i] + strlen("WKST="), "SA", strlen("SA"))) {
 				ret = _cal_record_set_int(record, _calendar_event.wkst, CALENDAR_SATURDAY);
-				warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 			} else {
 				DBG("Unable to parse[%s]", t[i]);
 			}
@@ -1641,11 +1667,12 @@ static void __work_component_property_rrule_ver_2(char *value, calendar_record_h
 
 static void __work_component_property_rrule(char *value, calendar_record_h record, struct user_data *ud)
 {
-	ENTER();
+	CAL_FN_CALL();
 
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
-	retm_if (NULL == record, "Invalid parameter: record is NULL");
-	retm_if (NULL == ud, "Invalid parameter: ud is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == record);
+	RET_IF(NULL == ud);
 
 	switch (ud->type)
 	{
@@ -1668,9 +1695,10 @@ static void __work_component_property_rrule(char *value, calendar_record_h recor
 
 static void __work_component_property_dtend(char *value, calendar_record_h record, struct user_data *ud)
 {
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
-	retm_if (NULL == record, "Invalid parameter: record is NULL");
-	retm_if (NULL == ud, "Invalid parameter: ud is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == record);
+	RET_IF(NULL == ud);
 
 	value = __decode_datetime(value, ud);
 	calendar_time_s caltime = {0};
@@ -1685,18 +1713,18 @@ static void __work_component_property_dtend(char *value, calendar_record_h recor
 	case CALENDAR_BOOK_TYPE_EVENT:
 		if (tzid && *tzid) {
 			ret = _cal_record_set_str(record, _calendar_event.end_tzid, tzid);
-			warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
+			WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
 		}
 		ret = _cal_record_set_caltime(record, _calendar_event.end_time, caltime);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() Failed(%d)", ret);
 		break;
 	case CALENDAR_BOOK_TYPE_TODO:
 		if (tzid && *tzid) {
 			ret = _cal_record_set_str(record, _calendar_todo.due_tzid, tzid);
-			warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
+			WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
 		}
 		ret = _cal_record_set_caltime(record, _calendar_todo.due_time, caltime);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() Failed(%d)", ret);
 		break;
 	}
 }
@@ -1704,122 +1732,129 @@ static void __work_component_property_dtend(char *value, calendar_record_h recor
 // attendee
 static void __work_component_property_attendee_cutype(calendar_record_h attendee, char *value)
 {
-	retm_if (NULL == attendee, "Invalid parameter: attendee is NULL");
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
-
 	int ret = 0;
-DBG("[%s]", value);
+
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == attendee);
+
 	if (!strncmp(value, "INDIVIDUAL", strlen("INDIVIDUAL"))) {
 		ret = _cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_CUTYPE_INDIVIDUAL);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 	} else if (!strncmp(value, "GROUP", strlen("GROUP"))) {
 		ret = _cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_CUTYPE_GROUP);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 	} else if (!strncmp(value, "RESOURCE", strlen("RESOURCE"))) {
 		ret = _cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_CUTYPE_RESOURCE);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 	} else if (!strncmp(value, "ROOM", strlen("ROOM"))) {
 		ret = _cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_CUTYPE_ROOM);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 	} else if (!strncmp(value, "UNKNOWN", strlen("UNKNOWN"))) {
 		ret = _cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_CUTYPE_UNKNOWN);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 	} else {
 		ERR("Invalid value[%s]", value);
 	}
 }
 static void __work_component_property_attendee_member(calendar_record_h attendee, char *value)
 {
-	retm_if (NULL == attendee, "Invalid parameter: attendee is NULL");
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == attendee);
 
 	int ret = _cal_record_set_str(attendee, _calendar_attendee.member, value);
-	warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
+	WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
 }
 static void __work_component_property_attendee_role(calendar_record_h attendee, char *value)
 {
-	retm_if (NULL == attendee, "Invalid parameter: attendee is NULL");
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == attendee);
 
 	int ret = 0;
 	if (!strncmp(value, "REQ-PARTICIPANT", strlen("REQ-PARTICIPANT"))) {
 		ret = _cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_ROLE_REQ_PARTICIPANT);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 	} else if (!strncmp(value, "OPT-PARTICIPANT", strlen("OPT-PARTICIPANT"))) {
 		ret = _cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_ROLE_OPT_PARTICIPANT);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 	} else if (!strncmp(value, "NON-PARTICIPANT", strlen("NON-PARTICIPANT"))) {
 		ret = _cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_ROLE_NON_PARTICIPANT);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 	} else if (!strncmp(value, "CHAIR", strlen("CHAIR"))) {
 		ret = _cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_ROLE_CHAIR);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 	} else {
 		ERR("Invalid value[%s]", value);
 	}
 }
 static void __work_component_property_attendee_partstat(calendar_record_h attendee, char *value)
 {
-	retm_if (NULL == attendee, "Invalid parameter: attendee is NULL");
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == attendee);
 
 	int ret = 0;
 	if (!strncmp(value, "NEEDS-ACTION", strlen("NEEDS-ACTION"))) {
 		ret = _cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_STATUS_PENDING);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 	} else if (!strncmp(value, "ACCEPTED", strlen("ACCEPTED"))) {
 		ret = _cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_STATUS_ACCEPTED);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 	} else if (!strncmp(value, "DECLINED", strlen("DECLINED"))) {
 		ret = _cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_STATUS_DECLINED);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 	} else if (!strncmp(value, "TENTATIVE", strlen("TENTATIVE"))) {
 		ret = _cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_STATUS_TENTATIVE);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 	} else if (!strncmp(value, "DELEGATED", strlen("DELEGATED"))) {
 		ret = _cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_STATUS_DELEGATED);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 	} else if (!strncmp(value, "COMPLETED", strlen("COMPLETED"))) {
 		ret = _cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_STATUS_COMPLETED);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 	} else if (!strncmp(value, "IN-PROCESS", strlen("IN-PROCESS"))) {
 		ret = _cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_STATUS_IN_PROCESS);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 	} else {
 		ERR("Invalid value[%s]", value);
 	}
 }
 static void __work_component_property_attendee_rsvp(calendar_record_h attendee, char *value)
 {
-	retm_if (NULL == attendee, "Invalid parameter: attendee is NULL");
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == attendee);
 
 	int ret = 0;
 	if (!strncmp(value, "TRUE", strlen("TRUE"))) {
 		ret = _cal_record_set_int(attendee, _calendar_attendee.rsvp, 1);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 	} else {
 		ret = _cal_record_set_int(attendee, _calendar_attendee.rsvp, 0);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 	}
 }
 static void __work_component_property_attendee_delegated_to(calendar_record_h attendee, char *value)
 {
-	retm_if (NULL == attendee, "Invalid parameter: attendee is NULL");
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == attendee);
 
 	int ret = 0;
 	ret = _cal_record_set_str(attendee, _calendar_attendee.delegatee_uri, value);
-	warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() is failed");
+	WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() is failed");
 }
 static void __work_component_property_attendee_delegated_from(calendar_record_h attendee, char *value)
 {
-	retm_if (NULL == attendee, "Invalid parameter: attendee is NULL");
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == attendee);
 
 	int ret = 0;
 	ret = _cal_record_set_str(attendee, _calendar_attendee.delegator_uri, value);
-	warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() is failed");
+	WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() is failed");
 }
 static void __work_component_property_attendee_sent_by(calendar_record_h attendee, char *value)
 {
@@ -1827,12 +1862,13 @@ static void __work_component_property_attendee_sent_by(calendar_record_h attende
 }
 static void __work_component_property_attendee_cn(calendar_record_h attendee, char *value)
 {
-	retm_if (NULL == attendee, "Invalid parameter: attendee is NULL");
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == attendee);
 
 	int ret = 0;
 	ret = _cal_record_set_str(attendee, _calendar_attendee.name, value);
-	warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() is failed");
+	WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() is failed");
 }
 static void __work_component_property_attendee_dir(calendar_record_h attendee, char *value)
 {
@@ -1840,12 +1876,13 @@ static void __work_component_property_attendee_dir(calendar_record_h attendee, c
 }
 static void __work_component_property_attendee_mailto(calendar_record_h attendee, char *value)
 {
-	retm_if (NULL == attendee, "Invalid parameter: attendee is NULL");
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == attendee);
 
 	int ret = 0;
 	ret = _cal_record_set_str(attendee, _calendar_attendee.email, value);
-	warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() is failed");
+	WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() is failed");
 }
 /*
  * example
@@ -1856,21 +1893,21 @@ static void __work_component_property_attendee_mailto(calendar_record_h attendee
  */
 static void __work_component_property_attendee(char *value, calendar_record_h record, struct user_data *ud)
 {
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
-	retm_if (NULL == record, "Invalid parameter: record is NULL");
-	retm_if (NULL == ud, "Invalid parameter: ud is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == record);
+	RET_IF(NULL == ud);
 
 	int ret = 0;
 	calendar_record_h attendee = NULL;
 	ret = calendar_record_create(_calendar_attendee._uri, &attendee);
-	retm_if (CALENDAR_ERROR_NONE != ret, "calendar_record_create() is failed(%d)", ret);
+	RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_create() is failed(%d)", ret);
 
 	char **t = NULL;
 	t =  g_strsplit(value, ";", -1);
-	retm_if (NULL == t, "g_strsplit() is failed");
+	RETM_IF(NULL == t, "g_strsplit() is failed");
 
 	int len = g_strv_length(t);
-DBG("len(%d)", len);
 	int i;
 	for (i = 0; i < len; i++) {
 		if (NULL == t[i] || '\0' == *t[i]) continue;
@@ -1907,20 +1944,21 @@ DBG("len(%d)", len);
 	{
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = calendar_record_add_child_record(record, _calendar_event.calendar_attendee, attendee);
-		warn_if (CALENDAR_ERROR_NONE != ret, "calendar_record_add_child_record() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_add_child_record() Failed(%d)", ret);
 		break;
 	case CALENDAR_BOOK_TYPE_TODO:
 		ret = calendar_record_add_child_record(record, _calendar_event.calendar_attendee, attendee);
-		warn_if (CALENDAR_ERROR_NONE != ret, "calendar_record_add_child_record() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_add_child_record() Failed(%d)", ret);
 		break;
 	}
 }
 
 static void __work_component_property_categories(char *value, calendar_record_h record, struct user_data *ud)
 {
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
-	retm_if (NULL == record, "Invalid parameter: record is NULL");
-	retm_if (NULL == ud, "Invalid parameter: ud is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == record);
+	RET_IF(NULL == ud);
 
 	int ret = 0;
 	value = __decode_charset(value);
@@ -1928,11 +1966,11 @@ static void __work_component_property_categories(char *value, calendar_record_h 
 	{
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = _cal_record_set_str(record, _calendar_event.categories, value);
-		warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
 		break;
 	case CALENDAR_BOOK_TYPE_TODO:
 		ret = _cal_record_set_str(record, _calendar_todo.categories, value);
-		warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
 		break;
 	}
 }
@@ -1945,14 +1983,15 @@ static void __work_component_property_categories(char *value, calendar_record_h 
 static void __work_component_property_dalarm(char *value, calendar_record_h record, struct user_data *ud)
 {
 	// diff with aalarm:
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
-	retm_if (NULL == record, "Invalid parameter: record is NULL");
-	retm_if (NULL == ud, "Invalid parameter: ud is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == record);
+	RET_IF(NULL == ud);
 
 	int ret = 0;
 	char **t = NULL;
 	t =  g_strsplit_set(value, ";:", -1);
-	retm_if (NULL == t, "g_strsplit_set() is failed");
+	RETM_IF(NULL == t, "g_strsplit_set() is failed");
 
 	calendar_record_h alarm = NULL;
 	ret = calendar_record_create(_calendar_alarm._uri, &alarm);
@@ -1962,7 +2001,7 @@ static void __work_component_property_dalarm(char *value, calendar_record_h reco
 		return;
 	}
 	ret = _cal_record_set_int(alarm, _calendar_alarm.action, CALENDAR_ALARM_ACTION_DISPLAY);
-	warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() is failed(%d)", ret);
+	WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() is failed(%d)", ret);
 
 	int len = g_strv_length(t);
 	int i;
@@ -1976,14 +2015,14 @@ static void __work_component_property_dalarm(char *value, calendar_record_h reco
 			calendar_time_s caltime = {0};
 			__get_caltime(t[i], &caltime, ud);
 			ret = _cal_record_set_caltime(alarm, _calendar_alarm.alarm_time, caltime);
-			warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() is failed(%d)", ret);
+			WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() is failed(%d)", ret);
 			ret = _cal_record_set_int(alarm, _calendar_alarm.tick_unit, CALENDAR_ALARM_TIME_UNIT_SPECIFIC);
-			warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() is failed(%d)", ret);
+			WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() is failed(%d)", ret);
 
 		} else if (4 == index) { // displayString
 			DBG("displayString [%s]", t[i]);
 			ret = _cal_record_set_str(alarm, _calendar_alarm.summary, t[i]);
-			warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() is failed(%d)", ret);
+			WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() is failed(%d)", ret);
 
 		} else { // TYPE, VALUE
 
@@ -2001,11 +2040,11 @@ static void __work_component_property_dalarm(char *value, calendar_record_h reco
 	{
 	case VCALENDAR_TYPE_VEVENT:
 		ret = calendar_record_add_child_record(record, _calendar_event.calendar_alarm, alarm);
-		warn_if (CALENDAR_ERROR_NONE != ret, "calendar_record_add_child_record() is failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_add_child_record() is failed(%d)", ret);
 		break;
 	case VCALENDAR_TYPE_VTODO:
 		ret = calendar_record_add_child_record(record, _calendar_todo.calendar_alarm, alarm);
-		warn_if (CALENDAR_ERROR_NONE != ret, "calendar_record_add_child_record() is failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_add_child_record() is failed(%d)", ret);
 		break;
 	}
 	g_strfreev(t);
@@ -2018,14 +2057,15 @@ static void __work_component_property_dalarm(char *value, calendar_record_h reco
 static void __work_component_property_malarm(char *value, calendar_record_h record, struct user_data *ud)
 {
 	// diff with aalarm: action
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
-	retm_if (NULL == record, "Invalid parameter: record is NULL");
-	retm_if (NULL == ud, "Invalid parameter: ud is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == record);
+	RET_IF(NULL == ud);
 
 	int ret = 0;
 	char **t = NULL;
 	t =  g_strsplit_set(value, ";:", -1);
-	retm_if (NULL == t, "g_strsplit_set() is failed");
+	RETM_IF(NULL == t, "g_strsplit_set() is failed");
 
 	calendar_record_h alarm = NULL;
 	ret = calendar_record_create(_calendar_alarm._uri, &alarm);
@@ -2035,7 +2075,7 @@ static void __work_component_property_malarm(char *value, calendar_record_h reco
 		return;
 	}
 	ret = _cal_record_set_int(alarm, _calendar_alarm.action, CALENDAR_ALARM_ACTION_EMAIL);
-	warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() is failed(%d)", ret);
+	WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() is failed(%d)", ret);
 
 	int len = g_strv_length(t);
 	int i;
@@ -2049,19 +2089,19 @@ static void __work_component_property_malarm(char *value, calendar_record_h reco
 			calendar_time_s caltime = {0};
 			__get_caltime(t[i], &caltime, ud);
 			ret = _cal_record_set_caltime(alarm, _calendar_alarm.alarm_time, caltime);
-			warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() is failed(%d)", ret);
+			WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() is failed(%d)", ret);
 			ret = _cal_record_set_int(alarm, _calendar_alarm.tick_unit, CALENDAR_ALARM_TIME_UNIT_SPECIFIC);
-			warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() is failed(%d)", ret);
+			WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() is failed(%d)", ret);
 
 		} else if (4 == index) { // addressString
 			DBG("addressString [%s]", t[i]);
 			ret = _cal_record_set_str(alarm, _calendar_alarm.attach, t[i]);
-			warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() is failed(%d)", ret);
+			WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() is failed(%d)", ret);
 
 		} else if (5 == index) { // noteString
 			DBG("noteString [%s]", t[i]);
 			ret = _cal_record_set_str(alarm, _calendar_alarm.description, t[i]);
-			warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() is failed(%d)", ret);
+			WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() is failed(%d)", ret);
 
 		} else { // TYPE, VALUE
 
@@ -2079,11 +2119,11 @@ static void __work_component_property_malarm(char *value, calendar_record_h reco
 	{
 	case VCALENDAR_TYPE_VEVENT:
 		ret = calendar_record_add_child_record(record, _calendar_event.calendar_alarm, alarm);
-		warn_if (CALENDAR_ERROR_NONE != ret, "calendar_record_add_child_record() is failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_add_child_record() is failed(%d)", ret);
 		break;
 	case VCALENDAR_TYPE_VTODO:
 		ret = calendar_record_add_child_record(record, _calendar_todo.calendar_alarm, alarm);
-		warn_if (CALENDAR_ERROR_NONE != ret, "calendar_record_add_child_record() is failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_add_child_record() is failed(%d)", ret);
 		break;
 	}
 	g_strfreev(t);
@@ -2096,16 +2136,17 @@ static void __work_component_property_malarm(char *value, calendar_record_h reco
  */
 static void __work_component_property_aalarm(char *value, calendar_record_h record, struct user_data *ud)
 {
-	ENTER();
+	CAL_FN_CALL();
 
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
-	retm_if (NULL == record, "Invalid parameter: record is NULL");
-	retm_if (NULL == ud, "Invalid parameter: ud is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == record);
+	RET_IF(NULL == ud);
 
 	int ret = 0;
 	char **t = NULL;
 	t =  g_strsplit_set(value, ";:", -1);
-	retm_if (NULL == t, "g_strsplit_set() is failed");
+	RETM_IF(NULL == t, "g_strsplit_set() is failed");
 
 	calendar_record_h alarm = NULL;
 	ret = calendar_record_create(_calendar_alarm._uri, &alarm);
@@ -2115,7 +2156,7 @@ static void __work_component_property_aalarm(char *value, calendar_record_h reco
 		return;
 	}
 	ret = _cal_record_set_int(alarm, _calendar_alarm.action, CALENDAR_ALARM_ACTION_AUDIO);
-	warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() is failed(%d)", ret);
+	WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() is failed(%d)", ret);
 
 	int len = g_strv_length(t);
 	int i;
@@ -2129,13 +2170,13 @@ static void __work_component_property_aalarm(char *value, calendar_record_h reco
 			calendar_time_s caltime = {0};
 			__get_caltime(t[i], &caltime, ud);
 			ret = _cal_record_set_caltime(alarm, _calendar_alarm.alarm_time, caltime);
-			warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() is failed(%d)", ret);
+			WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() is failed(%d)", ret);
 			ret = _cal_record_set_int(alarm, _calendar_alarm.tick_unit, CALENDAR_ALARM_TIME_UNIT_SPECIFIC);
-			warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() is failed(%d)", ret);
+			WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() is failed(%d)", ret);
 		} else if (4 == index) { //audioContent
 			DBG("Content [%s]", t[i]);
 			ret = _cal_record_set_str(alarm, _calendar_alarm.attach, t[i]);
-			warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() is failed(%d)", ret);
+			WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() is failed(%d)", ret);
 		} else { // TYPE, VALUE
 		}
 	}
@@ -2151,11 +2192,11 @@ static void __work_component_property_aalarm(char *value, calendar_record_h reco
 	{
 	case VCALENDAR_TYPE_VEVENT:
 		ret = calendar_record_add_child_record(record, _calendar_event.calendar_alarm, alarm);
-		warn_if (CALENDAR_ERROR_NONE != ret, "calendar_record_add_child_record() is failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_add_child_record() is failed(%d)", ret);
 		break;
 	case VCALENDAR_TYPE_VTODO:
 		ret = calendar_record_add_child_record(record, _calendar_todo.calendar_alarm, alarm);
-		warn_if (CALENDAR_ERROR_NONE != ret, "calendar_record_add_child_record() is failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_add_child_record() is failed(%d)", ret);
 		break;
 	}
 	g_strfreev(t);
@@ -2163,16 +2204,17 @@ static void __work_component_property_aalarm(char *value, calendar_record_h reco
 
 static void __work_component_property_exdate(char *value, calendar_record_h record, struct user_data *ud)
 {
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
-	retm_if (NULL == record, "Invalid parameter: record is NULL");
-	retm_if (NULL == ud, "Invalid parameter: ud is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == record);
+	RET_IF(NULL == ud);
 
 	int ret = 0;
 	switch (ud->type)
 	{
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = _cal_record_set_str(record, _calendar_event.exdate, value + 1);
-		warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
 		break;
 	case CALENDAR_BOOK_TYPE_TODO:
 		ERR("No exdate in todo");
@@ -2182,9 +2224,10 @@ static void __work_component_property_exdate(char *value, calendar_record_h reco
 
 static void __work_component_property_x_allday(char *value, calendar_record_h record, struct user_data *ud)
 {
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
-	retm_if (NULL == record, "Invalid parameter: record is NULL");
-	retm_if (NULL == ud, "Invalid parameter: ud is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == record);
+	RET_IF(NULL == ud);
 
 	int ret = 0;
 	if (!strncmp(value, ":SET", strlen(":SET"))) {
@@ -2196,51 +2239,51 @@ static void __work_component_property_x_allday(char *value, calendar_record_h re
 		{
 		case CALENDAR_BOOK_TYPE_EVENT:
 			ret = calendar_record_get_caltime(record, _calendar_event.start_time, &caltime);
-			warn_if (CALENDAR_ERROR_NONE != ret, "calendar_record_get_caltime() is failed");
+			WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_caltime() is failed");
 			if (CALENDAR_TIME_LOCALTIME == caltime.type) {
 				caltime.time.date.hour = 0;
 				caltime.time.date.minute = 0;
 				caltime.time.date.second = 0;
 				ret = _cal_record_set_caltime(record, _calendar_event.start_time, caltime);
-				warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() is failed");
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() is failed");
 			}
 			ret = calendar_record_get_caltime(record, _calendar_event.end_time, &caltime);
-			warn_if (CALENDAR_ERROR_NONE != ret, "calendar_record_get_caltime() is failed");
+			WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_caltime() is failed");
 			if (CALENDAR_TIME_LOCALTIME == caltime.type) {
 				caltime.time.date.hour = 0;
 				caltime.time.date.minute = 0;
 				caltime.time.date.second = 0;
 				ret = _cal_record_set_caltime(record, _calendar_event.end_time, caltime);
-				warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() is failed");
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() is failed");
 			}
 			ret = calendar_record_get_caltime(record, _calendar_event.until_time, &caltime);
-			warn_if (CALENDAR_ERROR_NONE != ret, "calendar_record_get_caltime() is failed");
+			WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_caltime() is failed");
 			if (CALENDAR_TIME_LOCALTIME == caltime.type) {
 				caltime.time.date.hour = 0;
 				caltime.time.date.minute = 0;
 				caltime.time.date.second = 0;
 				ret = _cal_record_set_caltime(record, _calendar_event.until_time, caltime);
-				warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() is failed");
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() is failed");
 			}
 			break;
 		case CALENDAR_BOOK_TYPE_TODO:
 			ret = calendar_record_get_caltime(record, _calendar_todo.start_time, &caltime);
-			warn_if (CALENDAR_ERROR_NONE != ret, "calendar_record_get_caltime() is failed");
+			WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_caltime() is failed");
 			if (CALENDAR_TIME_LOCALTIME == caltime.type) {
 				caltime.time.date.hour = 0;
 				caltime.time.date.minute = 0;
 				caltime.time.date.second = 0;
 				ret = _cal_record_set_caltime(record, _calendar_todo.start_time, caltime);
-				warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() is failed");
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() is failed");
 			}
 			ret = calendar_record_get_caltime(record, _calendar_todo.due_time, &caltime);
-			warn_if (CALENDAR_ERROR_NONE != ret, "calendar_record_get_caltime() is failed");
+			WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_caltime() is failed");
 			if (CALENDAR_TIME_LOCALTIME == caltime.type) {
 				caltime.time.date.hour = 0;
 				caltime.time.date.minute = 0;
 				caltime.time.date.second = 0;
 				ret = _cal_record_set_caltime(record, _calendar_todo.due_time, caltime);
-				warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() is failed");
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() is failed");
 			}
 			break;
 		}
@@ -2249,9 +2292,10 @@ static void __work_component_property_x_allday(char *value, calendar_record_h re
 
 static void __work_component_property_x_lunar(char *value, calendar_record_h record, struct user_data *ud)
 {
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
-	retm_if (NULL == record, "Invalid parameter: record is NULL");
-	retm_if (NULL == ud, "Invalid parameter: ud is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == record);
+	RET_IF(NULL == ud);
 
 	int ret = 0;
 	if (!strncmp(value, ":SET", strlen(":SET"))) {
@@ -2260,7 +2304,7 @@ static void __work_component_property_x_lunar(char *value, calendar_record_h rec
 		{
 		case CALENDAR_BOOK_TYPE_EVENT:
 			ret = _cal_record_set_int(record, _calendar_event.calendar_system_type, CALENDAR_SYSTEM_EAST_ASIAN_LUNISOLAR);
-			warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+			WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 			break;
 		case CALENDAR_BOOK_TYPE_TODO:
 			DBG("Not supported lunar in todo");
@@ -2272,8 +2316,9 @@ static void __work_component_property_x_lunar(char *value, calendar_record_h rec
 // valarm
 static void __work_component_property_valarm_action(char *value, calendar_record_h alarm, struct user_data *ud)
 {
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
-	retm_if (NULL == alarm, "Invalid parameter: record is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == alarm);
 
 	const char *prop[CALENDAR_ALARM_ACTION_MAX] = {":AUDIO", ":DISPLAY", ":EMAIL"};
 
@@ -2282,7 +2327,7 @@ static void __work_component_property_valarm_action(char *value, calendar_record
 	for (i = 0; i < CALENDAR_ALARM_ACTION_MAX; i++) {
 		if (!strncmp(value,  prop[i], strlen(prop[i]))) {
 			ret = _cal_record_set_int(alarm, _calendar_alarm.action, i);
-			warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+			WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 			break;
 		}
 	}
@@ -2290,16 +2335,17 @@ static void __work_component_property_valarm_action(char *value, calendar_record
 
 static void __work_component_property_valarm_trigger(char *value, calendar_record_h record, calendar_record_h alarm, struct user_data *ud)
 {
-	ENTER();
+	CAL_FN_CALL();
 
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
-	retm_if (NULL == alarm, "Invalid parameter: record is NULL");
-	retm_if (NULL == ud, "Invalid parameter: ud is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == alarm);
+	RET_IF(NULL == ud);
 
 	int ret = 0;
 	char **t = NULL;
 	t =  g_strsplit_set(value, ";:", -1);
-	retm_if (NULL == t, "g_strsplit_set() is failed");
+	RETM_IF(NULL == t, "g_strsplit_set() is failed");
 
 	int related = VCAL_RELATED_NONE;
 	// start
@@ -2322,9 +2368,9 @@ static void __work_component_property_valarm_trigger(char *value, calendar_recor
 				calendar_time_s caltime = {0};
 				__get_caltime(t[i], &caltime, ud);
 				ret = _cal_record_set_caltime(alarm, _calendar_alarm.alarm_time, caltime);
-				warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() is failed(%d)", ret);
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() is failed(%d)", ret);
 				ret = _cal_record_set_int(alarm, _calendar_alarm.tick_unit, CALENDAR_ALARM_TIME_UNIT_SPECIFIC);
-				warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() is failed(%d)", ret);
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() is failed(%d)", ret);
 			} else {
 				int unit = 0;
 				int tick = 0;
@@ -2349,26 +2395,26 @@ static void __work_component_property_valarm_trigger(char *value, calendar_recor
 					{
 					case VCAL_RELATED_START:
 						ret = calendar_record_get_caltime(record, _calendar_event.start_time, &caltime);
-						warn_if (CALENDAR_ERROR_NONE != ret, "calendar_record_get_caltime() is failed(%d)", ret);
+						WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_caltime() is failed(%d)", ret);
 						_cal_time_modify_caltime(&caltime, tick * unit);
 						ret = _cal_record_set_caltime(record, _calendar_event.start_time, caltime);
-						warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() is failed(%d)", ret);
+						WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() is failed(%d)", ret);
 						break;
 					case VCAL_RELATED_END:
 						ret = calendar_record_get_caltime(record, _calendar_event.end_time, &caltime);
-						warn_if (CALENDAR_ERROR_NONE != ret, "calendar_record_get_caltime() is failed(%d)", ret);
+						WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_caltime() is failed(%d)", ret);
 						_cal_time_modify_caltime(&caltime, tick * unit);
 						ret = _cal_record_set_caltime(record, _calendar_event.end_time, caltime);
-						warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() is failed(%d)", ret);
+						WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_caltime() is failed(%d)", ret);
 						break;
 					}
 					ret = _cal_record_set_int(alarm, _calendar_alarm.tick_unit, CALENDAR_ALARM_TIME_UNIT_SPECIFIC);
-					warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() is failed(%d)", ret);
+					WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() is failed(%d)", ret);
 				} else {
 					ret = _cal_record_set_int(alarm, _calendar_alarm.tick, (-1 * tick));
-					warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() is failed(%d)", ret);
+					WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() is failed(%d)", ret);
 					ret = _cal_record_set_int(alarm, _calendar_alarm.tick_unit, unit);
-					warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() is failed(%d)", ret);
+					WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() is failed(%d)", ret);
 				}
 			}
 		}
@@ -2385,29 +2431,32 @@ static void __work_component_property_valarm_repeat(char *value, calendar_record
 
 static void __work_component_property_valarm_attach(char *value, calendar_record_h alarm, struct user_data *ud)
 {
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
-	retm_if (NULL == alarm, "Invalid parameter: record is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == alarm);
 
 	int ret = _cal_record_set_str(alarm, _calendar_alarm.attach, value + 1);
-	warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
+	WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
 }
 
 static void __work_component_property_valarm_description(char *value, calendar_record_h alarm, struct user_data *ud)
 {
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
-	retm_if (NULL == alarm, "Invalid parameter: record is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == alarm);
 
 	int ret = _cal_record_set_str(alarm, _calendar_alarm.description, value + 1);
-	warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
+	WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
 }
 
 static void __work_component_property_valarm_summary(char *value, calendar_record_h alarm, struct user_data *ud)
 {
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
-	retm_if (NULL == alarm, "Invalid parameter: record is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == alarm);
 
 	int ret = _cal_record_set_str(alarm, _calendar_alarm.summary, value);
-	warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
+	WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() Failed(%d)", ret);
 }
 
 static void __work_component_property_valarm_duration(char *value, calendar_record_h alarm, struct user_data *ud)
@@ -2417,11 +2466,11 @@ static void __work_component_property_valarm_duration(char *value, calendar_reco
 
 static char* __work_component_property_begin(char *cursor, calendar_record_h record, struct user_data *ud)
 {
-	ENTER();
+	CAL_FN_CALL();
 
-	retvm_if (NULL == cursor, NULL, "Invalid parameter: cursor is NULL");
-	retvm_if (NULL == record, NULL, "Invalid parameter: record is NULL");
-	retvm_if (NULL == ud, NULL, "Invalid parameter: user_data is NULL");
+	RETV_IF(NULL == cursor, NULL);
+	RETV_IF(NULL == record, NULL);
+	RETV_IF(NULL == ud, NULL);
 
 	if (0 != strncmp(cursor, ":VALARM", strlen(":VALARM")))	{
 		DBG("this is not valarm");
@@ -2433,7 +2482,7 @@ static char* __work_component_property_begin(char *cursor, calendar_record_h rec
 	int ret = 0;
 	calendar_record_h alarm = NULL;
 	ret = calendar_record_create(_calendar_alarm._uri, &alarm);
-	retvm_if (CALENDAR_ERROR_NONE != ret, NULL, "calendar_record_create() is failed(%d)", ret);
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, NULL, "calendar_record_create() is failed(%d)", ret);
 
 	cursor = __crlf(cursor); // crlf: BEGIN:VALARM
 	bool exit_loop = false;
@@ -2516,14 +2565,14 @@ static char* __work_component_property_begin(char *cursor, calendar_record_h rec
 		ret = calendar_record_add_child_record(record, _calendar_todo.calendar_alarm, alarm);
 		break;
 	}
-	retvm_if (CALENDAR_ERROR_NONE != ret, NULL, "calendar_record_add_child_record() is failed(%d)", ret);
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, NULL, "calendar_record_add_child_record() is failed(%d)", ret);
 	return cursor;
 }
 
 static char* __work_component_vevent(char *cursor, calendar_record_h record, struct user_data *ud)
 {
-	retvm_if (NULL == cursor, NULL, "Invalid parameter: cursor is NULL");
-	retvm_if (NULL == record, NULL, "Invalid parameter: record is NULL");
+	RETV_IF(NULL == cursor, NULL);
+	RETV_IF(NULL == record, NULL);
 
 	bool exit_loop = false;
 	while (cursor) {
@@ -2697,7 +2746,7 @@ static char* __work_component_vevent(char *cursor, calendar_record_h record, str
 
 static char* __work_component_vjournal(char *cursor, calendar_record_h record, struct user_data *ud)
 {
-	retvm_if (NULL == cursor, NULL, "Invalid parameter: cursor is NULL");
+	RETV_IF(NULL == cursor, NULL);
 
 	DBG("Not supported vjournal");
 
@@ -2724,7 +2773,7 @@ static char* __work_component_vjournal(char *cursor, calendar_record_h record, s
 
 static char* __work_component_vfreebusy(char *cursor, calendar_record_h record, struct user_data *ud)
 {
-	retvm_if (NULL == cursor, NULL, "Invalid parameter: cursor is NULL");
+	RETV_IF(NULL == cursor, NULL);
 
 	DBG("Not supported vfreebusy");
 
@@ -2751,27 +2800,28 @@ static char* __work_component_vfreebusy(char *cursor, calendar_record_h record, 
 
 static void __work_component_property_vtimezone_standard_dtstart(char *value, calendar_record_h record, struct user_data *ud)
 {
-	ENTER();
+	CAL_FN_CALL();
 
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
-	retm_if (NULL == record, "Invalid parameter: record is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == record);
 
 	int ret = 0;
 	int y = 0, m = 0, d = 0;
 	int h = 0, n = 0, s = 0;
 	sscanf(value +1, VCAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS, &y, &m, &d, &h, &n, &s);
 	ret = _cal_record_set_int(record, _calendar_timezone.standard_start_month, m);
-	warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+	WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 	ret = _cal_record_set_int(record, _calendar_timezone.standard_start_hour, h);
-	warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+	WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 
 	long long int t = _cal_time_convert_lli(value +1);
 	int nth = 0, wday = 0;
 	_cal_time_get_nth_wday(t, &nth, &wday);
 	ret = _cal_record_set_int(record, _calendar_timezone.standard_start_position_of_week, nth);
-	warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+	WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 	ret = _cal_record_set_int(record, _calendar_timezone.standard_start_day, wday);
-	warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+	WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 }
 static void __work_component_property_vtimezone_standard_tzoffsetfrom(char *value, calendar_record_h record, struct user_data *ud)
 {
@@ -2779,10 +2829,11 @@ static void __work_component_property_vtimezone_standard_tzoffsetfrom(char *valu
 }
 static void __work_component_property_vtimezone_standard_tzoffsetto(char *value, calendar_record_h record, struct user_data *ud)
 {
-	ENTER();
+	CAL_FN_CALL();
 
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
-	retm_if (NULL == record, "Invalid parameter: record is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == record);
 
 	char c;
 	int h = 0, m = 0;
@@ -2793,9 +2844,9 @@ static void __work_component_property_vtimezone_standard_tzoffsetto(char *value,
 
 	int ret = 0;
 	ret = _cal_record_set_int(record, _calendar_timezone.standard_bias, offset);
-	warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+	WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 	ret = _cal_record_set_int(record, _calendar_timezone.tz_offset_from_gmt, offset);
-	warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+	WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 
 	if (NULL == ud->timezone_tzid || '\0' == *ud->timezone_tzid) {
 		char buf[32] = {0};
@@ -2807,11 +2858,12 @@ static void __work_component_property_vtimezone_standard_tzoffsetto(char *value,
 }
 static void __work_component_property_vtimezone_standard_tzname(char *value, calendar_record_h record, struct user_data *ud)
 {
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
-	retm_if (NULL == record, "Invalid parameter: record is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == record);
 
 	int ret = _cal_record_set_str(record, _calendar_timezone.standard_name, value);
-	warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() is failed(%d)", ret);
+	WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() is failed(%d)", ret);
 }
 static void __work_component_property_vtimezone_standard_rdate(char *value, calendar_record_h record, struct user_data *ud)
 {
@@ -2819,10 +2871,11 @@ static void __work_component_property_vtimezone_standard_rdate(char *value, cale
 }
 static char* __work_component_vtimezone_standard(char *cursor, calendar_record_h record, struct user_data *ud)
 {
-	ENTER();
+	CAL_FN_CALL();
 
-	retvm_if (NULL == cursor || '\0' == *cursor, __crlf(cursor), "Invalid parameter: cursor is NULL");
-	retvm_if (NULL == record, __crlf(cursor), "Invalid parameter: record is NULL");
+	RETV_IF(NULL == cursor, __crlf(cursor));
+	RETV_IF('\0' == *cursor, __crlf(cursor));
+	RETV_IF(NULL == record, __crlf(cursor));
 
 	cursor = __crlf(cursor);
 	bool exit_loop = false;
@@ -2878,25 +2931,26 @@ static char* __work_component_vtimezone_standard(char *cursor, calendar_record_h
 
 static void __work_component_property_vtimezone_daylight_dtstart(char *value, calendar_record_h record, struct user_data *ud)
 {
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
-	retm_if (NULL == record, "Invalid parameter: record is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == record);
 
 	int ret = 0;
 	int y = 0, m = 0, d = 0;
 	int h = 0, n = 0, s = 0;
 	sscanf(value +1, VCAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS, &y, &m, &d, &h, &n, &s);
 	ret = _cal_record_set_int(record, _calendar_timezone.day_light_start_month, m);
-	warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+	WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 	ret = _cal_record_set_int(record, _calendar_timezone.day_light_start_hour, h);
-	warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+	WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 
 	long long int t = _cal_time_convert_lli(value +1);
 	int nth = 0, wday = 0;
 	_cal_time_get_nth_wday(t, &nth, &wday);
 	ret = _cal_record_set_int(record, _calendar_timezone.day_light_start_position_of_week, nth);
-	warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+	WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 	ret = _cal_record_set_int(record, _calendar_timezone.day_light_start_day, wday);
-	warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
+	WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 }
 static void __work_component_property_vtimezone_daylight_tzoffsetfrom(char *value, calendar_record_h record, struct user_data *ud)
 {
@@ -2904,8 +2958,9 @@ static void __work_component_property_vtimezone_daylight_tzoffsetfrom(char *valu
 }
 static void __work_component_property_vtimezone_daylight_tzoffsetto(char *value, calendar_record_h record, struct user_data *ud)
 {
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
-	retm_if (NULL == record, "Invalid parameter: record is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == record);
 
 	char c;
 	int h = 0, m = 0;
@@ -2915,16 +2970,16 @@ static void __work_component_property_vtimezone_daylight_tzoffsetto(char *value,
 	if ('-' == c) offset *= -1;
 
 	int ret = ret = _cal_record_set_int(record, _calendar_timezone.day_light_bias, offset);
-	warn_if(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
-DBG("offset(%d)", offset);
+	WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_int() Failed(%d)", ret);
 }
 static void __work_component_property_vtimezone_daylight_tzname(char *value, calendar_record_h record, struct user_data *ud)
 {
-	retm_if (NULL == value || '\0' == *value, "Invalid parameter: value is NULL");
-	retm_if (NULL == record, "Invalid parameter: record is NULL");
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == record);
 
 	int ret = _cal_record_set_str(record, _calendar_timezone.day_light_name, value);
-	warn_if (CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() is failed(%d)", ret);
+	WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_record_set_str() is failed(%d)", ret);
 }
 static void __work_component_property_vtimezone_daylight_rdate(char *value, calendar_record_h record, struct user_data *ud)
 {
@@ -2932,8 +2987,9 @@ static void __work_component_property_vtimezone_daylight_rdate(char *value, cale
 }
 static char* __work_component_vtimezone_daylight(char *cursor, calendar_record_h record, struct user_data *ud)
 {
-	retvm_if (NULL == cursor || '\0' == *cursor, __crlf(cursor), "Invalid parameter: cursor is NULL");
-	retvm_if (NULL == record, __crlf(cursor), "Invalid parameter: record is NULL");
+	RETV_IF(NULL == cursor, __crlf(cursor));
+	RETV_IF('\0' == *cursor, __crlf(cursor));
+	RETV_IF(NULL == record, __crlf(cursor));
 
 	cursor = __crlf(cursor);
 	bool exit_loop = false;
@@ -2989,10 +3045,10 @@ static char* __work_component_vtimezone_daylight(char *cursor, calendar_record_h
 
 static char* __work_component_vtimezone(char *cursor, calendar_record_h record, struct user_data *ud)
 {
-	ENTER();
+	CAL_FN_CALL();
 
-	retvm_if (NULL == cursor, NULL, "Invalid parameter: cursor is NULL");
-	retvm_if (NULL == record, NULL, "Invalid parameter: record is NULL");
+	RETV_IF(NULL == cursor, NULL);
+	RETV_IF(NULL == record, NULL);
 
 	__init_component_property_vtimezone();
 
@@ -3036,10 +3092,11 @@ static char* __work_component_vtimezone(char *cursor, calendar_record_h record, 
 
 static char* __work_property_begin(char *cursor, calendar_record_h *out_record, struct user_data *ud)
 {
-	ENTER();
-	retvm_if (NULL == cursor || '\0' == *cursor, NULL, "Invalid parameter: cursor is NULL");
-	retvm_if (NULL == out_record, NULL, "Invalid parameter: out_record is NULL");
-	retvm_if (NULL == ud, NULL, "Invalid parameter: ud is NULL");
+	CAL_FN_CALL();
+	RETV_IF(NULL == cursor, NULL);
+	RETV_IF('\0' == *cursor, NULL);
+	RETV_IF(NULL == out_record, NULL);
+	RETV_IF(NULL == ud, NULL);
 
 	int ret = 0;
 	int index = 0;
@@ -3050,14 +3107,14 @@ static char* __work_property_begin(char *cursor, calendar_record_h *out_record, 
 	{
 	case VCAL_COMPONENT_VEVENT:
 		ret = calendar_record_create(_calendar_event._uri, &record);
-		retvm_if (CALENDAR_ERROR_NONE != ret, NULL, "calendar_record_create() is failed(%d)", ret);
+		RETVM_IF(CALENDAR_ERROR_NONE != ret, NULL, "calendar_record_create() is failed(%d)", ret);
 		ud->type = CALENDAR_BOOK_TYPE_EVENT;
 		cursor = __work_component_vevent(cursor, record, ud);
 		break;
 
 	case VCAL_COMPONENT_VTODO:
 		ret = calendar_record_create(_calendar_todo._uri, &record);
-		retvm_if (CALENDAR_ERROR_NONE != ret, NULL, "calendar_record_create() is failed(%d)", ret);
+		RETVM_IF(CALENDAR_ERROR_NONE != ret, NULL, "calendar_record_create() is failed(%d)", ret);
 		ud->type = CALENDAR_BOOK_TYPE_TODO;
 		cursor = __work_component_vevent(cursor, record, ud); // same as event
 		break;
@@ -3072,7 +3129,7 @@ static char* __work_property_begin(char *cursor, calendar_record_h *out_record, 
 
 	case VCAL_COMPONENT_VTIMEZONE:
 		ret = calendar_record_create(_calendar_timezone._uri, &record);
-		retvm_if (CALENDAR_ERROR_NONE != ret, NULL, "calendar_record_create() is failed(%d)", ret);
+		RETVM_IF(CALENDAR_ERROR_NONE != ret, NULL, "calendar_record_create() is failed(%d)", ret);
 		cursor = __work_component_vtimezone(cursor, record, ud);
 		break;
 	}
@@ -3082,10 +3139,10 @@ static char* __work_property_begin(char *cursor, calendar_record_h *out_record, 
 
 int _cal_vcalendar_parse_vcalendar_object(char *stream, calendar_list_h list, vcalendar_foreach_s *foreach_data)
 {
-	ENTER();
+	CAL_FN_CALL();
 
-	retvm_if (NULL == stream, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: stream is NULL");
-	retvm_if (NULL == list, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: list is NULL");
+	RETV_IF(NULL == stream, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	__init_component();
 	__init_property();
@@ -3093,7 +3150,7 @@ int _cal_vcalendar_parse_vcalendar_object(char *stream, calendar_list_h list, vc
 	__unfolding(stream);
 
 	struct user_data *ud = calloc(1, sizeof(struct user_data));
-	retvm_if (NULL == ud, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc() is failed");
+	RETVM_IF(NULL == ud, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc() is failed");
 	ud->version = VCAL_VER_2; // default
 
 	calendar_record_h record = NULL;

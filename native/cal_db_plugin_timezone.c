@@ -84,15 +84,14 @@ static int __cal_db_timezone_insert_record( calendar_record_h record, int* id )
 	calendar_record_h record_calendar = NULL;
 	cal_db_util_error_e dbret = CAL_DB_OK;
 
-	retv_if(NULL == timezone, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == timezone, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	ret = calendar_record_get_int(record,
 			_calendar_timezone.calendar_book_id, &calendar_book_id);
 	DBG("calendar_book_id(%d)", calendar_book_id);
 
-	ret = _cal_db_get_record(_calendar_book._uri,
-			calendar_book_id, &record_calendar);
-	retvm_if(CALENDAR_ERROR_NONE != ret, CALENDAR_ERROR_INVALID_PARAMETER, "calendar_book_id is invalid");
+	ret = _cal_db_get_record(_calendar_book._uri, calendar_book_id, &record_calendar);
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "_cal_db_get_record() Fail(%d)", ret);
 	calendar_record_destroy(record_calendar, true);
 
 	// start >>>>> check if we already have
@@ -169,7 +168,7 @@ static int __cal_db_timezone_insert_record( calendar_record_h record, int* id )
 			timezone->calendar_id);
 
 	stmt = _cal_db_util_query_prepare(query);
-	retvm_if(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "_cal_db_util_query_prepare() Failed");
+	RETVM_IF(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "_cal_db_util_query_prepare() Failed");
 
 	if (timezone->standard_name)
 		_cal_db_util_stmt_bind_text(stmt, 1, timezone->standard_name);
@@ -262,7 +261,7 @@ static int __cal_db_timezone_update_record( calendar_record_h record )
 	cal_timezone_s* timezone_info =  (cal_timezone_s*)(record);
 	cal_db_util_error_e dbret = CAL_DB_OK;
 
-	retv_if(NULL == timezone_info, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == timezone_info, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	if (timezone_info->common.properties_flags != NULL)
 	{
@@ -301,7 +300,7 @@ static int __cal_db_timezone_update_record( calendar_record_h record )
 			timezone_info->index);
 
 	stmt = _cal_db_util_query_prepare(query);
-	retvm_if(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "cal_q_cal_db_util_query_prepareuery_prepare() Failed");
+	RETVM_IF(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "cal_q_cal_db_util_query_prepareuery_prepare() Failed");
 
 	if (timezone_info->standard_name)
 		_cal_db_util_stmt_bind_text(stmt, 1, timezone_info->standard_name);
@@ -356,7 +355,7 @@ static int __cal_db_timezone_replace_record(calendar_record_h record, int id)
 	cal_timezone_s* timezone_info =  (cal_timezone_s*)(record);
 	cal_db_util_error_e dbret = CAL_DB_OK;
 
-	retv_if(NULL == timezone_info, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == timezone_info, CALENDAR_ERROR_INVALID_PARAMETER);
 	timezone_info->index = id;
 
 	if (timezone_info->common.properties_flags != NULL)
@@ -396,7 +395,7 @@ static int __cal_db_timezone_replace_record(calendar_record_h record, int id)
 			id);
 
 	stmt = _cal_db_util_query_prepare(query);
-	retvm_if(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "cal_q_cal_db_util_query_prepareuery_prepare() Failed");
+	RETVM_IF(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "cal_q_cal_db_util_query_prepareuery_prepare() Failed");
 
 	if (timezone_info->standard_name)
 		_cal_db_util_stmt_bind_text(stmt, 1, timezone_info->standard_name);
@@ -429,11 +428,10 @@ static int __cal_db_timezone_get_all_records( int offset, int limit, calendar_li
 	char limitquery[CAL_DB_SQL_MAX_LEN] = {0};
 	sqlite3_stmt *stmt = NULL;
 
-	retvm_if(NULL == out_list, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == out_list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	ret = calendar_list_create(out_list);
-
-	retvm_if(CALENDAR_ERROR_NONE != ret, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "calendar_list_create() Fail(%d)", ret);
 
 	if (offset > 0)
 	{
@@ -686,7 +684,7 @@ static int __cal_db_timezone_insert_records(const calendar_list_h list, int** id
 
 	id = calloc(1, sizeof(int)*count);
 
-	retvm_if(NULL == id, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc fail");
+	RETVM_IF(NULL == id, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc fail");
 
 	ret = calendar_list_first(list);
 	if (ret != CALENDAR_ERROR_NONE)
@@ -768,11 +766,7 @@ static int __cal_db_timezone_replace_records(const calendar_list_h list, int ids
 	int i;
 	int ret = 0;
 
-	if (NULL == list)
-	{
-		ERR("Invalid argument: list is NULL");
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
+	RETV_IF(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	ret = calendar_list_first(list);
 	if (ret != CALENDAR_ERROR_NONE)
@@ -806,7 +800,7 @@ static int __cal_db_timezone_get_count(int *out_count)
 	int count = 0;
 	int ret;
 
-	retvm_if(NULL == out_count, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == out_count, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	snprintf(query, sizeof(query), "SELECT count(*) FROM %s where "
 			"calendar_id IN (select id from %s where deleted = 0)",
@@ -819,7 +813,7 @@ static int __cal_db_timezone_get_count(int *out_count)
 		ERR("_cal_db_util_query_get_first_int_result() failed");
 		return ret;
 	}
-	CAL_DBG("%s=%d",query,count);
+	DBG("%s=%d",query,count);
 
 	*out_count = count;
 	return CALENDAR_ERROR_NONE;
@@ -894,7 +888,7 @@ static int __cal_db_timezone_get_count_with_query(calendar_query_h query, int *o
 		CAL_FREE(query_str);
 		return ret;
 	}
-	CAL_DBG("%s=%d",query_str,count);
+	DBG("%s=%d",query_str,count);
 
 	*out_count = count;
 
@@ -1024,14 +1018,14 @@ static int __cal_db_timezone_update_projection(calendar_record_h record)
 	GSList *cursor = NULL;
 
 	ret = _cal_db_query_create_projection_update_set(record,&set,&bind_text);
-	retv_if(CALENDAR_ERROR_NONE != ret, ret);
+	RETV_IF(CALENDAR_ERROR_NONE != ret, ret);
 
 	snprintf(query, sizeof(query), "UPDATE %s SET %s "
 			"WHERE id = %d",
 			CAL_TABLE_TIMEZONE,set,
 			timezone->index);
 
-	CAL_DBG("%s",query);
+	DBG("%s",query);
 	stmt = _cal_db_util_query_prepare(query);
 	if (NULL == stmt) {
 		ERR("_cal_db_util_query_prepare() Failed");

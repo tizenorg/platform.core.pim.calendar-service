@@ -42,7 +42,7 @@ static int __cal_db_alarm_insert_record(calendar_record_h record, int parent_id)
 	cal_alarm_s *alarm = NULL;
 
 	alarm = (cal_alarm_s *)(record);
-	retvm_if(NULL == alarm, CALENDAR_ERROR_INVALID_PARAMETER,
+	RETVM_IF(NULL == alarm, CALENDAR_ERROR_INVALID_PARAMETER,
 			"Invalid argument: cal_alarm_s is NULL");
 
 	if (alarm->remind_tick_unit == CALENDAR_ALARM_NONE) {
@@ -139,7 +139,7 @@ int _cal_db_alarm_insert_records(cal_list_s *list_s, int event_id)
 	int count = 0;
 	calendar_record_h record = NULL;
 	calendar_list_h list = (calendar_list_h)list_s;
-	retv_if(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	calendar_list_get_count(list, &count);
 	if (0 == count)
@@ -148,7 +148,7 @@ int _cal_db_alarm_insert_records(cal_list_s *list_s, int event_id)
 	calendar_list_first(list);
 	while (CALENDAR_ERROR_NONE == calendar_list_get_current_record_p(list, &record)) {
 		ret = __cal_db_alarm_insert_record(record, event_id);
-		retvm_if(CALENDAR_ERROR_NONE != ret, ret, "_cal_db_extended_insert_record() Failed(%d)", ret);
+		RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "_cal_db_extended_insert_record() Failed(%d)", ret);
 		calendar_list_next(list);
 	}
 	return CALENDAR_ERROR_NONE;
@@ -160,7 +160,7 @@ int _cal_db_alarm_get_records(int parent, cal_list_s *list)
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	sqlite3_stmt *stmt = NULL;
 
-	retvm_if(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER,
+	RETVM_IF(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER,
 			"Invalid parameter: list is NULL");
 
 	snprintf(query, sizeof(query),
@@ -178,7 +178,7 @@ int _cal_db_alarm_get_records(int parent, cal_list_s *list)
 			CAL_TABLE_ALARM, parent);
 
 	stmt = _cal_db_util_query_prepare(query);
-	retvm_if(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "_cal_db_util_query_prepare() failed");
+	RETVM_IF(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "_cal_db_util_query_prepare() failed");
 
 	int index = 0;
 	const unsigned char *temp;

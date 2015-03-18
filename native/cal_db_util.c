@@ -125,7 +125,7 @@ int _cal_db_util_open(void)
 			mkdir(DB_PATH, 755);
 		}
 		ret = db_util_open(CAL_DB_FILE, &calendar_db_handle, 0);
-		retvm_if(SQLITE_OK != ret, CALENDAR_ERROR_DB_FAILED,
+		RETVM_IF(SQLITE_OK != ret, CALENDAR_ERROR_DB_FAILED,
 				"db_util_open() Failed(%d).", ret);
 	}
 	return CALENDAR_ERROR_NONE;
@@ -137,9 +137,9 @@ int _cal_db_util_close(void)
 
 	if (calendar_db_handle) {
 		ret = db_util_close(calendar_db_handle);
-		warn_if(SQLITE_OK != ret, "db_util_close() Failed(%d)", ret);
+		WARN_IF(SQLITE_OK != ret, "db_util_close() Failed(%d)", ret);
 		calendar_db_handle = NULL;
-		CAL_DBG("The database disconnected really.");
+		DBG("The database disconnected really.");
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -160,7 +160,7 @@ int _cal_db_util_query_get_first_int_result(const char *query, GSList *bind_text
 	struct timeval from, now, diff;
 	bool retry = false;
 	sqlite3_stmt *stmt = NULL;
-	retvm_if(NULL == calendar_db_handle, CALENDAR_ERROR_DB_FAILED, "Database is not opended");
+	RETVM_IF(NULL == calendar_db_handle, CALENDAR_ERROR_DB_FAILED, "Database is not opended");
 
 	gettimeofday(&from, NULL);
 	do
@@ -244,10 +244,10 @@ cal_db_util_error_e _cal_db_util_query_exec(char *query)
 	int ret;
 	sqlite3_stmt *stmt = NULL;
 
-	retvm_if(NULL == calendar_db_handle, CALENDAR_ERROR_DB_FAILED, "Database is not opended");
+	RETVM_IF(NULL == calendar_db_handle, CALENDAR_ERROR_DB_FAILED, "Database is not opended");
 
 	stmt = _cal_db_util_query_prepare(query);
-	retvm_if(NULL == stmt, CAL_DB_ERROR_FAIL, "_cal_db_util_query_prepare() Failed");
+	RETVM_IF(NULL == stmt, CAL_DB_ERROR_FAIL, "_cal_db_util_query_prepare() Failed");
 
 	ret = _cal_db_util_stmt_step(stmt);
 
@@ -269,16 +269,13 @@ sqlite3_stmt* _cal_db_util_query_prepare(char *query)
 	bool retry = false;
 	sqlite3_stmt *stmt = NULL;
 
-	retvm_if(NULL == query, NULL, "Invalid query");
-	retvm_if(NULL == calendar_db_handle, NULL, "Database is not opended");
-	//CALS_DBG("prepare query : %s", query);
+	RETV_IF(NULL == query, NULL);
+	RETV_IF(NULL == calendar_db_handle, NULL);
 
 	gettimeofday(&from, NULL);
-	do
-	{
+	do {
 		ret = sqlite3_prepare_v2(calendar_db_handle, query, strlen(query), &stmt, NULL);
-		if (SQLITE_BUSY == ret || SQLITE_LOCKED == ret)
-		{
+		if (SQLITE_BUSY == ret || SQLITE_LOCKED == ret) {
 			gettimeofday(&now, NULL);
 			timersub(&now, &from, &diff);
 			retry = (diff.tv_sec < __CAL_QUERY_RETRY_TIME) ? true : false;
@@ -366,7 +363,7 @@ int _cal_db_util_begin_trans(void)
 			ret = _cal_db_util_query_exec("BEGIN IMMEDIATE TRANSACTION");
 			progress *= 2;
 		}
-		retvm_if(CAL_DB_OK != ret, ret, "cal_query_exec() Failed(%d)", ret);
+		RETVM_IF(CAL_DB_OK != ret, ret, "cal_query_exec() Failed(%d)", ret);
 
 		transaction_cnt = 0;
 		const char *query = "SELECT ver FROM "CAL_TABLE_VERSION;
@@ -379,7 +376,7 @@ int _cal_db_util_begin_trans(void)
 		version_up = false;
 	}
 	transaction_cnt++;
-	CAL_DBG("transaction_cnt : %d", transaction_cnt);
+	DBG("transaction_cnt : %d", transaction_cnt);
 
 	return CALENDAR_ERROR_NONE;
 }
@@ -393,7 +390,7 @@ int _cal_db_util_end_trans(bool is_success)
 	transaction_cnt--;
 
 	if (0 != transaction_cnt) {
-		CAL_DBG("transaction_cnt : %d", transaction_cnt);
+		DBG("transaction_cnt : %d", transaction_cnt);
 		return CALENDAR_ERROR_NONE;
 	}
 
@@ -408,7 +405,7 @@ int _cal_db_util_end_trans(bool is_success)
 		snprintf(query, sizeof(query), "UPDATE %s SET ver = %d",
 				CAL_TABLE_VERSION, transaction_ver);
 		ret = _cal_db_util_query_exec(query);
-		warn_if(CAL_DB_OK != ret, "cal_query_exec(version up) Failed(%d).", ret);
+		WARN_IF(CAL_DB_OK != ret, "cal_query_exec(version up) Failed(%d).", ret);
 	}
 
 	INFO("start commit");
@@ -427,14 +424,14 @@ int _cal_db_util_end_trans(bool is_success)
 		ERR("cal_query_exec() Failed(%d)", ret);
 		__cal_db_util_cancel_changes();
 		tmp_ret = _cal_db_util_query_exec("ROLLBACK TRANSACTION");
-		warn_if(CAL_DB_OK != tmp_ret, "cal_query_exec(ROLLBACK) Failed(%d).", tmp_ret);
+		WARN_IF(CAL_DB_OK != tmp_ret, "cal_query_exec(ROLLBACK) Failed(%d).", tmp_ret);
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 	if (event_change) __cal_db_util_notify_event_change();
 	if (todo_change) __cal_db_util_notify_todo_change();
 	if (calendar_change) __cal_db_util_notify_calendar_change();
 
-	CAL_DBG("transaction_ver = %d",transaction_ver);
+	DBG("transaction_ver = %d",transaction_ver);
 	return CALENDAR_ERROR_NONE;
 }
 

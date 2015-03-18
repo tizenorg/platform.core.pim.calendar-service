@@ -69,8 +69,8 @@ static int __cal_record_alarm_create(calendar_record_h* out_record )
 	cal_alarm_s *temp = NULL;
 	int ret= CALENDAR_ERROR_NONE;
 
-	temp = (cal_alarm_s*)calloc(1,sizeof(cal_alarm_s));
-	retvm_if(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "malloc(cal_alarm_s:sch) Failed(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
+	temp = calloc(1,sizeof(cal_alarm_s));
+	RETVM_IF(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "malloc(cal_alarm_s:sch) Failed(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
 
 	__cal_record_alarm_struct_init(temp);
 
@@ -106,7 +106,7 @@ static int __cal_record_alarm_clone( calendar_record_h record, calendar_record_h
 	src_data = (cal_alarm_s*)(record);
 
 	out_data = calloc(1, sizeof(cal_alarm_s));
-	retvm_if(NULL == out_data, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc(cal_alarm_s) Failed(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
+	RETVM_IF(NULL == out_data, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc(cal_alarm_s) Failed(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
 
 	CAL_RECORD_COPY_COMMON(&(out_data->common), &(src_data->common));
 

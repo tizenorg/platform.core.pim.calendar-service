@@ -38,7 +38,7 @@ static TLS int thread_connection = 0;
 
 API int calendar_connect(void)
 {
-	CAL_FN_CALL;
+	CAL_FN_CALL();
 	int ret = 0;
 
 	_cal_mutex_lock(CAL_MUTEX_CONNECTION);
@@ -73,7 +73,7 @@ API int calendar_connect(void)
 
 API int calendar_disconnect(void)
 {
-	CAL_FN_CALL;
+	CAL_FN_CALL();
 
 	_cal_mutex_lock(CAL_MUTEX_CONNECTION);
 	if (1 == thread_connection) {

@@ -71,7 +71,7 @@ void _cal_mutex_lock(int type)
 	if (mutex != NULL)
 	{
 		ret = pthread_mutex_lock(mutex);
-		retm_if(ret, "mutex_lock Failed(%d)", ret);
+		RETM_IF(ret, "mutex_lock Failed(%d)", ret);
 	}
 }
 
@@ -85,6 +85,6 @@ void _cal_mutex_unlock(int type)
 	if (mutex != NULL)
 	{
 		ret = pthread_mutex_unlock(mutex);
-		retm_if(ret, "mutex_unlock Failed(%d)", ret);
+		RETM_IF(ret, "mutex_unlock Failed(%d)", ret);
 	}
 }

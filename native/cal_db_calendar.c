@@ -32,7 +32,7 @@
 #ifdef CAL_IPC_SERVER
 int calendar_db_delete_account(int account_id)
 {
-	CAL_FN_CALL;
+	CAL_FN_CALL();
 	int ret = CALENDAR_ERROR_NONE;
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	sqlite3_stmt *stmt = NULL;
@@ -57,7 +57,7 @@ int calendar_db_delete_account(int account_id)
 
 	sqlite3_finalize(stmt);
 	if(calendar_list)
-		CAL_DBG("calendar cnt=%d",g_list_length(calendar_list) );
+		DBG("calendar cnt=%d",g_list_length(calendar_list) );
 
 	ret = _cal_db_util_begin_trans();
 	if (CALENDAR_ERROR_NONE != ret)

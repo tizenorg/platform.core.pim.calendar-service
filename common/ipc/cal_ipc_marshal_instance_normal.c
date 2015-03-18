@@ -33,8 +33,8 @@ cal_ipc_marshal_record_plugin_cb_s _cal_ipc_record_instance_normal_plugin_cb = {
 static int __cal_ipc_unmarshal_instance_normal(pims_ipc_data_h ipc_data, calendar_record_h record)
 {
 	cal_instance_normal_s* pinstancenormal = NULL;
-	retv_if(ipc_data==NULL,CALENDAR_ERROR_NO_DATA);
-	retv_if(record==NULL,CALENDAR_ERROR_NO_DATA);
+	RETV_IF(ipc_data==NULL,CALENDAR_ERROR_NO_DATA);
+	RETV_IF(record==NULL,CALENDAR_ERROR_NO_DATA);
 
 	pinstancenormal = (cal_instance_normal_s*) record;
 	if (_cal_ipc_unmarshal_int(ipc_data,&pinstancenormal->event_id) != CALENDAR_ERROR_NONE) {
@@ -116,8 +116,8 @@ static int __cal_ipc_unmarshal_instance_normal(pims_ipc_data_h ipc_data, calenda
 static int __cal_ipc_marshal_instance_normal(const calendar_record_h record, pims_ipc_data_h ipc_data)
 {
 	cal_instance_normal_s* pinstancenormal = (cal_instance_normal_s*) record;
-	retv_if(ipc_data==NULL,CALENDAR_ERROR_NO_DATA);
-	retv_if(pinstancenormal==NULL,CALENDAR_ERROR_NO_DATA);
+	RETV_IF(ipc_data==NULL,CALENDAR_ERROR_NO_DATA);
+	RETV_IF(pinstancenormal==NULL,CALENDAR_ERROR_NO_DATA);
 
 	if (_cal_ipc_marshal_int((pinstancenormal->event_id),ipc_data) != CALENDAR_ERROR_NONE) {
 		ERR("_cal_ipc_marshal fail");

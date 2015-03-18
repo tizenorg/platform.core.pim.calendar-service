@@ -112,14 +112,11 @@ API int calendar_reminder_add_cb(calendar_reminder_cb callback, void *user_data)
 	int ret;
 	bool result = false;
 
-	if (NULL == callback) {
-		ERR("Invalid parameter: callback is NULL");
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
+	RETV_IF(NULL == callback, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	ret = cal_client_ipc_client_check_permission(CAL_PERMISSION_READ, &result);
-	retvm_if(CALENDAR_ERROR_NONE != ret, ret, "ctsvc_ipc_client_check_permission fail (%d)", ret);
-	retvm_if(result == false, CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied (calendar read)");
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "ctsvc_ipc_client_check_permission fail (%d)", ret);
+	RETVM_IF(result == false, CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied (calendar read)");
 
 	_cal_mutex_lock(CAL_MUTEX_PIMS_IPC_PUBSUB);
 
@@ -158,10 +155,7 @@ API int calendar_reminder_remove_cb(calendar_reminder_cb callback, void *user_da
 {
 	GSList *it = NULL;
 
-	if (NULL == callback) {
-		ERR("Invalid parameter: callback is NULL");
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
+	RETV_IF(NULL == callback, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	_cal_mutex_lock(CAL_MUTEX_PIMS_IPC_PUBSUB);
 

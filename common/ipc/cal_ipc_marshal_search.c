@@ -37,8 +37,8 @@ static int __cal_ipc_marshal_search_value(const cal_search_value_s* pvalue, pims
 static int __cal_ipc_unmarshal_search(pims_ipc_data_h ipc_data, calendar_record_h record)
 {
 	cal_search_s* psearch = NULL;
-	retv_if(ipc_data==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
-	retv_if(record==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(ipc_data==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(record==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
 
 	psearch = (cal_search_s*) record;
 
@@ -70,8 +70,8 @@ static int __cal_ipc_unmarshal_search(pims_ipc_data_h ipc_data, calendar_record_
 static int __cal_ipc_marshal_search(const calendar_record_h record, pims_ipc_data_h ipc_data)
 {
 	cal_search_s* psearch = (cal_search_s*) record;
-	retv_if(ipc_data==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
-	retv_if(psearch==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(ipc_data==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(psearch==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
 
 	if (psearch->values) {
 		int count = g_slist_length(psearch->values);

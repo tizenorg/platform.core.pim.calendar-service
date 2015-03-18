@@ -44,13 +44,11 @@ API int calendar_vcalendar_make_from_records(calendar_list_h list, char **vcalen
 	cal_make_s *b;
 	char *ical = NULL;
 
-	retvm_if(list == NULL, CALENDAR_ERROR_INVALID_PARAMETER,
-			"Invalid argument: calendar_list_h is NULL");
-	retvm_if(vcalendar_stream == NULL, CALENDAR_ERROR_INVALID_PARAMETER,
-			"Invalid argument: vcalendar_stream is NULL");
+	RETV_IF(list == NULL, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(vcalendar_stream == NULL, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	b = _cal_vcalendar_make_new();
-	retvm_if(!b, CALENDAR_ERROR_OUT_OF_MEMORY,
+	RETVM_IF(!b, CALENDAR_ERROR_OUT_OF_MEMORY,
 			"_cal_vcalendar_make_new() Failed");
 
 	ret = _cal_vcalendar_make_vcalendar(b, list);
@@ -87,7 +85,7 @@ static const char* __calendar_vcalendar_get_vcalendar_object(const char *origina
 	bool new_line = false;
 	char *vcalendar_object = NULL;
 
-	retv_if(NULL == pvcalendar_object, original);
+	RETV_IF(NULL == pvcalendar_object, original);
 	*pvcalendar_object = NULL;
 
 	while ('\n' == *vcal_start || '\r' == *vcal_start)
@@ -139,17 +137,15 @@ API int calendar_vcalendar_parse_to_calendar(const char* vcalendar_stream, calen
 	calendar_error_e err;
 	calendar_list_h list = NULL;
 
-	retvm_if(vcalendar_stream == NULL, CALENDAR_ERROR_INVALID_PARAMETER,
-			"Invalid argument: vcalendar_stream is NULL");
-	retvm_if(out_list == NULL, CALENDAR_ERROR_INVALID_PARAMETER,
-			"Invalid argument: calendar_list_h * is NULL");
+	RETV_IF(NULL == vcalendar_stream, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == out_list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	// get vcalendar object
 	cursor = vcalendar_stream;
 
 	int ret = 0;
 	ret = calendar_list_create(&list);
-	retvm_if (CALENDAR_ERROR_NONE != ret, ret, "Failed to calendar_list_create()");
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "Failed to calendar_list_create()");
 
 	_cal_time_init();
 
@@ -187,15 +183,13 @@ API int calendar_vcalendar_parse_to_calendar_foreach(const char *vcalendar_file_
 	char buf[1024];
 	vcalendar_foreach_s *foreach_data = NULL;
 
-	retvm_if(vcalendar_file_path == NULL, CALENDAR_ERROR_INVALID_PARAMETER,
-			"Invalid argument: vcalendar_file_path is NULL");
-	retvm_if(callback == NULL, CALENDAR_ERROR_INVALID_PARAMETER,
-			"Invalid argument: callback is NULL");
+	RETV_IF(NULL == vcalendar_file_path, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == callback, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	int ret = 0;
 	calendar_list_h list = NULL;
 	ret = calendar_list_create(&list);
-	retvm_if (CALENDAR_ERROR_NONE != ret, ret, "Failed to calendar_list_create()");
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "Failed to calendar_list_create()");
 
 	file = fopen(vcalendar_file_path, "r");
 	if (file == NULL) {

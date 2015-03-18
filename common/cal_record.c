@@ -157,14 +157,14 @@ int _cal_record_set_projection(calendar_record_h record, const unsigned int *pro
 
 	cal_record_s *_record = NULL;
 
-	retv_if(record == NULL, -1);
+	RETV_IF(record == NULL, -1);
 
 	_record = (cal_record_s *)record;
 
 	CAL_FREE(_record->properties_flags);
 	_record->properties_flags  = calloc(properties_max_count, sizeof(char));
 
-	retvm_if(NULL == _record->properties_flags, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc fail");
+	RETVM_IF(NULL == _record->properties_flags, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc fail");
 
 	_record->properties_max_count = properties_max_count;
 
@@ -181,15 +181,15 @@ API int calendar_record_create( const char* view_uri, calendar_record_h* out_rec
 	int ret = CALENDAR_ERROR_NONE;
 	cal_record_type_e type = CAL_RECORD_TYPE_INVALID;
 
-	retvm_if(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER, "uri[%s]", view_uri);
-	retvm_if(NULL == out_record, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == out_record, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	type =_cal_view_get_type(view_uri);
-	retv_if(CAL_RECORD_TYPE_INVALID == type, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(CAL_RECORD_TYPE_INVALID == type, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	cal_record_plugin_cb_s *plugin_cb = _cal_record_get_plugin_cb(type);
-	retvm_if(NULL == plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == plugin_cb->create, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted in [%s]", view_uri);
+	RETV_IF(NULL == plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(NULL == plugin_cb->create, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted in [%s]", view_uri);
 
 	ret = plugin_cb->create(out_record);
 
@@ -205,12 +205,12 @@ API int calendar_record_destroy( calendar_record_h record, bool delete_child )
 {
 	int ret = CALENDAR_ERROR_NONE;
 
-	retvm_if(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	cal_record_s *temp = (cal_record_s*)(record);
 
-	retvm_if(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == temp->plugin_cb->destroy, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted in [%s]", temp->view_uri);
+	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(NULL == temp->plugin_cb->destroy, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted in [%s]", temp->view_uri);
 
 	CAL_FREE(temp->properties_flags);
 
@@ -225,8 +225,10 @@ API int calendar_record_clone( calendar_record_h record, calendar_record_h* out_
 
 	cal_record_s *temp = (cal_record_s*)(record);
 
-	retvm_if(NULL == record || NULL == temp->plugin_cb || NULL == out_record, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == temp->plugin_cb->clone, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted in [%s]", temp->view_uri);
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == out_record, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(NULL == temp->plugin_cb->clone, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted in [%s]", temp->view_uri);
 
 	ret = temp->plugin_cb->clone(record, out_record);
 
@@ -239,7 +241,8 @@ API int calendar_record_get_uri_p( calendar_record_h record, char** out_str )
 
 	cal_record_s *temp = (cal_record_s*)(record);
 
-	retvm_if(NULL == record || NULL == out_str, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == out_str, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	*out_str = (char*)(temp->view_uri);
 
@@ -253,9 +256,11 @@ API int calendar_record_get_str( calendar_record_h record, unsigned int property
 
 	cal_record_s *temp = (cal_record_s*)(record);
 
-	retvm_if(NULL == record || NULL == temp->plugin_cb || NULL == out_str, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == temp->plugin_cb->get_str, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
-	retvm_if(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == out_str, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(NULL == temp->plugin_cb->get_str, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
+	RETVM_IF(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->get_str(record, property_id, out_str);
 
@@ -268,9 +273,11 @@ API int calendar_record_get_str_p( calendar_record_h record, unsigned int proper
 
 	cal_record_s *temp = (cal_record_s*)(record);
 
-	retvm_if(NULL == record || NULL == temp->plugin_cb || NULL == out_str, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == temp->plugin_cb->get_str_p, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
-	retvm_if(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == out_str, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(NULL == temp->plugin_cb->get_str_p, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
+	RETVM_IF(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->get_str_p(record, property_id, out_str);
 
@@ -282,9 +289,11 @@ API int calendar_record_get_int( calendar_record_h record, unsigned int property
 
 	cal_record_s *temp = (cal_record_s*)(record);
 
-	retvm_if(NULL == record || NULL == temp->plugin_cb || NULL == out_value, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == temp->plugin_cb->get_int, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
-	retvm_if(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == out_value, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(NULL == temp->plugin_cb->get_int, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
+	RETVM_IF(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->get_int(record, property_id, out_value);
 
@@ -297,9 +306,11 @@ API int calendar_record_get_double( calendar_record_h record, unsigned int prope
 
 	cal_record_s *temp = (cal_record_s*)(record);
 
-	retvm_if(NULL == record || NULL == temp->plugin_cb || NULL == out_value, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == temp->plugin_cb->get_double, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
-	retvm_if(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == out_value, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(NULL == temp->plugin_cb->get_double, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
+	RETVM_IF(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->get_double(record, property_id, out_value);
 
@@ -311,9 +322,11 @@ API int calendar_record_get_lli( calendar_record_h record, unsigned int property
 
 	cal_record_s *temp = (cal_record_s*)(record);
 
-	retvm_if(NULL == record || NULL == temp->plugin_cb || NULL == out_value, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == temp->plugin_cb->get_lli, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
-	retvm_if(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == out_value, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(NULL == temp->plugin_cb->get_lli, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
+	RETVM_IF(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->get_lli(record, property_id, out_value);
 
@@ -326,9 +339,11 @@ API int calendar_record_get_caltime(calendar_record_h record, unsigned int prope
 
 	cal_record_s *temp = (cal_record_s*)(record);
 
-	retvm_if(NULL == record || NULL == temp->plugin_cb || NULL == out_value, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == temp->plugin_cb->get_caltime, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
-	retvm_if(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == out_value, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(NULL == temp->plugin_cb->get_caltime, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
+	RETVM_IF(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->get_caltime(record, property_id, out_value);
 
@@ -337,7 +352,7 @@ API int calendar_record_get_caltime(calendar_record_h record, unsigned int prope
 
 API int calendar_record_set_str( calendar_record_h record, unsigned int property_id, const char* value )
 {
-	retvm_if(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 	__CHECK_READ_ONLY_PROPERTY();
 
 	int ret = _cal_record_set_str(record, property_id, value);
@@ -347,7 +362,7 @@ API int calendar_record_set_str( calendar_record_h record, unsigned int property
 
 API int calendar_record_set_int( calendar_record_h record, unsigned int property_id, int value )
 {
-	retvm_if(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 	__CHECK_READ_ONLY_PROPERTY();
 
 	int ret = _cal_record_set_int(record, property_id, value);
@@ -357,7 +372,7 @@ API int calendar_record_set_int( calendar_record_h record, unsigned int property
 
 API int calendar_record_set_double( calendar_record_h record, unsigned int property_id, double value )
 {
-	retvm_if(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 	__CHECK_READ_ONLY_PROPERTY();
 
 	int ret = _cal_record_set_double(record, property_id, value);
@@ -367,7 +382,7 @@ API int calendar_record_set_double( calendar_record_h record, unsigned int prope
 
 API int calendar_record_set_lli( calendar_record_h record, unsigned int property_id, long long int value )
 {
-	retvm_if(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 	__CHECK_READ_ONLY_PROPERTY();
 
 	int ret = _cal_record_set_lli(record, property_id, value);
@@ -377,7 +392,7 @@ API int calendar_record_set_lli( calendar_record_h record, unsigned int property
 
 API int calendar_record_set_caltime( calendar_record_h record, unsigned int property_id, calendar_time_s value )
 {
-	retvm_if(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 	__CHECK_READ_ONLY_PROPERTY();
 
 	int ret = _cal_record_set_caltime(record, property_id, value);
@@ -392,9 +407,11 @@ API int calendar_record_add_child_record( calendar_record_h record, unsigned int
 
 	cal_record_s *temp = (cal_record_s*)(record);
 
-	retvm_if(NULL == record || NULL == temp->plugin_cb || NULL == child_record, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == temp->plugin_cb->add_child_record, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
-	retvm_if(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == child_record, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(NULL == temp->plugin_cb->add_child_record, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
+	RETVM_IF(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->add_child_record(record, property_id, child_record);
 
@@ -406,9 +423,11 @@ API int calendar_record_remove_child_record( calendar_record_h record, unsigned 
 
 	cal_record_s *temp = (cal_record_s*)(record);
 
-	retvm_if(NULL == record || NULL == temp->plugin_cb || NULL == child_record, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == temp->plugin_cb->remove_child_record, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
-	retvm_if(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == child_record, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(NULL == temp->plugin_cb->remove_child_record, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
+	RETVM_IF(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->remove_child_record(record, property_id, child_record);
 
@@ -421,9 +440,11 @@ API int calendar_record_get_child_record_count( calendar_record_h record, unsign
 
 	cal_record_s *temp = (cal_record_s*)(record);
 
-	retvm_if(NULL == record || NULL == temp->plugin_cb || NULL == count, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == temp->plugin_cb->get_child_record_count, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
-	retvm_if(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == count, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(NULL == temp->plugin_cb->get_child_record_count, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
+	RETVM_IF(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->get_child_record_count(record, property_id, count);
 
@@ -435,9 +456,11 @@ API int calendar_record_get_child_record_at_p( calendar_record_h record, unsigne
 
 	cal_record_s *temp = (cal_record_s*)(record);
 
-	retvm_if(NULL == record || NULL == temp->plugin_cb || NULL == child_record, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == temp->plugin_cb->get_child_record_at_p, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
-	retvm_if(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == child_record, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(NULL == temp->plugin_cb->get_child_record_at_p, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
+	RETVM_IF(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->get_child_record_at_p(record, property_id, index, child_record);
 
@@ -450,9 +473,11 @@ API int calendar_record_clone_child_record_list( calendar_record_h record, unsig
 
 	cal_record_s *temp = (cal_record_s*)(record);
 
-	retvm_if(NULL == record || NULL == temp->plugin_cb || NULL == out_list, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == temp->plugin_cb->clone_child_record_list, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
-	retvm_if(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == out_list, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(NULL == temp->plugin_cb->clone_child_record_list, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
+	RETVM_IF(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->clone_child_record_list(record, property_id, out_list);
 
@@ -465,9 +490,10 @@ int _cal_record_set_str( calendar_record_h record, unsigned int property_id, con
 
 	cal_record_s *temp = (cal_record_s*)(record);
 
-	retvm_if(NULL == record || NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == temp->plugin_cb->set_str, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
-	retvm_if(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(NULL == temp->plugin_cb->set_str, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
+	RETVM_IF(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->set_str(record, property_id, value);
 	if (ret == CALENDAR_ERROR_NONE)
@@ -483,9 +509,10 @@ int _cal_record_set_int( calendar_record_h record, unsigned int property_id, int
 
 	cal_record_s *temp = (cal_record_s*)(record);
 
-	retvm_if(NULL == record || NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == temp->plugin_cb->set_int, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
-	retvm_if(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(NULL == temp->plugin_cb->set_int, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
+	RETVM_IF(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->set_int(record, property_id, value);
 	if (ret == CALENDAR_ERROR_NONE)
@@ -501,9 +528,10 @@ int _cal_record_set_double( calendar_record_h record, unsigned int property_id, 
 
 	cal_record_s *temp = (cal_record_s*)(record);
 
-	retvm_if(NULL == record || NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == temp->plugin_cb->set_double, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
-	retvm_if(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(NULL == temp->plugin_cb->set_double, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
+	RETVM_IF(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->set_double(record, property_id, value);
 	if (ret == CALENDAR_ERROR_NONE)
@@ -519,9 +547,10 @@ int _cal_record_set_lli( calendar_record_h record, unsigned int property_id, lon
 
 	cal_record_s *temp = (cal_record_s*)(record);
 
-	retvm_if(NULL == record || NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == temp->plugin_cb->set_lli, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
-	retvm_if(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(NULL == temp->plugin_cb->set_lli, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
+	RETVM_IF(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->set_lli(record, property_id, value);
 	if (ret == CALENDAR_ERROR_NONE)
@@ -537,9 +566,10 @@ int _cal_record_set_caltime( calendar_record_h record, unsigned int property_id,
 
 	cal_record_s *temp = (cal_record_s*)(record);
 
-	retvm_if(NULL == record || NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == temp->plugin_cb->set_caltime, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
-	retvm_if(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(NULL == temp->plugin_cb->set_caltime, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
+	RETVM_IF(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->set_caltime(record, property_id, value);
 	if (ret == CALENDAR_ERROR_NONE)

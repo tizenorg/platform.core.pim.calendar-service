@@ -80,7 +80,7 @@ cal_db_plugin_cb_s _cal_db_calendar_plugin_cb = {
 
 static bool __cal_db_calendar_check_value_validation(cal_calendar_s* calendar)
 {
-	retvm_if (NULL == calendar, CALENDAR_ERROR_INVALID_PARAMETER, "calendar is NULL");
+	RETVM_IF(NULL == calendar, CALENDAR_ERROR_INVALID_PARAMETER, "calendar is NULL");
 
 	switch (calendar->store_type) {
 	case CALENDAR_BOOK_TYPE_NONE:
@@ -105,7 +105,7 @@ static int __cal_db_calendar_insert_record( calendar_record_h record, int* id )
 	char *client_label = NULL;
 
 	// !! error check
-	retv_if(NULL == calendar, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == calendar, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	if (false == __cal_db_calendar_check_value_validation(calendar)) {
 		ERR("_cal_db_calendar_check_value_validation() is failed");
@@ -220,7 +220,7 @@ static int __cal_db_calendar_get_record( int id, calendar_record_h* out_record )
 			"AND (deleted = 0)",
 			CAL_TABLE_CALENDAR,	id);
 	stmt = _cal_db_util_query_prepare(query);
-	retvm_if(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "_cal_db_util_query_prepare() Failed");
+	RETVM_IF(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "_cal_db_util_query_prepare() Failed");
 
 	dbret = _cal_db_util_stmt_step(stmt);
 	if (dbret != CAL_DB_ROW) {
@@ -252,7 +252,7 @@ static int __cal_db_calendar_update_record( calendar_record_h record )
 	cal_calendar_s* calendar =  (cal_calendar_s*)(record);
 	cal_db_util_error_e dbret = CAL_DB_OK;
 
-	retv_if(NULL == calendar, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == calendar, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	if (false == __cal_db_calendar_check_value_validation(calendar)) {
 		ERR("_cal_db_calendar_check_value_validation() is failed");
@@ -289,7 +289,7 @@ static int __cal_db_calendar_update_record( calendar_record_h record )
 			calendar->index);
 
 	stmt = _cal_db_util_query_prepare(query);
-	retvm_if(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "_cal_db_util_query_prepare() Failed");
+	RETVM_IF(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "_cal_db_util_query_prepare() Failed");
 
 	if (calendar->name)
 		_cal_db_util_stmt_bind_text(stmt, 1, calendar->name);
@@ -451,7 +451,7 @@ static int __cal_db_calendar_replace_record(calendar_record_h record, int id)
 	cal_calendar_s* calendar =  (cal_calendar_s*)(record);
 	cal_db_util_error_e dbret = CAL_DB_OK;
 
-	retv_if(NULL == calendar, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == calendar, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	if (false == __cal_db_calendar_check_value_validation(calendar)) {
 		ERR("_cal_db_calendar_check_value_validation() is failed");
@@ -489,7 +489,7 @@ static int __cal_db_calendar_replace_record(calendar_record_h record, int id)
 			id);
 
 	stmt = _cal_db_util_query_prepare(query);
-	retvm_if(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "_cal_db_util_query_prepare() Failed");
+	RETVM_IF(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "_cal_db_util_query_prepare() Failed");
 
 	if (calendar->name)
 		_cal_db_util_stmt_bind_text(stmt, 1, calendar->name);
@@ -539,17 +539,15 @@ static int __cal_db_calendar_get_all_records( int offset, int limit, calendar_li
 	char limitquery[CAL_DB_SQL_MAX_LEN] = {0};
 	sqlite3_stmt *stmt = NULL;
 
-	retvm_if(NULL == out_list, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == out_list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	ret = calendar_list_create(out_list);
-	retvm_if(CALENDAR_ERROR_NONE != ret, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "calendar_list_create() Fail(%d)", ret);
 
-	if (offset > 0) {
+	if (offset > 0)
 		snprintf(offsetquery, sizeof(offsetquery), "OFFSET %d", offset);
-	}
-	if (limit > 0) {
+	if (limit > 0)
 		snprintf(limitquery, sizeof(limitquery), "LIMIT %d", limit);
-	}
 
 	char *query_str = NULL;
 	_cal_db_append_string(&query_str, "SELECT * FROM");
@@ -673,7 +671,7 @@ static int __cal_db_calendar_get_records_with_query( calendar_query_h query, int
 		ERR("_cal_db_util_query_prepare() Failed");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
-	CAL_DBG("%s",query_str);
+	DBG("%s",query_str);
 
 	// bind text
 	if (bind_text) {
@@ -765,7 +763,7 @@ static int __cal_db_calendar_insert_records(const calendar_list_h list, int** id
 
 	id = calloc(1, sizeof(int)*count);
 
-	retvm_if(NULL == id, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc fail");
+	RETVM_IF(NULL == id, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc fail");
 
 	ret = calendar_list_first(list);
 	if (ret != CALENDAR_ERROR_NONE) {
@@ -866,7 +864,7 @@ static int __cal_db_calendar_replace_records(const calendar_list_h list, int ids
 
 static int __cal_db_calendar_get_count(int *out_count)
 {
-	retvm_if(NULL == out_count, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == out_count, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	char *query_str = NULL;
 	_cal_db_append_string(&query_str, "SELECT count(*) FROM");
@@ -881,7 +879,7 @@ static int __cal_db_calendar_get_count(int *out_count)
 		CAL_FREE(query_str);
 		return ret;
 	}
-	CAL_DBG("count(%d) str[%s]", count, query_str);
+	DBG("count(%d) str[%s]", count, query_str);
 	CAL_FREE(query_str);
 
 	*out_count = count;
@@ -942,7 +940,7 @@ static int __cal_db_calendar_get_count_with_query(calendar_query_h query, int *o
 		CAL_FREE(query_str);
 		return ret;
 	}
-	CAL_DBG("count(%d) str[%s]", count, query_str);
+	DBG("count(%d) str[%s]", count, query_str);
 
 	if (out_count)
 		*out_count = count;
@@ -1096,7 +1094,7 @@ static int __cal_db_calendar_update_projection(calendar_record_h record)
 	GSList *cursor = NULL;
 
 	ret = _cal_db_query_create_projection_update_set(record,&set,&bind_text);
-	retv_if(CALENDAR_ERROR_NONE != ret, ret);
+	RETV_IF(CALENDAR_ERROR_NONE != ret, ret);
 
 	snprintf(query, sizeof(query), "UPDATE %s SET %s "
 			"WHERE id = %d",

@@ -112,8 +112,8 @@ static int __cal_record_event_create( calendar_record_h* out_record )
 	cal_event_s *temp = NULL;
 	int ret= CALENDAR_ERROR_NONE;
 
-	temp = (cal_event_s*)calloc(1, sizeof(cal_event_s));
-	retvm_if(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc(cal_event_s:sch) Failed(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
+	temp = calloc(1, sizeof(cal_event_s));
+	RETVM_IF(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc() Fail");
 
 	__cal_record_event_struct_init(temp);
 
@@ -179,7 +179,7 @@ static int __cal_record_event_clone( calendar_record_h record, calendar_record_h
 	src_data = (cal_event_s*)(record);
 
 	out_data = calloc(1, sizeof(cal_event_s));
-	retvm_if(NULL == out_data, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc(cal_event_s) Failed(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
+	RETVM_IF(NULL == out_data, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc(cal_event_s) Failed(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
 
 	CAL_RECORD_COPY_COMMON(&(out_data->common), &(src_data->common));
 
@@ -898,7 +898,7 @@ static int __cal_record_event_set_caltime( calendar_record_h record, unsigned in
 static int __cal_record_event_reset_child_record_id(calendar_record_h child_record)
 {
 	cal_record_s *record = (cal_record_s*)child_record;
-	retv_if(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	switch (record->type) {
 	case CAL_RECORD_TYPE_ALARM:
@@ -984,7 +984,7 @@ static int __cal_record_event_get_child_record_count( calendar_record_h record, 
 	int ret = CALENDAR_ERROR_NONE;
 	cal_event_s *rec = (cal_event_s *)record;
 
-	retv_if(NULL == count, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == count, CALENDAR_ERROR_INVALID_PARAMETER);
 	*count = 0;
 
 	switch (property_id) {
@@ -1012,7 +1012,7 @@ static int __cal_record_event_get_child_record_at_p( calendar_record_h record, u
 	int ret;
 	cal_event_s *rec = (cal_event_s*)(record);
 
-	retv_if(NULL == child_record, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == child_record, CALENDAR_ERROR_INVALID_PARAMETER);
 	*child_record = NULL;
 
 	switch (property_id) {
@@ -1040,7 +1040,7 @@ static int __cal_record_event_clone_child_record_list( calendar_record_h record,
 	int ret;
 	cal_event_s *rec = (cal_event_s*)(record);
 
-	retv_if(NULL == out_list, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == out_list, CALENDAR_ERROR_INVALID_PARAMETER);
 	*out_list = NULL;
 
 	switch (property_id) {

@@ -40,9 +40,10 @@ API int calendar_filter_create(const char* view_uri, calendar_filter_h* out_filt
 {
 	cal_composite_filter_s *com_filter;
 
-	retv_if(NULL == view_uri || NULL == out_filter, CALENDAR_ERROR_INVALID_PARAMETER);
-	com_filter = (cal_composite_filter_s *)calloc(1, sizeof(cal_composite_filter_s));
-	retv_if(NULL == com_filter, CALENDAR_ERROR_OUT_OF_MEMORY);
+	RETV_IF(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == out_filter, CALENDAR_ERROR_INVALID_PARAMETER);
+	com_filter = calloc(1, sizeof(cal_composite_filter_s));
+	RETV_IF(NULL == com_filter, CALENDAR_ERROR_OUT_OF_MEMORY);
 
 	com_filter->filter_type = CAL_FILTER_COMPOSITE;
 	com_filter->view_uri = strdup(view_uri);
@@ -55,12 +56,12 @@ API int calendar_filter_add_operator(calendar_filter_h filter, calendar_filter_o
 {
 	cal_composite_filter_s *com_filter;
 
-	retv_if(NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
-	retvm_if(op >= CALENDAR_FILTER_OPERATOR_MAX, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: operator(%d)", op);
+	RETV_IF(NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(CALENDAR_FILTER_OPERATOR_MAX <= op, CALENDAR_ERROR_INVALID_PARAMETER, "max(%d) <= operator(%d)", CALENDAR_FILTER_OPERATOR_MAX, op);
 
 	com_filter = (cal_composite_filter_s*)filter;
 
-	retvm_if(g_slist_length(com_filter->filter_ops) != (g_slist_length(com_filter->filters)-1),
+	RETVM_IF(g_slist_length(com_filter->filter_ops) != (g_slist_length(com_filter->filters)-1),
 			CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter : Please check the operator of filter");
 	com_filter->filter_ops = g_slist_append(com_filter->filter_ops, (void*)op);
 	return CALENDAR_ERROR_NONE;
@@ -73,18 +74,19 @@ API int calendar_filter_add_filter(calendar_filter_h filter, calendar_filter_h a
 	calendar_filter_h f = NULL;
 	int ret = CALENDAR_ERROR_NONE;
 
-	retv_if(NULL == filter || NULL == add_filter, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == add_filter, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	com_filter = (cal_composite_filter_s*)filter;
 	com_filter2 = (cal_composite_filter_s*)add_filter;
 
-	retvm_if(g_slist_length(com_filter->filter_ops) != g_slist_length(com_filter->filters),
+	RETVM_IF(g_slist_length(com_filter->filter_ops) != g_slist_length(com_filter->filters),
 			CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter :Please check the operator of filter");
-	retvm_if (0 != strcmp(com_filter->view_uri, com_filter2->view_uri), CALENDAR_ERROR_INVALID_PARAMETER,
+	RETVM_IF(0 != strcmp(com_filter->view_uri, com_filter2->view_uri), CALENDAR_ERROR_INVALID_PARAMETER,
 			"The filter view_uri is different (filter1:%s, filter2:%s)", com_filter->view_uri, com_filter2->view_uri);
 
 	ret = _cal_filter_clone(add_filter, &f);
-	retv_if(ret != CALENDAR_ERROR_NONE, ret);
+	RETV_IF(ret != CALENDAR_ERROR_NONE, ret);
 
 	com_filter->filters = g_slist_append(com_filter->filters, f);
 
@@ -97,10 +99,10 @@ static int __cal_filter_create_attribute(cal_composite_filter_s *com_filter, uns
 	//int type;
 	//bool find = false;
 
-	retvm_if(g_slist_length(com_filter->filter_ops) != g_slist_length(com_filter->filters),
+	RETVM_IF(g_slist_length(com_filter->filter_ops) != g_slist_length(com_filter->filters),
 			CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter :Please check the operator of filter");
 
-	filter = (cal_attribute_filter_s *)calloc(1, sizeof(cal_attribute_filter_s));
+	filter = calloc(1, sizeof(cal_attribute_filter_s));
 	filter->filter_type = filter_type;
 	filter->property_id = property_id;
 	filter->match = match;
@@ -117,22 +119,19 @@ API int calendar_filter_add_str(calendar_filter_h filter, unsigned int property_
 	int ret;
 	bool bcheck;
 
-	retv_if(NULL == filter || NULL == match_value, CALENDAR_ERROR_INVALID_PARAMETER);
-	retvm_if(match >= CALENDAR_MATCH_STR_MAX, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: check match value(%d)", match);
+	RETV_IF(NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == match_value, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(CALENDAR_MATCH_STR_MAX <= match, CALENDAR_ERROR_INVALID_PARAMETER, "max(%d) <= match(%d)", CALENDAR_MATCH_STR_MAX, match);
 
 	bcheck = CAL_PROPERTY_CHECK_DATA_TYPE(property_id,CAL_PROPERTY_DATA_TYPE_STR);
-	retvm_if(false == bcheck, CALENDAR_ERROR_INVALID_PARAMETER,
-			"Invalid parameter : property_id(%d) is not supported)", property_id);
+	RETVM_IF(false == bcheck, CALENDAR_ERROR_INVALID_PARAMETER, "property_id(%d)", property_id);
 
 	bcheck = CAL_PROPERTY_CHECK_FLAGS(property_id,CAL_PROPERTY_FLAGS_PROJECTION);
-	retvm_if(true == bcheck, CALENDAR_ERROR_INVALID_PARAMETER,
-			"Invalid parameter : property_id(%d) is not supported)", property_id);
+	RETVM_IF(true == bcheck, CALENDAR_ERROR_INVALID_PARAMETER, "property_id(%d)", property_id);
 
 	com_filter = (cal_composite_filter_s*)filter;
 	ret = __cal_filter_create_attribute(com_filter, property_id, match, CAL_FILTER_STR, &str_filter);
-	retvm_if(CALENDAR_ERROR_NONE !=ret, ret,
-			"Invalid parameter : The paramter is not proper (view_uri:, property_id:%d, match:%d, match_value :%s",
-			property_id, match, match_value);
+	RETVM_IF(CALENDAR_ERROR_NONE !=ret, ret, "property_id(%d), match(%d), match_value(%s)", property_id, match, match_value);
 
 	str_filter->value.s = SAFE_STRDUP(match_value);
 	return CALENDAR_ERROR_NONE;
@@ -145,22 +144,18 @@ API int calendar_filter_add_int(calendar_filter_h filter, unsigned int property_
 	int ret;
 	bool bcheck;
 
-	retv_if(NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
-	retvm_if(match >= CALENDAR_MATCH_INT_MAX, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: check match value(%d)", match);
+	RETV_IF(NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(CALENDAR_MATCH_INT_MAX <= match, CALENDAR_ERROR_INVALID_PARAMETER, "max(%d) <= match(%d)", CALENDAR_MATCH_INT_MAX, match);
 
 	bcheck = CAL_PROPERTY_CHECK_DATA_TYPE(property_id,CAL_PROPERTY_DATA_TYPE_INT);
-	retvm_if(false == bcheck, CALENDAR_ERROR_INVALID_PARAMETER,
-			"Invalid parameter : property_id(%d) is not supported)", property_id);
+	RETVM_IF(false == bcheck, CALENDAR_ERROR_INVALID_PARAMETER, "property_id(%d)", property_id);
 
 	bcheck = CAL_PROPERTY_CHECK_FLAGS(property_id,CAL_PROPERTY_FLAGS_PROJECTION);
-	retvm_if(true == bcheck, CALENDAR_ERROR_INVALID_PARAMETER,
-			"Invalid parameter : property_id(%d) is not supported)", property_id);
+	RETVM_IF(true == bcheck, CALENDAR_ERROR_INVALID_PARAMETER, "property_id(%d)", property_id);
 
 	com_filter = (cal_composite_filter_s*)filter;
 	ret = __cal_filter_create_attribute(com_filter, property_id, match, CAL_FILTER_INT, &int_filter);
-	retvm_if(CALENDAR_ERROR_NONE !=ret, ret,
-			"Invalid parameter : The paramter is not proper (view_uri:, property_id:%d, match:%d, match_value :%d",
-			property_id, match, match_value);
+	RETVM_IF(CALENDAR_ERROR_NONE !=ret, ret, "property_id(%d), match(%d), match_value(%d)", property_id, match, match_value);
 
 	int_filter->value.i = match_value;
 
@@ -174,22 +169,18 @@ API int calendar_filter_add_double(calendar_filter_h filter, unsigned int proper
 	int ret;
 	bool bcheck;
 
-	retv_if(NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
-	retvm_if(match >= CALENDAR_MATCH_INT_MAX, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: check match value(%d)", match);
+	RETV_IF(NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(CALENDAR_MATCH_INT_MAX <= match, CALENDAR_ERROR_INVALID_PARAMETER, "max(%d) <= match(%d)", CALENDAR_MATCH_INT_MAX, match);
 
 	bcheck = CAL_PROPERTY_CHECK_DATA_TYPE(property_id,CAL_PROPERTY_DATA_TYPE_DOUBLE);
-	retvm_if(false == bcheck, CALENDAR_ERROR_INVALID_PARAMETER,
-			"Invalid parameter : property_id(%d) is not supported)", property_id);
+	RETVM_IF(false == bcheck, CALENDAR_ERROR_INVALID_PARAMETER, "property_id(%d)", property_id);
 
 	bcheck = CAL_PROPERTY_CHECK_FLAGS(property_id,CAL_PROPERTY_FLAGS_PROJECTION);
-	retvm_if(true == bcheck, CALENDAR_ERROR_INVALID_PARAMETER,
-			"Invalid parameter : property_id(%d) is not supported)", property_id);
+	RETVM_IF(true == bcheck, CALENDAR_ERROR_INVALID_PARAMETER, "property_id(%d)", property_id);
 
 	com_filter = (cal_composite_filter_s*)filter;
 	ret = __cal_filter_create_attribute(com_filter, property_id, match, CAL_FILTER_DOUBLE, &int_filter);
-	retvm_if(CALENDAR_ERROR_NONE !=ret, ret,
-			"Invalid parameter : The paramter is not proper (view_uri:, property_id:%d, match:%d, match_value :%d",
-			property_id, match, match_value);
+	RETVM_IF(CALENDAR_ERROR_NONE !=ret, ret, "property_id(%d), match(%d), match_value(%d)", property_id, match, match_value);
 
 	int_filter->value.d = match_value;
 
@@ -203,22 +194,18 @@ API int calendar_filter_add_lli(calendar_filter_h filter, unsigned int property_
 	int ret;
 	bool bcheck;
 
-	retv_if(NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
-	retvm_if(match >= CALENDAR_MATCH_INT_MAX, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: check match value(%d)", match);
+	RETV_IF(NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(CALENDAR_MATCH_INT_MAX <= match, CALENDAR_ERROR_INVALID_PARAMETER, "max(%d) <= match(%d)", CALENDAR_MATCH_INT_MAX, match);
 
 	bcheck = CAL_PROPERTY_CHECK_DATA_TYPE(property_id,CAL_PROPERTY_DATA_TYPE_LLI);
-	retvm_if(false == bcheck, CALENDAR_ERROR_INVALID_PARAMETER,
-			"Invalid parameter : property_id(%d) is not supported)", property_id);
+	RETVM_IF(false == bcheck, CALENDAR_ERROR_INVALID_PARAMETER, "property_id(%d)", property_id);
 
 	bcheck = CAL_PROPERTY_CHECK_FLAGS(property_id,CAL_PROPERTY_FLAGS_PROJECTION);
-	retvm_if(true == bcheck, CALENDAR_ERROR_INVALID_PARAMETER,
-			"Invalid parameter : property_id(%d) is not supported)", property_id);
+	RETVM_IF(true == bcheck, CALENDAR_ERROR_INVALID_PARAMETER, "property_id(%d)", property_id);
 
 	com_filter = (cal_composite_filter_s*)filter;
 	ret = __cal_filter_create_attribute(com_filter, property_id, match, CAL_FILTER_LLI, &int_filter);
-	retvm_if(CALENDAR_ERROR_NONE !=ret, ret,
-			"Invalid parameter : The paramter is not proper (view_uri:, property_id:%d, match:%d, match_value :%d",
-			property_id, match, match_value);
+	RETVM_IF(CALENDAR_ERROR_NONE !=ret, ret, "property_id(%d), match(%d), match_value(%d)", property_id, match, match_value);
 
 	int_filter->value.lli = match_value;
 
@@ -232,22 +219,18 @@ API int calendar_filter_add_caltime(calendar_filter_h filter, unsigned int prope
 	int ret;
 	bool bcheck;
 
-	retv_if(NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
-	retvm_if(match >= CALENDAR_MATCH_INT_MAX, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: check match value(%d)", match);
+	RETV_IF(NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(CALENDAR_MATCH_INT_MAX <= match, CALENDAR_ERROR_INVALID_PARAMETER, "max(%d) <= match(%d)", CALENDAR_MATCH_INT_MAX, match);
 
 	bcheck = CAL_PROPERTY_CHECK_DATA_TYPE(property_id,CAL_PROPERTY_DATA_TYPE_CALTIME);
-	retvm_if(false == bcheck, CALENDAR_ERROR_INVALID_PARAMETER,
-			"Invalid parameter : property_id(%d) is not supported)", property_id);
+	RETVM_IF(false == bcheck, CALENDAR_ERROR_INVALID_PARAMETER, "property_id(%d)", property_id);
 
 	bcheck = CAL_PROPERTY_CHECK_FLAGS(property_id,CAL_PROPERTY_FLAGS_PROJECTION);
-	retvm_if(true == bcheck, CALENDAR_ERROR_INVALID_PARAMETER,
-			"Invalid parameter : property_id(%d) is not supported)", property_id);
+	RETVM_IF(true == bcheck, CALENDAR_ERROR_INVALID_PARAMETER, "property_id(%d)", property_id);
 
 	com_filter = (cal_composite_filter_s*)filter;
 	ret = __cal_filter_create_attribute(com_filter, property_id, match, CAL_FILTER_CALTIME, &int_filter);
-	retvm_if(CALENDAR_ERROR_NONE !=ret, ret,
-			"Invalid parameter : The paramter is not proper (view_uri:, property_id:%d, match:%d, match_value :%d",
-			property_id, match, match_value);
+	RETVM_IF(CALENDAR_ERROR_NONE !=ret, ret, "property_id(%d), match(%d), match_value(%d)", property_id, match, match_value);
 
 	int_filter->value.caltime = match_value;
 
@@ -256,14 +239,15 @@ API int calendar_filter_add_caltime(calendar_filter_h filter, unsigned int prope
 
 API int calendar_filter_destroy(calendar_filter_h filter)
 {
-	retv_if(NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	return __cal_filter_destroy_composite((cal_composite_filter_s*)filter);
 }
 
 int _cal_filter_clone(calendar_filter_h filter, calendar_filter_h* out_filter)
 {
-	retv_if(NULL == filter || NULL == out_filter, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == out_filter, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	return __cal_filter_clone_composite((cal_composite_filter_s*)filter, (cal_composite_filter_s**)out_filter);
 }
@@ -272,7 +256,7 @@ static int __cal_filter_destroy_composite(cal_composite_filter_s* filter)
 {
 	GSList *cursor = NULL;
 
-	retv_if(NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
 	for(cursor=filter->filters;cursor;cursor=cursor->next)
 	{
 		cal_filter_s *src = (cal_filter_s *)cursor->data;
@@ -298,7 +282,7 @@ static int __cal_filter_destroy_composite(cal_composite_filter_s* filter)
 
 static int __cal_filter_destroy_attribute(cal_attribute_filter_s* filter)
 {
-	retv_if(NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	if (filter->filter_type == CAL_FILTER_STR)
 	{
@@ -315,8 +299,10 @@ static int __cal_filter_clone_composite(cal_composite_filter_s* filter,
 	cal_composite_filter_s *out;
 	int ret = CALENDAR_ERROR_NONE;
 
+	RETV_IF(NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
+
 	ret = calendar_filter_create(filter->view_uri, (calendar_filter_h *)&out);
-	retv_if(CALENDAR_ERROR_NONE != ret, CALENDAR_ERROR_OUT_OF_MEMORY);
+	RETV_IF(CALENDAR_ERROR_NONE != ret, CALENDAR_ERROR_OUT_OF_MEMORY);
 
 	for(cursor=filter->filters; cursor ; cursor=cursor->next)
 	{
@@ -357,8 +343,8 @@ static int __cal_filter_clone_attribute(cal_attribute_filter_s* filter,
 		cal_attribute_filter_s **out_filter)
 {
 	cal_attribute_filter_s *out;
-	out = (cal_attribute_filter_s *)calloc(1, sizeof(cal_attribute_filter_s));
-	retv_if(NULL == out, CALENDAR_ERROR_OUT_OF_MEMORY);
+	out = calloc(1, sizeof(cal_attribute_filter_s));
+	RETV_IF(NULL == out, CALENDAR_ERROR_OUT_OF_MEMORY);
 
 	out->filter_type = filter->filter_type;
 	out->match = filter->match;

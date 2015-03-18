@@ -27,7 +27,7 @@
 int _cal_db_instance_normal_insert_record(cal_instance_normal_s *normal, int* id)
 {
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
-	retvm_if(NULL == normal, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid argument: cal_instance_normal_s is NULL");
+	RETV_IF(NULL == normal, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	snprintf(query, sizeof(query),
 			"INSERT INTO %s ("
@@ -59,7 +59,7 @@ int _cal_db_instance_normal_insert_record(cal_instance_normal_s *normal, int* id
 int _cal_db_instance_allday_insert_record(cal_instance_allday_s *allday, int* id)
 {
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
-	retvm_if(NULL == allday, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid argument: cal_instance_allday_s is NULL");
+	RETV_IF(NULL == allday, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	snprintf(query, sizeof(query),
 			"INSERT INTO %s ("

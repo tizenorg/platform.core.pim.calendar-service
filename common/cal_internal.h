@@ -33,85 +33,78 @@
 #define LOG_TAG "CALENDAR_SVC"
 #include <dlog.h>
 
-#define COLOR_GREEN "\033[0;32m"
-#define COLOR_END		"\033[0;m"
+#define COLOR_RED    "\033[0;31m"
+#define COLOR_GREEN  "\033[0;32m"
+#define COLOR_BROWN  "\033[0;33m"
+#define COLOR_BLUE   "\033[0;34m"
+#define COLOR_PURPLE "\033[0;35m"
+#define COLOR_CYAN   "\033[0;36m"
+#define COLOR_END    "\033[0;m"
 
-#define ENTER() SLOGD(COLOR_GREEN"BEGIN >>>>"COLOR_END)
-#define LEAVE() SLOGD(COLOR_GREEN"END <<<<"COLOR_END)
+#if defined(CAL_IPC_SERVER)
+#define IPC_ROLE COLOR_BLUE"[SERVER]"COLOR_END
+#elif defined(CAL_IPC_CLIENT)
+#define IPC_ROLE COLOR_BROWN"[CLIENT]"COLOR_END
+#else
+#define IPC_ROLE COLOR_GREEN"[LIB]"COLOR_END
+#endif
 
-#define DLOG(prio, fmt, arg...) \
-	do { SLOG(prio, LOG_TAG, fmt, ##arg); } while(0);
-#define INFO(fmt, arg...) SLOGI(fmt, ##arg)
-#define WARN(fmt, arg...) SLOGW(fmt, ##arg)
-#define ERR(fmt, arg...) SLOGE(fmt, ##arg)
-#define DBG(fmt, arg...) SLOGD(fmt, ##arg)
+#define INFO(fmt, arg...) SLOGI(IPC_ROLE" "fmt, ##arg)
+#define ERR(fmt, arg...) SLOGE(IPC_ROLE" "fmt, ##arg)
+#define DBG(fmt, arg...) SLOGD(IPC_ROLE" "fmt, ##arg)
+#define WARN(fmt, arg...) SLOGD(IPC_ROLE" "fmt, ##arg)
+#define VERBOSE(fmt, arg...) SLOGV(IPC_ROLE" "fmt, ##arg)
+
 #define SEC_INFO(fmt, arg...) SECURE_LOGI(fmt, ##arg)
 #define SEC_ERR(fmt, arg...) SECURE_LOGE(fmt, ##arg)
 #define SEC_DBG(fmt, arg...) SECURE_LOGD(fmt, ##arg)
 
-//#define CAL_DEBUGGING
 #ifdef CAL_DEBUGGING
-#if defined(CAL_IPC_SERVER)
-#define CAL_FN_CALL DBG("SERVER:>>>>>>>>%s called", __FUNCTION__)
-#define CAL_FN_END DBG("SERVER:<<<<<<<<%s ended", __FUNCTION__)
-#elif defined(CAL_IPC_CLIENT)
-#define CAL_FN_CALL DBG("CLIENT:>>>>>>>>%s called", __FUNCTION__)
-#define CAL_FN_END DBG("CLIENT:<<<<<<<<%s ended", __FUNCTION__)
-#else
-#define CAL_FN_CALL DBG(">>>>>>>>%s called", __FUNCTION__)
-#define CAL_FN_END DBG("<<<<<<<<%s ended", __FUNCTION__)
-#endif
-
-#if defined(CAL_IPC_SERVER)
-#define CAL_DBG(fmt, arg...) DBG("SERVER:%d " fmt, __LINE__, ##arg)
-#elif defined(CAL_IPC_CLIENT)
-#define CAL_DBG(fmt, arg...) DBG("CLIENT:%d " fmt, __LINE__, ##arg)
-#else
-#define CAL_DBG(fmt, arg...) DBG("%d " fmt, __LINE__, ##arg)
-#endif
+ #define CAL_FN_CALL() DBG(">>>>>>>> called")
+ #define CAL_FN_END() DBG("<<<<<<<< ended")
+ #define CAL_DBG(fmt, arg...) DBG(fmt, ##arg)
+ #define CAL_WARN(fmt, arg...) WARN(fmt, ##arg)
+ #define CAL_ERR(fmt, arg...) ERR(fmt, ##arg)
+ #define CAL_INFO(fmt, arg...) INFO(fmt, ##arg)
+ #define CAL_VERBOSE(fmt, arg...) VERBOSE(fmt, ##arg)
 #else /* CAL_DEBUGGING */
-#define CAL_FN_CALL
-#define CAL_FN_END
-#define CAL_DBG(fmt, arg...)
+ #define CAL_FN_CALL()
+ #define CAL_FN_END()
+ #define CAL_DBG(fmt, arg...)
+ #define CAL_WARN(fmt, arg...)
+ #define CAL_ERR(fmt, arg...)
+ #define CAL_INFO(fmt, arg...)
 #endif /* CAL_DEBUGGING */
 
-#define warn_if(expr, fmt, arg...) do { \
+#define WARN_IF(expr, fmt, arg...) do { \
 	if (expr) { \
 		WARN(fmt, ##arg); \
 	} \
 } while (0)
-#define ret_if(expr) do { \
+#define RET_IF(expr) do { \
 	if (expr) { \
 		ERR("(%s)", #expr); \
 		return; \
 	} \
 } while (0)
-#define retv_if(expr, val) do { \
+#define RETV_IF(expr, val) do { \
 	if (expr) { \
 		ERR("(%s)", #expr); \
 		return (val); \
 	} \
 } while (0)
-#define retm_if(expr, fmt, arg...) do { \
+#define RETM_IF(expr, fmt, arg...) do { \
 	if (expr) { \
 		ERR(fmt, ##arg); \
 		return; \
 	} \
 } while (0)
-#define retvm_if(expr, val, fmt, arg...) do { \
+#define RETVM_IF(expr, val, fmt, arg...) do { \
 	if (expr) { \
 		ERR(fmt, ##arg); \
 		return (val); \
 	} \
 } while (0)
-
-#define retex_if(expr, val, fmt, arg...) do { \
-	if(expr) { \
-		ERR(fmt, ##arg); \
-		val; \
-		goto CATCH; \
-	} \
-} while (0);
 
 #define CAL_PROFILE
 #ifdef CAL_PROFILE

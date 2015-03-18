@@ -58,8 +58,8 @@ static int __cal_record_updated_info_create( calendar_record_h* out_record )
 	cal_updated_info_s *temp = NULL;
 	int ret= CALENDAR_ERROR_NONE;
 
-	temp = (cal_updated_info_s*)calloc(1,sizeof(cal_updated_info_s));
-	retvm_if(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "malloc(cal_updated_info_s:sch) Failed(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
+	temp = calloc(1,sizeof(cal_updated_info_s));
+	RETVM_IF(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "malloc(cal_updated_info_s:sch) Failed(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
 
 	*out_record = (calendar_record_h)temp;
 
@@ -85,7 +85,7 @@ static int __cal_record_updated_info_clone( calendar_record_h record, calendar_r
 	src_data = (cal_updated_info_s*)(record);
 
 	out_data = calloc(1, sizeof(cal_updated_info_s));
-	retvm_if(NULL == out_data, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc(cal_updated_info_s) Failed(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
+	RETVM_IF(NULL == out_data, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc(cal_updated_info_s) Failed(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
 
 	CAL_RECORD_COPY_COMMON(&(out_data->common), &(src_data->common));
 

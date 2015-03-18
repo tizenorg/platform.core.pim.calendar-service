@@ -118,8 +118,8 @@ cal_db_plugin_cb_s _cal_db_event_plugin_cb = {
 
 static int __cal_db_event_insert_record(calendar_record_h record, int* id)
 {
-	retv_if(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
-	retv_if(false == __cal_db_event_check_calendar_book_type(record), CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(false == __cal_db_event_check_calendar_book_type(record), CALENDAR_ERROR_INVALID_PARAMETER);
 	cal_event_s *event = (cal_event_s *)record;
 	return _cal_db_event_insert_record(record, event->original_event_id, id);
 }
@@ -233,12 +233,12 @@ static int __cal_db_event_get_record(int id, calendar_record_h* out_record)
 static int __is_dirty_in_time(calendar_record_h record)
 {
 	cal_record_s *rec = (cal_record_s *)record;
-	retvm_if (NULL == record, false, "Invalid parameter: record id NULL");
-	retvm_if (NULL == rec->view_uri, false, "Invalid parameter: view_uri is NULL");
+	RETV_IF(NULL == record, false);
+	RETV_IF(NULL == rec->view_uri, false);
 
 	int count = 0;
 	const cal_property_info_s *info = _cal_view_get_property_info(rec->view_uri, &count);
-	retvm_if (NULL == info, false, "_cal_view_get_property_info() is failed");
+	RETVM_IF(NULL == info, false, "_cal_view_get_property_info() is failed");
 
 	int i;
 	int is_dirty_in_time = DIRTY_IN_OTHER;
@@ -278,8 +278,8 @@ static int __is_dirty_in_time(calendar_record_h record)
 
 time_t __get_time_diff(char *old_tzid, calendar_time_s *old, char *new_tzid, calendar_time_s *new)
 {
-	retvm_if (NULL == old, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: old time is NULL");
-	retvm_if (NULL == new, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: new time is NULL");
+	RETV_IF(NULL == old, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == new, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	time_t diff = 0;
 	switch (old->type)
@@ -330,7 +330,7 @@ static int __get_time_shifted_field(char *old_field, int old_type, int new_type,
 
 	gchar **t = NULL;
 	t = g_strsplit_set(old_field, " ,", -1);
-	retvm_if (NULL == t, CALENDAR_ERROR_DB_FAILED, "g_strsplit_set() is failed");
+	RETVM_IF(NULL == t, CALENDAR_ERROR_DB_FAILED, "g_strsplit_set() is failed");
 
 	int len_t = g_strv_length(t);
 
@@ -444,7 +444,8 @@ static int __get_time_shifted_field(char *old_field, int old_type, int new_type,
 
 static int __update_exdate(cal_event_s *rec, time_t time_diff)
 {
-	retvm_if (NULL == rec, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: rec is NULL");
+	RETV_IF(NULL == rec, CALENDAR_ERROR_INVALID_PARAMETER);
+
 	if (NULL == rec->exdate || '\0' == *rec->exdate)
 		return CALENDAR_ERROR_NONE;
 	if (0 == time_diff)
@@ -453,7 +454,7 @@ static int __update_exdate(cal_event_s *rec, time_t time_diff)
 	int ret;
 	calendar_record_h db_record = NULL;
 	ret = calendar_db_get_record(_calendar_event._uri, rec->index, &db_record);
-	retvm_if(ret != CALENDAR_ERROR_NONE, ret, "calendar_db_get_record fail(%d)", ret);
+	RETVM_IF(ret != CALENDAR_ERROR_NONE, ret, "calendar_db_get_record fail(%d)", ret);
 
 	// get time diff
 	char *db_tzid = NULL;
@@ -474,10 +475,11 @@ static int __update_exdate(cal_event_s *rec, time_t time_diff)
 
 static int __update_recurrence_id(calendar_record_h exception, int old_type, int new_type, time_t time_diff)
 {
-	ENTER();
+	CAL_FN_CALL();
 
 	cal_event_s *rec = (cal_event_s *)exception;
-	retvm_if (NULL == rec, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: rec is NULL");
+	RETV_IF(NULL == rec, CALENDAR_ERROR_INVALID_PARAMETER);
+
 	if (NULL == rec->recurrence_id) {
 		DBG("No recurrence_id");
 		return CALENDAR_ERROR_NONE;
@@ -506,8 +508,8 @@ static int __update_record(calendar_record_h record, int is_dirty_in_time)
 	int timezone_id = 0;
 	int input_ver = 0;
 
-	retv_if(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER);
-	retv_if(false == __cal_db_event_check_calendar_book_type(record), CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(false == __cal_db_event_check_calendar_book_type(record), CALENDAR_ERROR_INVALID_PARAMETER);
 
 
 	ret = _cal_db_event_check_value_validation(event);
@@ -645,7 +647,7 @@ static int __update_record(calendar_record_h record, int is_dirty_in_time)
 		event->index);
 
 	stmt = _cal_db_util_query_prepare(query);
-	retvm_if(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "_cal_db_util_query_prepare() Failed");
+	RETVM_IF(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "_cal_db_util_query_prepare() Failed");
 
 	int index = 1;
 
@@ -800,22 +802,22 @@ static int __update_record(calendar_record_h record, int is_dirty_in_time)
 
 	if (event->alarm_list && 0 < event->alarm_list->count) {
 		ret = _cal_db_alarm_insert_records(event->alarm_list, event->index);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_db_alarm_insert_records() failed(%x)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_db_alarm_insert_records() failed(%x)", ret);
 	}
 
 	if (event->attendee_list && 0 < event->attendee_list->count) {
 		ret = _cal_db_attendee_insert_records(event->attendee_list, event->index);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_db_attendee_insert_records() failed(%x)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_db_attendee_insert_records() failed(%x)", ret);
 	}
 
 	if (event->exception_list && 0 < event->exception_list->count) {
 		ret = __cal_db_event_exception_update(event->exception_list, event->index, event->calendar_id, is_dirty_in_time, time_diff, ct.type, event->start.type);
-		warn_if(CALENDAR_ERROR_NONE != ret, "__cal_db_event_exception_update() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "__cal_db_event_exception_update() Failed(%d)", ret);
 	}
 
 	if (event->extended_list && 0 < event->extended_list->count) {
 		ret = _cal_db_extended_insert_records(event->extended_list, event->index, CALENDAR_RECORD_TYPE_EVENT);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_db_extended_insert_records() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_db_extended_insert_records() Failed(%d)", ret);
 	}
 
 	_cal_db_util_notify(CAL_NOTI_TYPE_EVENT);
@@ -944,7 +946,7 @@ static int __cal_db_event_delete_record(int id)
 	calendar_book_sync_event_type_e sync_event_type = CALENDAR_BOOK_SYNC_EVENT_FOR_ME;
 
 	DBG("delete record(id:%d)", id);
-	retvm_if(id < 0, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid argument: id < 0");
+	RETVM_IF(id < 0, CALENDAR_ERROR_INVALID_PARAMETER, "id(%d) < 0", id);
 
 	// get calendar_id, created_ver, original_event_id, recurrence_id
 	ret = __cal_db_event_get_deleted_data(id, &calendar_book_id, &created_ver, &original_event_id, &recurrence_id);
@@ -1046,10 +1048,10 @@ static int __cal_db_event_get_all_records(int offset, int limit, calendar_list_h
 	char limitquery[CAL_DB_SQL_MAX_LEN] = {0};
 	sqlite3_stmt *stmt = NULL;
 
-	retvm_if(NULL == out_list, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == out_list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	ret = calendar_list_create(out_list);
-	retvm_if(CALENDAR_ERROR_NONE != ret, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "calendar_list_create() Fail(%d)", ret);
 
 	if (offset > 0)
 	{
@@ -1236,7 +1238,7 @@ static int __cal_db_event_get_records_with_query(calendar_query_h query, int off
 			_cal_db_append_string(&query_str, buf);
 		}
 	}
-	CAL_DBG("%s",query_str);
+	DBG("%s",query_str);
 
 	// query
 	stmt = _cal_db_util_query_prepare(query_str);
@@ -1389,7 +1391,7 @@ static int __cal_db_event_insert_records(const calendar_list_h list, int** ids)
 
 	id = calloc(1, sizeof(int)*count);
 
-	retvm_if(NULL == id, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc fail");
+	RETVM_IF(NULL == id, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc fail");
 
 	ret = calendar_list_first(list);
 	if (ret != CALENDAR_ERROR_NONE)
@@ -1469,7 +1471,7 @@ static int __cal_db_event_delete_records(int ids[], int count)
 
 static int __cal_db_event_get_count(int *out_count)
 {
-	retvm_if(NULL == out_count, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == out_count, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	char *query_str = NULL;
 	_cal_db_append_string(&query_str, "SELECT count(*) FROM");
@@ -1484,7 +1486,7 @@ static int __cal_db_event_get_count(int *out_count)
 		CAL_FREE(query_str);
 		return ret;
 	}
-	CAL_DBG("count(%d) str[%s]", count, query_str);
+	DBG("count(%d) str[%s]", count, query_str);
 	CAL_FREE(query_str);
 
 	*out_count = count;
@@ -1561,7 +1563,7 @@ static int __cal_db_event_get_count_with_query(calendar_query_h query, int *out_
 		CAL_FREE(query_str);
 		return ret;
 	}
-	CAL_DBG("count(%d) str[%s]", count, query_str);
+	DBG("count(%d) str[%s]", count, query_str);
 
 	if (out_count) *out_count = count;
 	if (bind_text)
@@ -1588,7 +1590,7 @@ static int __cal_db_event_replace_record(calendar_record_h record, int id)
 	int timezone_id = 0;
 	int input_ver = 0;
 
-	retv_if(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER);
 	event->index = id;
 
 	// access control
@@ -1694,7 +1696,7 @@ static int __cal_db_event_replace_record(calendar_record_h record, int id)
 		id);
 
 	stmt = _cal_db_util_query_prepare(query);
-	retvm_if(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "_cal_db_util_query_prepare() Failed");
+	RETVM_IF(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "_cal_db_util_query_prepare() Failed");
 
 	int index = 1;
 
@@ -1816,22 +1818,22 @@ static int __cal_db_event_replace_record(calendar_record_h record, int id)
 
 	if (event->alarm_list && 0 < event->alarm_list->count) {
 		ret = _cal_db_alarm_insert_records(event->alarm_list, event->index);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_db_alarm_insert_records() failed(%x)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_db_alarm_insert_records() failed(%x)", ret);
 	}
 
 	if (event->attendee_list && 0 < event->attendee_list->count) {
 		ret = _cal_db_attendee_insert_records(event->attendee_list, event->index);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_db_attendee_insert_records() failed(%x)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_db_attendee_insert_records() failed(%x)", ret);
 	}
 
 	if (event->exception_list && 0 < event->exception_list->count) {
 		ret = _cal_db_event_insert_records(event->exception_list, id);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_db_event_insert_records() failed(%x)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_db_event_insert_records() failed(%x)", ret);
 	}
 
 	if (event->extended_list && 0 < event->extended_list->count) {
 		ret = _cal_db_extended_insert_records(event->extended_list, id, CALENDAR_RECORD_TYPE_EVENT);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_db_extended_insert_records() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_db_extended_insert_records() Failed(%d)", ret);
 	}
 
 	_cal_db_util_notify(CAL_NOTI_TYPE_EVENT);
@@ -2400,12 +2402,12 @@ static int __cal_db_event_update_dirty(calendar_record_h record, int is_dirty_in
 	calendar_record_h original_record = NULL;
 
 	ret = calendar_record_get_int(record,_calendar_event.id, &event_id);
-	retv_if(CALENDAR_ERROR_NONE != ret, ret);
+	RETV_IF(CALENDAR_ERROR_NONE != ret, ret);
 
-	CAL_DBG("id=%d",event_id);
+	DBG("id=%d",event_id);
 
 	ret = __cal_db_event_get_record(event_id, &original_record);
-	retvm_if (CALENDAR_ERROR_NONE != ret, ret, "__cal_db_event_get_record() is failed(%d)", ret);
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "__cal_db_event_get_record() is failed(%d)", ret);
 
 	cal_record_s *_record = NULL;
 	const cal_property_info_s* property_info = NULL;
@@ -2423,7 +2425,7 @@ static int __cal_db_event_update_dirty(calendar_record_h record, int is_dirty_in
 			continue;
 		}
 
-		//CAL_DBG("%d",property_info[i].property_id);
+		//DBG("%d",property_info[i].property_id);
 		if (property_info[i].property_id == CAL_PROPERTY_EVENT_EXDATE)
 		{
 			int calendar_id = 0;
@@ -2452,15 +2454,15 @@ static int __cal_db_event_update_dirty(calendar_record_h record, int is_dirty_in
 			if (sync_event_type == CALENDAR_BOOK_SYNC_EVENT_FOR_EVERY_AND_REMAIN)
 			{
 				ret = __cal_db_event_exdate_insert_normal(event_id, original_exdate, record_exdate, NULL, NULL);
-				warn_if (ret != CALENDAR_ERROR_NONE, "%s->%s",original_exdate,record_exdate);
+				WARN_IF(ret != CALENDAR_ERROR_NONE, "%s->%s",original_exdate,record_exdate);
 
 			} else {
 				int *exception_ids = NULL;
 				int exception_len = 0;
 				ret = __cal_db_event_exdate_insert_normal(event_id, original_exdate, record_exdate, &exception_ids, &exception_len);
-				warn_if (ret != CALENDAR_ERROR_NONE, "%s->%s",original_exdate,record_exdate);
+				WARN_IF(ret != CALENDAR_ERROR_NONE, "%s->%s",original_exdate,record_exdate);
 				ret = __cal_db_event_delete_exception(exception_ids, exception_len);
-				warn_if (ret != CALENDAR_ERROR_NONE, "__cal_db_event_delete_record() is failed");
+				WARN_IF(ret != CALENDAR_ERROR_NONE, "__cal_db_event_delete_record() is failed");
 				free(exception_ids);
 			}
 			ret = _cal_record_set_str(original_record, property_info[i].property_id, record_exdate);
@@ -2551,7 +2553,7 @@ static int __cal_db_event_exception_get_records(int original_id, cal_list_s *lis
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	sqlite3_stmt *stmt = NULL;
 
-	retvm_if(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER,
+	RETVM_IF(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER,
 			"Invalid parameter: list is NULL");
 
 	snprintf(query, sizeof(query),
@@ -2561,7 +2563,7 @@ static int __cal_db_event_exception_get_records(int original_id, cal_list_s *lis
 			original_id);
 
 	stmt = _cal_db_util_query_prepare(query);
-	retvm_if(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "_cal_db_util_query_prepare() failed");
+	RETVM_IF(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "_cal_db_util_query_prepare() failed");
 
 	calendar_record_h record = NULL;
 
@@ -2640,7 +2642,7 @@ static int __cal_db_event_exception_get_ids(int original_id, GList **out_list)
 	sqlite3_stmt *stmt = NULL;
 	GList *list = NULL;
 
-	retvm_if(NULL == out_list, CALENDAR_ERROR_INVALID_PARAMETER,
+	RETVM_IF(NULL == out_list, CALENDAR_ERROR_INVALID_PARAMETER,
 			"Invalid parameter: GList is NULL");
 
 	snprintf(query, sizeof(query),
@@ -2822,7 +2824,7 @@ static int __cal_db_event_exdate_insert_normal(int event_id, const char* origina
 	}
 
 	int *ids = calloc(len1, sizeof(int));
-	retvm_if (NULL == ids, CALENDAR_ERROR_DB_FAILED, "calloc() is failed");
+	RETVM_IF(NULL == ids, CALENDAR_ERROR_DB_FAILED, "calloc() is failed");
 
 	int exception_count = 0;
 	for(i = 0; i < len1; i++)

@@ -105,8 +105,8 @@ static int __cal_record_todo_create( calendar_record_h* out_record )
 	cal_todo_s *temp = NULL;
 	int ret= CALENDAR_ERROR_NONE;
 
-	temp = (cal_todo_s*)calloc(1,sizeof(cal_todo_s));
-	retvm_if(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "malloc(cal_todo_s) Failed(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
+	temp = calloc(1,sizeof(cal_todo_s));
+	RETVM_IF(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "malloc(cal_todo_s) Failed(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
 
 	__cal_record_todo_struct_init(temp);
 
@@ -169,7 +169,7 @@ static int __cal_record_todo_clone( calendar_record_h record, calendar_record_h*
 	src_data = (cal_todo_s*)(record);
 
 	out_data = calloc(1, sizeof(cal_todo_s));
-	retvm_if(NULL == out_data, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc(cal_todo_s) Failed(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
+	RETVM_IF(NULL == out_data, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc(cal_todo_s) Failed(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
 
 
 	CAL_RECORD_COPY_COMMON(&(out_data->common), &(src_data->common));
@@ -784,7 +784,7 @@ static int __cal_record_todo_set_caltime( calendar_record_h record, unsigned int
 static int __cal_record_todo_reset_child_record_id(calendar_record_h child_record)
 {
 	cal_record_s *record = (cal_record_s*)child_record;
-	retv_if(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	switch (record->type) {
 	case CAL_RECORD_TYPE_ALARM:
@@ -860,7 +860,7 @@ static int __cal_record_todo_get_child_record_count( calendar_record_h record, u
 	int ret = CALENDAR_ERROR_NONE;
 	cal_todo_s *rec = (cal_todo_s *)record;
 
-	retv_if(NULL == count, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == count, CALENDAR_ERROR_INVALID_PARAMETER);
 	*count = 0;
 
 	switch (property_id) {
@@ -885,7 +885,7 @@ static int __cal_record_todo_get_child_record_at_p( calendar_record_h record, un
 	int ret;
 	cal_todo_s *rec = (cal_todo_s*)(record);
 
-	retv_if(NULL == child_record, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == child_record, CALENDAR_ERROR_INVALID_PARAMETER);
 	*child_record = NULL;
 
 	switch (property_id) {
@@ -910,7 +910,7 @@ static int __cal_record_todo_clone_child_record_list( calendar_record_h record, 
 	int ret;
 	cal_todo_s *rec = (cal_todo_s*)(record);
 
-	retv_if(NULL == out_list, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == out_list, CALENDAR_ERROR_INVALID_PARAMETER);
 	*out_list = NULL;
 
 	switch (property_id) {

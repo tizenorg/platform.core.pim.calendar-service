@@ -71,7 +71,7 @@ static gboolean __cal_server_reminder_publish_changes_with_data(char *data, int 
 
 void _cal_server_reminder_publish(char *p)
 {
-	retm_if (NULL == p, "Invalid parameter: p is NULL");
+	RET_IF(NULL == p);
 	__cal_server_reminder_publish_changes_with_data(p, strlen(p));
 }
 

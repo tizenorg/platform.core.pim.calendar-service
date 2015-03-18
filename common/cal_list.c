@@ -32,7 +32,7 @@ API int calendar_list_create( calendar_list_h* out_list )
 	}
 	cal_list_s *l;
 
-	l = (cal_list_s *)calloc(1, sizeof(cal_list_s));
+	l = calloc(1, sizeof(cal_list_s));
 	if (l == NULL) {
 		ERR("Failed to calloc");
 		return CALENDAR_ERROR_OUT_OF_MEMORY;
@@ -307,12 +307,12 @@ int _cal_list_clone(calendar_list_h list, calendar_list_h *out_list)
 
 int _cal_list_get_nth_record_p(cal_list_s *list_s, int index, calendar_record_h *record)
 {
-	retv_if(index < 0, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(index < 0, CALENDAR_ERROR_INVALID_PARAMETER);
 
-	retv_if(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 	*record = NULL;
 
-	retv_if(NULL == list_s, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == list_s, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	if (index < list_s->count) {
 		*record = g_list_nth_data(list_s->record, index);
@@ -328,7 +328,7 @@ int _cal_list_clear(cal_list_s *list_s)
 	int ret = CALENDAR_ERROR_NONE;
 	calendar_record_h record = NULL;
 	calendar_list_h list = (calendar_list_h)list_s;
-	retv_if(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	calendar_list_first(list);
 	while (CALENDAR_ERROR_NONE == calendar_list_get_current_record_p(list, &record)) {

@@ -45,10 +45,11 @@ API int calendar_query_create( const char* view_uri, calendar_query_h* out_query
 {
 	cal_query_s *query;
 
-	retv_if(NULL == view_uri || NULL == out_query, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == out_query, CALENDAR_ERROR_INVALID_PARAMETER);
 
-	query = (cal_query_s *)calloc(1, sizeof(cal_query_s));
-	retv_if(NULL == query, CALENDAR_ERROR_OUT_OF_MEMORY);
+	query = calloc(1, sizeof(cal_query_s));
+	RETV_IF(NULL == query, CALENDAR_ERROR_OUT_OF_MEMORY);
 
 	query->view_uri = strdup(view_uri);
 	query->properties = (cal_property_info_s *)_cal_view_get_property_info(view_uri, &query->property_count);
@@ -63,20 +64,20 @@ API int calendar_query_set_projection(calendar_query_h query, unsigned int prope
 	int i;
 	bool find;
 
-	retv_if(NULL == query, CALENDAR_ERROR_INVALID_PARAMETER);
-	retvm_if(NULL == property_ids, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid paramter: property_ids is NULL");
-	retvm_if(count < 0, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: check count(%d)", count);
+	RETV_IF(NULL == query, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == property_ids, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(count < 0, CALENDAR_ERROR_INVALID_PARAMETER, "count(%d) < 0", count);
 
 	que = (cal_query_s *)query;
 
 	for (i=0;i<count;i++)
 	{
 		find = __cal_query_property_check(que->properties, que->property_count, property_ids[i]);
-		retvm_if(false == find, CALENDAR_ERROR_INVALID_PARAMETER,
+		RETVM_IF(false == find, CALENDAR_ERROR_INVALID_PARAMETER,
 				"Invalid parameter : property_id(%d) is not supported on view_uri(%s)", property_ids[i], que->view_uri);
 
 		find = CAL_PROPERTY_CHECK_FLAGS(property_ids[i], CAL_PROPERTY_FLAGS_FILTER);
-		retvm_if(true == find, CALENDAR_ERROR_INVALID_PARAMETER,
+		RETVM_IF(true == find, CALENDAR_ERROR_INVALID_PARAMETER,
 				"Invalid parameter : property_id(%d) is not supported on view_uri(%s)", property_ids[i], que->view_uri);
 	}
 
@@ -93,7 +94,7 @@ API int calendar_query_set_distinct(calendar_query_h query, bool set)
 {
 	cal_query_s *que = NULL;
 
-	retv_if(NULL == query, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == query, CALENDAR_ERROR_INVALID_PARAMETER);
 	que = (cal_query_s *)query;
 
 	que->distinct = set;
@@ -107,7 +108,8 @@ API int calendar_query_set_filter(calendar_query_h query, calendar_filter_h filt
 	calendar_filter_h new_filter;
 	int ret = CALENDAR_ERROR_NONE;
 
-	retv_if(NULL == query || NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == query, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	que = (cal_query_s *)query;
 
@@ -118,7 +120,7 @@ API int calendar_query_set_filter(calendar_query_h query, calendar_filter_h filt
 	}
 
 	ret = _cal_filter_clone(filter,&new_filter);
-	retv_if(ret!=CALENDAR_ERROR_NONE, ret);
+	RETV_IF(ret!=CALENDAR_ERROR_NONE, ret);
 
 	if (que->filter)
 	{
@@ -135,12 +137,12 @@ API int calendar_query_set_sort(calendar_query_h query, unsigned int property_id
 	cal_query_s *que;
 	bool find = false;
 
-	retv_if(NULL == query, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == query, CALENDAR_ERROR_INVALID_PARAMETER);
 	que = (cal_query_s *)query;
 
 
 	find = __cal_query_property_check(que->properties, que->property_count, property_id);
-	retvm_if(false == find, CALENDAR_ERROR_INVALID_PARAMETER,
+	RETVM_IF(false == find, CALENDAR_ERROR_INVALID_PARAMETER,
 			"Invalid paramter : property_id(%d) is not supported on view_uri(%s)", property_id, que->view_uri);
 
 	que->sort_property_id = property_id;
@@ -153,7 +155,7 @@ API int calendar_query_destroy( calendar_query_h query )
 {
 	cal_query_s *que;
 
-	retv_if(NULL == query, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == query, CALENDAR_ERROR_INVALID_PARAMETER);
 	que = (cal_query_s *)query;
 
 	if (que->filter)
@@ -175,11 +177,11 @@ int _cal_query_clone(calendar_query_h query, calendar_query_h* out_query)
 	cal_filter_s *out_filter = NULL;
 	int ret = CALENDAR_ERROR_NONE;
 
-	retv_if(NULL == query, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == query, CALENDAR_ERROR_INVALID_PARAMETER);
 	que = (cal_query_s *)query;
 
 	ret = calendar_query_create(que->view_uri, out_query);
-	retv_if(CALENDAR_ERROR_NONE != ret, CALENDAR_ERROR_OUT_OF_MEMORY);
+	RETV_IF(CALENDAR_ERROR_NONE != ret, CALENDAR_ERROR_OUT_OF_MEMORY);
 	out_que = (cal_query_s *)*out_query;
 
 	if (que->filter)

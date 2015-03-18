@@ -423,7 +423,7 @@ API int calendar_db_insert_record( calendar_record_h record, int* id )
 	pims_ipc_data_h indata = NULL;
 	pims_ipc_data_h outdata = NULL;
 
-	retvm_if(record==NULL,CALENDAR_ERROR_INVALID_PARAMETER,"record is NULL");
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	CAL_RECORD_RESET_COMMON((cal_record_s*)record);
 
@@ -496,9 +496,9 @@ API int calendar_db_get_record( const char* view_uri, int id, calendar_record_h*
 	pims_ipc_data_h indata = NULL;
 	pims_ipc_data_h outdata = NULL;
 
-	retvm_if(view_uri==NULL,CALENDAR_ERROR_INVALID_PARAMETER,"view_uri is NULL");
-	retvm_if(id<=0,CALENDAR_ERROR_INVALID_PARAMETER,"id <= 0");
-	retvm_if(out_record==NULL,CALENDAR_ERROR_INVALID_PARAMETER,"record is NULL");
+	RETV_IF(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == out_record, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(id <= 0, CALENDAR_ERROR_INVALID_PARAMETER, "id(%d) <= 0", id);
 
 	// make indata
 	indata = pims_ipc_data_create(0);
@@ -561,7 +561,7 @@ API int calendar_db_update_record( calendar_record_h record )
 	pims_ipc_data_h indata = NULL;
 	pims_ipc_data_h outdata = NULL;
 
-	retvm_if(record==NULL,CALENDAR_ERROR_INVALID_PARAMETER,"record is NULL");
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	cal_record_s *rec = (cal_record_s *)record;
 	CAL_LIMIT_ACCESS_FRONT(rec->view_uri);
@@ -623,8 +623,8 @@ API int calendar_db_delete_record( const char* view_uri, int id )
 	pims_ipc_data_h indata = NULL;
 	pims_ipc_data_h outdata = NULL;
 
-	retvm_if(view_uri==NULL,CALENDAR_ERROR_INVALID_PARAMETER,"view_uri is NULL");
-	retvm_if(id<=0,CALENDAR_ERROR_INVALID_PARAMETER,"id <= 0");
+	RETV_IF(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(id <= 0, CALENDAR_ERROR_INVALID_PARAMETER,"id(%d) <= 0", id);
 
 	CAL_LIMIT_ACCESS_FRONT(view_uri);
 
@@ -693,8 +693,8 @@ API int calendar_db_get_all_records( const char* view_uri, int offset, int limit
 	pims_ipc_data_h indata = NULL;
 	pims_ipc_data_h outdata = NULL;
 
-	retvm_if(out_list==NULL,CALENDAR_ERROR_INVALID_PARAMETER,"list is NULL");
-	retvm_if(view_uri==NULL,CALENDAR_ERROR_INVALID_PARAMETER,"view_uri is NULL");
+	RETV_IF(NULL == out_list, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	// make indata
 	indata = pims_ipc_data_create(0);
@@ -764,8 +764,8 @@ API int calendar_db_get_records_with_query( calendar_query_h query, int offset, 
 	pims_ipc_data_h indata = NULL;
 	pims_ipc_data_h outdata = NULL;
 
-	retvm_if(query==NULL,CALENDAR_ERROR_INVALID_PARAMETER,"query is NULL");
-	retvm_if(out_list==NULL,CALENDAR_ERROR_INVALID_PARAMETER,"list is NULL");
+	RETV_IF(NULL == query, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == out_list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	// make indata
 	indata = pims_ipc_data_create(0);
@@ -829,13 +829,13 @@ API int calendar_db_get_records_with_query( calendar_query_h query, int offset, 
 	return ret;
 }
 
-API int calendar_db_clean_after_sync( int calendar_book_id, int calendar_db_version)
+API int calendar_db_clean_after_sync(int book_id, int calendar_db_version)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	pims_ipc_data_h indata = NULL;
 	pims_ipc_data_h outdata = NULL;
 
-	retvm_if(calendar_book_id <= 0,CALENDAR_ERROR_INVALID_PARAMETER,"calendar_book_id < 0");
+	RETVM_IF(book_id <= 0, CALENDAR_ERROR_INVALID_PARAMETER, "book_id(%d) < 0", book_id);
 
 	// make indata
 	indata = pims_ipc_data_create(0);
@@ -845,7 +845,7 @@ API int calendar_db_clean_after_sync( int calendar_book_id, int calendar_db_vers
 		ret = CALENDAR_ERROR_OUT_OF_MEMORY;
 		return ret;
 	}
-	ret = _cal_ipc_marshal_int(calendar_book_id,indata);
+	ret = _cal_ipc_marshal_int(book_id, indata);
 	if (ret != CALENDAR_ERROR_NONE)
 	{
 		ERR("marshal fail");
@@ -893,8 +893,8 @@ API int calendar_db_get_count( const char* view_uri, int *out_count )
 	pims_ipc_data_h indata = NULL;
 	pims_ipc_data_h outdata = NULL;
 
-	retvm_if(view_uri==NULL,CALENDAR_ERROR_INVALID_PARAMETER,"view_uri is NULL");
-	retvm_if(out_count==NULL,CALENDAR_ERROR_INVALID_PARAMETER,"count pointer is NULL");
+	RETV_IF(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == out_count, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	// make indata
 	indata = pims_ipc_data_create(0);
@@ -950,7 +950,7 @@ API int calendar_db_get_count_with_query( calendar_query_h query, int *out_count
 	pims_ipc_data_h indata = NULL;
 	pims_ipc_data_h outdata = NULL;
 
-	retvm_if(query==NULL,CALENDAR_ERROR_INVALID_PARAMETER,"record is NULL");
+	RETV_IF(NULL == query, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	// make indata
 	indata = pims_ipc_data_create(0);
@@ -1006,7 +1006,7 @@ API int calendar_db_insert_records( calendar_list_h record_list, int** record_id
 	pims_ipc_data_h indata = NULL;
 	pims_ipc_data_h outdata = NULL;
 
-	retvm_if(record_list==NULL,CALENDAR_ERROR_INVALID_PARAMETER,"list is NULL");
+	RETV_IF(NULL == record_list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	// make indata
 	indata = pims_ipc_data_create(0);
@@ -1104,11 +1104,11 @@ API int calendar_db_insert_records_async(calendar_list_h list, calendar_db_inser
 	calendar_list_h clone_list = NULL;
 	bool result = false;
 
-	retvm_if(list==NULL,CALENDAR_ERROR_INVALID_PARAMETER,"list is NULL");
+	RETV_IF(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	ret = cal_client_ipc_client_check_permission(CAL_PERMISSION_WRITE, &result);
-	retvm_if(CALENDAR_ERROR_NONE != ret, ret, "ctsvc_ipc_client_check_permission fail (%d)", ret);
-	retvm_if(result == false, CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied (calendar read)");
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "ctsvc_ipc_client_check_permission fail (%d)", ret);
+	RETVM_IF(result == false, CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied (calendar read)");
 
 	ret = _cal_list_clone(list, &clone_list);
 	if (CALENDAR_ERROR_NONE != ret)
@@ -1170,7 +1170,7 @@ API int calendar_db_update_records( calendar_list_h record_list)
 	pims_ipc_data_h indata = NULL;
 	pims_ipc_data_h outdata = NULL;
 
-	retvm_if(record_list==NULL,CALENDAR_ERROR_INVALID_PARAMETER,"record is NULL");
+	RETV_IF(NULL == record_list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	// make indata
 	indata = pims_ipc_data_create(0);
@@ -1231,11 +1231,11 @@ API int calendar_db_update_records_async( calendar_list_h list, calendar_db_resu
 	calendar_list_h clone_list = NULL;
 	bool result = false;
 
-	retvm_if(list==NULL,CALENDAR_ERROR_INVALID_PARAMETER,"record is NULL");
+	RETV_IF(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	ret = cal_client_ipc_client_check_permission(CAL_PERMISSION_WRITE, &result);
-	retvm_if(CALENDAR_ERROR_NONE != ret, ret, "ctsvc_ipc_client_check_permission fail (%d)", ret);
-	retvm_if(result == false, CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied (calendar read)");
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "ctsvc_ipc_client_check_permission fail (%d)", ret);
+	RETVM_IF(result == false, CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied (calendar read)");
 
 	ret = _cal_list_clone(list, &clone_list);
 	if (CALENDAR_ERROR_NONE != ret)
@@ -1297,9 +1297,9 @@ API int calendar_db_delete_records(const char* view_uri, int record_id_array[], 
 	pims_ipc_data_h outdata = NULL;
 	int i = 0;
 
-	retvm_if(view_uri==NULL,CALENDAR_ERROR_INVALID_PARAMETER,"view_uri is NULL");
-	retvm_if(record_id_array==NULL,CALENDAR_ERROR_INVALID_PARAMETER,"record_id_array is NULL");
-	retvm_if(count<=0,CALENDAR_ERROR_INVALID_PARAMETER,"count <= 0 ");
+	RETV_IF(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == record_id_array, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(count <= 0, CALENDAR_ERROR_INVALID_PARAMETER, "count(%d) < 0", count);
 
 	// make indata
 	indata = pims_ipc_data_create(0);
@@ -1377,13 +1377,13 @@ API int calendar_db_delete_records_async(const char* view_uri, int ids[], int co
 	cal_client_db_async_userdata_s *async_data = NULL;
 	bool result = false;
 
-	retvm_if(view_uri==NULL,CALENDAR_ERROR_INVALID_PARAMETER,"view_uri is NULL");
-	retvm_if(ids==NULL,CALENDAR_ERROR_INVALID_PARAMETER,"ids is NULL");
-	retvm_if(count <= 0,CALENDAR_ERROR_INVALID_PARAMETER,"count is 0");
+	RETV_IF(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == ids, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(count <= 0, CALENDAR_ERROR_INVALID_PARAMETER, "count(%d) < 0", count);
 
 	ret = cal_client_ipc_client_check_permission(CAL_PERMISSION_WRITE, &result);
-	retvm_if(CALENDAR_ERROR_NONE != ret, ret, "ctsvc_ipc_client_check_permission fail (%d)", ret);
-	retvm_if(result == false, CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied (calendar read)");
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "ctsvc_ipc_client_check_permission fail (%d)", ret);
+	RETVM_IF(result == false, CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied (calendar read)");
 
 	// make indata
 	indata = pims_ipc_data_create(0);
@@ -1448,9 +1448,9 @@ API int calendar_db_get_changes_by_version(const char* view_uri, int calendar_bo
 	pims_ipc_data_h indata = NULL;
 	pims_ipc_data_h outdata = NULL;
 
-	retvm_if(view_uri==NULL,CALENDAR_ERROR_INVALID_PARAMETER,"view_uri is NULL");
-	retvm_if(record_list==NULL,CALENDAR_ERROR_INVALID_PARAMETER,"record_list is NULL");
-	retvm_if(current_calendar_db_version==NULL,CALENDAR_ERROR_INVALID_PARAMETER,"current_calendar_db_version is NULL");
+	RETV_IF(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == record_list, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == current_calendar_db_version, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	// make indata
 	indata = pims_ipc_data_create(0);
@@ -1525,7 +1525,7 @@ API int calendar_db_get_current_version(int* calendar_db_version)
 	pims_ipc_data_h indata = NULL;
 	pims_ipc_data_h outdata = NULL;
 
-	retvm_if(calendar_db_version==NULL,CALENDAR_ERROR_INVALID_PARAMETER,"calendar_db_version is null");
+	RETV_IF(NULL == calendar_db_version, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	// ipc call
 	if (_cal_client_ipc_call(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_GET_CURRENT_VERSION, indata, &outdata) != 0)
@@ -1556,11 +1556,12 @@ API int calendar_db_get_current_version(int* calendar_db_version)
 
 API int calendar_db_add_changed_cb(const char* view_uri, calendar_db_changed_cb callback, void* user_data )
 {
-	CAL_FN_CALL;
+	CAL_FN_CALL();
 	int ret;
 	cal_record_type_e type = CAL_RECORD_TYPE_INVALID;
 
-	retv_if(NULL == view_uri || NULL == callback , CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == callback, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	type = _cal_view_get_type(view_uri);
 
@@ -1579,18 +1580,19 @@ API int calendar_db_add_changed_cb(const char* view_uri, calendar_db_changed_cb 
 		ERR("Invalid view_uri(%s)", view_uri);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	retvm_if(CALENDAR_ERROR_NONE != ret, ret, "_cal_inotify_subscribe() Failed(%d)", ret);
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "_cal_inotify_subscribe() Failed(%d)", ret);
 
 	return CALENDAR_ERROR_NONE;
 }
 
 API int calendar_db_remove_changed_cb( const char* view_uri, calendar_db_changed_cb callback, void* user_data )
 {
-	CAL_FN_CALL;
+	CAL_FN_CALL();
 	int ret;
 	cal_record_type_e type = CAL_RECORD_TYPE_INVALID;
 
-	retv_if(NULL == view_uri || NULL == callback , CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == callback, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	type = _cal_view_get_type(view_uri);
 
@@ -1609,7 +1611,7 @@ API int calendar_db_remove_changed_cb( const char* view_uri, calendar_db_changed
 		ERR("Invalid view_uri(%s)", view_uri);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	retvm_if(CALENDAR_ERROR_NONE != ret, ret, "_cal_inotify_unsubscribe_with_data() Failed(%d)", ret);
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "_cal_inotify_unsubscribe_with_data() Failed(%d)", ret);
 
 	return CALENDAR_ERROR_NONE;
 }
@@ -1621,7 +1623,7 @@ API int calendar_db_insert_vcalendars(const char* vcalendar_stream, int **record
 	pims_ipc_data_h outdata = NULL;
 	int i = 0;
 
-	retvm_if(NULL == vcalendar_stream, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == vcalendar_stream, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	// make indata
 	indata = pims_ipc_data_create(0);
@@ -1697,11 +1699,11 @@ API int calendar_db_insert_vcalendars_async(const char* vcalendar_stream, calend
 	cal_client_db_async_insert_userdata_s *async_data = NULL;
 	bool result = false;
 
-	retvm_if(vcalendar_stream==NULL,CALENDAR_ERROR_INVALID_PARAMETER,"list is NULL");
+	RETV_IF(NULL == vcalendar_stream, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	ret = cal_client_ipc_client_check_permission(CAL_PERMISSION_WRITE, &result);
-	retvm_if(CALENDAR_ERROR_NONE != ret, ret, "ctsvc_ipc_client_check_permission fail (%d)", ret);
-	retvm_if(result == false, CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied (calendar read)");
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "ctsvc_ipc_client_check_permission fail (%d)", ret);
+	RETVM_IF(result == false, CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied (calendar read)");
 
 	// make indata
 	indata = pims_ipc_data_create(0);
@@ -1752,9 +1754,9 @@ API int calendar_db_replace_vcalendars(const char* vcalendar_stream, int *record
 	pims_ipc_data_h outdata = NULL;
 	int i = 0;
 
-	retvm_if(NULL == vcalendar_stream, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == record_id_array, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(count <= 0, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == vcalendar_stream, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == record_id_array, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(count <= 0, CALENDAR_ERROR_INVALID_PARAMETER, "count(%d) < 0", count);
 
 	// make indata
 	indata = pims_ipc_data_create(0);
@@ -1829,13 +1831,13 @@ API int calendar_db_replace_vcalendars_async(const char* vcalendar_stream, int *
 	int i = 0;
 	bool result = false;
 
-	retvm_if(NULL == vcalendar_stream, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == record_id_array, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(count <= 0, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == vcalendar_stream, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == record_id_array, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(count <= 0, CALENDAR_ERROR_INVALID_PARAMETER, "count(%d) < 0", count);
 
 	ret = cal_client_ipc_client_check_permission(CAL_PERMISSION_WRITE, &result);
-	retvm_if(CALENDAR_ERROR_NONE != ret, ret, "ctsvc_ipc_client_check_permission fail (%d)", ret);
-	retvm_if(result == false, CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied (calendar read)");
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "ctsvc_ipc_client_check_permission fail (%d)", ret);
+	RETVM_IF(result == false, CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied (calendar read)");
 
 	// make indata
 	indata = pims_ipc_data_create(0);
@@ -1901,8 +1903,8 @@ API int calendar_db_replace_record(calendar_record_h record, int record_id)
 	pims_ipc_data_h indata = NULL;
 	pims_ipc_data_h outdata = NULL;
 
-	retvm_if(record==NULL,CALENDAR_ERROR_INVALID_PARAMETER,"record is NULL");
-	retvm_if(record_id < 0, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(record_id < 0, CALENDAR_ERROR_INVALID_PARAMETER, "record_id(%d) < 0", record_id);
 
 	cal_record_s *rec = (cal_record_s *)record;
 	CAL_LIMIT_ACCESS_FRONT(rec->view_uri);
@@ -1971,9 +1973,9 @@ API int calendar_db_replace_records(calendar_list_h record_list, int *record_id_
 	pims_ipc_data_h outdata = NULL;
 	int i = 0;
 
-	retvm_if(record_list==NULL,CALENDAR_ERROR_INVALID_PARAMETER,"record is NULL");
-	retvm_if(record_id_array==NULL,CALENDAR_ERROR_INVALID_PARAMETER,"record_id_array is NULL");
-	retvm_if(count <= 0, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == record_list, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == record_id_array, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(count <= 0, CALENDAR_ERROR_INVALID_PARAMETER, "count(%d) < 0", count);
 
 	// make indata
 	indata = pims_ipc_data_create(0);
@@ -2048,13 +2050,13 @@ API int calendar_db_replace_records_async(calendar_list_h record_list, int *reco
 	int i = 0;
 	bool result = false;
 
-	retvm_if(NULL == record_list, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: list is NULL");
-	retvm_if(NULL == record_id_array, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: id is NULL");
-	retvm_if(count <= 0, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: count <= 0");
+	RETV_IF(NULL == record_list, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == record_id_array, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(count <= 0, CALENDAR_ERROR_INVALID_PARAMETER, "count(%d) < 0", count);
 
 	ret = cal_client_ipc_client_check_permission(CAL_PERMISSION_WRITE, &result);
-	retvm_if(CALENDAR_ERROR_NONE != ret, ret, "ctsvc_ipc_client_check_permission fail (%d)", ret);
-	retvm_if(result == false, CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied (calendar read)");
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "ctsvc_ipc_client_check_permission fail (%d)", ret);
+	RETVM_IF(result == false, CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied (calendar read)");
 
 	// make indata
 	indata = pims_ipc_data_create(0);
@@ -2118,12 +2120,12 @@ API int calendar_db_get_last_change_version(int* last_version)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	bool result = false;
-	retvm_if(NULL == last_version, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == last_version, CALENDAR_ERROR_INVALID_PARAMETER);
 	*last_version = 0;
 
 	ret = cal_client_ipc_client_check_permission(CAL_PERMISSION_READ, &result);
-	retvm_if(CALENDAR_ERROR_NONE != ret, ret, "cal_client_ipc_client_check_permission() is fail (%d)", ret);
-	retvm_if(result == false, CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied (calendar read)");
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_client_ipc_client_check_permission() is fail (%d)", ret);
+	RETVM_IF(result == false, CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied (calendar read)");
 
 	*last_version = _cal_client_ipc_get_change_version();
 	return ret;
@@ -2135,8 +2137,8 @@ API int calendar_db_get_changes_exception_by_version(const char* view_uri, int o
 	pims_ipc_data_h indata = NULL;
 	pims_ipc_data_h outdata = NULL;
 
-	retvm_if(view_uri==NULL,CALENDAR_ERROR_INVALID_PARAMETER,"view_uri is NULL");
-	retvm_if(record_list==NULL,CALENDAR_ERROR_INVALID_PARAMETER,"record_list is NULL");
+	RETV_IF(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == record_list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	// make indata
 	indata = pims_ipc_data_create(0);

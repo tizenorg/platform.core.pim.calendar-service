@@ -38,9 +38,6 @@
 
 #define CAL_SEARCH_LOOP_MAX 4
 
-#define COLOR_CYAN "\033[0;36m"
-#define COLOR_END "\033[0;m"
-
 struct _alarm_data_s
 {
 	int event_id;
@@ -208,7 +205,7 @@ static int __cal_server_alarm_get_alert_localtime(const char *field, int event_i
  */
 static int __cal_server_alarm_get_alert_time(int alarm_id, time_t *tt_alert)
 {
-	retvm_if(NULL == tt_alert, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: tt_alert is NULL");
+	RETV_IF(NULL == tt_alert, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	snprintf(query, sizeof(query), "SELECT A.event_id, A.remind_tick_unit, A.remind_tick, "
@@ -219,7 +216,7 @@ static int __cal_server_alarm_get_alert_time(int alarm_id, time_t *tt_alert)
 
 	sqlite3_stmt *stmt = NULL;
 	stmt = _cal_db_util_query_prepare(query);
-	retvm_if (NULL == stmt, CALENDAR_ERROR_DB_FAILED, "_cal_db_util_query_prepare() Failed");
+	RETVM_IF(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "_cal_db_util_query_prepare() Failed");
 
 	int event_id = 0;
 	int unit = 0;
@@ -604,8 +601,8 @@ static void __cal_server_alarm_get_upcoming_nonspecific_todo_localtime(const cha
 
 static int __cal_server_alarm_get_alert_list(time_t utime, GList **list)
 {
-	ENTER();
-	retvm_if (NULL == list, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: list is NULL");
+	CAL_FN_CALL();
+	RETV_IF(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	tzset();
 	struct tm st_local = {0};
@@ -650,13 +647,13 @@ static GFunc __cal_server_alarm_print_cb(gpointer data, gpointer user_data)
 
 static int __cal_server_alarm_register(GList *alarm_list)
 {
-	ENTER();
-	retvm_if (NULL == alarm_list, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: alarm list is NULL");
+	CAL_FN_CALL();
+	RETV_IF(NULL == alarm_list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	int ret = CALENDAR_ERROR_NONE;
 	GList *l = g_list_first(alarm_list);
 	struct _alarm_data_s *ad = (struct _alarm_data_s *)l->data;
-	retvm_if (NULL == ad, CALENDAR_ERROR_DB_FAILED, "No data");
+	RETVM_IF(NULL == ad, CALENDAR_ERROR_DB_FAILED, "No data");
 
 	// clear all alarm which set by mine.
 	ret = alarmmgr_enum_alarm_ids(__cal_server_alarm_clear_all_cb, NULL);
@@ -717,12 +714,12 @@ static int __cal_server_alarm_register(GList *alarm_list)
 
 static bool __app_matched_cb(app_control_h app_control, const char *package, void *user_data)
 {
-	retvm_if (NULL == user_data, true, "Invalid parameter: user_data is NULL");
+	RETV_IF(NULL == user_data, true);
 
 	int ret = 0;
 	char *mime = NULL;
 	ret = app_control_get_mime(app_control, &mime);
-	retvm_if(APP_CONTROL_ERROR_NONE != ret, true, "app_control_get_mime() is failed(%d)", ret);
+	RETVM_IF(APP_CONTROL_ERROR_NONE != ret, true, "app_control_get_mime() is failed(%d)", ret);
 
 	const char *reminder_mime = "application/x-tizen.calendar.reminder";
 	if (strncmp(mime, reminder_mime, strlen(reminder_mime))) { // not same
@@ -808,7 +805,7 @@ static bool __app_matched_cb(app_control_h app_control, const char *package, voi
 
 static void __cal_server_alarm_noti_with_control(GList *alarm_list)
 {
-	retm_if(NULL == alarm_list, "No alarm list");
+	RETM_IF(NULL == alarm_list, "No alarm list");
 
 	app_control_h app_control = NULL;
 	app_control_create(&app_control);
@@ -820,7 +817,7 @@ static void __cal_server_alarm_noti_with_control(GList *alarm_list)
 
 static void __cal_server_alarm_noti_with_callback(GList *alarm_list)
 {
-	retm_if(NULL == alarm_list, "No alarm list");
+	RETM_IF(NULL == alarm_list, "No alarm list");
 
 	GList *l = g_list_first(alarm_list);
 	while (l) {
@@ -900,7 +897,7 @@ static int __cal_server_alarm_register_with_alarmmgr(time_t utime)
 
 static int _alert_cb(alarm_id_t alarm_id, void *data)
 {
-	ENTER();
+	CAL_FN_CALL();
 	GList *l = NULL;
 
 	DBG("alarm_id (%ld)", alarm_id);
@@ -911,14 +908,13 @@ static int _alert_cb(alarm_id_t alarm_id, void *data)
 	__cal_server_alarm_noti_with_callback(l);
 	__cal_server_alarm_noti_with_control(l);
 	__cal_server_alarm_register_with_alarmmgr(tt_alert);
-	LEAVE();
 	return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
 static void __cal_server_alarm_timechange_cb(keynode_t *node, void *data)
 {
-	ENTER();
+	CAL_FN_CALL();
 	int t = 0;
 	int ret;
 
@@ -928,7 +924,7 @@ static void __cal_server_alarm_timechange_cb(keynode_t *node, void *data)
 	else
 	{
 		ret = vconf_get_int(VCONFKEY_SYSTEM_TIMECHANGE, &t);
-		warn_if(0 < ret, "vconf_get_int() Failed");
+		WARN_IF(0 < ret, "vconf_get_int() Failed");
 	}
 
 	if (t < 0)
@@ -957,7 +953,7 @@ void __cal_server_alarm_set_timechange(void)
 
 static void __changed_cb(const char* view_uri, void* data)
 {
-	ENTER();
+	CAL_FN_CALL();
 	__cal_server_alarm_register_with_alarmmgr(time(NULL));
 }
 
@@ -970,17 +966,17 @@ static int __cal_server_alarm_set_inotify(calendar_db_changed_cb callback)
 
 int _cal_server_alarm(void)
 {
-	ENTER();
+	CAL_FN_CALL();
 	int ret;
 
 	__cal_server_alarm_set_timechange();
 	__cal_server_alarm_set_inotify(__changed_cb);
 
 	ret = alarmmgr_init("calendar-service");
-	retvm_if(ret < 0, ret, "alarmmgr_init() failed");
+	RETVM_IF(ret < 0, ret, "alarmmgr_init() failed");
 
 	ret = alarmmgr_set_cb(_alert_cb, NULL);
-	retvm_if(ret < 0, ret, "alarmmgr_set_cb() failed");
+	RETVM_IF(ret < 0, ret, "alarmmgr_set_cb() failed");
 
 	__cal_server_alarm_register_with_alarmmgr(time(NULL));
 

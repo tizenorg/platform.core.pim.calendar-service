@@ -36,7 +36,7 @@ int _cal_db_extended_get_records(int record_id, calendar_record_type_e record_ty
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	sqlite3_stmt *stmt = NULL;
 
-	retvm_if(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: GList is NULL");
+	RETV_IF(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	snprintf(query, sizeof(query),
 			"SELECT * FROM %s "
@@ -47,7 +47,7 @@ int _cal_db_extended_get_records(int record_id, calendar_record_type_e record_ty
 			record_type);
 
 	stmt = _cal_db_util_query_prepare(query);
-	retvm_if(NULL == stmt,CALENDAR_ERROR_DB_FAILED, "_cal_db_util_query_prepare() failed");
+	RETVM_IF(NULL == stmt,CALENDAR_ERROR_DB_FAILED, "_cal_db_util_query_prepare() failed");
 
 	int count = 0;
 	const unsigned char *temp;
@@ -109,8 +109,8 @@ int _cal_db_extended_insert_record(calendar_record_h record, int record_id, cale
 	cal_extended_s* extended =  (cal_extended_s*)(record);
 	cal_db_util_error_e dbret;
 
-	retv_if(NULL == extended, CALENDAR_ERROR_INVALID_PARAMETER);
-	retvm_if(record_id <= 0, CALENDAR_ERROR_INVALID_PARAMETER, "record_id(%d)", record_id);
+	RETV_IF(NULL == extended, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(record_id <= 0, CALENDAR_ERROR_INVALID_PARAMETER, "record_id(%d)", record_id);
 
 	snprintf(query, sizeof(query), "INSERT INTO %s(record_id, "
 			"record_type ,key ,value) "
@@ -183,7 +183,7 @@ int _cal_db_extended_insert_records(cal_list_s *list_s, int record_id, calendar_
 	calendar_record_h record = NULL;
 	calendar_list_h list = (calendar_list_h)list_s;
 
-	retv_if(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	calendar_list_get_count(list, &count);
 	if (0 == count)
@@ -192,7 +192,7 @@ int _cal_db_extended_insert_records(cal_list_s *list_s, int record_id, calendar_
 	calendar_list_first(list);
 	while (CALENDAR_ERROR_NONE == calendar_list_get_current_record_p(list, &record)) {
 		ret = _cal_db_extended_insert_record(record, record_id, record_type, NULL);
-		retvm_if(CALENDAR_ERROR_NONE != ret, ret, "_cal_db_extended_insert_record() Failed(%d)", ret);
+		RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "_cal_db_extended_insert_record() Failed(%d)", ret);
 		calendar_list_next(list);
 	}
 	return CALENDAR_ERROR_NONE;

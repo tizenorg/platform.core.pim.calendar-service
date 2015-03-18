@@ -34,8 +34,8 @@ cal_ipc_marshal_record_plugin_cb_s _cal_ipc_record_event_plugin_cb = {
 static int __cal_ipc_unmarshal_event(pims_ipc_data_h ipc_data, calendar_record_h record)
 {
 	cal_event_s *pevent = NULL;
-	retv_if(ipc_data==NULL,CALENDAR_ERROR_NO_DATA);
-	retv_if(record==NULL,CALENDAR_ERROR_NO_DATA);
+	RETV_IF(ipc_data==NULL,CALENDAR_ERROR_NO_DATA);
+	RETV_IF(record==NULL,CALENDAR_ERROR_NO_DATA);
 
 	pevent = (cal_event_s*) record;
 
@@ -279,8 +279,8 @@ static int __cal_ipc_unmarshal_event(pims_ipc_data_h ipc_data, calendar_record_h
 static int __cal_ipc_marshal_event(const calendar_record_h record, pims_ipc_data_h ipc_data)
 {
 	cal_event_s* pevent = (cal_event_s*) record;
-	retv_if(ipc_data==NULL,CALENDAR_ERROR_NO_DATA);
-	retv_if(pevent==NULL,CALENDAR_ERROR_NO_DATA);
+	RETV_IF(ipc_data==NULL,CALENDAR_ERROR_NO_DATA);
+	RETV_IF(pevent==NULL,CALENDAR_ERROR_NO_DATA);
 
 	if (_cal_ipc_marshal_int((pevent->index),ipc_data) != CALENDAR_ERROR_NONE) {
 		ERR("_cal_ipc_marshal fail");

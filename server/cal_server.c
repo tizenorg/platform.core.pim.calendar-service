@@ -87,7 +87,7 @@ static gboolean __cal_server_timeout_cb(gpointer argv)
 
 static bool __cal_server_account_delete_cb(const char* event_type, int account_id, void* user_data)
 {
-	CAL_FN_CALL;
+	CAL_FN_CALL();
 
 	if (strcmp(event_type, ACCOUNT_NOTI_NAME_DELETE) == 0)
 	{
@@ -426,8 +426,7 @@ static void _cal_server_create_file(void)
 
 int main(int argc, char *argv[])
 {
-	INFO(COLOR_GREEN"Server start"COLOR_END);
-
+	CAL_FN_CALL();
 	if (getuid() == 0)
 	{        // root
 		gid_t glist[] = {CAL_SECURITY_FILE_GROUP};

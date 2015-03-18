@@ -97,8 +97,8 @@ static int __cal_db_todo_insert_record(calendar_record_h record, int* id)
 	calendar_record_h record_calendar = NULL;
 	int has_alarm = 0;
 
-	retv_if(NULL == todo, CALENDAR_ERROR_INVALID_PARAMETER);
-	retv_if(false == __cal_db_todo_check_calendar_book_type(record), CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == todo, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(false == __cal_db_todo_check_calendar_book_type(record), CALENDAR_ERROR_INVALID_PARAMETER);
 
 	// access control
 	if (_cal_access_control_have_write_permission(todo->calendar_id) == false)
@@ -113,7 +113,7 @@ static int __cal_db_todo_insert_record(calendar_record_h record, int* id)
 
 	ret = _cal_db_get_record(_calendar_book._uri,
 			calendar_book_id, &record_calendar);
-	retvm_if(CALENDAR_ERROR_NONE != ret, CALENDAR_ERROR_INVALID_PARAMETER, "calendar_book_id is invalid");
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, CALENDAR_ERROR_INVALID_PARAMETER, "calendar_book_id is invalid");
 
 	calendar_record_destroy(record_calendar, true);
 
@@ -293,18 +293,18 @@ static int __cal_db_todo_insert_record(calendar_record_h record, int* id)
 
 	if (todo->alarm_list && 0 < todo->alarm_list->count) {
 		ret = _cal_db_alarm_insert_records(todo->alarm_list, index);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_db_alarm_insert_records() failed(%x)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_db_alarm_insert_records() failed(%x)", ret);
 	}
 
 	if (todo->attendee_list && 0 < todo->attendee_list->count) {
 		ret = _cal_db_attendee_insert_records(todo->attendee_list, index);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_db_attendee_insert_records() failed(%x)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_db_attendee_insert_records() failed(%x)", ret);
 	}
 
 	if (todo->extended_list && 0 < todo->extended_list->count) {
 		DBG("insert extended");
 		ret = _cal_db_extended_insert_records(todo->extended_list, index, CALENDAR_RECORD_TYPE_TODO);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_db_extended_insert_records() Failed(%x)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_db_extended_insert_records() Failed(%x)", ret);
 	}
 	else {
 		DBG("No extended");
@@ -426,7 +426,7 @@ static int __cal_db_todo_update_record(calendar_record_h record)
 	cal_db_util_error_e dbret = CAL_DB_OK;
 	int has_alarm = 0;
 
-	retv_if(NULL == todo, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == todo, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	// access control
 	if (_cal_access_control_have_write_permission(todo->calendar_id) == false)
@@ -516,7 +516,7 @@ static int __cal_db_todo_update_record(calendar_record_h record)
 		todo->index);
 
 	stmt = _cal_db_util_query_prepare(query);
-	retvm_if(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "_cal_db_util_query_prepare() Failed");
+	RETVM_IF(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "_cal_db_util_query_prepare() Failed");
 
 	int count = 1;
 
@@ -619,19 +619,19 @@ static int __cal_db_todo_update_record(calendar_record_h record)
 
 	if (todo->alarm_list && 0 < todo->alarm_list->count) {
 		ret = _cal_db_alarm_insert_records(todo->alarm_list, todo->index);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_db_alarm_insert_records() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_db_alarm_insert_records() Failed(%d)", ret);
 	}
 
 	if (todo->attendee_list && 0 < todo->attendee_list->count) {
 		ret = _cal_db_attendee_insert_records(todo->attendee_list, todo->index);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_db_attendee_insert_records() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_db_attendee_insert_records() Failed(%d)", ret);
 	}
 
 
 	if (todo->extended_list && 0 < todo->extended_list->count) {
 		DBG("insert extended");
 		ret = _cal_db_extended_insert_records(todo->extended_list, todo->index, CALENDAR_RECORD_TYPE_TODO);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_db_extended_insert_records() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_db_extended_insert_records() Failed(%d)", ret);
 	}
 
 	_cal_db_util_notify(CAL_NOTI_TYPE_TODO);
@@ -648,7 +648,7 @@ static int __cal_db_todo_delete_record(int id)
 	int created_ver = 0;
 	calendar_book_sync_event_type_e sync_event_type = CALENDAR_BOOK_SYNC_EVENT_FOR_ME;
 
-	retvm_if(id < 0, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid argument: id < 0");
+	RETVM_IF(id < 0, CALENDAR_ERROR_INVALID_PARAMETER, "id(%d) < 0", id);
 
 	ret = __cal_db_todo_get_deleted_data(id, &calendar_book_id, &created_ver);
 	if (CALENDAR_ERROR_NONE != ret)
@@ -746,7 +746,7 @@ static int __cal_db_todo_replace_record(calendar_record_h record, int id)
 	cal_db_util_error_e dbret = CAL_DB_OK;
 	int has_alarm = 0;
 
-	retv_if(NULL == todo, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == todo, CALENDAR_ERROR_INVALID_PARAMETER);
 	todo->index = id;
 
 	// access control
@@ -836,7 +836,7 @@ static int __cal_db_todo_replace_record(calendar_record_h record, int id)
 		id);
 
 	stmt = _cal_db_util_query_prepare(query);
-	retvm_if(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "_cal_db_util_query_prepare() Failed");
+	RETVM_IF(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "_cal_db_util_query_prepare() Failed");
 
 	int count = 1;
 
@@ -939,18 +939,18 @@ static int __cal_db_todo_replace_record(calendar_record_h record, int id)
 
 	if (todo->alarm_list && 0 < todo->alarm_list->count) {
 		ret = _cal_db_alarm_insert_records(todo->alarm_list, id);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_db_alarm_insert_records() failed(%x)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_db_alarm_insert_records() failed(%x)", ret);
 	}
 
 	if (todo->attendee_list && 0 < todo->attendee_list->count) {
 		ret = _cal_db_attendee_insert_records(todo->attendee_list, id);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_db_attendee_insert_records() failed(%x)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_db_attendee_insert_records() failed(%x)", ret);
 	}
 
 	if (todo->extended_list && 0 < todo->extended_list->count) {
 		DBG("insert extended");
 		ret = _cal_db_extended_insert_records(todo->extended_list, id, CALENDAR_RECORD_TYPE_TODO);
-		warn_if(CALENDAR_ERROR_NONE != ret, "_cal_db_extended_insert_records() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_db_extended_insert_records() Failed(%d)", ret);
 	}
 
 	_cal_db_util_notify(CAL_NOTI_TYPE_TODO);
@@ -965,10 +965,10 @@ static int __cal_db_todo_get_all_records(int offset, int limit, calendar_list_h*
 	char limitquery[CAL_DB_SQL_MAX_LEN] = {0};
 	sqlite3_stmt *stmt = NULL;
 
-	retvm_if(NULL == out_list, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == out_list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	ret = calendar_list_create(out_list);
-	retvm_if(CALENDAR_ERROR_NONE != ret, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "calendar_list_create() Fail(%d)", ret);
 
 	if (offset > 0)
 	{
@@ -1157,7 +1157,7 @@ static int __cal_db_todo_get_records_with_query(calendar_query_h query, int offs
 		ERR("_cal_db_util_query_prepare() Failed");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
-	CAL_DBG("%s",query_str);
+	DBG("%s",query_str);
 
 	// bind text
 	if (bind_text)
@@ -1290,7 +1290,7 @@ static int __cal_db_todo_insert_records(const calendar_list_h list, int** ids)
 
 	id = calloc(1, sizeof(int)*count);
 
-	retvm_if(NULL == id, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc fail");
+	RETVM_IF(NULL == id, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc fail");
 
 	ret = calendar_list_first(list);
 	if (ret != CALENDAR_ERROR_NONE)
@@ -1367,7 +1367,7 @@ static int __cal_db_todo_delete_records(int ids[], int count)
 
 static int __cal_db_todo_get_count(int *out_count)
 {
-	retvm_if(NULL == out_count, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == out_count, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	char *query_str = NULL;
 	_cal_db_append_string(&query_str, "SELECT count(*) FROM");
@@ -1382,7 +1382,7 @@ static int __cal_db_todo_get_count(int *out_count)
 		CAL_FREE(query_str);
 		return ret;
 	}
-	CAL_DBG("count(%d) str[%s]", count, query_str);
+	DBG("count(%d) str[%s]", count, query_str);
 	CAL_FREE(query_str);
 
 	*out_count = count;
@@ -1493,7 +1493,7 @@ static int __cal_db_todo_get_count_with_query(calendar_query_h query, int *out_c
 		CAL_FREE(query_str);
 		return ret;
 	}
-	CAL_DBG("count(%d) str[%s]", count, query_str);
+	DBG("count(%d) str[%s]", count, query_str);
 
 	if (out_count) *out_count = count;
 	if (bind_text)
@@ -1975,11 +1975,11 @@ static int __cal_db_todo_update_dirty(calendar_record_h record)
 	calendar_record_h original_record;
 
 	ret = calendar_record_get_int(record,_calendar_todo.id, &todo_id);
-	retv_if(CALENDAR_ERROR_NONE != ret, ret);
+	RETV_IF(CALENDAR_ERROR_NONE != ret, ret);
 
-	CAL_DBG("id=%d",todo_id);
+	DBG("id=%d",todo_id);
 
-	retv_if(false == __cal_db_todo_check_calendar_book_type(record), CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(false == __cal_db_todo_check_calendar_book_type(record), CALENDAR_ERROR_INVALID_PARAMETER);
 
 	ret = __cal_db_todo_get_record(todo_id, &original_record);
 
@@ -2063,7 +2063,7 @@ static int __cal_db_todo_update_dirty(calendar_record_h record)
 	}
 	else
 	{
-		CAL_DBG("get_record fail");
+		DBG("get_record fail");
 		return ret;
 	}
 

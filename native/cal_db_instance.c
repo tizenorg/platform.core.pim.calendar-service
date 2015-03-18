@@ -43,10 +43,6 @@
 #define sec2ms(s) (s * 1000.0)
 #define lli2p(x) ((gpointer)((time_t)x))
 
-#define COLOR_RED "\033[0;31m"
-#define COLOR_GREEN "\033[0;32m"
-#define COLOR_END "\033[0;m"
-
 /* input order
  * UCAL_MONTH + UCAL_DAY_OF_MONTH
  * UCAL_MONTH + UCAL_WEEK_OF_MONTH + UCAL_DAY_OF_WEEK
@@ -141,7 +137,7 @@ static int __cal_db_instance_parse_byint(char *byint, int *by, int *len)
 
 	char **t = NULL;
 	t = g_strsplit_set(byint, " ,", -1);
-	retvm_if(NULL == t, CALENDAR_ERROR_OUT_OF_MEMORY, "g_strsplit_set() is failed");
+	RETVM_IF(NULL == t, CALENDAR_ERROR_OUT_OF_MEMORY, "g_strsplit_set() is failed");
 
 	int length = g_strv_length(t);
 	int i;
@@ -159,11 +155,12 @@ static int __cal_db_instance_parse_byint(char *byint, int *by, int *len)
 
 static int __cal_db_instance_parse_bystr(char *bystr, char **by, int *len)
 {
-	retvm_if (NULL == bystr || '\0' == *bystr, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: byint is NULL");
+	RETV_IF(NULL == bystr, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF('\0' == *bystr, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	char **t = NULL;
 	t = g_strsplit_set(bystr, " ,", -1);
-	retvm_if(NULL == t, CALENDAR_ERROR_OUT_OF_MEMORY, "g_strsplit_set() is failed");
+	RETVM_IF(NULL == t, CALENDAR_ERROR_OUT_OF_MEMORY, "g_strsplit_set() is failed");
 
 	int length = g_strv_length(t);
 	int i;
@@ -181,8 +178,8 @@ static int __cal_db_instance_parse_bystr(char *bystr, char **by, int *len)
 
 static void __set_time_to_ucal(int calendar_system_type, UCalendar *ucal, calendar_time_s *t)
 {
-	retm_if(NULL == ucal, "Invalid parameter: ucal is NULL");
-	retm_if(NULL == t, "Invalid parameter: calendar_time_s is NULL");
+	RET_IF(NULL == ucal);
+	RET_IF(NULL == t);
 
 	UErrorCode ec = U_ZERO_ERROR;
 
@@ -233,8 +230,8 @@ static void __set_time_to_ucal(int calendar_system_type, UCalendar *ucal, calend
 
 static int __get_exdate_list(UCalendar *ucal, cal_event_s *event, GList **l, int *count)
 {
-	retvm_if (NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER, "ucal is NULL");
-	retvm_if (NULL == event, CALENDAR_ERROR_INVALID_PARAMETER, "event is NULL");
+	RETV_IF(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	if (event->exdate == NULL || '\0' == *(event->exdate)) {
 		return CALENDAR_ERROR_NONE;
@@ -242,7 +239,7 @@ static int __get_exdate_list(UCalendar *ucal, cal_event_s *event, GList **l, int
 
 	char **t = NULL;
 	t = g_strsplit_set(event->exdate, " ,", -1);
-	retvm_if (NULL == t, CALENDAR_ERROR_OUT_OF_MEMORY, "g_strsplit_set() is failed");;
+	RETVM_IF(NULL == t, CALENDAR_ERROR_OUT_OF_MEMORY, "g_strsplit_set() is failed");;
 
 	DBG("[%s]", event->exdate);
 	int len = 0;
@@ -314,7 +311,7 @@ static int __cal_db_instance_update_exdate_mod(int original_event_id, char *recu
 
 	DBG("recurrence_id[%s]", recurrence_id);
 	t = g_strsplit_set(recurrence_id, " ,", -1);
-	retvm_if (NULL == t, CALENDAR_ERROR_OUT_OF_MEMORY, "g_strsplit_set() is failed");;
+	RETVM_IF(NULL == t, CALENDAR_ERROR_OUT_OF_MEMORY, "g_strsplit_set() is failed");;
 
 	for (i = 0; t[i]; i++)
 	{
@@ -423,16 +420,11 @@ static inline int __cal_db_instance_convert_mday(const char *str, int *mday)
 {
 	int d;
 
-	if (!str || !*str) {
-		ERR("Invalid argument: check mday[%s]", str);
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
+	RETV_IF(!str, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(*str, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	d = atoi(str);
-	if (d < 1 || d > 31) {
-		ERR("Invalid argument: check day(%d)", d);
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
+	RETVM_IF(d < 1 || d > 31, CALENDAR_ERROR_INVALID_PARAMETER, "day(%d)", d);
 
 	DBG("get mday[%s] and convert to int(%d)", str, d);
 	*mday = d;
@@ -498,15 +490,14 @@ static int __cal_db_instance_del_inundant(int event_id, calendar_time_s *st, cal
  */
 static int __convert_week_to_bits(const char *byday, int *byday_len)
 {
-	retvm_if(NULL == byday, -1, "Invalid parameter:byday is NULL");
+	RETV_IF(NULL == byday, -1);
+
 	const char *week_text[7] = {"SU", "MO", "TU", "WE", "TH", "FR", "SA"};
 	int week = 0;
 	int i;
 	int len = 0;
-	for (i = 0; i < 7; i++)
-	{
-		if (strstr(byday, week_text[i]))
-		{
+	for (i = 0; i < 7; i++) {
+		if (strstr(byday, week_text[i])) {
 			week |= (0x01 << i);
 			len++;
 		}
@@ -517,8 +508,9 @@ static int __convert_week_to_bits(const char *byday, int *byday_len)
 
 static int __cal_db_instance_get_duration(UCalendar *ucal, calendar_time_s *st, calendar_time_s *et, long long int *duration)
 {
-	retvm_if(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter:ucal is NULL");
-	retvm_if(NULL == st || NULL == et, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: st or et is NULL");
+	RETV_IF(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == st, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == et, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	long long int _duration = -1;
 	UErrorCode ec = U_ZERO_ERROR;
@@ -526,8 +518,7 @@ static int __cal_db_instance_get_duration(UCalendar *ucal, calendar_time_s *st, 
 
 	switch (st->type) {
 	case CALENDAR_TIME_UTIME:
-		if (st->time.utime > et->time.utime)
-		{
+		if (st->time.utime > et->time.utime) {
 			ERR("check time: start(%lld) > end(%lld)", st->time.utime, et->time.utime);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
@@ -543,8 +534,7 @@ static int __cal_db_instance_get_duration(UCalendar *ucal, calendar_time_s *st, 
 				st->time.date.hour, st->time.date.minute, st->time.date.second, &ec);
 
 		_duration = ucal_getFieldDifference(ucal, ud, UCAL_SECOND, &ec);
-		if (U_FAILURE(ec))
-		{
+		if (U_FAILURE(ec)) {
 			ERR("ucal_getFieldDifference failed (%s)", u_errorName(ec));
 			return ec;
 		}
@@ -566,15 +556,14 @@ static int __cal_db_instance_insert_record(UCalendar *ucal, long long int durati
 	char buf_s[256] = {0};
 	char buf_e[256] = {0};
 
-	retvm_if (NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: ucal is NULL");
+	RETV_IF(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER);
 
-	switch (event->start.type)
-	{
+	switch (event->start.type) {
 	case CALENDAR_TIME_UTIME:
 		lli_s =  ms2sec(ucal_getMillis(ucal, &ec));
 		lli_e = lli_s + duration;
 		ret = _cal_db_instance_helper_insert_utime_instance(event->index, lli_s, lli_e);
-		retvm_if (CALENDAR_ERROR_NONE != ret, ret, "_cal_db_instance_normal_insert_record() failed(%d)", ret);
+		RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "_cal_db_instance_normal_insert_record() failed(%d)", ret);
 		break;
 
 	case CALENDAR_TIME_LOCALTIME:
@@ -590,7 +579,7 @@ static int __cal_db_instance_insert_record(UCalendar *ucal, long long int durati
 		}
 		snprintf(buf_e, sizeof(buf_e), CAL_FORMAT_LOCAL_DATETIME, y, m, d, h, n, s);
 		ret = _cal_db_instance_helper_insert_localtime_instance(event->index, buf_s, buf_e);
-		retvm_if (CALENDAR_ERROR_NONE != ret, ret, "_cal_db_instance_allday_insert_record() failed(%d)", ret);
+		RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "_cal_db_instance_allday_insert_record() failed(%d)", ret);
 		break;
 	}
 	__print_ucal(event->system_type, ucal, NULL, 1);
@@ -599,12 +588,11 @@ static int __cal_db_instance_insert_record(UCalendar *ucal, long long int durati
 
 static int __convert_wday_to_int(const char *wday)
 {
-	retvm_if(NULL == wday, 0, "Invalid paramter: wday is NULL");
+	RETV_IF(NULL == wday, 0);
 
 	const char *week_text[7] = {"SU", "MO", "TU", "WE", "TH", "FR", "SA"};
 	int i;
-	for (i = 0; i < 7; i++)
-	{
+	for (i = 0; i < 7; i++) {
 		if (strstr(wday, week_text[i])) {
 			return i + 1;
 		}
@@ -614,12 +602,11 @@ static int __convert_wday_to_int(const char *wday)
 
 static int __get_until_from_range(cal_event_s *event, calendar_time_s *until)
 {
-	retvm_if(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: event is NULL");
-	retvm_if(NULL == until, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: until is NULL");
+	RETV_IF(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == until, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	long long int range = 0;
-	switch (event->range_type)
-	{
+	switch (event->range_type) {
 	case CALENDAR_RANGE_COUNT:
 		DBG("range count");
 		break;
@@ -627,19 +614,14 @@ static int __get_until_from_range(cal_event_s *event, calendar_time_s *until)
 	case CALENDAR_RANGE_UNTIL:
 		DBG("range until");
 		until->type = event->until.type;
-		switch (until->type)
-		{
+		switch (until->type) {
 		case CALENDAR_TIME_UTIME:
 			range = _cal_time_convert_itol(NULL, CAL_ENDLESS_LIMIT_YEAR,
-					CAL_ENDLESS_LIMIT_MONTH, CAL_ENDLESS_LIMIT_MDAY,
-					0, 0, 0);
-			if (event->until.time.utime > range)
-			{
+					CAL_ENDLESS_LIMIT_MONTH, CAL_ENDLESS_LIMIT_MDAY, 0, 0, 0);
+			if (event->until.time.utime > range) {
 				DBG("until time(%lld) > max, so set max(%lld)", event->until.time.utime, range);
 				until->time.utime = range;
-			}
-			else
-			{
+			} else {
 				until->time.utime = event->until.time.utime;
 			}
 			break;
@@ -659,8 +641,7 @@ static int __get_until_from_range(cal_event_s *event, calendar_time_s *until)
 	case CALENDAR_RANGE_NONE:
 		DBG("range none");
 		until->type = event->until.type;
-		switch (until->type)
-		{
+		switch (until->type) {
 		case CALENDAR_TIME_UTIME:
 			until->time.utime = _cal_time_convert_itol(event->start_tzid,
 					CAL_ENDLESS_LIMIT_YEAR,
@@ -740,7 +721,7 @@ static bool __check_to_stop_loop(long long int current_utime, long long int *las
 
 static bool __check_out_of_range(long long int current_utime, cal_event_s *event, long long int until_utime, int *count)
 {
-	retvm_if(NULL == event, true, "Invalid parameter: event is NULL");
+	RETV_IF(NULL == event, true);
 
 	// check range
 	switch (event->range_type)
@@ -790,10 +771,10 @@ static bool __check_daily_bymonth_to_skip(UCalendar *ucal, int *bymonth, int bym
 
 static int __get_dates_in_month(UCalendar *ucal, int week_bits, int bymonth, int *dates_len)
 {
-	retvm_if(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: ucal is NULL");
-
 	UErrorCode ec = U_ZERO_ERROR;
 	int len = 0;
+
+	RETV_IF(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	int i;
 	for (i = 0; i < 7; i++) {
@@ -826,10 +807,10 @@ static int __get_dates_in_month(UCalendar *ucal, int week_bits, int bymonth, int
 
 static int __cal_db_instance_publish_yearly_yday(UCalendar *ucal, cal_event_s *event, long long int duration)
 {
-	retvm_if(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: ucal is NULL");
-	retvm_if(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: event is NULL");
-	retvm_if(NULL == event->byyearday || '\0' == event->byyearday[0],
-			CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: no byyearday");
+	RETV_IF(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == event->byyearday, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF('\0' == event->byyearday[0], CALENDAR_ERROR_INVALID_PARAMETER);
 
 	UErrorCode ec = U_ZERO_ERROR;
 	calendar_time_s until = {0};
@@ -898,10 +879,9 @@ static int __cal_db_instance_publish_yearly_yday(UCalendar *ucal, cal_event_s *e
  */
 static int __cal_db_instance_publish_yearly_weekno(UCalendar *ucal, cal_event_s *event, long long int duration)
 {
-	retvm_if(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: ucal is NULL");
-	retvm_if(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: event is NULL");
-	retvm_if(NULL == event->byweekno || '\0' == event->byweekno[0],
-			CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: no byweekno");
+	RETV_IF(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == event->byweekno || '\0' == event->byweekno[0], CALENDAR_ERROR_INVALID_PARAMETER);
 
 	UErrorCode ec = U_ZERO_ERROR;
 	calendar_time_s until = {0};
@@ -967,12 +947,10 @@ static int __cal_db_instance_publish_yearly_weekno(UCalendar *ucal, cal_event_s 
 		ucal_setMillis(ucal, ms2sec(start_point), &ec); // set start point
 
 		int i;
-		for (i = 0 ; i < byweekno_len; i++)
-		{
+		for (i = 0 ; i < byweekno_len; i++) {
 			int j;
 			int week_count = 0;
-			for (j = 0; j < 7; j++)
-			{
+			for (j = 0; j < 7; j++) {
 				if (week_bits & (0x01 << j)) {
 					week_count++;
 					ucal_set(ucal, UCAL_WEEK_OF_YEAR, byweekno[i] + extra_weekno);
@@ -1006,8 +984,8 @@ static int __cal_db_instance_publish_yearly_weekno(UCalendar *ucal, cal_event_s 
 
 static int __cal_db_instance_publish_yearly_wday(UCalendar *ucal, cal_event_s *event, long long int duration)
 {
-	retvm_if(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: ucal is NULL");
-	retvm_if(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: event is NULL");
+	RETV_IF(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	UErrorCode ec = U_ZERO_ERROR;
 	calendar_time_s until = {0};
@@ -1231,8 +1209,8 @@ static int __cal_db_instance_publish_yearly_wday(UCalendar *ucal, cal_event_s *e
 
 static int __cal_db_instance_publish_yearly_mday(UCalendar *ucal, cal_event_s *event, long long int duration)
 {
-	retvm_if(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: ucal is NULL");
-	retvm_if(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: event is NULL");
+	RETV_IF(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	UErrorCode ec = U_ZERO_ERROR;
 	calendar_time_s until = {0};
@@ -1337,16 +1315,8 @@ static int __cal_db_instance_publish_yearly_mday(UCalendar *ucal, cal_event_s *e
 
 static int __cal_db_instance_publish_record_yearly(UCalendar *ucal, cal_event_s *event, long long int duration)
 {
-	if (NULL == ucal)
-	{
-		ERR("Invalid parameter: ucal is NULL");
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
-	if (NULL == event)
-	{
-		ERR("Invalid parameter: event is NULL");
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
+	RETV_IF(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	if (event->byyearday && strlen(event->byyearday) > 0) {
 		__cal_db_instance_publish_yearly_yday(ucal, event, duration);
@@ -1367,8 +1337,8 @@ static int __cal_db_instance_publish_record_yearly(UCalendar *ucal, cal_event_s 
 
 static int __cal_db_instance_publish_monthly_wday(UCalendar *ucal, cal_event_s *event, long long int duration)
 {
-	retvm_if(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: ucal is NULL");
-	retvm_if(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: event is NULL");
+	RETV_IF(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	UErrorCode ec = U_ZERO_ERROR;
 	calendar_time_s until = {0};
@@ -1576,8 +1546,8 @@ static int __cal_db_instance_publish_monthly_wday(UCalendar *ucal, cal_event_s *
 
 static int __cal_db_instance_publish_monthly_mday(UCalendar *ucal, cal_event_s *event, long long int duration)
 {
-	retvm_if(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: ucal is NULL");
-	retvm_if(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: event is NULL");
+	RETV_IF(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	UErrorCode ec = U_ZERO_ERROR;
 	calendar_time_s until = {0};
@@ -1667,8 +1637,8 @@ static int __cal_db_instance_publish_monthly_mday(UCalendar *ucal, cal_event_s *
 
 static int __cal_db_instance_publish_record_monthly(UCalendar *ucal, cal_event_s *event, long long int duration)
 {
-	retvm_if(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter:ucal is NULL");
-	retvm_if(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: event is NULL");
+	RETV_IF(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	if (event->byday && strlen(event->byday) > 0) {
 		__cal_db_instance_publish_monthly_wday(ucal, event, duration);
@@ -1681,8 +1651,8 @@ static int __cal_db_instance_publish_record_monthly(UCalendar *ucal, cal_event_s
 
 static int __cal_db_instance_publish_weekly_wday(UCalendar *ucal, cal_event_s *event, long long int duration)
 {
-	retvm_if(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: ucal is NULL");
-	retvm_if(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: event is NULL");
+	RETV_IF(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	UErrorCode ec = U_ZERO_ERROR;
 	calendar_time_s until = {0};
@@ -1764,8 +1734,8 @@ static int __cal_db_instance_publish_weekly_wday(UCalendar *ucal, cal_event_s *e
 
 static int __cal_db_instance_publish_record_weekly(UCalendar *ucal, cal_event_s *event, long long int duration)
 {
-	retvm_if(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter:ucal is NULL");
-	retvm_if(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: event is NULL");
+	RETV_IF(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	__cal_db_instance_publish_weekly_wday(ucal, event, duration);
 	return CALENDAR_ERROR_NONE;
@@ -1773,8 +1743,8 @@ static int __cal_db_instance_publish_record_weekly(UCalendar *ucal, cal_event_s 
 
 static int __cal_db_instance_publish_daily_mday(UCalendar *ucal, cal_event_s *event, long long int duration)
 {
-	retvm_if(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: ucal is NULL");
-	retvm_if(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: event is NULL");
+	RETV_IF(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	UErrorCode ec = U_ZERO_ERROR;
 	calendar_time_s until = {0};
@@ -1834,8 +1804,8 @@ static int __cal_db_instance_publish_daily_mday(UCalendar *ucal, cal_event_s *ev
 
 static int __cal_db_instance_publish_record_daily(UCalendar *ucal, cal_event_s *event, long long int duration)
 {
-	retvm_if(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter:ucal is NULL");
-	retvm_if(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: event is NULL");
+	RETV_IF(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	__cal_db_instance_publish_daily_mday(ucal, event, duration);
 	return CALENDAR_ERROR_NONE;
@@ -1843,8 +1813,8 @@ static int __cal_db_instance_publish_record_daily(UCalendar *ucal, cal_event_s *
 
 static int __cal_db_instance_publish_record_once(UCalendar *ucal, cal_event_s *event, long long int duration)
 {
-	retvm_if(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter:ucal is NULL");
-	retvm_if(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: event is NULL");
+	RETV_IF(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	calendar_time_s *st = &event->start;
 	__set_time_to_ucal(event->system_type, ucal, st);
@@ -1854,14 +1824,14 @@ static int __cal_db_instance_publish_record_once(UCalendar *ucal, cal_event_s *e
 
 static int __cal_db_instance_publish_record_details(UCalendar *ucal, cal_event_s *event)
 {
-	retvm_if(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter:ucal is NULL");
-	retvm_if(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: event is NULL");
+	RETV_IF(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	long long int duration = -1;
 	int exception_freq = 0; // for exception
 
 	__cal_db_instance_get_duration(ucal, &event->start, &event->end, &duration);
-	warn_if (duration < 0, "Invalid duration (%lld)", duration);
+	WARN_IF(duration < 0, "Invalid duration (%lld)", duration);
 
 	if (event->original_event_id > 0)
 	{
@@ -1988,7 +1958,7 @@ int _cal_db_instance_update_exdate_del(int id, char *exdate)
 
 int _cal_db_instance_publish_record(calendar_record_h record)
 {
-	retvm_if(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid argument: record is NULL");
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	cal_event_s *event = NULL;
 	event = (cal_event_s *)(record);

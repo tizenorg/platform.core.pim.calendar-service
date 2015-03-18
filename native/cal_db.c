@@ -570,11 +570,12 @@ API int calendar_db_get_changes_by_version(const char* view_uri, int calendar_bo
 	int ret = 0;
 	int is_deleted = 0;
 
-	retvm_if(NULL == current_calendar_db_version || NULL == view_uri || NULL == record_list,
-			CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == current_calendar_db_version, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == record_list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	ret = _cal_db_util_query_get_first_int_result(query_cur_version, NULL, &transaction_ver);
-	retvm_if (CALENDAR_ERROR_NONE != ret, ret, "_cal_db_util_query_get_first_int_result() failed(%d)", ret);
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "_cal_db_util_query_get_first_int_result() failed(%d)", ret);
 
 	char buf[64] = {0};
 	if (calendar_book_id > 0) {
@@ -612,7 +613,7 @@ API int calendar_db_get_changes_by_version(const char* view_uri, int calendar_bo
 	SEC_DBG("query[%s]", query);
 
 	ret = calendar_list_create(record_list);
-	retvm_if (ret != CALENDAR_ERROR_NONE, ret, "calendar_list_create() Failed");
+	RETVM_IF(ret != CALENDAR_ERROR_NONE, ret, "calendar_list_create() Failed");
 
 	stmt = _cal_db_util_query_prepare(query);
 	if (NULL == stmt)
@@ -696,7 +697,7 @@ API int calendar_db_get_current_version(int* current_version)
 	int transaction_ver = 0;
 	int ret;
 
-	retvm_if(NULL == current_version, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == current_version, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	ret = _cal_db_util_query_get_first_int_result(query, NULL, &transaction_ver);
 	if (CALENDAR_ERROR_NONE != ret)
@@ -713,14 +714,14 @@ API int calendar_db_insert_record( calendar_record_h record, int* id )
 {
 	int ret = CALENDAR_ERROR_NONE;
 
-	retvm_if(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	cal_db_plugin_cb_s* plugin_cb = __cal_db_get_plugin(((cal_record_s *)record)->type);
-	retvm_if(NULL == plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == plugin_cb->insert_record, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETV_IF(NULL == plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(NULL == plugin_cb->insert_record, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = _cal_db_util_begin_trans();
-	retvm_if(CALENDAR_ERROR_NONE != ret,CALENDAR_ERROR_DB_FAILED, "Db failed");
+	RETVM_IF(CALENDAR_ERROR_NONE != ret,CALENDAR_ERROR_DB_FAILED, "Db failed");
 
 	ret = plugin_cb->insert_record(record, id);
 
@@ -741,13 +742,13 @@ int _cal_db_get_record( const char* view_uri, int id, calendar_record_h* out_rec
 	int ret = CALENDAR_ERROR_NONE;
 	cal_record_type_e type = CAL_RECORD_TYPE_INVALID;
 
-	retvm_if(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	type = _cal_view_get_type(view_uri);
 
 	cal_db_plugin_cb_s* plugin_cb = __cal_db_get_plugin(type);
-	retvm_if(NULL == plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == plugin_cb->get_record, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETV_IF(NULL == plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(NULL == plugin_cb->get_record, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = plugin_cb->get_record(id, out_record);
 
@@ -756,8 +757,6 @@ int _cal_db_get_record( const char* view_uri, int id, calendar_record_h* out_rec
 
 API int calendar_db_get_record( const char* view_uri, int id, calendar_record_h* out_record )
 {
-
-
 	return _cal_db_get_record(view_uri, id, out_record);
 }
 
@@ -766,16 +765,16 @@ API int calendar_db_update_record( calendar_record_h record )
 	cal_record_s *temp=NULL ;
 	int ret = CALENDAR_ERROR_NONE;
 
-	retvm_if(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	temp = (cal_record_s*)(record);
 
 	cal_db_plugin_cb_s* plugin_cb = __cal_db_get_plugin(temp->type);
-	retvm_if(NULL == plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == plugin_cb->update_record, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETV_IF(NULL == plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(NULL == plugin_cb->update_record, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = _cal_db_util_begin_trans();
-	retvm_if( CALENDAR_ERROR_NONE != ret,CALENDAR_ERROR_DB_FAILED, "Db failed" );
+	RETVM_IF( CALENDAR_ERROR_NONE != ret,CALENDAR_ERROR_DB_FAILED, "Db failed" );
 
 	ret = plugin_cb->update_record(record);
 
@@ -796,16 +795,16 @@ API int calendar_db_delete_record( const char* view_uri, int id )
 	int ret = CALENDAR_ERROR_NONE;
 	cal_record_type_e type = CAL_RECORD_TYPE_INVALID;
 
-	retvm_if(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	type = _cal_view_get_type(view_uri);
 
 	cal_db_plugin_cb_s* plugin_cb = __cal_db_get_plugin(type);
-	retvm_if(NULL == plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == plugin_cb->delete_record, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETV_IF(NULL == plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(NULL == plugin_cb->delete_record, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = _cal_db_util_begin_trans();
-	retvm_if( CALENDAR_ERROR_NONE != ret,CALENDAR_ERROR_DB_FAILED, "Db failed" );
+	RETVM_IF( CALENDAR_ERROR_NONE != ret,CALENDAR_ERROR_DB_FAILED, "Db failed" );
 
 	ret = plugin_cb->delete_record(id);
 
@@ -827,13 +826,13 @@ API int calendar_db_get_all_records( const char* view_uri, int offset, int limit
 	cal_record_type_e type = CAL_RECORD_TYPE_INVALID;
 	calendar_list_h list = NULL;
 
-	retvm_if(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	type = _cal_view_get_type(view_uri);
 
 	cal_db_plugin_cb_s* plugin_cb = __cal_db_get_plugin(type);
-	retvm_if(NULL == plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == plugin_cb->get_all_records, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETV_IF(NULL == plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(NULL == plugin_cb->get_all_records, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = plugin_cb->get_all_records(offset,limit, &list);
 	if (CALENDAR_ERROR_NONE != ret)
@@ -854,14 +853,14 @@ API int calendar_db_get_records_with_query( calendar_query_h query, int offset, 
 	cal_query_s *que = NULL;
 	calendar_list_h list = NULL;
 
-	retvm_if(NULL == query, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == query, CALENDAR_ERROR_INVALID_PARAMETER);
 	que = (cal_query_s *)query;
 
 	type = _cal_view_get_type(que->view_uri);
 
 	cal_db_plugin_cb_s* plugin_cb = __cal_db_get_plugin(type);
-	retvm_if(NULL == plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == plugin_cb->get_records_with_query, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETV_IF(NULL == plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(NULL == plugin_cb->get_records_with_query, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = plugin_cb->get_records_with_query(query,offset,limit, &list);
 	if (CALENDAR_ERROR_NONE != ret)
@@ -882,7 +881,7 @@ API int calendar_db_clean_after_sync( int calendar_book_id,  int calendar_db_ver
 	cal_db_util_error_e dbret = CAL_DB_OK;
 	int len = 0;
 
-	retvm_if(calendar_book_id < 0, CALENDAR_ERROR_INVALID_PARAMETER, "calendar_id(%d) is Invalid", calendar_book_id);
+	RETVM_IF(calendar_book_id < 0, CALENDAR_ERROR_INVALID_PARAMETER, "calendar_id(%d) is Invalid", calendar_book_id);
 
 	ret = _cal_db_util_begin_trans();
 	if (CALENDAR_ERROR_NONE != ret)
@@ -913,7 +912,7 @@ API int calendar_db_clean_after_sync( int calendar_book_id,  int calendar_db_ver
 	}
 
 	dbret = _cal_db_util_query_exec(query);
-	CAL_DBG("%s",query);
+	DBG("%s",query);
 	if (dbret != CAL_DB_OK)
 	{
 		ERR("DB failed");
@@ -926,7 +925,7 @@ API int calendar_db_clean_after_sync( int calendar_book_id,  int calendar_db_ver
 			return CALENDAR_ERROR_DB_FAILED;
 		}
 	}
-	retvm_if(ret < 0, ret, "cals_query_exec() failed (%d)", ret);
+	RETVM_IF(ret < 0, ret, "cals_query_exec() failed (%d)", ret);
 
 	/* delete delete table */
 	snprintf(query, sizeof(query), "DELETE FROM %s "
@@ -935,7 +934,7 @@ API int calendar_db_clean_after_sync( int calendar_book_id,  int calendar_db_ver
 			calendar_book_id);
 
 	dbret = _cal_db_util_query_exec(query);
-	CAL_DBG("%s",query);
+	DBG("%s",query);
 	if (dbret != CAL_DB_OK)
 	{
 		ERR("DB failed");
@@ -957,13 +956,13 @@ API int calendar_db_get_count( const char* view_uri, int *out_count )
 	int ret = CALENDAR_ERROR_NONE;
 	cal_record_type_e type = CAL_RECORD_TYPE_INVALID;
 
-	retvm_if(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	type = _cal_view_get_type(view_uri);
 
 	cal_db_plugin_cb_s* plugin_cb = __cal_db_get_plugin(type);
-	retvm_if(NULL == plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == plugin_cb->get_count, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETV_IF(NULL == plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(NULL == plugin_cb->get_count, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = plugin_cb->get_count(out_count);
 	return ret;
@@ -975,14 +974,14 @@ API int calendar_db_get_count_with_query( calendar_query_h query, int *out_count
 	cal_record_type_e type = CAL_RECORD_TYPE_INVALID;
 	cal_query_s *que = NULL;
 
-	retvm_if(NULL == query, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == query, CALENDAR_ERROR_INVALID_PARAMETER);
 	que = (cal_query_s *)query;
 
 	type = _cal_view_get_type(que->view_uri);
 
 	cal_db_plugin_cb_s* plugin_cb = __cal_db_get_plugin(type);
-	retvm_if(NULL == plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == plugin_cb->get_count_with_query, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETV_IF(NULL == plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(NULL == plugin_cb->get_count_with_query, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = plugin_cb->get_count_with_query(query, out_count);
 	return ret;
@@ -995,7 +994,7 @@ API int calendar_db_insert_records(calendar_list_h list, int** ids, int* count)
 	int *_ids = NULL;
 	int _count = 0;
 
-	retvm_if(NULL == list, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETVM_IF(NULL == list, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = _cal_db_util_begin_trans();
 	if ( ret != CALENDAR_ERROR_NONE)
@@ -1079,7 +1078,7 @@ API int calendar_db_insert_records(calendar_list_h list, int** ids, int* count)
 
 API int calendar_db_insert_records_async(calendar_list_h list, calendar_db_insert_result_cb callback, void *user_data)
 {
-	retvm_if(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 #ifdef CAL_NATIVE
 	if (callback != NULL)
@@ -1088,7 +1087,7 @@ API int calendar_db_insert_records_async(calendar_list_h list, calendar_db_inser
 		calendar_list_h out_list = NULL;
 
 		ret = _cal_list_clone(list, &out_list);
-		retv_if(ret!=CALENDAR_ERROR_NONE,ret);
+		RETV_IF(ret!=CALENDAR_ERROR_NONE,ret);
 
 		__insert_records_data_s *callback_data = NULL;
 		callback_data = calloc(1,sizeof(__insert_records_data_s));
@@ -1168,7 +1167,7 @@ API int calendar_db_update_records( calendar_list_h list)
 	int count = 0;
 	int ret = CALENDAR_ERROR_NONE;
 
-	retvm_if(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	ret = _cal_db_util_begin_trans();
 	if ( ret != CALENDAR_ERROR_NONE)
@@ -1236,14 +1235,13 @@ API int calendar_db_update_records( calendar_list_h list)
 
 API int calendar_db_update_records_async( calendar_list_h list, calendar_db_result_cb callback, void *user_data)
 {
-
 #ifdef CAL_NATIVE
 	if (callback != NULL)
 	{
 		int ret = CALENDAR_ERROR_NONE;
 		calendar_list_h out_list = NULL;
 		ret = _cal_list_clone(list, &out_list);
-		retv_if(ret!=CALENDAR_ERROR_NONE,ret);
+		RETV_IF(ret!=CALENDAR_ERROR_NONE,ret);
 
 		__update_records_data_s *callback_data = NULL;
 		callback_data = calloc(1,sizeof(__update_records_data_s));
@@ -1265,7 +1263,7 @@ API int calendar_db_update_records_async( calendar_list_h list, calendar_db_resu
 	int count = 0;
 	int ret = CALENDAR_ERROR_NONE;
 
-	retvm_if(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	ret = _cal_db_util_begin_trans();
 	if (ret != CALENDAR_ERROR_NONE)
@@ -1315,9 +1313,9 @@ API int calendar_db_update_records_async( calendar_list_h list, calendar_db_resu
 
 API int calendar_db_delete_records(const char* view_uri, int record_id_array[], int count)
 {
-	retvm_if(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == record_id_array, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(count <= 0, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == record_id_array, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(count <= 0, CALENDAR_ERROR_INVALID_PARAMETER, "count(%d)", count);
 
 	int ret = CALENDAR_ERROR_NONE;
 	cal_record_type_e type = CAL_RECORD_TYPE_INVALID;
@@ -1325,11 +1323,11 @@ API int calendar_db_delete_records(const char* view_uri, int record_id_array[], 
 	type = _cal_view_get_type(view_uri);
 
 	cal_db_plugin_cb_s* plugin_cb = __cal_db_get_plugin(type);
-	retvm_if(NULL == plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == plugin_cb->delete_records, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETV_IF(NULL == plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(NULL == plugin_cb->delete_records, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = _cal_db_util_begin_trans();
-	retvm_if( CALENDAR_ERROR_NONE != ret,CALENDAR_ERROR_DB_FAILED, "Db failed" );
+	RETVM_IF( CALENDAR_ERROR_NONE != ret,CALENDAR_ERROR_DB_FAILED, "Db failed" );
 
 	ret = plugin_cb->delete_records(record_id_array,count);
 
@@ -1346,9 +1344,9 @@ API int calendar_db_delete_records(const char* view_uri, int record_id_array[], 
 
 API int calendar_db_delete_records_async(const char* view_uri, int ids[], int count, calendar_db_result_cb callback, void *user_data)
 {
-	retvm_if(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == ids, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(count <= 0, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == ids, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(count <= 0, CALENDAR_ERROR_INVALID_PARAMETER, "count(%d)", count);
 #ifdef CAL_NATIVE
 	if (callback != NULL)
 	{
@@ -1382,11 +1380,11 @@ API int calendar_db_delete_records_async(const char* view_uri, int ids[], int co
 	type = _cal_view_get_type(view_uri);
 
 	cal_db_plugin_cb_s* plugin_cb = __cal_db_get_plugin(type);
-	retvm_if(NULL == plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == plugin_cb->delete_records, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETV_IF(NULL == plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(NULL == plugin_cb->delete_records, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = _cal_db_util_begin_trans();
-	retvm_if( CALENDAR_ERROR_NONE != ret,CALENDAR_ERROR_DB_FAILED, "Db failed" );
+	RETVM_IF( CALENDAR_ERROR_NONE != ret,CALENDAR_ERROR_DB_FAILED, "Db failed" );
 
 	ret = plugin_cb->delete_records(ids,count);
 
@@ -1409,12 +1407,12 @@ API int calendar_db_insert_vcalendars(const char* vcalendar_stream, int **record
 	int i = 0;
 	int *ids = NULL;
 
-	retvm_if(NULL == vcalendar_stream, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == record_id_array, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == count, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == vcalendar_stream, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == record_id_array, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == count, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	ret = calendar_vcalendar_parse_to_calendar(vcalendar_stream, &list);
-	retvm_if(ret != CALENDAR_ERROR_NONE, ret, "parse fail");
+	RETVM_IF(ret != CALENDAR_ERROR_NONE, ret, "parse fail");
 
 	ret = calendar_list_get_count(list, &list_count);
 	if (ret != CALENDAR_ERROR_NONE)
@@ -1483,8 +1481,8 @@ API int calendar_db_insert_vcalendars(const char* vcalendar_stream, int **record
 API int calendar_db_insert_vcalendars_async(const char* vcalendar_stream, calendar_db_insert_result_cb callback, void *user_data)
 {
 	int ret = CALENDAR_ERROR_NONE;
-	retvm_if(NULL == vcalendar_stream, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == callback, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == vcalendar_stream, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == callback, CALENDAR_ERROR_INVALID_PARAMETER);
 
 #ifdef CAL_NATIVE
 
@@ -1512,12 +1510,12 @@ API int calendar_db_replace_vcalendars(const char* vcalendar_stream, int *record
 	int list_count = 0;
 	int i = 0;
 
-	retvm_if(NULL == vcalendar_stream, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == record_id_array, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(count <= 0, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == vcalendar_stream, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == record_id_array, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(count <= 0, CALENDAR_ERROR_INVALID_PARAMETER, "count(%d)", count);
 
 	ret = calendar_vcalendar_parse_to_calendar(vcalendar_stream, &list);
-	retvm_if(ret != CALENDAR_ERROR_NONE, ret, "parse fail");
+	RETVM_IF(ret != CALENDAR_ERROR_NONE, ret, "parse fail");
 
 	ret = calendar_list_get_count(list, &list_count);
 	if (ret != CALENDAR_ERROR_NONE)
@@ -1632,10 +1630,10 @@ API int calendar_db_replace_vcalendars(const char* vcalendar_stream, int *record
 API int calendar_db_replace_vcalendars_async(const char* vcalendar_stream, int *record_id_array, int count, calendar_db_result_cb callback, void *user_data)
 {
 	int ret = CALENDAR_ERROR_NONE;
-	retvm_if(NULL == vcalendar_stream, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == callback, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == record_id_array, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(count <= 0, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == vcalendar_stream, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == callback, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == record_id_array, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(count <= 0, CALENDAR_ERROR_INVALID_PARAMETER, "count(%d)", count);
 
 #ifdef CAL_NATIVE
 
@@ -1670,17 +1668,17 @@ API int calendar_db_replace_record(calendar_record_h record, int record_id)
 	cal_record_s *temp=NULL ;
 	int ret = CALENDAR_ERROR_NONE;
 
-	retvm_if(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(record_id < 0, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(record_id < 0, CALENDAR_ERROR_INVALID_PARAMETER, "record_id(%d)", record_id);
 
 	temp = (cal_record_s*)(record);
 
 	cal_db_plugin_cb_s* plugin_cb = __cal_db_get_plugin(temp->type);
-	retvm_if(NULL == plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == plugin_cb->replace_record, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETV_IF(NULL == plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(NULL == plugin_cb->replace_record, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = _cal_db_util_begin_trans();
-	retvm_if( CALENDAR_ERROR_NONE != ret,CALENDAR_ERROR_DB_FAILED, "Db failed" );
+	RETVM_IF( CALENDAR_ERROR_NONE != ret,CALENDAR_ERROR_DB_FAILED, "Db failed" );
 
 	ret = plugin_cb->replace_record(record, record_id);
 
@@ -1701,9 +1699,9 @@ API int calendar_db_replace_records(calendar_list_h list, int *ids, int count)
 	int i;
 	int ret = CALENDAR_ERROR_NONE;
 
-	retvm_if(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == ids, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(count <= 0, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == ids, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(count <= 0, CALENDAR_ERROR_INVALID_PARAMETER, "count(%d)", count);
 
 	ret = _cal_db_util_begin_trans();
 	if ( ret != CALENDAR_ERROR_NONE)
@@ -1751,17 +1749,17 @@ API int calendar_db_replace_records_async(calendar_list_h record_list, int *reco
 {
 	int ret = CALENDAR_ERROR_NONE;
 
-	retvm_if(NULL == record_list, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == callback, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(NULL == record_id_array, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
-	retvm_if(count <= 0, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == record_list, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == callback, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == record_id_array, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(count <= 0, CALENDAR_ERROR_INVALID_PARAMETER, "count(%d)", count);
 
 #ifdef CAL_NATIVE
 
 	calendar_list_h out_list = NULL;
 
 	ret = _cal_list_clone(record_list, &out_list);
-	retv_if(ret!=CALENDAR_ERROR_NONE,ret);
+	RETV_IF(ret!=CALENDAR_ERROR_NONE,ret);
 
 	__replace_records_data_s *callback_data = NULL;
 	callback_data = calloc(1,sizeof(__replace_records_data_s));
@@ -1793,7 +1791,7 @@ API int calendar_db_replace_records_async(calendar_list_h record_list, int *reco
 
 API int calendar_db_get_last_change_version(int* last_version)
 {
-	retvm_if(NULL == last_version, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == last_version, CALENDAR_ERROR_INVALID_PARAMETER);
 	*last_version = _cal_db_util_get_transaction_ver();
 	return CALENDAR_ERROR_NONE;
 }
@@ -1807,11 +1805,12 @@ API int calendar_db_get_changes_exception_by_version(const char* view_uri, int o
 	int ret = 0;
 	int is_deleted = 0;
 
-	retvm_if(NULL == view_uri || NULL == record_list || original_event_id <= 0,
-			CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	RETV_IF(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == record_list, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(original_event_id <= 0, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	ret = _cal_db_util_query_get_first_int_result(query_cur_version, NULL, &transaction_ver);
-	retvm_if (CALENDAR_ERROR_NONE != ret, ret, "_cal_db_util_query_get_first_int_result() failed");
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "_cal_db_util_query_get_first_int_result() failed");
 
 	int schedule_type = 0;
 	int record_type = 0;
@@ -1837,7 +1836,7 @@ API int calendar_db_get_changes_exception_by_version(const char* view_uri, int o
 	SEC_DBG("query[%s]", query);
 
 	ret = calendar_list_create(record_list);
-	retvm_if (ret != CALENDAR_ERROR_NONE, ret, "calendar_list_create() Failed");
+	RETVM_IF(ret != CALENDAR_ERROR_NONE, ret, "calendar_list_create() Failed");
 
 	stmt = _cal_db_util_query_prepare(query);
 	if (NULL == stmt)

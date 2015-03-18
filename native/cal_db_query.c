@@ -75,7 +75,9 @@ int _cal_db_query_create_condition(calendar_query_h query, char **condition, GSL
 	cal_query_s *que = NULL;
 	int ret = CALENDAR_ERROR_NONE;
 
-	retv_if(NULL == query || NULL == condition || NULL == bind_text, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == query, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == condition, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == bind_text, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	que = (cal_query_s *)query;
 
@@ -92,7 +94,7 @@ int _cal_db_query_create_projection(calendar_query_h query, char **projection)
 	cal_query_s *query_s = NULL;
 	cal_property_info_s *properties = NULL;
 
-	retv_if(NULL == query, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == query, CALENDAR_ERROR_INVALID_PARAMETER);
 	query_s = (cal_query_s *)query;
 
 	properties = query_s->properties;
@@ -128,7 +130,7 @@ int _cal_db_query_create_order(calendar_query_h query, char *condition, char **o
 	cal_query_s *query_s = NULL;
 	cal_property_info_s *properties = NULL;
 
-	retv_if(NULL == query, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == query, CALENDAR_ERROR_INVALID_PARAMETER);
 	query_s = (cal_query_s *)query;
 	properties = query_s->properties;
 
@@ -193,7 +195,7 @@ bool _cal_db_query_find_projection_property(calendar_query_h query, unsigned int
 	int i = 0;
 	cal_query_s *query_s = NULL;
 
-	retv_if(NULL == query, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == query, CALENDAR_ERROR_INVALID_PARAMETER);
 	query_s = (cal_query_s *)query;
 
 	if (NULL == query_s->projection || '\0' == *query_s->projection)
@@ -217,13 +219,13 @@ int _cal_db_query_create_projection_update_set(calendar_record_h record, char **
 	const char *field_name;
 	int ret = CALENDAR_ERROR_NONE;
 
-	retv_if(record == NULL, -1);
+	RETV_IF(record == NULL, -1);
 
 	_record = (cal_record_s *)record;
 
 	if (_record->properties_max_count == 0 || _record->properties_flags == NULL)
 	{
-		CAL_DBG("record don't have properties");
+		DBG("record don't have properties");
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -347,7 +349,7 @@ int _cal_db_query_create_projection_update_set(calendar_record_h record, char **
 	}
 
 	*set = strdup(out_set);
-	CAL_DBG("set=%s",*set);
+	DBG("set=%s",*set);
 
 	return CALENDAR_ERROR_NONE;
 }
@@ -365,7 +367,7 @@ int _cal_db_query_create_projection_update_set_with_property(
 	const char *field_name;
 	int ret = CALENDAR_ERROR_NONE;
 
-	retv_if(record == NULL, -1);
+	RETV_IF(record == NULL, -1);
 
 	_record = (cal_record_s *)record;
 
@@ -607,7 +609,7 @@ static int __cal_db_query_create_attribute_condition(cal_composite_filter_s *com
 	int ret;
 	char *cond = NULL;
 
-	retv_if(NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	switch (filter->filter_type)
 	{
@@ -645,7 +647,7 @@ static int __cal_db_query_create_int_condition(cal_composite_filter_s *com_filte
 
 	field_name = __cal_db_query_get_property_field_name(com_filter->properties,
 			com_filter->property_count, filter->property_id);
-	retvm_if(NULL == field_name, CALENDAR_ERROR_INVALID_PARAMETER,
+	RETVM_IF(NULL == field_name, CALENDAR_ERROR_INVALID_PARAMETER,
 			"Invalid parameter : property id(%d)", filter->property_id);
 
 	switch(filter->match)
@@ -688,7 +690,7 @@ static int __cal_db_query_create_double_condition(cal_composite_filter_s *com_fi
 
 	field_name = __cal_db_query_get_property_field_name(com_filter->properties,
 			com_filter->property_count, filter->property_id);
-	retvm_if(NULL == field_name, CALENDAR_ERROR_INVALID_PARAMETER,
+	RETVM_IF(NULL == field_name, CALENDAR_ERROR_INVALID_PARAMETER,
 			"Invalid parameter : property id(%d)", filter->property_id);
 
 	switch(filter->match)
@@ -731,7 +733,7 @@ static int __cal_db_query_create_lli_condition(cal_composite_filter_s *com_filte
 
 	field_name = __cal_db_query_get_property_field_name(com_filter->properties,
 			com_filter->property_count, filter->property_id);
-	retvm_if(NULL == field_name, CALENDAR_ERROR_INVALID_PARAMETER,
+	RETVM_IF(NULL == field_name, CALENDAR_ERROR_INVALID_PARAMETER,
 			"Invalid parameter : property id(%d)", filter->property_id);
 
 	switch(filter->match)
@@ -775,7 +777,7 @@ static int __cal_db_query_create_caltime_condition(cal_composite_filter_s *com_f
 
 	field_name = __cal_db_query_get_property_field_name(com_filter->properties,
 			com_filter->property_count, filter->property_id);
-	retvm_if(NULL == field_name, CALENDAR_ERROR_INVALID_PARAMETER,
+	RETVM_IF(NULL == field_name, CALENDAR_ERROR_INVALID_PARAMETER,
 			"Invalid parameter : property id(%d)", filter->property_id);
 
 	if (filter->value.caltime.type == CALENDAR_TIME_UTIME )
@@ -899,7 +901,7 @@ static int __cal_db_query_create_str_condition(cal_composite_filter_s *com_filte
 
 	field_name = __cal_db_query_get_property_field_name(com_filter->properties,
 			com_filter->property_count, filter->property_id);
-	retvm_if(NULL == field_name, CALENDAR_ERROR_INVALID_PARAMETER,
+	RETVM_IF(NULL == field_name, CALENDAR_ERROR_INVALID_PARAMETER,
 			"Invalid parameter : property id(%d)", filter->property_id);
 
 	switch(filter->match)

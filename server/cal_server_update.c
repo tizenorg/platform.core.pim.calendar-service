@@ -55,7 +55,7 @@ static int __cal_server_update_get_db_version(sqlite3 *db, int *version)
 
 int _cal_server_update(void)
 {
-	ENTER();
+	CAL_FN_CALL();
 
 	int ret = CALENDAR_ERROR_NONE;
 	int old_version = 0;
@@ -291,7 +291,6 @@ int _cal_server_update(void)
 	db_util_close(__db);
 	__db = NULL;
 
-	LEAVE();
 	return CALENDAR_ERROR_NONE;
 }
 
