@@ -52,7 +52,7 @@ static GSList *noti_list;
 
 static int calendar_inoti_count = 0;
 
-void _cal_inotify_call_pending_callback(void)
+void cal_inotify_call_pending_callback(void)
 {
 	noti_info *noti;
 	GSList *cursor = NULL;
@@ -96,7 +96,7 @@ static inline void _handle_callback(GSList *noti_list, int wd, uint32_t mask)
 		if (noti->wd == wd)
 		{
 #ifdef CAL_IPC_CLIENT
-			if (_cal_client_ipc_is_call_inprogress())
+			if (cal_client_ipc_is_call_inprogress())
 			{
 				noti->blocked = true;
 				continue;
@@ -207,22 +207,22 @@ static inline int _inotify_attach_handler(int fd)
 	return ret;
 }
 
-int _cal_inotify_initialize(void)
+int cal_inotify_initialize(void)
 {
 	int ret;
 
 #ifdef CAL_IPC_CLIENT
-	_cal_mutex_lock(CAL_MUTEX_INOTIFY);
+	cal_mutex_lock(CAL_MUTEX_INOTIFY);
 	calendar_inoti_count++;
 
 	if (calendar_inoti_count > 1)
 	{
 		DBG("inotify count =%d",calendar_inoti_count);
-		_cal_mutex_unlock(CAL_MUTEX_INOTIFY);
+		cal_mutex_unlock(CAL_MUTEX_INOTIFY);
 		return CALENDAR_ERROR_NONE;
 	}
 	DBG("inotify count =%d",calendar_inoti_count);
-	_cal_mutex_unlock(CAL_MUTEX_INOTIFY);
+	cal_mutex_unlock(CAL_MUTEX_INOTIFY);
 #endif
 	inoti_fd = inotify_init();
 
@@ -230,9 +230,9 @@ int _cal_inotify_initialize(void)
 	{
 		ERR("Failed to init inotify(err:%d)", errno);
 #ifdef CAL_IPC_CLIENT
-		_cal_mutex_lock(CAL_MUTEX_INOTIFY);
+		cal_mutex_lock(CAL_MUTEX_INOTIFY);
 		calendar_inoti_count = 0;
-		_cal_mutex_unlock(CAL_MUTEX_INOTIFY);
+		cal_mutex_unlock(CAL_MUTEX_INOTIFY);
 #endif
 		return -1; // CALENDAR_ERROR_FAILED_INOTIFY;
 	}
@@ -250,9 +250,9 @@ int _cal_inotify_initialize(void)
 		inoti_fd = -1;
 		inoti_handler = 0;
 #ifdef CAL_IPC_CLIENT
-		_cal_mutex_lock(CAL_MUTEX_INOTIFY);
+		cal_mutex_lock(CAL_MUTEX_INOTIFY);
 		calendar_inoti_count = 0;
-		_cal_mutex_unlock(CAL_MUTEX_INOTIFY);
+		cal_mutex_unlock(CAL_MUTEX_INOTIFY);
 #endif
 		return -1; // CALENDAR_ERROR_FAILED_INOTIFY
 	}
@@ -260,12 +260,12 @@ int _cal_inotify_initialize(void)
 	return CALENDAR_ERROR_NONE;
 }
 
-static inline int __cal_inotify_get_wd(int fd, const char *notipath)
+static inline int _cal_inotify_get_wd(int fd, const char *notipath)
 {
 	return inotify_add_watch(fd, notipath, IN_ACCESS);
 }
 
-static inline int __cal_inotify_add_watch(int fd, const char *notipath)
+static inline int _cal_inotify_add_watch(int fd, const char *notipath)
 {
 	int ret;
 
@@ -279,7 +279,7 @@ static inline int __cal_inotify_add_watch(int fd, const char *notipath)
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_inotify_subscribe(cal_noti_type_e type, const char *path, calendar_db_changed_cb callback, void *data)
+int cal_inotify_subscribe(cal_noti_type_e type, const char *path, calendar_db_changed_cb callback, void *data)
 {
 	int ret, wd;
 	noti_info *noti, *same_noti = NULL;
@@ -302,7 +302,7 @@ int _cal_inotify_subscribe(cal_noti_type_e type, const char *path, calendar_db_c
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	wd = __cal_inotify_get_wd(inoti_fd, path);
+	wd = _cal_inotify_get_wd(inoti_fd, path);
 	if (wd == -1)
 	{
 		ERR("Failed to get wd(err:%d)", errno);
@@ -336,12 +336,12 @@ int _cal_inotify_subscribe(cal_noti_type_e type, const char *path, calendar_db_c
 
 	if (same_noti)
 	{
-		__cal_inotify_add_watch(inoti_fd, path);
+		_cal_inotify_add_watch(inoti_fd, path);
 		ERR("The same callback(%s) is already exist", path);
 		return CALENDAR_ERROR_SYSTEM;
 	}
 
-	ret = __cal_inotify_add_watch(inoti_fd, path);
+	ret = _cal_inotify_add_watch(inoti_fd, path);
 	if (ret != CALENDAR_ERROR_NONE)
 	{
 		ERR("Failed to add watch");
@@ -365,7 +365,7 @@ int _cal_inotify_subscribe(cal_noti_type_e type, const char *path, calendar_db_c
 	return CALENDAR_ERROR_NONE;
 }
 
-static inline int __cal_inotify_delete_noti_with_data(GSList **noti_list, int wd,
+static inline int _cal_inotify_delete_noti_with_data(GSList **noti_list, int wd,
 		calendar_db_changed_cb callback, void *user_data)
 {
 	int del_cnt, remain_cnt;
@@ -406,7 +406,7 @@ static inline int __cal_inotify_delete_noti_with_data(GSList **noti_list, int wd
 	return remain_cnt;
 }
 
-static inline int __cal_notify_delete_noti(GSList **noti_list, int wd, calendar_db_changed_cb callback)
+static inline int _cal_notify_delete_noti(GSList **noti_list, int wd, calendar_db_changed_cb callback)
 {
 	int del_cnt, remain_cnt;
 	GSList *cursor, *result;
@@ -447,7 +447,7 @@ static inline int __cal_notify_delete_noti(GSList **noti_list, int wd, calendar_
 	return remain_cnt;
 }
 
-int _cal_inotify_unsubscribe_with_data(const char *path, calendar_db_changed_cb callback, void *user_data)
+int cal_inotify_unsubscribe_with_data(const char *path, calendar_db_changed_cb callback, void *user_data)
 {
 	int wd;
 	int ret;
@@ -469,7 +469,7 @@ int _cal_inotify_unsubscribe_with_data(const char *path, calendar_db_changed_cb 
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	wd = __cal_inotify_get_wd(inoti_fd, path);
+	wd = _cal_inotify_get_wd(inoti_fd, path);
 	if (wd == -1)
 	{
 		ERR("Failed to get wd(err:%d)", errno);
@@ -478,18 +478,18 @@ int _cal_inotify_unsubscribe_with_data(const char *path, calendar_db_changed_cb 
 		return CALENDAR_ERROR_SYSTEM;
 	}
 
-	ret = __cal_inotify_delete_noti_with_data(&noti_list, wd, callback, user_data);
+	ret = _cal_inotify_delete_noti_with_data(&noti_list, wd, callback, user_data);
 	if (ret != CALENDAR_ERROR_NONE)
 	{
 		WARN("Failed to delete noti(err:%d)", ret);
-		return __cal_inotify_add_watch(inoti_fd, path);
+		return _cal_inotify_add_watch(inoti_fd, path);
 	}
 
 	ret = inotify_rm_watch(inoti_fd, wd);
 	return (ret == 0) ? CALENDAR_ERROR_NONE : CALENDAR_ERROR_SYSTEM;
 }
 
-static inline gboolean __cal_inotify_detach_handler(guint id)
+static inline gboolean _cal_inotify_detach_handler(guint id)
 {
 	return g_source_remove(id);
 }
@@ -499,24 +499,24 @@ static void __clear_nslot_list(gpointer data, gpointer user_data)
 	free(data);
 }
 
-void _cal_inotify_finalize(void)
+void cal_inotify_finalize(void)
 {
 #ifdef CAL_IPC_CLIENT
-	_cal_mutex_lock(CAL_MUTEX_INOTIFY);
+	cal_mutex_lock(CAL_MUTEX_INOTIFY);
 	calendar_inoti_count--;
 
 	if (calendar_inoti_count > 0)
 	{
 		DBG("inotify count =%d",calendar_inoti_count);
-		_cal_mutex_unlock(CAL_MUTEX_INOTIFY);
+		cal_mutex_unlock(CAL_MUTEX_INOTIFY);
 		return ;
 	}
 	DBG("inotify count =%d",calendar_inoti_count);
-	_cal_mutex_unlock(CAL_MUTEX_INOTIFY);
+	cal_mutex_unlock(CAL_MUTEX_INOTIFY);
 #endif
 	if (inoti_handler)
 	{
-		__cal_inotify_detach_handler(inoti_handler);
+		_cal_inotify_detach_handler(inoti_handler);
 		inoti_handler = 0;
 	}
 

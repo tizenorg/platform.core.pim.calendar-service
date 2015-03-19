@@ -32,7 +32,7 @@
 
 #define CAL_SUBSCRIBE_MAX_LEN 1024
 
-static gboolean __cal_server_reminder_publish_changes_with_data(char *data, int len)
+static gboolean _cal_server_reminder_publish_changes_with_data(char *data, int len)
 {
 	pims_ipc_data_h indata = NULL;
 	if (NULL == data)
@@ -69,13 +69,13 @@ static gboolean __cal_server_reminder_publish_changes_with_data(char *data, int 
 	return true;
 }
 
-void _cal_server_reminder_publish(char *p)
+void cal_server_reminder_publish(char *p)
 {
 	RET_IF(NULL == p);
-	__cal_server_reminder_publish_changes_with_data(p, strlen(p));
+	_cal_server_reminder_publish_changes_with_data(p, strlen(p));
 }
 
-int _cal_server_reminder_add_callback_data(char **p, char *key, char *value)
+int cal_server_reminder_add_callback_data(char **p, char *key, char *value)
 {
 	int len_key = 0;
 	int len_value = 0;

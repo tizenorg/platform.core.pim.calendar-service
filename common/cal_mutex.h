@@ -29,7 +29,7 @@ enum {
 	CAL_MUTEX_ACCESS_CONTROL,
 };
 
-void _cal_mutex_lock(int type);
-void _cal_mutex_unlock(int type);
+void cal_mutex_lock(int type);
+void cal_mutex_unlock(int type);
 
 #endif  //__CALENDAR_SVC_MUTEX_H__

@@ -20,13 +20,13 @@
 #ifndef __CALENDAR_SVC_DB_RRULE_H__
 #define __CALENDAR_SVC_DB_RRULE_H__
 
-void _cal_db_rrule_set_default(calendar_record_h event);
-int _cal_db_rrule_insert_record(int id, cal_rrule_s *rrule);
-int _cal_db_rrule_update_record(int id, cal_rrule_s *rrule);
-int _cal_db_rrule_get_rrule(int id, cal_rrule_s **rrule);
-void _cal_db_rrule_get_rrule_from_event(calendar_record_h event, cal_rrule_s **rrule);
-void _cal_db_rrule_set_rrule_to_event(cal_rrule_s *rrule, calendar_record_h event);
-void _cal_db_rrule_get_rrule_from_todo(calendar_record_h todo, cal_rrule_s **rrule);
-void _cal_db_rrule_set_rrule_to_todo(cal_rrule_s *rrule, calendar_record_h todo);
+void cal_db_rrule_set_default(calendar_record_h event);
+int cal_db_rrule_insert_record(int id, cal_rrule_s *rrule);
+int cal_db_rrule_update_record(int id, cal_rrule_s *rrule);
+int cal_db_rrule_get_rrule(int id, cal_rrule_s **rrule);
+void cal_db_rrule_get_rrule_from_event(calendar_record_h event, cal_rrule_s **rrule);
+void cal_db_rrule_set_rrule_to_event(cal_rrule_s *rrule, calendar_record_h event);
+void cal_db_rrule_get_rrule_from_todo(calendar_record_h todo, cal_rrule_s **rrule);
+void cal_db_rrule_set_rrule_to_todo(cal_rrule_s *rrule, calendar_record_h todo);
 
 #endif  //__CALENDAR_SVC_DB_RRULE_H__

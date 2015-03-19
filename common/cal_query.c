@@ -26,7 +26,7 @@
 
 #include "cal_query.h"
 
-static bool __cal_query_property_check(const cal_property_info_s *properties,
+static bool _cal_query_property_check(const cal_property_info_s *properties,
 		int count, unsigned int property_id)
 {
 	int i;
@@ -52,7 +52,7 @@ API int calendar_query_create( const char* view_uri, calendar_query_h* out_query
 	RETV_IF(NULL == query, CALENDAR_ERROR_OUT_OF_MEMORY);
 
 	query->view_uri = strdup(view_uri);
-	query->properties = (cal_property_info_s *)_cal_view_get_property_info(view_uri, &query->property_count);
+	query->properties = (cal_property_info_s *)cal_view_get_property_info(view_uri, &query->property_count);
 	*out_query = (calendar_query_h)query;
 
 	return CALENDAR_ERROR_NONE;
@@ -72,7 +72,7 @@ API int calendar_query_set_projection(calendar_query_h query, unsigned int prope
 
 	for (i=0;i<count;i++)
 	{
-		find = __cal_query_property_check(que->properties, que->property_count, property_ids[i]);
+		find = _cal_query_property_check(que->properties, que->property_count, property_ids[i]);
 		RETVM_IF(false == find, CALENDAR_ERROR_INVALID_PARAMETER,
 				"Invalid parameter : property_id(%d) is not supported on view_uri(%s)", property_ids[i], que->view_uri);
 
@@ -119,7 +119,7 @@ API int calendar_query_set_filter(calendar_query_h query, calendar_filter_h filt
 		return CALENDAR_ERROR_NO_DATA;
 	}
 
-	ret = _cal_filter_clone(filter,&new_filter);
+	ret = cal_filter_clone(filter,&new_filter);
 	RETV_IF(ret!=CALENDAR_ERROR_NONE, ret);
 
 	if (que->filter)
@@ -141,7 +141,7 @@ API int calendar_query_set_sort(calendar_query_h query, unsigned int property_id
 	que = (cal_query_s *)query;
 
 
-	find = __cal_query_property_check(que->properties, que->property_count, property_id);
+	find = _cal_query_property_check(que->properties, que->property_count, property_id);
 	RETVM_IF(false == find, CALENDAR_ERROR_INVALID_PARAMETER,
 			"Invalid paramter : property_id(%d) is not supported on view_uri(%s)", property_id, que->view_uri);
 
@@ -170,7 +170,7 @@ API int calendar_query_destroy( calendar_query_h query )
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_query_clone(calendar_query_h query, calendar_query_h* out_query)
+int cal_query_clone(calendar_query_h query, calendar_query_h* out_query)
 {
 	cal_query_s *que;
 	cal_query_s *out_que;
@@ -186,7 +186,7 @@ int _cal_query_clone(calendar_query_h query, calendar_query_h* out_query)
 
 	if (que->filter)
 	{
-		_cal_filter_clone((calendar_filter_h)que->filter,(calendar_filter_h*)&out_filter);
+		cal_filter_clone((calendar_filter_h)que->filter,(calendar_filter_h*)&out_filter);
 	}
 
 	if (que->projection_count > 0)

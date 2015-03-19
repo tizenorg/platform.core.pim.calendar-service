@@ -25,15 +25,15 @@
 
 #include "cal_filter.h"
 
-static int __cal_filter_create_attribute(cal_composite_filter_s *com_filter, unsigned int property_id,
+static int _cal_filter_create_attribute(cal_composite_filter_s *com_filter, unsigned int property_id,
 		int match, int filter_type, cal_attribute_filter_s **out_filter);
 
-static int __cal_filter_destroy_composite(cal_composite_filter_s* filter);
-static int __cal_filter_destroy_attribute(cal_attribute_filter_s* filter);
+static int _cal_filter_destroy_composite(cal_composite_filter_s* filter);
+static int _cal_filter_destroy_attribute(cal_attribute_filter_s* filter);
 
-static int __cal_filter_clone_composite(cal_composite_filter_s* filter,
+static int _cal_filter_clone_composite(cal_composite_filter_s* filter,
 		cal_composite_filter_s **out_filter);
-static int __cal_filter_clone_attribute(cal_attribute_filter_s* filter,
+static int _cal_filter_clone_attribute(cal_attribute_filter_s* filter,
 		cal_attribute_filter_s **out_filter);
 
 API int calendar_filter_create(const char* view_uri, calendar_filter_h* out_filter)
@@ -47,7 +47,7 @@ API int calendar_filter_create(const char* view_uri, calendar_filter_h* out_filt
 
 	com_filter->filter_type = CAL_FILTER_COMPOSITE;
 	com_filter->view_uri = strdup(view_uri);
-	com_filter->properties = (cal_property_info_s *)_cal_view_get_property_info(view_uri, &com_filter->property_count);
+	com_filter->properties = (cal_property_info_s *)cal_view_get_property_info(view_uri, &com_filter->property_count);
 	*out_filter = (calendar_filter_h)com_filter;
 	return CALENDAR_ERROR_NONE;
 }
@@ -85,7 +85,7 @@ API int calendar_filter_add_filter(calendar_filter_h filter, calendar_filter_h a
 	RETVM_IF(0 != strcmp(com_filter->view_uri, com_filter2->view_uri), CALENDAR_ERROR_INVALID_PARAMETER,
 			"The filter view_uri is different (filter1:%s, filter2:%s)", com_filter->view_uri, com_filter2->view_uri);
 
-	ret = _cal_filter_clone(add_filter, &f);
+	ret = cal_filter_clone(add_filter, &f);
 	RETV_IF(ret != CALENDAR_ERROR_NONE, ret);
 
 	com_filter->filters = g_slist_append(com_filter->filters, f);
@@ -93,7 +93,7 @@ API int calendar_filter_add_filter(calendar_filter_h filter, calendar_filter_h a
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_filter_create_attribute(cal_composite_filter_s *com_filter, unsigned int property_id, int match, int filter_type, cal_attribute_filter_s **out_filter)
+static int _cal_filter_create_attribute(cal_composite_filter_s *com_filter, unsigned int property_id, int match, int filter_type, cal_attribute_filter_s **out_filter)
 {
 	cal_attribute_filter_s *filter;
 	//int type;
@@ -130,7 +130,7 @@ API int calendar_filter_add_str(calendar_filter_h filter, unsigned int property_
 	RETVM_IF(true == bcheck, CALENDAR_ERROR_INVALID_PARAMETER, "property_id(%d)", property_id);
 
 	com_filter = (cal_composite_filter_s*)filter;
-	ret = __cal_filter_create_attribute(com_filter, property_id, match, CAL_FILTER_STR, &str_filter);
+	ret = _cal_filter_create_attribute(com_filter, property_id, match, CAL_FILTER_STR, &str_filter);
 	RETVM_IF(CALENDAR_ERROR_NONE !=ret, ret, "property_id(%d), match(%d), match_value(%s)", property_id, match, match_value);
 
 	str_filter->value.s = SAFE_STRDUP(match_value);
@@ -154,7 +154,7 @@ API int calendar_filter_add_int(calendar_filter_h filter, unsigned int property_
 	RETVM_IF(true == bcheck, CALENDAR_ERROR_INVALID_PARAMETER, "property_id(%d)", property_id);
 
 	com_filter = (cal_composite_filter_s*)filter;
-	ret = __cal_filter_create_attribute(com_filter, property_id, match, CAL_FILTER_INT, &int_filter);
+	ret = _cal_filter_create_attribute(com_filter, property_id, match, CAL_FILTER_INT, &int_filter);
 	RETVM_IF(CALENDAR_ERROR_NONE !=ret, ret, "property_id(%d), match(%d), match_value(%d)", property_id, match, match_value);
 
 	int_filter->value.i = match_value;
@@ -179,7 +179,7 @@ API int calendar_filter_add_double(calendar_filter_h filter, unsigned int proper
 	RETVM_IF(true == bcheck, CALENDAR_ERROR_INVALID_PARAMETER, "property_id(%d)", property_id);
 
 	com_filter = (cal_composite_filter_s*)filter;
-	ret = __cal_filter_create_attribute(com_filter, property_id, match, CAL_FILTER_DOUBLE, &int_filter);
+	ret = _cal_filter_create_attribute(com_filter, property_id, match, CAL_FILTER_DOUBLE, &int_filter);
 	RETVM_IF(CALENDAR_ERROR_NONE !=ret, ret, "property_id(%d), match(%d), match_value(%d)", property_id, match, match_value);
 
 	int_filter->value.d = match_value;
@@ -204,7 +204,7 @@ API int calendar_filter_add_lli(calendar_filter_h filter, unsigned int property_
 	RETVM_IF(true == bcheck, CALENDAR_ERROR_INVALID_PARAMETER, "property_id(%d)", property_id);
 
 	com_filter = (cal_composite_filter_s*)filter;
-	ret = __cal_filter_create_attribute(com_filter, property_id, match, CAL_FILTER_LLI, &int_filter);
+	ret = _cal_filter_create_attribute(com_filter, property_id, match, CAL_FILTER_LLI, &int_filter);
 	RETVM_IF(CALENDAR_ERROR_NONE !=ret, ret, "property_id(%d), match(%d), match_value(%d)", property_id, match, match_value);
 
 	int_filter->value.lli = match_value;
@@ -229,7 +229,7 @@ API int calendar_filter_add_caltime(calendar_filter_h filter, unsigned int prope
 	RETVM_IF(true == bcheck, CALENDAR_ERROR_INVALID_PARAMETER, "property_id(%d)", property_id);
 
 	com_filter = (cal_composite_filter_s*)filter;
-	ret = __cal_filter_create_attribute(com_filter, property_id, match, CAL_FILTER_CALTIME, &int_filter);
+	ret = _cal_filter_create_attribute(com_filter, property_id, match, CAL_FILTER_CALTIME, &int_filter);
 	RETVM_IF(CALENDAR_ERROR_NONE !=ret, ret, "property_id(%d), match(%d), match_value(%d)", property_id, match, match_value);
 
 	int_filter->value.caltime = match_value;
@@ -241,18 +241,18 @@ API int calendar_filter_destroy(calendar_filter_h filter)
 {
 	RETV_IF(NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
 
-	return __cal_filter_destroy_composite((cal_composite_filter_s*)filter);
+	return _cal_filter_destroy_composite((cal_composite_filter_s*)filter);
 }
 
-int _cal_filter_clone(calendar_filter_h filter, calendar_filter_h* out_filter)
+int cal_filter_clone(calendar_filter_h filter, calendar_filter_h* out_filter)
 {
 	RETV_IF(NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == out_filter, CALENDAR_ERROR_INVALID_PARAMETER);
 
-	return __cal_filter_clone_composite((cal_composite_filter_s*)filter, (cal_composite_filter_s**)out_filter);
+	return _cal_filter_clone_composite((cal_composite_filter_s*)filter, (cal_composite_filter_s**)out_filter);
 }
 
-static int __cal_filter_destroy_composite(cal_composite_filter_s* filter)
+static int _cal_filter_destroy_composite(cal_composite_filter_s* filter)
 {
 	GSList *cursor = NULL;
 
@@ -264,11 +264,11 @@ static int __cal_filter_destroy_composite(cal_composite_filter_s* filter)
 			continue;
 		if (src->filter_type == CAL_FILTER_COMPOSITE)
 		{
-			__cal_filter_destroy_composite((cal_composite_filter_s*)src);
+			_cal_filter_destroy_composite((cal_composite_filter_s*)src);
 		}
 		else
 		{
-			__cal_filter_destroy_attribute((cal_attribute_filter_s*)src);
+			_cal_filter_destroy_attribute((cal_attribute_filter_s*)src);
 		}
 
 	}
@@ -280,7 +280,7 @@ static int __cal_filter_destroy_composite(cal_composite_filter_s* filter)
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_filter_destroy_attribute(cal_attribute_filter_s* filter)
+static int _cal_filter_destroy_attribute(cal_attribute_filter_s* filter)
 {
 	RETV_IF(NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
 
@@ -292,7 +292,7 @@ static int __cal_filter_destroy_attribute(cal_attribute_filter_s* filter)
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_filter_clone_composite(cal_composite_filter_s* filter,
+static int _cal_filter_clone_composite(cal_composite_filter_s* filter,
 		cal_composite_filter_s **out_filter)
 {
 	GSList *cursor;
@@ -314,15 +314,15 @@ static int __cal_filter_clone_composite(cal_composite_filter_s* filter,
 
 		if (src->filter_type == CAL_FILTER_COMPOSITE)
 		{
-			ret = __cal_filter_clone_composite((cal_composite_filter_s *)src,
+			ret = _cal_filter_clone_composite((cal_composite_filter_s *)src,
 					(cal_composite_filter_s **)&dest);
 		}
 		else
 		{
-			ret = __cal_filter_clone_attribute((cal_attribute_filter_s *)src,
+			ret = _cal_filter_clone_attribute((cal_attribute_filter_s *)src,
 					(cal_attribute_filter_s **)&dest);
 		}
-		if (ret == CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE == ret)
 		{
 			out->filters = g_slist_append(out->filters, dest);
 		}
@@ -339,7 +339,7 @@ static int __cal_filter_clone_composite(cal_composite_filter_s* filter,
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_filter_clone_attribute(cal_attribute_filter_s* filter,
+static int _cal_filter_clone_attribute(cal_attribute_filter_s* filter,
 		cal_attribute_filter_s **out_filter)
 {
 	cal_attribute_filter_s *out;

@@ -23,35 +23,35 @@
 #include "cal_typedef.h"
 #include "cal_mutex.h"
 
-static pthread_mutex_t __cal_property_hash_mutex = PTHREAD_MUTEX_INITIALIZER;
-static pthread_mutex_t __cal_connection_mutex = PTHREAD_MUTEX_INITIALIZER;
-static pthread_mutex_t __cal_pims_ipc_call_mutex = PTHREAD_MUTEX_INITIALIZER;
-static pthread_mutex_t __cal_inotify_mutex = PTHREAD_MUTEX_INITIALIZER;
-static pthread_mutex_t __cal_pims_ipc_pubsub_mutex = PTHREAD_MUTEX_INITIALIZER;
-static pthread_mutex_t __cal_access_control_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t _cal_property_hash_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t _cal_connection_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t _cal_pims_ipc_call_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t _cal_inotify_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t _cal_pims_ipc_pubsub_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t _cal_access_control_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-static inline pthread_mutex_t* __cal_mutex_get_mutex(int type)
+static inline pthread_mutex_t* _cal_mutex_get_mutex(int type)
 {
 	pthread_mutex_t *ret_val;
 
 	switch (type) {
 	case CAL_MUTEX_PROPERTY_HASH:
-		ret_val = &__cal_property_hash_mutex;
+		ret_val = &_cal_property_hash_mutex;
 		break;
 	case CAL_MUTEX_CONNECTION:
-		ret_val = &__cal_connection_mutex;
+		ret_val = &_cal_connection_mutex;
 		break;
 	case CAL_MUTEX_PIMS_IPC_CALL:
-		ret_val = &__cal_pims_ipc_call_mutex;
+		ret_val = &_cal_pims_ipc_call_mutex;
 		break;
 	case CAL_MUTEX_INOTIFY:
-		ret_val = &__cal_inotify_mutex;
+		ret_val = &_cal_inotify_mutex;
 		break;
 	case CAL_MUTEX_PIMS_IPC_PUBSUB:
-		ret_val = &__cal_pims_ipc_pubsub_mutex;
+		ret_val = &_cal_pims_ipc_pubsub_mutex;
 		break;
 	case CAL_MUTEX_ACCESS_CONTROL:
-		ret_val = &__cal_access_control_mutex;
+		ret_val = &_cal_access_control_mutex;
 		break;
 	default:
 		ERR("unknown type(%d)", type);
@@ -61,12 +61,12 @@ static inline pthread_mutex_t* __cal_mutex_get_mutex(int type)
 	return ret_val;
 }
 
-void _cal_mutex_lock(int type)
+void cal_mutex_lock(int type)
 {
 	int ret;
 	pthread_mutex_t *mutex;
 
-	mutex = __cal_mutex_get_mutex(type);
+	mutex = _cal_mutex_get_mutex(type);
 
 	if (mutex != NULL)
 	{
@@ -75,12 +75,12 @@ void _cal_mutex_lock(int type)
 	}
 }
 
-void _cal_mutex_unlock(int type)
+void cal_mutex_unlock(int type)
 {
 	int ret;
 	pthread_mutex_t *mutex;
 
-	mutex = __cal_mutex_get_mutex(type);
+	mutex = _cal_mutex_get_mutex(type);
 
 	if (mutex != NULL)
 	{

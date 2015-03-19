@@ -46,18 +46,18 @@ typedef struct {
 	__calendar_delete_step_e step;
 } __calendar_delete_data_s;
 
-GThread *__cal_server_calendar_delete_thread = NULL;
-GCond __cal_server_calendar_delete_cond;
-GMutex __cal_server_calendar_delete_mutex;
+GThread *_cal_server_calendar_delete_thread = NULL;
+GCond _cal_server_calendar_delete_cond;
+GMutex _cal_server_calendar_delete_mutex;
 
-static bool __cal_server_calendar_delete_step(int ret, __calendar_delete_data_s* data);
-static int __cal_server_calendar_delete_step1(__calendar_delete_data_s* data);
-static int __cal_server_calendar_delete_step2(__calendar_delete_data_s* data);
-static int __cal_server_calendar_delete_step3(__calendar_delete_data_s* data);
-static bool  __cal_server_calendar_run(__calendar_delete_data_s* data);
-static gpointer  __cal_server_calendar_main(gpointer user_data);
+static bool _cal_server_calendar_delete_step(int ret, __calendar_delete_data_s* data);
+static int _cal_server_calendar_delete_step1(__calendar_delete_data_s* data);
+static int _cal_server_calendar_delete_step2(__calendar_delete_data_s* data);
+static int _cal_server_calendar_delete_step3(__calendar_delete_data_s* data);
+static bool  _cal_server_calendar_run(__calendar_delete_data_s* data);
+static gpointer  _cal_server_calendar_main(gpointer user_data);
 
-static bool __cal_server_calendar_delete_step(int ret, __calendar_delete_data_s* data)
+static bool _cal_server_calendar_delete_step(int ret, __calendar_delete_data_s* data)
 {
 	if (ret != CALENDAR_ERROR_NONE && ret != CALENDAR_ERROR_NO_DATA)
 	{
@@ -104,7 +104,7 @@ static bool __cal_server_calendar_delete_step(int ret, __calendar_delete_data_s*
 	return true;
 }
 
-static int __cal_server_calendar_delete_step1(__calendar_delete_data_s* data)
+static int _cal_server_calendar_delete_step1(__calendar_delete_data_s* data)
 {
 	char query[CAL_DB_SQL_MIN_LEN] = {0,};
 	sqlite3_stmt *stmt = NULL;
@@ -119,13 +119,13 @@ static int __cal_server_calendar_delete_step1(__calendar_delete_data_s* data)
 				"WHERE deleted = 1",
 				CAL_TABLE_CALENDAR);
 
-		stmt = _cal_db_util_query_prepare(query);
+		stmt = cal_db_util_query_prepare(query);
 		if (NULL == stmt)
 		{
-			ERR("_cal_db_util_query_prepare() Failed");
+			ERR("cal_db_util_query_prepare() Failed");
 			return CALENDAR_ERROR_DB_FAILED;
 		}
-		while(CAL_DB_ROW == _cal_db_util_stmt_step(stmt))
+		while(CAL_DB_ROW == cal_db_util_stmt_step(stmt))
 		{
 			int id = 0;
 			id = sqlite3_column_int(stmt, 0);
@@ -154,7 +154,7 @@ static int __cal_server_calendar_delete_step1(__calendar_delete_data_s* data)
 	}
 }
 
-static int __cal_server_calendar_delete_step2(__calendar_delete_data_s* data)
+static int _cal_server_calendar_delete_step2(__calendar_delete_data_s* data)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	char query[CAL_DB_SQL_MIN_LEN] = {0};
@@ -165,10 +165,10 @@ static int __cal_server_calendar_delete_step2(__calendar_delete_data_s* data)
 
 	CAL_FN_CALL();
 
-	ret = _cal_db_util_begin_trans();
+	ret = cal_db_util_begin_trans();
 	if (CALENDAR_ERROR_NONE != ret)
 	{
-		ERR("_cal_db_util_begin_trans() failed");
+		ERR("cal_db_util_begin_trans() failed");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 
@@ -178,14 +178,14 @@ static int __cal_server_calendar_delete_step2(__calendar_delete_data_s* data)
 			CAL_TABLE_SCHEDULE,
 			data->current_calendar_id, CAL_SERVER_CALENDAR_DELETE_COUNT);
 
-	stmt = _cal_db_util_query_prepare(query);
+	stmt = cal_db_util_query_prepare(query);
 	if (NULL == stmt)
 	{
-		ERR("_cal_db_util_query_prepare() Failed");
-		_cal_db_util_end_trans(false);
+		ERR("cal_db_util_query_prepare() Failed");
+		cal_db_util_end_trans(false);
 		return CALENDAR_ERROR_DB_FAILED;
 	}
-	while(CAL_DB_ROW == _cal_db_util_stmt_step(stmt))
+	while(CAL_DB_ROW == cal_db_util_stmt_step(stmt))
 	{
 		int id = 0;
 		id = sqlite3_column_int(stmt, 0);
@@ -198,7 +198,7 @@ static int __cal_server_calendar_delete_step2(__calendar_delete_data_s* data)
 	count = g_list_length(list);
 	if ( count <= 0)
 	{
-		_cal_db_util_end_trans(false);
+		cal_db_util_end_trans(false);
 		return CALENDAR_ERROR_NO_DATA;
 	}
 
@@ -212,20 +212,20 @@ static int __cal_server_calendar_delete_step2(__calendar_delete_data_s* data)
 				CAL_TABLE_SCHEDULE,
 				id);
 
-		dbret = _cal_db_util_query_exec(query);
+		dbret = cal_db_util_query_exec(query);
 		DBG("%s",query);
 		if (CAL_DB_OK != dbret)
 		{
-			ERR("_cal_db_util_query_exec() failed (%d)", dbret);
-			_cal_db_util_end_trans(false);
+			ERR("cal_db_util_query_exec() failed (%d)", dbret);
+			cal_db_util_end_trans(false);
 			g_list_free(list);
 			switch (dbret)
 			{
 			case CAL_DB_ERROR_NO_SPACE:
-				_cal_db_util_end_trans(false);
+				cal_db_util_end_trans(false);
 				return CALENDAR_ERROR_FILE_NO_SPACE;
 			default:
-				_cal_db_util_end_trans(false);
+				cal_db_util_end_trans(false);
 				return CALENDAR_ERROR_DB_FAILED;
 			}
 		}
@@ -234,21 +234,21 @@ static int __cal_server_calendar_delete_step2(__calendar_delete_data_s* data)
 
 	g_list_free(list);
 
-	_cal_db_util_end_trans(true);
+	cal_db_util_end_trans(true);
 
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_server_calendar_delete_step3(__calendar_delete_data_s* data)
+static int _cal_server_calendar_delete_step3(__calendar_delete_data_s* data)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	char query[CAL_DB_SQL_MIN_LEN] = {0};
 	cal_db_util_error_e dbret = CAL_DB_OK;
 
-	ret = _cal_db_util_begin_trans();
+	ret = cal_db_util_begin_trans();
 	if (CALENDAR_ERROR_NONE != ret)
 	{
-		ERR("_cal_db_util_begin_trans() failed");
+		ERR("cal_db_util_begin_trans() failed");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 
@@ -260,28 +260,28 @@ static int __cal_server_calendar_delete_step3(__calendar_delete_data_s* data)
 			CAL_TABLE_CALENDAR,
 			data->current_calendar_id);
 
-	dbret = _cal_db_util_query_exec(query);
+	dbret = cal_db_util_query_exec(query);
 	if (CAL_DB_OK != dbret)
 	{
-		ERR("_cal_db_util_query_exec() failed (%d)", dbret);
-		_cal_db_util_end_trans(false);
+		ERR("cal_db_util_query_exec() failed (%d)", dbret);
+		cal_db_util_end_trans(false);
 		switch (dbret)
 		{
 		case CAL_DB_ERROR_NO_SPACE:
-			_cal_db_util_end_trans(false);
+			cal_db_util_end_trans(false);
 			return CALENDAR_ERROR_FILE_NO_SPACE;
 		default:
-			_cal_db_util_end_trans(false);
+			cal_db_util_end_trans(false);
 			return CALENDAR_ERROR_DB_FAILED;
 		}
 	}
 
-	_cal_db_util_end_trans(true);
+	cal_db_util_end_trans(true);
 
 	return CALENDAR_ERROR_NONE;
 }
 
-static bool  __cal_server_calendar_run(__calendar_delete_data_s* data)
+static bool  _cal_server_calendar_run(__calendar_delete_data_s* data)
 {
 	int ret = CALENDAR_ERROR_NONE;
 
@@ -297,13 +297,13 @@ static bool  __cal_server_calendar_run(__calendar_delete_data_s* data)
 	switch (data->step)
 	{
 	case STEP_1:
-		ret = __cal_server_calendar_delete_step1(data);
+		ret = _cal_server_calendar_delete_step1(data);
 		break;
 	case STEP_2:
-		ret = __cal_server_calendar_delete_step2(data);
+		ret = _cal_server_calendar_delete_step2(data);
 		break;
 	case STEP_3:
-		ret = __cal_server_calendar_delete_step3(data);
+		ret = _cal_server_calendar_delete_step3(data);
 		break;
 	default:
 		ERR("invalid step");
@@ -316,11 +316,11 @@ static bool  __cal_server_calendar_run(__calendar_delete_data_s* data)
 		return false;
 	}
 
-	return __cal_server_calendar_delete_step(ret, data);
+	return _cal_server_calendar_delete_step(ret, data);
 
 }
 
-static gpointer  __cal_server_calendar_main(gpointer user_data)
+static gpointer  _cal_server_calendar_main(gpointer user_data)
 {
 	__calendar_delete_data_s *callback_data = NULL;
 	int ret = CALENDAR_ERROR_NONE;
@@ -343,7 +343,7 @@ static gpointer  __cal_server_calendar_main(gpointer user_data)
 					break;
 				}
 				sleep(CAL_SERVER_CALENDAR_DELETE_STEP_TIME); // sleep 1 sec.
-				if (__cal_server_calendar_run(callback_data) == false)
+				if (_cal_server_calendar_run(callback_data) == false)
 				{
 					callback_data = NULL;
 					DBG("end");
@@ -358,28 +358,28 @@ static gpointer  __cal_server_calendar_main(gpointer user_data)
 			ERR("calloc fail");
 		}
 
-		g_mutex_lock(&__cal_server_calendar_delete_mutex);
+		g_mutex_lock(&_cal_server_calendar_delete_mutex);
 		DBG("wait");
-		g_cond_wait(&__cal_server_calendar_delete_cond, &__cal_server_calendar_delete_mutex);
-		g_mutex_unlock(&__cal_server_calendar_delete_mutex);
+		g_cond_wait(&_cal_server_calendar_delete_cond, &_cal_server_calendar_delete_mutex);
+		g_mutex_unlock(&_cal_server_calendar_delete_mutex);
 	}
 
 	return NULL;
 }
 
-void _cal_server_calendar_delete_start(void)
+void cal_server_calendar_delete_start(void)
 {
 	CAL_FN_CALL();
 
-	if (__cal_server_calendar_delete_thread == NULL)
+	if (_cal_server_calendar_delete_thread == NULL)
 	{
-		g_mutex_init(&__cal_server_calendar_delete_mutex);
-		g_cond_init(&__cal_server_calendar_delete_cond);
-		__cal_server_calendar_delete_thread = g_thread_new(CAL_SERVER_CALENDAR_DELETE_THREAD_NAME,__cal_server_calendar_main,NULL);
+		g_mutex_init(&_cal_server_calendar_delete_mutex);
+		g_cond_init(&_cal_server_calendar_delete_cond);
+		_cal_server_calendar_delete_thread = g_thread_new(CAL_SERVER_CALENDAR_DELETE_THREAD_NAME,_cal_server_calendar_main,NULL);
 	}
 
 	// don't use mutex.
-	g_cond_signal(&__cal_server_calendar_delete_cond);
+	g_cond_signal(&_cal_server_calendar_delete_cond);
 
 	return ;
 

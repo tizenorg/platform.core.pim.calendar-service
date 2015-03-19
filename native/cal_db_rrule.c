@@ -25,7 +25,7 @@
 #include "cal_view.h"
 #include "cal_time.h"
 
-void _cal_db_rrule_set_default(calendar_record_h record)
+void cal_db_rrule_set_default(calendar_record_h record)
 {
 	cal_event_s *event = NULL;
 	RET_IF(record == NULL);
@@ -43,7 +43,7 @@ void _cal_db_rrule_set_default(calendar_record_h record)
 			break;
 		}
 
-		event->byday = _cal_time_extract_by(event->system_type, event->start_tzid, event->wkst,
+		event->byday = cal_time_extract_by(event->system_type, event->start_tzid, event->wkst,
 				&event->start, CAL_DAY_OF_WEEK);
 		DBG("Not enough field in weekly, so set byda[%s]", event->byday);
 		break;
@@ -56,7 +56,7 @@ void _cal_db_rrule_set_default(calendar_record_h record)
 			break;
 		}
 
-		event->bymonthday = _cal_time_extract_by(event->system_type, event->start_tzid, event->wkst,
+		event->bymonthday = cal_time_extract_by(event->system_type, event->start_tzid, event->wkst,
 				&event->start, CAL_DATE);
 		DBG("Not enough field in monthly, so set bymonthday[%s]", event->bymonthday);
 		break;
@@ -72,9 +72,9 @@ void _cal_db_rrule_set_default(calendar_record_h record)
 			break;
 		}
 
-		event->bymonth = _cal_time_extract_by(event->system_type, event->start_tzid, event->wkst,
+		event->bymonth = cal_time_extract_by(event->system_type, event->start_tzid, event->wkst,
 				&event->start, CAL_MONTH);
-		event->bymonthday = _cal_time_extract_by(event->system_type, event->start_tzid, event->wkst,
+		event->bymonthday = cal_time_extract_by(event->system_type, event->start_tzid, event->wkst,
 				&event->start, CAL_DATE);
 		DBG("Not enough field in yearly, so set bymonth[%s] bymonthday[%s]",
 				event->bymonth, event->bymonthday);
@@ -85,7 +85,7 @@ void _cal_db_rrule_set_default(calendar_record_h record)
 	}
 }
 
-void _cal_db_rrule_get_rrule_from_event(calendar_record_h event, cal_rrule_s **rrule)
+void cal_db_rrule_get_rrule_from_event(calendar_record_h event, cal_rrule_s **rrule)
 {
 	cal_rrule_s *_rrule;
 	cal_event_s *_event;
@@ -128,7 +128,7 @@ void _cal_db_rrule_get_rrule_from_event(calendar_record_h event, cal_rrule_s **r
 	*rrule = _rrule;
 }
 
-void _cal_db_rrule_set_rrule_to_event(cal_rrule_s *rrule, calendar_record_h event)
+void cal_db_rrule_set_rrule_to_event(cal_rrule_s *rrule, calendar_record_h event)
 {
 	cal_event_s *_event;
 
@@ -154,7 +154,7 @@ void _cal_db_rrule_set_rrule_to_event(cal_rrule_s *rrule, calendar_record_h even
 	_event->wkst = rrule->wkst;
 }
 
-void _cal_db_rrule_set_rrule_to_todo(cal_rrule_s *rrule, calendar_record_h todo)
+void cal_db_rrule_set_rrule_to_todo(cal_rrule_s *rrule, calendar_record_h todo)
 {
 	cal_todo_s *_todo;
 
@@ -180,7 +180,7 @@ void _cal_db_rrule_set_rrule_to_todo(cal_rrule_s *rrule, calendar_record_h todo)
 	_todo->wkst = rrule->wkst;
 }
 
-void _cal_db_rrule_get_rrule_from_todo(calendar_record_h todo, cal_rrule_s **rrule)
+void cal_db_rrule_get_rrule_from_todo(calendar_record_h todo, cal_rrule_s **rrule)
 {
 	cal_rrule_s *_rrule;
 	cal_todo_s *_todo;
@@ -211,7 +211,7 @@ void _cal_db_rrule_get_rrule_from_todo(calendar_record_h todo, cal_rrule_s **rru
 	*rrule = _rrule;
 }
 
-int __cal_db_rrule_insert_record(int id, cal_rrule_s *rrule)
+int _cal_db_rrule_insert_record(int id, cal_rrule_s *rrule)
 {
 	int rrule_id;
 	int index;
@@ -245,10 +245,10 @@ int __cal_db_rrule_insert_record(int id, cal_rrule_s *rrule)
 			rrule->count, rrule->interval,
 			rrule->wkst);
 
-	stmt = _cal_db_util_query_prepare(query);
+	stmt = cal_db_util_query_prepare(query);
 	if (NULL == stmt) {
 		DBG("query[%s]", query);
-		ERR("_cal_db_util_query_prepare() Failed");
+		ERR("cal_db_util_query_prepare() Failed");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 
@@ -262,50 +262,50 @@ int __cal_db_rrule_insert_record(int id, cal_rrule_s *rrule)
 				rrule->until.time.date.hour,
 				rrule->until.time.date.minute,
 				rrule->until.time.date.second);
-		_cal_db_util_stmt_bind_text(stmt, index, until_datetime);
+		cal_db_util_stmt_bind_text(stmt, index, until_datetime);
 	}
 	index++;
 
 	if (rrule->bysecond)
-		_cal_db_util_stmt_bind_text(stmt, index, rrule->bysecond);
+		cal_db_util_stmt_bind_text(stmt, index, rrule->bysecond);
 	index++;
 
 	if (rrule->byminute)
-		_cal_db_util_stmt_bind_text(stmt, index, rrule->byminute);
+		cal_db_util_stmt_bind_text(stmt, index, rrule->byminute);
 	index++;
 
 	if (rrule->byhour)
-		_cal_db_util_stmt_bind_text(stmt, index, rrule->byhour);
+		cal_db_util_stmt_bind_text(stmt, index, rrule->byhour);
 	index++;
 
 	if (rrule->byday)
-		_cal_db_util_stmt_bind_text(stmt, index, rrule->byday);
+		cal_db_util_stmt_bind_text(stmt, index, rrule->byday);
 	index++;
 
 	if (rrule->bymonthday)
-		_cal_db_util_stmt_bind_text(stmt, index, rrule->bymonthday);
+		cal_db_util_stmt_bind_text(stmt, index, rrule->bymonthday);
 	index++;
 
 	if (rrule->byyearday)
-		_cal_db_util_stmt_bind_text(stmt, index, rrule->byyearday);
+		cal_db_util_stmt_bind_text(stmt, index, rrule->byyearday);
 	index++;
 
 	if (rrule->byweekno)
-		_cal_db_util_stmt_bind_text(stmt, index, rrule->byweekno);
+		cal_db_util_stmt_bind_text(stmt, index, rrule->byweekno);
 	index++;
 
 	if (rrule->bymonth)
-		_cal_db_util_stmt_bind_text(stmt, index, rrule->bymonth);
+		cal_db_util_stmt_bind_text(stmt, index, rrule->bymonth);
 	index++;
 
 	if (rrule->bysetpos)
-		_cal_db_util_stmt_bind_text(stmt, index, rrule->bysetpos);
+		cal_db_util_stmt_bind_text(stmt, index, rrule->bysetpos);
 	index++;
 
-	dbret = _cal_db_util_stmt_step(stmt);
+	dbret = cal_db_util_stmt_step(stmt);
 	sqlite3_finalize(stmt);
 	if (CAL_DB_OK != dbret) {
-		ERR("_cal_db_util_stmt_step() Failed(%d)", dbret);
+		ERR("cal_db_util_stmt_step() Failed(%d)", dbret);
 		switch (dbret) {
 		case CAL_DB_ERROR_NO_SPACE:
 			return CALENDAR_ERROR_FILE_NO_SPACE;
@@ -314,12 +314,12 @@ int __cal_db_rrule_insert_record(int id, cal_rrule_s *rrule)
 		}
 	}
 
-	rrule_id = _cal_db_util_last_insert_id();
+	rrule_id = cal_db_util_last_insert_id();
 	DBG("rrule_id(%d)", rrule_id);
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_db_rrule_get_rrule(int id, cal_rrule_s **rrule)
+int cal_db_rrule_get_rrule(int id, cal_rrule_s **rrule)
 {
 	char query[CAL_DB_SQL_MAX_LEN];
 	int index;
@@ -335,13 +335,13 @@ int _cal_db_rrule_get_rrule(int id, cal_rrule_s **rrule)
 			"FROM %s WHERE event_id = %d ",
 			CAL_TABLE_RRULE, id);
 
-	stmt = _cal_db_util_query_prepare(query);
+	stmt = cal_db_util_query_prepare(query);
 	if (NULL == stmt) {
-		ERR("_cal_db_util_query_prepare() Failed");
+		ERR("cal_db_util_query_prepare() Failed");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 
-	dbret = _cal_db_util_stmt_step(stmt);
+	dbret = cal_db_util_stmt_step(stmt);
 	if (CAL_DB_DONE == dbret) {
 		DBG("No event: id(%d)", id);
 		sqlite3_finalize(stmt);
@@ -417,7 +417,7 @@ int _cal_db_rrule_get_rrule(int id, cal_rrule_s **rrule)
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_db_rrule_delete_record(int id)
+static int _cal_db_rrule_delete_record(int id)
 {
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	cal_db_util_error_e dbret = CAL_DB_OK;
@@ -426,9 +426,9 @@ static int __cal_db_rrule_delete_record(int id)
 			"DELETE FROM %s WHERE event_id = %d ",
 			CAL_TABLE_RRULE, id);
 
-	dbret = _cal_db_util_query_exec(query);
+	dbret = cal_db_util_query_exec(query);
 	if(CAL_DB_DONE != dbret) {
-		ERR("_cal_db_util_query_exec() Failed");
+		ERR("cal_db_util_query_exec() Failed");
 		switch (dbret)
 		{
 		case CAL_DB_ERROR_NO_SPACE:
@@ -440,7 +440,7 @@ static int __cal_db_rrule_delete_record(int id)
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_db_rrule_has_record(int id, int *has_record)
+static int _cal_db_rrule_has_record(int id, int *has_record)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	int count = 0;
@@ -450,9 +450,9 @@ static int __cal_db_rrule_has_record(int id, int *has_record)
 			"SELECT count(*) FROM %s WHERE event_id = %d ",
 			CAL_TABLE_RRULE, id);
 
-	ret = _cal_db_util_query_get_first_int_result(query, NULL, &count);
+	ret = cal_db_util_query_get_first_int_result(query, NULL, &count);
 	if (CALENDAR_ERROR_NONE != ret) {
-		ERR("_cal_db_util_query_get_first_int_result() failed");
+		ERR("cal_db_util_query_get_first_int_result() failed");
 		return ret;
 	}
 
@@ -460,7 +460,7 @@ static int __cal_db_rrule_has_record(int id, int *has_record)
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_db_rrule_update_record(int id, cal_rrule_s *rrule)
+static int _cal_db_rrule_update_record(int id, cal_rrule_s *rrule)
 {
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	char until_datetime[32] = {0};
@@ -497,10 +497,10 @@ static int __cal_db_rrule_update_record(int id, cal_rrule_s *rrule)
 			rrule->wkst,
 			id);
 
-	stmt = _cal_db_util_query_prepare(query);
+	stmt = cal_db_util_query_prepare(query);
 	if (NULL == stmt) {
 		DBG("query[%s]", query);
-		ERR("_cal_db_util_query_prepare() Failed");
+		ERR("cal_db_util_query_prepare() Failed");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 
@@ -513,47 +513,47 @@ static int __cal_db_rrule_update_record(int id, cal_rrule_s *rrule)
 				rrule->until.time.date.hour,
 				rrule->until.time.date.minute,
 				rrule->until.time.date.second);
-		_cal_db_util_stmt_bind_text(stmt, index, until_datetime);
+		cal_db_util_stmt_bind_text(stmt, index, until_datetime);
 	}
 	index++;
 
 	if (rrule->bysecond)
-		_cal_db_util_stmt_bind_text(stmt, index, rrule->bysecond);
+		cal_db_util_stmt_bind_text(stmt, index, rrule->bysecond);
 	index++;
 
 	if (rrule->byminute)
-		_cal_db_util_stmt_bind_text(stmt, index, rrule->byminute);
+		cal_db_util_stmt_bind_text(stmt, index, rrule->byminute);
 	index++;
 
 	if (rrule->byhour)
-		_cal_db_util_stmt_bind_text(stmt, index, rrule->byhour);
+		cal_db_util_stmt_bind_text(stmt, index, rrule->byhour);
 	index++;
 
 	if (rrule->byday)
-		_cal_db_util_stmt_bind_text(stmt, index, rrule->byday);
+		cal_db_util_stmt_bind_text(stmt, index, rrule->byday);
 	index++;
 
 	if (rrule->bymonthday)
-		_cal_db_util_stmt_bind_text(stmt, index, rrule->bymonthday);
+		cal_db_util_stmt_bind_text(stmt, index, rrule->bymonthday);
 	index++;
 
 	if (rrule->byyearday)
-		_cal_db_util_stmt_bind_text(stmt, index, rrule->byyearday);
+		cal_db_util_stmt_bind_text(stmt, index, rrule->byyearday);
 	index++;
 
 	if (rrule->byweekno)
-		_cal_db_util_stmt_bind_text(stmt, index, rrule->byweekno);
+		cal_db_util_stmt_bind_text(stmt, index, rrule->byweekno);
 	index++;
 
 	if (rrule->bymonth)
-		_cal_db_util_stmt_bind_text(stmt, index, rrule->bymonth);
+		cal_db_util_stmt_bind_text(stmt, index, rrule->bymonth);
 	index++;
 
 	if (rrule->bysetpos)
-		_cal_db_util_stmt_bind_text(stmt, index, rrule->bysetpos);
+		cal_db_util_stmt_bind_text(stmt, index, rrule->bysetpos);
 	index++;
 
-	dbret = _cal_db_util_stmt_step(stmt);
+	dbret = cal_db_util_stmt_step(stmt);
 	sqlite3_finalize(stmt);
 	if (CAL_DB_DONE != dbret) {
 		ERR("sqlite3_step() Failed(%d)", dbret);
@@ -567,7 +567,7 @@ static int __cal_db_rrule_update_record(int id, cal_rrule_s *rrule)
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_db_rrule_insert_record(int id, cal_rrule_s *rrule)
+int cal_db_rrule_insert_record(int id, cal_rrule_s *rrule)
 {
 	RETVM_IF(rrule == NULL, CALENDAR_ERROR_INVALID_PARAMETER,
 			"Invalid argument: rrule is NULL");
@@ -575,27 +575,27 @@ int _cal_db_rrule_insert_record(int id, cal_rrule_s *rrule)
 	if (rrule->freq == CALENDAR_RECURRENCE_NONE) {
 	}
 	else {
-		__cal_db_rrule_insert_record(id, rrule);
+		_cal_db_rrule_insert_record(id, rrule);
 	}
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_db_rrule_update_record(int id, cal_rrule_s *rrule)
+int cal_db_rrule_update_record(int id, cal_rrule_s *rrule)
 {
 	int has_record = 0;
 
 	if (NULL == rrule || rrule->freq == CALENDAR_RECURRENCE_NONE) {
 		DBG("freq is NONE");
-		__cal_db_rrule_delete_record(id);
+		_cal_db_rrule_delete_record(id);
 		return CALENDAR_ERROR_NONE;
 	}
 	else {
-		__cal_db_rrule_has_record(id, &has_record);
+		_cal_db_rrule_has_record(id, &has_record);
 		if (has_record) {
-			__cal_db_rrule_update_record(id, rrule);
+			_cal_db_rrule_update_record(id, rrule);
 		}
 		else {
-			__cal_db_rrule_insert_record(id, rrule);
+			_cal_db_rrule_insert_record(id, rrule);
 		}
 	}
 	return CALENDAR_ERROR_NONE;

@@ -22,6 +22,6 @@
 
 #include "calendar_query.h"
 
-int _cal_query_clone(calendar_query_h query, calendar_query_h* out_query);
+int cal_query_clone(calendar_query_h query, calendar_query_h* out_query);
 
 #endif  //__CALENDAR_SVC_QUERY_H__

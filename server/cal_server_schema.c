@@ -104,7 +104,7 @@ static inline int __check_db_file(char* db_path)
 	return 0;
 }
 
-int _cal_server_schema_check(void)
+int cal_server_schema_check(void)
 {
 	if (__check_db_file(NULL))
 		__remake_db_file(NULL);

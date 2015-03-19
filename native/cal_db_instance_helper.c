@@ -24,7 +24,7 @@
 #include "calendar_errors.h"
 #include "cal_db_instance_helper.h"
 
-int _cal_db_instance_normal_insert_record(cal_instance_normal_s *normal, int* id)
+int cal_db_instance_normal_insert_record(cal_instance_normal_s *normal, int* id)
 {
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	RETV_IF(NULL == normal, CALENDAR_ERROR_INVALID_PARAMETER);
@@ -41,9 +41,9 @@ int _cal_db_instance_normal_insert_record(cal_instance_normal_s *normal, int* id
 			normal->start.time.utime, normal->end.time.utime);
 
 	cal_db_util_error_e dbret = CAL_DB_OK;
-	dbret = _cal_db_util_query_exec(query);
+	dbret = cal_db_util_query_exec(query);
 	if (dbret != CAL_DB_OK) {
-		ERR("_cal_db_util_query_exec() failed (%d)", dbret);
+		ERR("cal_db_util_query_exec() failed (%d)", dbret);
 		switch (dbret) {
 		case CAL_DB_ERROR_NO_SPACE:
 			return CALENDAR_ERROR_FILE_NO_SPACE;
@@ -51,12 +51,12 @@ int _cal_db_instance_normal_insert_record(cal_instance_normal_s *normal, int* id
 			return CALENDAR_ERROR_DB_FAILED;
 		}
 	}
-	if (id) *id = _cal_db_util_last_insert_id();
+	if (id) *id = cal_db_util_last_insert_id();
 
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_db_instance_allday_insert_record(cal_instance_allday_s *allday, int* id)
+int cal_db_instance_allday_insert_record(cal_instance_allday_s *allday, int* id)
 {
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	RETV_IF(NULL == allday, CALENDAR_ERROR_INVALID_PARAMETER);
@@ -76,9 +76,9 @@ int _cal_db_instance_allday_insert_record(cal_instance_allday_s *allday, int* id
 			allday->end.time.date.hour, allday->end.time.date.minute, allday->end.time.date.second);
 
 	cal_db_util_error_e dbret = CAL_DB_OK;
-	dbret = _cal_db_util_query_exec(query);
+	dbret = cal_db_util_query_exec(query);
 	if (dbret != CAL_DB_OK) {
-		ERR("_cal_db_util_query_exec() failed (%d)", dbret);
+		ERR("cal_db_util_query_exec() failed (%d)", dbret);
 		switch (dbret) {
 		case CAL_DB_ERROR_NO_SPACE:
 			return CALENDAR_ERROR_FILE_NO_SPACE;
@@ -86,21 +86,21 @@ int _cal_db_instance_allday_insert_record(cal_instance_allday_s *allday, int* id
 			return CALENDAR_ERROR_DB_FAILED;
 		}
 	}
-	if (id) *id = _cal_db_util_last_insert_id();
+	if (id) *id = cal_db_util_last_insert_id();
 
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_db_instance_helper_insert_utime_instance(int event_id, long long int s, long long int e)
+int cal_db_instance_helper_insert_utime_instance(int event_id, long long int s, long long int e)
 {
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	snprintf(query, sizeof(query), "INSERT INTO %s (event_id, dtstart_utime, dtend_utime) "
 			"VALUES ( %d, %lld, %lld) ", CAL_TABLE_NORMAL_INSTANCE, event_id, s, e);
 
 	cal_db_util_error_e dbret = CAL_DB_OK;
-	dbret = _cal_db_util_query_exec(query);
+	dbret = cal_db_util_query_exec(query);
 	if (dbret != CAL_DB_OK) {
-		ERR("_cal_db_util_query_exec() failed (%d)", dbret);
+		ERR("cal_db_util_query_exec() failed (%d)", dbret);
 		switch (dbret) {
 		case CAL_DB_ERROR_NO_SPACE:
 			return CALENDAR_ERROR_FILE_NO_SPACE;
@@ -111,16 +111,16 @@ int _cal_db_instance_helper_insert_utime_instance(int event_id, long long int s,
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_db_instance_helper_insert_localtime_instance(int event_id, const char *s, const char *e)
+int cal_db_instance_helper_insert_localtime_instance(int event_id, const char *s, const char *e)
 {
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	snprintf(query, sizeof(query), "INSERT INTO %s (event_id, dtstart_datetime, dtend_datetime) "
 			"VALUES ( %d, '%s', '%s') ", CAL_TABLE_ALLDAY_INSTANCE, event_id, s, e);
 
 	cal_db_util_error_e dbret = CAL_DB_OK;
-	dbret = _cal_db_util_query_exec(query);
+	dbret = cal_db_util_query_exec(query);
 	if (dbret != CAL_DB_OK) {
-		ERR("_cal_db_util_query_exec() failed (%d)", dbret);
+		ERR("cal_db_util_query_exec() failed (%d)", dbret);
 		switch (dbret) {
 		case CAL_DB_ERROR_NO_SPACE:
 			return CALENDAR_ERROR_FILE_NO_SPACE;

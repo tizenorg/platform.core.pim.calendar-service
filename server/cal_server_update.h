@@ -20,6 +20,6 @@
 #ifndef __CAL_SERVER_UPDATE_H__
 #define __CAL_SERVER_UPDATE_H__
 
-int _cal_server_update(void);
+int cal_server_update(void);
 
 #endif  //__CAL_SERVER_UPDATE_H__

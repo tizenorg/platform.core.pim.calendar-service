@@ -47,19 +47,19 @@ API int calendar_vcalendar_make_from_records(calendar_list_h list, char **vcalen
 	RETV_IF(list == NULL, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(vcalendar_stream == NULL, CALENDAR_ERROR_INVALID_PARAMETER);
 
-	b = _cal_vcalendar_make_new();
+	b = cal_vcalendar_make_new();
 	RETVM_IF(!b, CALENDAR_ERROR_OUT_OF_MEMORY,
-			"_cal_vcalendar_make_new() Failed");
+			"cal_vcalendar_make_new() Failed");
 
-	ret = _cal_vcalendar_make_vcalendar(b, list);
+	ret = cal_vcalendar_make_vcalendar(b, list);
 
 	if (ret < 0) {
-		_cal_vcalendar_make_free(&b);
+		cal_vcalendar_make_free(&b);
 		return ret;
 	}
 
-	ical = _cal_vcalendar_make_get_data(b);
-	_cal_vcalendar_make_free(&b);
+	ical = cal_vcalendar_make_get_data(b);
+	cal_vcalendar_make_free(&b);
 
 	if (!ical) {
 		ERR("Failed to get ical data");
@@ -147,18 +147,18 @@ API int calendar_vcalendar_parse_to_calendar(const char* vcalendar_stream, calen
 	ret = calendar_list_create(&list);
 	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "Failed to calendar_list_create()");
 
-	_cal_time_init();
+	cal_time_init();
 
 	while (NULL != (cursor = __calendar_vcalendar_get_vcalendar_object(cursor, &vcalendar_object))) {
 		if (NULL == vcalendar_object)
 			break;
 
-		err = _cal_vcalendar_parse_vcalendar_object(vcalendar_object, list, NULL);
+		err = cal_vcalendar_parse_vcalendar_object(vcalendar_object, list, NULL);
 		if (CALENDAR_ERROR_NONE != err) {
-			ERR("_cal_vcalendar_parse_vcalendar_object() failed(%d)", err);
+			ERR("cal_vcalendar_parse_vcalendar_object() failed(%d)", err);
 			calendar_list_destroy(list, true);
 			free(vcalendar_object);
-			_cal_time_fini();
+			cal_time_fini();
 			return err;
 		}
 		free(vcalendar_object);
@@ -166,12 +166,12 @@ API int calendar_vcalendar_parse_to_calendar(const char* vcalendar_stream, calen
 	calendar_list_get_count(list, &count);
 	if (count <= 0) {
 		calendar_list_destroy(list, true);
-		_cal_time_fini();
+		cal_time_fini();
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 	calendar_list_first(list);
 	*out_list = list;
-	_cal_time_fini();
+	cal_time_fini();
 	return CALENDAR_ERROR_NONE;
 }
 
@@ -234,9 +234,9 @@ API int calendar_vcalendar_parse_to_calendar_foreach(const char *vcalendar_file_
 			int err;
 			char *vcalendar_object = NULL;
 			__calendar_vcalendar_get_vcalendar_object(stream, &vcalendar_object);
-			err = _cal_vcalendar_parse_vcalendar_object(vcalendar_object, list, foreach_data);
+			err = cal_vcalendar_parse_vcalendar_object(vcalendar_object, list, foreach_data);
 			if (CALENDAR_ERROR_NONE != err || false == foreach_data->ret) {
-				ERR("_cal_vcalendar_parse_vcalendar_object() failed(%d)", err);
+				ERR("cal_vcalendar_parse_vcalendar_object() failed(%d)", err);
 				calendar_list_destroy(list, true);
 				free(vcalendar_object);
 				free(stream);

@@ -29,70 +29,70 @@
 #include "cal_internal.h"
 #include "cal_view.h"
 
-extern cal_ipc_marshal_record_plugin_cb_s _cal_ipc_record_calendar_plugin_cb;
-extern cal_ipc_marshal_record_plugin_cb_s _cal_ipc_record_event_plugin_cb;
-extern cal_ipc_marshal_record_plugin_cb_s _cal_ipc_record_todo_plugin_cb;
-extern cal_ipc_marshal_record_plugin_cb_s _cal_ipc_record_alarm_plugin_cb;
-extern cal_ipc_marshal_record_plugin_cb_s _cal_ipc_record_attendee_plugin_cb;
-extern cal_ipc_marshal_record_plugin_cb_s _cal_ipc_record_timezone_plugin_cb;
-extern cal_ipc_marshal_record_plugin_cb_s _cal_ipc_record_updated_info_plugin_cb;
-extern cal_ipc_marshal_record_plugin_cb_s _cal_ipc_record_instance_normal_plugin_cb;
-extern cal_ipc_marshal_record_plugin_cb_s _cal_ipc_record_instance_normal_extended_plugin_cb;
-extern cal_ipc_marshal_record_plugin_cb_s _cal_ipc_record_instance_allday_plugin_cb;
-extern cal_ipc_marshal_record_plugin_cb_s _cal_ipc_record_instance_allday_extended_plugin_cb;
-extern cal_ipc_marshal_record_plugin_cb_s _cal_ipc_record_search_plugin_cb;
-extern cal_ipc_marshal_record_plugin_cb_s _cal_ipc_record_extended_plugin_cb;
+extern cal_ipc_marshal_record_plugin_cb_s cal_ipc_record_calendar_plugin_cb;
+extern cal_ipc_marshal_record_plugin_cb_s cal_ipc_record_event_plugin_cb;
+extern cal_ipc_marshal_record_plugin_cb_s cal_ipc_record_todo_plugin_cb;
+extern cal_ipc_marshal_record_plugin_cb_s cal_ipc_record_alarm_plugin_cb;
+extern cal_ipc_marshal_record_plugin_cb_s cal_ipc_record_attendee_plugin_cb;
+extern cal_ipc_marshal_record_plugin_cb_s cal_ipc_record_timezone_plugin_cb;
+extern cal_ipc_marshal_record_plugin_cb_s cal_ipc_record_updated_info_plugin_cb;
+extern cal_ipc_marshal_record_plugin_cb_s cal_ipc_record_instance_normal_plugin_cb;
+extern cal_ipc_marshal_record_plugin_cb_s cal_ipc_record_instance_normal_extended_plugin_cb;
+extern cal_ipc_marshal_record_plugin_cb_s cal_ipc_record_instance_allday_plugin_cb;
+extern cal_ipc_marshal_record_plugin_cb_s cal_ipc_record_instance_allday_extended_plugin_cb;
+extern cal_ipc_marshal_record_plugin_cb_s cal_ipc_record_search_plugin_cb;
+extern cal_ipc_marshal_record_plugin_cb_s cal_ipc_record_extended_plugin_cb;
 
-static cal_ipc_marshal_record_plugin_cb_s* __cal_ipc_marshal_get_plugin_cb(cal_record_type_e type);
+static cal_ipc_marshal_record_plugin_cb_s* _cal_ipc_marshal_get_plugin_cb(cal_record_type_e type);
 
-static int __cal_ipc_unmarshal_composite_filter(const pims_ipc_data_h ipc_data, cal_composite_filter_s* filter);
-static int __cal_ipc_marshal_composite_filter(const cal_composite_filter_s* filter, pims_ipc_data_h ipc_data);
-static int __cal_ipc_unmarshal_attribute_filter(const pims_ipc_data_h ipc_data, const cal_filter_type_e filter_type, cal_attribute_filter_s* filter);
-static int __cal_ipc_marshal_attribute_filter(const cal_attribute_filter_s* filter, pims_ipc_data_h ipc_data);
+static int _cal_ipc_unmarshal_composite_filter(const pims_ipc_data_h ipc_data, cal_composite_filter_s* filter);
+static int _cal_ipc_marshal_composite_filter(const cal_composite_filter_s* filter, pims_ipc_data_h ipc_data);
+static int _cal_ipc_unmarshal_attribute_filter(const pims_ipc_data_h ipc_data, const cal_filter_type_e filter_type, cal_attribute_filter_s* filter);
+static int _cal_ipc_marshal_attribute_filter(const cal_attribute_filter_s* filter, pims_ipc_data_h ipc_data);
 
-static cal_ipc_marshal_record_plugin_cb_s* __cal_ipc_marshal_get_plugin_cb(cal_record_type_e type)
+static cal_ipc_marshal_record_plugin_cb_s* _cal_ipc_marshal_get_plugin_cb(cal_record_type_e type)
 {
 	switch (type)
 	{
 	case CAL_RECORD_TYPE_CALENDAR:
-		return (&_cal_ipc_record_calendar_plugin_cb);
+		return (&cal_ipc_record_calendar_plugin_cb);
 	case CAL_RECORD_TYPE_EVENT:
-		return (&_cal_ipc_record_event_plugin_cb);
+		return (&cal_ipc_record_event_plugin_cb);
 	case CAL_RECORD_TYPE_TODO:
-		return (&_cal_ipc_record_todo_plugin_cb);
+		return (&cal_ipc_record_todo_plugin_cb);
 	case CAL_RECORD_TYPE_ALARM:
-		return (&_cal_ipc_record_alarm_plugin_cb);
+		return (&cal_ipc_record_alarm_plugin_cb);
 	case CAL_RECORD_TYPE_ATTENDEE:
-		return (&_cal_ipc_record_attendee_plugin_cb);
+		return (&cal_ipc_record_attendee_plugin_cb);
 	case CAL_RECORD_TYPE_TIMEZONE:
-		return (&_cal_ipc_record_timezone_plugin_cb);
+		return (&cal_ipc_record_timezone_plugin_cb);
 	case CAL_RECORD_TYPE_INSTANCE_NORMAL:
-		return (&_cal_ipc_record_instance_normal_plugin_cb);
+		return (&cal_ipc_record_instance_normal_plugin_cb);
 	case CAL_RECORD_TYPE_INSTANCE_ALLDAY:
-		return (&_cal_ipc_record_instance_allday_plugin_cb);
+		return (&cal_ipc_record_instance_allday_plugin_cb);
 	case CAL_RECORD_TYPE_INSTANCE_NORMAL_EXTENDED:
-		return (&_cal_ipc_record_instance_normal_extended_plugin_cb);
+		return (&cal_ipc_record_instance_normal_extended_plugin_cb);
 	case CAL_RECORD_TYPE_INSTANCE_ALLDAY_EXTENDED:
-		return (&_cal_ipc_record_instance_allday_extended_plugin_cb);
+		return (&cal_ipc_record_instance_allday_extended_plugin_cb);
 	case CAL_RECORD_TYPE_UPDATED_INFO:
-		return (&_cal_ipc_record_updated_info_plugin_cb);
+		return (&cal_ipc_record_updated_info_plugin_cb);
 	case CAL_RECORD_TYPE_SEARCH:
-		return (&_cal_ipc_record_search_plugin_cb);
+		return (&cal_ipc_record_search_plugin_cb);
 	case CAL_RECORD_TYPE_EXTENDED:
-		return (&_cal_ipc_record_extended_plugin_cb);
+		return (&cal_ipc_record_extended_plugin_cb);
 	default:
 		return NULL;
 	}
 }
 
-static void __cal_ipc_unmarshal_composite_filter_free(cal_composite_filter_s* filter)
+static void _cal_ipc_unmarshal_composite_filter_free(cal_composite_filter_s* filter)
 {
 	if (filter->filters) {
 		GSList *cursor = NULL;
 		for(cursor=filter->filters;cursor;cursor=cursor->next) {
 			cal_filter_s *src = (cal_filter_s*)cursor->data;
 			if (src->filter_type == CAL_FILTER_COMPOSITE)
-				__cal_ipc_unmarshal_composite_filter_free((cal_composite_filter_s *)src);
+				_cal_ipc_unmarshal_composite_filter_free((cal_composite_filter_s *)src);
 			else {
 				cal_attribute_filter_s *attr = (cal_attribute_filter_s *)src;
 				if (attr->filter_type == CAL_FILTER_STR)
@@ -110,7 +110,7 @@ static void __cal_ipc_unmarshal_composite_filter_free(cal_composite_filter_s* fi
 	free(filter->view_uri);
 }
 
-static int __cal_ipc_unmarshal_composite_filter(const pims_ipc_data_h ipc_data, cal_composite_filter_s* filter)
+static int _cal_ipc_unmarshal_composite_filter(const pims_ipc_data_h ipc_data, cal_composite_filter_s* filter)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	unsigned int size = 0;
@@ -129,14 +129,14 @@ static int __cal_ipc_unmarshal_composite_filter(const pims_ipc_data_h ipc_data, 
 	filter->view_uri = strdup(str);
 
 	// filters
-	if (_cal_ipc_unmarshal_int(ipc_data,&count) != CALENDAR_ERROR_NONE) {
-		ERR("_cal_ipc_unmarshal fail");
+	if (cal_ipc_unmarshal_int(ipc_data,&count) != CALENDAR_ERROR_NONE) {
+		ERR("cal_ipc_unmarshal fail");
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
 	for(i=0;i<count;i++) {
-		if (_cal_ipc_unmarshal_int(ipc_data,(int*)&filter_type) != CALENDAR_ERROR_NONE) {
-			ERR("_cal_ipc_unmarshal fail");
+		if (cal_ipc_unmarshal_int(ipc_data,(int*)&filter_type) != CALENDAR_ERROR_NONE) {
+			ERR("cal_ipc_unmarshal fail");
 			ret = CALENDAR_ERROR_INVALID_PARAMETER;
 			goto ERROR_RETURN;
 		}
@@ -148,8 +148,8 @@ static int __cal_ipc_unmarshal_composite_filter(const pims_ipc_data_h ipc_data, 
 				ret = CALENDAR_ERROR_OUT_OF_MEMORY;
 				goto ERROR_RETURN;
 			}
-			if (__cal_ipc_unmarshal_composite_filter(ipc_data, com_filter) != CALENDAR_ERROR_NONE) {
-				ERR("_cal_ipc_unmarshal fail");
+			if (_cal_ipc_unmarshal_composite_filter(ipc_data, com_filter) != CALENDAR_ERROR_NONE) {
+				ERR("cal_ipc_unmarshal fail");
 				ret = CALENDAR_ERROR_INVALID_PARAMETER;
 				CAL_FREE(com_filter);
 				goto ERROR_RETURN;
@@ -164,8 +164,8 @@ static int __cal_ipc_unmarshal_composite_filter(const pims_ipc_data_h ipc_data, 
 				ret = CALENDAR_ERROR_OUT_OF_MEMORY;
 				goto ERROR_RETURN;
 			}
-			if (__cal_ipc_unmarshal_attribute_filter(ipc_data, filter_type, attr_filter) != CALENDAR_ERROR_NONE) {
-				ERR("_cal_ipc_unmarshal fail");
+			if (_cal_ipc_unmarshal_attribute_filter(ipc_data, filter_type, attr_filter) != CALENDAR_ERROR_NONE) {
+				ERR("cal_ipc_unmarshal fail");
 				ret =  CALENDAR_ERROR_INVALID_PARAMETER;
 				CAL_FREE(attr_filter);
 				goto ERROR_RETURN;
@@ -175,15 +175,15 @@ static int __cal_ipc_unmarshal_composite_filter(const pims_ipc_data_h ipc_data, 
 	}
 
 	// filters
-	if (_cal_ipc_unmarshal_int(ipc_data,&count) != CALENDAR_ERROR_NONE) {
-		ERR("_cal_ipc_unmarshal fail");
+	if (cal_ipc_unmarshal_int(ipc_data,&count) != CALENDAR_ERROR_NONE) {
+		ERR("cal_ipc_unmarshal fail");
 		ret =  CALENDAR_ERROR_INVALID_PARAMETER;
 		goto ERROR_RETURN;
 	}
 
 	for(i=0;i<count;i++) {
-		if (_cal_ipc_unmarshal_int(ipc_data,(int*)&op) != CALENDAR_ERROR_NONE) {
-			ERR("_cal_ipc_unmarshal fail");
+		if (cal_ipc_unmarshal_int(ipc_data,(int*)&op) != CALENDAR_ERROR_NONE) {
+			ERR("cal_ipc_unmarshal fail");
 			ret =  CALENDAR_ERROR_INVALID_PARAMETER;
 			goto ERROR_RETURN;
 		}
@@ -191,28 +191,28 @@ static int __cal_ipc_unmarshal_composite_filter(const pims_ipc_data_h ipc_data, 
 	}
 
 	// properties //property_count
-	filter->properties = (cal_property_info_s *)_cal_view_get_property_info(filter->view_uri, &filter->property_count);
+	filter->properties = (cal_property_info_s *)cal_view_get_property_info(filter->view_uri, &filter->property_count);
 
 	return CALENDAR_ERROR_NONE;
 
 ERROR_RETURN:
 
-	__cal_ipc_unmarshal_composite_filter_free(filter);
+	_cal_ipc_unmarshal_composite_filter_free(filter);
 
 	return ret;
 }
 
-static int __cal_ipc_marshal_composite_filter(const cal_composite_filter_s* filter, pims_ipc_data_h ipc_data)
+static int _cal_ipc_marshal_composite_filter(const cal_composite_filter_s* filter, pims_ipc_data_h ipc_data)
 {
-	if (_cal_ipc_marshal_int((filter->filter_type),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("_cal_ipc_marshal fail");
+	if (cal_ipc_marshal_int((filter->filter_type),ipc_data) != CALENDAR_ERROR_NONE) {
+		ERR("cal_ipc_marshal fail");
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
 	// view_uri
 	int length = strlen(filter->view_uri);
 	if (pims_ipc_data_put(ipc_data,(void*)filter->view_uri,length+1) < 0) {
-		ERR("_cal_ipc_marshal fail");
+		ERR("cal_ipc_marshal fail");
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 	// filter->filters
@@ -221,8 +221,8 @@ static int __cal_ipc_marshal_composite_filter(const cal_composite_filter_s* filt
 		GSList *cursor = filter->filters;
 		cal_filter_s* child_filter;
 
-		if (_cal_ipc_marshal_int(count,ipc_data) != CALENDAR_ERROR_NONE) {
-			ERR("_cal_ipc_marshal fail");
+		if (cal_ipc_marshal_int(count,ipc_data) != CALENDAR_ERROR_NONE) {
+			ERR("cal_ipc_marshal fail");
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 
@@ -230,14 +230,14 @@ static int __cal_ipc_marshal_composite_filter(const cal_composite_filter_s* filt
 			child_filter = (cal_filter_s*)cursor->data;
 
 			if (child_filter->filter_type == CAL_FILTER_COMPOSITE) {
-				if (__cal_ipc_marshal_composite_filter((cal_composite_filter_s*)child_filter, ipc_data) != CALENDAR_ERROR_NONE) {
-					ERR("__cal_ipc_marshal_composite_filter fail");
+				if (_cal_ipc_marshal_composite_filter((cal_composite_filter_s*)child_filter, ipc_data) != CALENDAR_ERROR_NONE) {
+					ERR("_cal_ipc_marshal_composite_filter fail");
 					return CALENDAR_ERROR_INVALID_PARAMETER;
 				}
 			}
 			else {
-				if (__cal_ipc_marshal_attribute_filter((cal_attribute_filter_s*)child_filter, ipc_data) != CALENDAR_ERROR_NONE) {
-					ERR("__cal_ipc_marshal_attribute_filter fail");
+				if (_cal_ipc_marshal_attribute_filter((cal_attribute_filter_s*)child_filter, ipc_data) != CALENDAR_ERROR_NONE) {
+					ERR("_cal_ipc_marshal_attribute_filter fail");
 					return CALENDAR_ERROR_INVALID_PARAMETER;
 				}
 			}
@@ -245,8 +245,8 @@ static int __cal_ipc_marshal_composite_filter(const cal_composite_filter_s* filt
 		}
 	}
 	else {
-		if (_cal_ipc_marshal_int(0,ipc_data) != CALENDAR_ERROR_NONE) {
-			ERR("_cal_ipc_marshal fail");
+		if (cal_ipc_marshal_int(0,ipc_data) != CALENDAR_ERROR_NONE) {
+			ERR("cal_ipc_marshal fail");
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 	}
@@ -255,16 +255,16 @@ static int __cal_ipc_marshal_composite_filter(const cal_composite_filter_s* filt
 		int count = g_slist_length(filter->filter_ops);
 		GSList *cursor = filter->filter_ops;
 
-		if (_cal_ipc_marshal_int(count,ipc_data) != CALENDAR_ERROR_NONE) {
-			ERR("_cal_ipc_marshal fail");
+		if (cal_ipc_marshal_int(count,ipc_data) != CALENDAR_ERROR_NONE) {
+			ERR("cal_ipc_marshal fail");
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 
 		while (cursor) {
 			calendar_filter_operator_e op = (calendar_filter_operator_e)cursor->data;
 
-			if (_cal_ipc_marshal_int(op,ipc_data) != CALENDAR_ERROR_NONE) {
-				ERR("_cal_ipc_marshal fail");
+			if (cal_ipc_marshal_int(op,ipc_data) != CALENDAR_ERROR_NONE) {
+				ERR("cal_ipc_marshal fail");
 				return CALENDAR_ERROR_INVALID_PARAMETER;
 			}
 
@@ -272,8 +272,8 @@ static int __cal_ipc_marshal_composite_filter(const cal_composite_filter_s* filt
 		}
 	}
 	else {
-		if (_cal_ipc_marshal_int(0,ipc_data) != CALENDAR_ERROR_NONE) {
-			ERR("_cal_ipc_marshal fail");
+		if (cal_ipc_marshal_int(0,ipc_data) != CALENDAR_ERROR_NONE) {
+			ERR("cal_ipc_marshal fail");
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 	}
@@ -283,48 +283,48 @@ static int __cal_ipc_marshal_composite_filter(const cal_composite_filter_s* filt
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_ipc_unmarshal_attribute_filter(const pims_ipc_data_h ipc_data, const cal_filter_type_e filter_type, cal_attribute_filter_s* filter)
+static int _cal_ipc_unmarshal_attribute_filter(const pims_ipc_data_h ipc_data, const cal_filter_type_e filter_type, cal_attribute_filter_s* filter)
 {
 	filter->filter_type = filter_type;
 
-	if (_cal_ipc_unmarshal_int(ipc_data,&filter->property_id) != CALENDAR_ERROR_NONE) {
-		ERR("_cal_ipc_unmarshal fail");
+	if (cal_ipc_unmarshal_int(ipc_data,&filter->property_id) != CALENDAR_ERROR_NONE) {
+		ERR("cal_ipc_unmarshal fail");
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	if (_cal_ipc_unmarshal_int(ipc_data,&filter->match) != CALENDAR_ERROR_NONE) {
-		ERR("_cal_ipc_unmarshal fail");
+	if (cal_ipc_unmarshal_int(ipc_data,&filter->match) != CALENDAR_ERROR_NONE) {
+		ERR("cal_ipc_unmarshal fail");
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
 	switch(filter->filter_type) {
 	case CAL_FILTER_STR:
-		if (_cal_ipc_unmarshal_char(ipc_data,&filter->value.s) != CALENDAR_ERROR_NONE) {
-			ERR("_cal_ipc_unmarshal fail");
+		if (cal_ipc_unmarshal_char(ipc_data,&filter->value.s) != CALENDAR_ERROR_NONE) {
+			ERR("cal_ipc_unmarshal fail");
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 		break;
 	case CAL_FILTER_INT:
-		if (_cal_ipc_unmarshal_int(ipc_data,&filter->value.i) != CALENDAR_ERROR_NONE) {
-			ERR("_cal_ipc_unmarshal fail");
+		if (cal_ipc_unmarshal_int(ipc_data,&filter->value.i) != CALENDAR_ERROR_NONE) {
+			ERR("cal_ipc_unmarshal fail");
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 		break;
 	case CAL_FILTER_DOUBLE:
-		if (_cal_ipc_unmarshal_double(ipc_data,&filter->value.d) != CALENDAR_ERROR_NONE) {
-			ERR("_cal_ipc_unmarshal fail");
+		if (cal_ipc_unmarshal_double(ipc_data,&filter->value.d) != CALENDAR_ERROR_NONE) {
+			ERR("cal_ipc_unmarshal fail");
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 		break;
 	case CAL_FILTER_LLI:
-		if (_cal_ipc_unmarshal_lli(ipc_data,&filter->value.lli) != CALENDAR_ERROR_NONE) {
-			ERR("_cal_ipc_unmarshal fail");
+		if (cal_ipc_unmarshal_lli(ipc_data,&filter->value.lli) != CALENDAR_ERROR_NONE) {
+			ERR("cal_ipc_unmarshal fail");
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 		break;
 	case CAL_FILTER_CALTIME:
-		if (_cal_ipc_unmarshal_caltime(ipc_data,&filter->value.caltime) != CALENDAR_ERROR_NONE) {
-			ERR("_cal_ipc_unmarshal fail");
+		if (cal_ipc_unmarshal_caltime(ipc_data,&filter->value.caltime) != CALENDAR_ERROR_NONE) {
+			ERR("cal_ipc_unmarshal fail");
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 		break;
@@ -334,52 +334,52 @@ static int __cal_ipc_unmarshal_attribute_filter(const pims_ipc_data_h ipc_data, 
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_ipc_marshal_attribute_filter(const cal_attribute_filter_s* filter, pims_ipc_data_h ipc_data)
+static int _cal_ipc_marshal_attribute_filter(const cal_attribute_filter_s* filter, pims_ipc_data_h ipc_data)
 {
-	if (_cal_ipc_marshal_int((filter->filter_type),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("_cal_ipc_marshal fail");
+	if (cal_ipc_marshal_int((filter->filter_type),ipc_data) != CALENDAR_ERROR_NONE) {
+		ERR("cal_ipc_marshal fail");
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	if (_cal_ipc_marshal_int((filter->property_id),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("_cal_ipc_marshal fail");
+	if (cal_ipc_marshal_int((filter->property_id),ipc_data) != CALENDAR_ERROR_NONE) {
+		ERR("cal_ipc_marshal fail");
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	if (_cal_ipc_marshal_int((filter->match),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("_cal_ipc_marshal fail");
+	if (cal_ipc_marshal_int((filter->match),ipc_data) != CALENDAR_ERROR_NONE) {
+		ERR("cal_ipc_marshal fail");
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
 	switch(filter->filter_type) {
 	case CAL_FILTER_STR:
-		if (_cal_ipc_marshal_char((filter->value.s),ipc_data) != CALENDAR_ERROR_NONE) {
-			ERR("_cal_ipc_marshal fail");
+		if (cal_ipc_marshal_char((filter->value.s),ipc_data) != CALENDAR_ERROR_NONE) {
+			ERR("cal_ipc_marshal fail");
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 		break;
 	case CAL_FILTER_INT:
-		if (_cal_ipc_marshal_int((filter->value.i),ipc_data) != CALENDAR_ERROR_NONE) {
-			ERR("_cal_ipc_marshal fail");
+		if (cal_ipc_marshal_int((filter->value.i),ipc_data) != CALENDAR_ERROR_NONE) {
+			ERR("cal_ipc_marshal fail");
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 		break;
 	case CAL_FILTER_DOUBLE:
-		if (_cal_ipc_marshal_double((filter->value.d),ipc_data) != CALENDAR_ERROR_NONE) {
-			ERR("_cal_ipc_marshal fail");
+		if (cal_ipc_marshal_double((filter->value.d),ipc_data) != CALENDAR_ERROR_NONE) {
+			ERR("cal_ipc_marshal fail");
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 		break;
 	case CAL_FILTER_LLI:
-		if (_cal_ipc_marshal_lli((filter->value.lli),ipc_data) != CALENDAR_ERROR_NONE)
+		if (cal_ipc_marshal_lli((filter->value.lli),ipc_data) != CALENDAR_ERROR_NONE)
 		{
-			ERR("_cal_ipc_marshal fail");
+			ERR("cal_ipc_marshal fail");
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 		break;
 	case CAL_FILTER_CALTIME:
-		if (_cal_ipc_marshal_caltime((filter->value.caltime),ipc_data) != CALENDAR_ERROR_NONE) {
-			ERR("_cal_ipc_marshal fail");
+		if (cal_ipc_marshal_caltime((filter->value.caltime),ipc_data) != CALENDAR_ERROR_NONE) {
+			ERR("cal_ipc_marshal fail");
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 		break;
@@ -390,7 +390,7 @@ static int __cal_ipc_marshal_attribute_filter(const cal_attribute_filter_s* filt
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_ipc_unmarshal_record(const pims_ipc_data_h ipc_data, calendar_record_h* precord)
+int cal_ipc_unmarshal_record(const pims_ipc_data_h ipc_data, calendar_record_h* precord)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	cal_record_s common = {0,};
@@ -399,12 +399,12 @@ int _cal_ipc_unmarshal_record(const pims_ipc_data_h ipc_data, calendar_record_h*
 	RETV_IF(NULL == ipc_data, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == precord, CALENDAR_ERROR_INVALID_PARAMETER);
 
-	if (_cal_ipc_unmarshal_record_common(ipc_data,&common) != CALENDAR_ERROR_NONE) {
-		ERR("_cal_ipc_unmarshal fail");
+	if (cal_ipc_unmarshal_record_common(ipc_data,&common) != CALENDAR_ERROR_NONE) {
+		ERR("cal_ipc_unmarshal fail");
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	cal_ipc_marshal_record_plugin_cb_s *plugin_cb = __cal_ipc_marshal_get_plugin_cb(common.type);
+	cal_ipc_marshal_record_plugin_cb_s *plugin_cb = _cal_ipc_marshal_get_plugin_cb(common.type);
 
 	if (NULL == plugin_cb || NULL == plugin_cb->unmarshal_record) {
 		ERR("Invalid parameter");
@@ -424,13 +424,13 @@ int _cal_ipc_unmarshal_record(const pims_ipc_data_h ipc_data, calendar_record_h*
 	if (ret != CALENDAR_ERROR_NONE) {
 		calendar_record_destroy(*precord,true);
 		*precord = NULL;
-		ERR("_cal_ipc_unmarshal fail");
+		ERR("cal_ipc_unmarshal fail");
 	}
 
 	return ret;
 }
 
-int _cal_ipc_marshal_record(const calendar_record_h record, pims_ipc_data_h ipc_data)
+int cal_ipc_marshal_record(const calendar_record_h record, pims_ipc_data_h ipc_data)
 {
 	int ret = CALENDAR_ERROR_NONE;
 
@@ -439,12 +439,12 @@ int _cal_ipc_marshal_record(const calendar_record_h record, pims_ipc_data_h ipc_
 	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == ipc_data, CALENDAR_ERROR_INVALID_PARAMETER);
 
-	if (_cal_ipc_marshal_record_common(temp,ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("_cal_ipc_marshal fail");
+	if (cal_ipc_marshal_record_common(temp,ipc_data) != CALENDAR_ERROR_NONE) {
+		ERR("cal_ipc_marshal fail");
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	cal_ipc_marshal_record_plugin_cb_s *plugin_cb = __cal_ipc_marshal_get_plugin_cb(temp->type);
+	cal_ipc_marshal_record_plugin_cb_s *plugin_cb = _cal_ipc_marshal_get_plugin_cb(temp->type);
 	RETV_IF(NULL == plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == plugin_cb->marshal_record, CALENDAR_ERROR_INVALID_PARAMETER);
 
@@ -453,7 +453,7 @@ int _cal_ipc_marshal_record(const calendar_record_h record, pims_ipc_data_h ipc_
 	return ret;
 }
 
-int _cal_ipc_marshal_record_get_primary_id(const calendar_record_h record,
+int cal_ipc_marshal_record_get_primary_id(const calendar_record_h record,
 		unsigned int *property_id, int *id)
 {
 	int ret = CALENDAR_ERROR_NONE;
@@ -464,7 +464,7 @@ int _cal_ipc_marshal_record_get_primary_id(const calendar_record_h record,
 	RETV_IF(NULL == property_id, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == id, CALENDAR_ERROR_INVALID_PARAMETER);
 
-	cal_ipc_marshal_record_plugin_cb_s *plugin_cb = __cal_ipc_marshal_get_plugin_cb(temp->type);
+	cal_ipc_marshal_record_plugin_cb_s *plugin_cb = _cal_ipc_marshal_get_plugin_cb(temp->type);
 
 	RETV_IF(NULL == plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == plugin_cb->get_primary_id, CALENDAR_ERROR_INVALID_PARAMETER);
@@ -474,7 +474,7 @@ int _cal_ipc_marshal_record_get_primary_id(const calendar_record_h record,
 	return ret;
 }
 
-int _cal_ipc_unmarshal_char(const pims_ipc_data_h ipc_data, char** ppbufchar)
+int cal_ipc_unmarshal_char(const pims_ipc_data_h ipc_data, char** ppbufchar)
 {
 	int ret = CALENDAR_ERROR_NONE;
 
@@ -508,7 +508,7 @@ int _cal_ipc_unmarshal_char(const pims_ipc_data_h ipc_data, char** ppbufchar)
 	return ret;
 }
 
-int _cal_ipc_unmarshal_int(const pims_ipc_data_h data, int *pout)
+int cal_ipc_unmarshal_int(const pims_ipc_data_h data, int *pout)
 {
 	void *tmp = NULL;
 	unsigned int size = 0;
@@ -527,7 +527,7 @@ int _cal_ipc_unmarshal_int(const pims_ipc_data_h data, int *pout)
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_ipc_unmarshal_uint(const pims_ipc_data_h data, unsigned int *pout)
+int cal_ipc_unmarshal_uint(const pims_ipc_data_h data, unsigned int *pout)
 {
 	void *tmp = NULL;
 	unsigned int size = 0;
@@ -546,7 +546,7 @@ int _cal_ipc_unmarshal_uint(const pims_ipc_data_h data, unsigned int *pout)
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_ipc_unmarshal_lli(const pims_ipc_data_h data, long long int *pout)
+int cal_ipc_unmarshal_lli(const pims_ipc_data_h data, long long int *pout)
 {
 	void *tmp = NULL;
 	unsigned int size = 0;
@@ -564,7 +564,7 @@ int _cal_ipc_unmarshal_lli(const pims_ipc_data_h data, long long int *pout)
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_ipc_unmarshal_long(const pims_ipc_data_h data, long *pout)
+int cal_ipc_unmarshal_long(const pims_ipc_data_h data, long *pout)
 {
 	void *tmp = NULL;
 	unsigned int size = 0;
@@ -582,7 +582,7 @@ int _cal_ipc_unmarshal_long(const pims_ipc_data_h data, long *pout)
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_ipc_unmarshal_double(const pims_ipc_data_h data, double *pout)
+int cal_ipc_unmarshal_double(const pims_ipc_data_h data, double *pout)
 {
 	void *tmp = NULL;
 	unsigned int size = 0;
@@ -600,7 +600,7 @@ int _cal_ipc_unmarshal_double(const pims_ipc_data_h data, double *pout)
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_ipc_unmarshal_caltime(const pims_ipc_data_h data, calendar_time_s *pout)
+int cal_ipc_unmarshal_caltime(const pims_ipc_data_h data, calendar_time_s *pout)
 {
 	void *tmp = NULL;
 	unsigned int size = 0;
@@ -618,27 +618,27 @@ int _cal_ipc_unmarshal_caltime(const pims_ipc_data_h data, calendar_time_s *pout
 	}
 
 	if (pout->type == CALENDAR_TIME_UTIME) {
-		return _cal_ipc_unmarshal_lli(data, &(pout->time.utime));
+		return cal_ipc_unmarshal_lli(data, &(pout->time.utime));
 	}
 	else {
-		ret = _cal_ipc_unmarshal_int(data, &(pout->time.date.year));
+		ret = cal_ipc_unmarshal_int(data, &(pout->time.date.year));
 		RETV_IF(ret!=CALENDAR_ERROR_NONE,ret);
-		ret = _cal_ipc_unmarshal_int(data, &(pout->time.date.month));
+		ret = cal_ipc_unmarshal_int(data, &(pout->time.date.month));
 		RETV_IF(ret!=CALENDAR_ERROR_NONE,ret);
-		ret = _cal_ipc_unmarshal_int(data, &(pout->time.date.mday));
+		ret = cal_ipc_unmarshal_int(data, &(pout->time.date.mday));
 		RETV_IF(ret!=CALENDAR_ERROR_NONE,ret);
-		ret = _cal_ipc_unmarshal_int(data, &(pout->time.date.hour));
+		ret = cal_ipc_unmarshal_int(data, &(pout->time.date.hour));
 		RETV_IF(ret!=CALENDAR_ERROR_NONE,ret);
-		ret = _cal_ipc_unmarshal_int(data, &(pout->time.date.minute));
+		ret = cal_ipc_unmarshal_int(data, &(pout->time.date.minute));
 		RETV_IF(ret!=CALENDAR_ERROR_NONE,ret);
-		ret = _cal_ipc_unmarshal_int(data, &(pout->time.date.second));
+		ret = cal_ipc_unmarshal_int(data, &(pout->time.date.second));
 		RETV_IF(ret!=CALENDAR_ERROR_NONE,ret);
 	}
 
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_ipc_unmarshal_record_common(const pims_ipc_data_h ipc_data, cal_record_s* common)
+int cal_ipc_unmarshal_record_common(const pims_ipc_data_h ipc_data, cal_record_s* common)
 {
 	void *tmp = NULL;
 	unsigned int size = 0;
@@ -654,10 +654,10 @@ int _cal_ipc_unmarshal_record_common(const pims_ipc_data_h ipc_data, cal_record_
 		common->type = *(cal_record_type_e*)tmp;
 	}
 
-	common->plugin_cb = _cal_record_get_plugin_cb(common->type);
+	common->plugin_cb = cal_record_get_plugin_cb(common->type);
 
 	str = (char*)pims_ipc_data_get(ipc_data,&size);
-	common->view_uri = _cal_view_get_uri(str);
+	common->view_uri = cal_view_get_uri(str);
 
 	tmp = pims_ipc_data_get(ipc_data,&size);
 
@@ -680,7 +680,7 @@ int _cal_ipc_unmarshal_record_common(const pims_ipc_data_h ipc_data, cal_record_
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_ipc_marshal_char(const char* bufchar, pims_ipc_data_h ipc_data)
+int cal_ipc_marshal_char(const char* bufchar, pims_ipc_data_h ipc_data)
 {
 	int ret = CALENDAR_ERROR_NONE;
 
@@ -707,7 +707,7 @@ int _cal_ipc_marshal_char(const char* bufchar, pims_ipc_data_h ipc_data)
 	return ret;
 }
 
-int _cal_ipc_marshal_int(const int in, pims_ipc_data_h ipc_data)
+int cal_ipc_marshal_int(const int in, pims_ipc_data_h ipc_data)
 {
 	RETV_IF(ipc_data==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
 
@@ -717,7 +717,7 @@ int _cal_ipc_marshal_int(const int in, pims_ipc_data_h ipc_data)
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_ipc_marshal_uint(const unsigned int in, pims_ipc_data_h ipc_data)
+int cal_ipc_marshal_uint(const unsigned int in, pims_ipc_data_h ipc_data)
 {
 	RETV_IF(ipc_data==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
 
@@ -727,7 +727,7 @@ int _cal_ipc_marshal_uint(const unsigned int in, pims_ipc_data_h ipc_data)
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_ipc_marshal_lli(const long long int in, pims_ipc_data_h ipc_data)
+int cal_ipc_marshal_lli(const long long int in, pims_ipc_data_h ipc_data)
 {
 	RETV_IF(ipc_data==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
 
@@ -737,7 +737,7 @@ int _cal_ipc_marshal_lli(const long long int in, pims_ipc_data_h ipc_data)
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_ipc_marshal_long(const long in, pims_ipc_data_h ipc_data)
+int cal_ipc_marshal_long(const long in, pims_ipc_data_h ipc_data)
 {
 	RETV_IF(ipc_data==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
 
@@ -747,7 +747,7 @@ int _cal_ipc_marshal_long(const long in, pims_ipc_data_h ipc_data)
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_ipc_marshal_double(const double in, pims_ipc_data_h ipc_data)
+int cal_ipc_marshal_double(const double in, pims_ipc_data_h ipc_data)
 {
 	RETV_IF(ipc_data==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
 
@@ -757,7 +757,7 @@ int _cal_ipc_marshal_double(const double in, pims_ipc_data_h ipc_data)
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_ipc_marshal_caltime(const calendar_time_s in, pims_ipc_data_h ipc_data)
+int cal_ipc_marshal_caltime(const calendar_time_s in, pims_ipc_data_h ipc_data)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	RETV_IF(ipc_data==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
@@ -767,27 +767,27 @@ int _cal_ipc_marshal_caltime(const calendar_time_s in, pims_ipc_data_h ipc_data)
 	}
 
 	if ( in.type == CALENDAR_TIME_UTIME) {
-		return _cal_ipc_marshal_lli(in.time.utime,ipc_data);
+		return cal_ipc_marshal_lli(in.time.utime,ipc_data);
 	}
 	else {
-		ret = _cal_ipc_marshal_int(in.time.date.year,ipc_data);
+		ret = cal_ipc_marshal_int(in.time.date.year,ipc_data);
 		RETV_IF(ret!=CALENDAR_ERROR_NONE,ret);
-		ret = _cal_ipc_marshal_int(in.time.date.month,ipc_data);
+		ret = cal_ipc_marshal_int(in.time.date.month,ipc_data);
 		RETV_IF(ret!=CALENDAR_ERROR_NONE,ret);
-		ret = _cal_ipc_marshal_int(in.time.date.mday,ipc_data);
+		ret = cal_ipc_marshal_int(in.time.date.mday,ipc_data);
 		RETV_IF(ret!=CALENDAR_ERROR_NONE,ret);
-		ret = _cal_ipc_marshal_int(in.time.date.hour,ipc_data);
+		ret = cal_ipc_marshal_int(in.time.date.hour,ipc_data);
 		RETV_IF(ret!=CALENDAR_ERROR_NONE,ret);
-		ret = _cal_ipc_marshal_int(in.time.date.minute,ipc_data);
+		ret = cal_ipc_marshal_int(in.time.date.minute,ipc_data);
 		RETV_IF(ret!=CALENDAR_ERROR_NONE,ret);
-		ret = _cal_ipc_marshal_int(in.time.date.second,ipc_data);
+		ret = cal_ipc_marshal_int(in.time.date.second,ipc_data);
 		RETV_IF(ret!=CALENDAR_ERROR_NONE,ret);
 	}
 
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_ipc_marshal_record_common(const cal_record_s* common, pims_ipc_data_h ipc_data)
+int cal_ipc_marshal_record_common(const cal_record_s* common, pims_ipc_data_h ipc_data)
 {
 
 	RETV_IF(NULL == common, CALENDAR_ERROR_INVALID_PARAMETER);
@@ -799,31 +799,31 @@ int _cal_ipc_marshal_record_common(const cal_record_s* common, pims_ipc_data_h i
 	int length = strlen(common->view_uri);
 
 	if (pims_ipc_data_put(ipc_data,(void*)common->view_uri,length+1) < 0) {
-		ERR("_cal_ipc_marshal fail");
+		ERR("cal_ipc_marshal fail");
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
 	if (pims_ipc_data_put(ipc_data,(void*)&common->properties_max_count,sizeof(int)) < 0) {
-		ERR("_cal_ipc_marshal fail");
+		ERR("cal_ipc_marshal fail");
 		return CALENDAR_ERROR_NO_DATA;
 	}
 
 	if (common->properties_max_count > 0) {
 		if(pims_ipc_data_put(ipc_data,(void*)common->properties_flags,sizeof(char)*common->properties_max_count) < 0) {
-			ERR("_cal_ipc_marshal fail");
+			ERR("cal_ipc_marshal fail");
 			return CALENDAR_ERROR_NO_DATA;
 		}
 	}
 
 	if (pims_ipc_data_put(ipc_data,(void*)&common->property_flag,sizeof(char)) < 0) {
-		ERR("_cal_ipc_marshal fail");
+		ERR("cal_ipc_marshal fail");
 		return CALENDAR_ERROR_NO_DATA;
 	}
 
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_ipc_unmarshal_query(const pims_ipc_data_h ipc_data, calendar_query_h *query)
+int cal_ipc_unmarshal_query(const pims_ipc_data_h ipc_data, calendar_query_h *query)
 {
 	cal_query_s *que = NULL;
 	unsigned int size = 0;
@@ -845,8 +845,8 @@ int _cal_ipc_unmarshal_query(const pims_ipc_data_h ipc_data, calendar_query_h *q
 
 	que = (cal_query_s *) *query;
 
-	if (_cal_ipc_unmarshal_int(ipc_data,&count) != CALENDAR_ERROR_NONE) {
-		ERR("_cal_ipc_unmarshal fail");
+	if (cal_ipc_unmarshal_int(ipc_data,&count) != CALENDAR_ERROR_NONE) {
+		ERR("cal_ipc_unmarshal fail");
 		ret = CALENDAR_ERROR_INVALID_PARAMETER;
 		goto ERROR_RETURN;
 	}
@@ -864,21 +864,21 @@ int _cal_ipc_unmarshal_query(const pims_ipc_data_h ipc_data, calendar_query_h *q
 		que->filter = (cal_composite_filter_s*)filter;
 
 		// for filter_type
-		if (_cal_ipc_unmarshal_int(ipc_data,&count) != CALENDAR_ERROR_NONE) {
-			ERR("_cal_ipc_unmarshal fail");
+		if (cal_ipc_unmarshal_int(ipc_data,&count) != CALENDAR_ERROR_NONE) {
+			ERR("cal_ipc_unmarshal fail");
 			ret = CALENDAR_ERROR_INVALID_PARAMETER;
 			goto ERROR_RETURN;
 		}
 
-		if (__cal_ipc_unmarshal_composite_filter(ipc_data,que->filter) != CALENDAR_ERROR_NONE) {
-			ERR("_cal_ipc_unmarshal fail");
+		if (_cal_ipc_unmarshal_composite_filter(ipc_data,que->filter) != CALENDAR_ERROR_NONE) {
+			ERR("cal_ipc_unmarshal fail");
 			ret = CALENDAR_ERROR_INVALID_PARAMETER;
 			goto ERROR_RETURN;
 		}
 	}
 
-	if (_cal_ipc_unmarshal_int(ipc_data,&(que->projection_count)) != CALENDAR_ERROR_NONE) {
-		ERR("_cal_ipc_unmarshal fail");
+	if (cal_ipc_unmarshal_int(ipc_data,&(que->projection_count)) != CALENDAR_ERROR_NONE) {
+		ERR("cal_ipc_unmarshal fail");
 		ret = CALENDAR_ERROR_INVALID_PARAMETER;
 		goto ERROR_RETURN;
 	}
@@ -892,8 +892,8 @@ int _cal_ipc_unmarshal_query(const pims_ipc_data_h ipc_data, calendar_query_h *q
 		}
 
 		for(i=0;i<que->projection_count;i++) {
-			if (_cal_ipc_unmarshal_uint(ipc_data,&(que->projection[i])) != CALENDAR_ERROR_NONE) {
-				ERR("_cal_ipc_unmarshal fail");
+			if (cal_ipc_unmarshal_uint(ipc_data,&(que->projection[i])) != CALENDAR_ERROR_NONE) {
+				ERR("cal_ipc_unmarshal fail");
 				ret = CALENDAR_ERROR_INVALID_PARAMETER;
 				goto ERROR_RETURN;
 			}
@@ -903,22 +903,22 @@ int _cal_ipc_unmarshal_query(const pims_ipc_data_h ipc_data, calendar_query_h *q
 		que->projection = NULL;
 	}
 
-	if (_cal_ipc_unmarshal_int(ipc_data,&(que->sort_property_id)) != CALENDAR_ERROR_NONE) {
-		ERR("_cal_ipc_unmarshal fail");
+	if (cal_ipc_unmarshal_int(ipc_data,&(que->sort_property_id)) != CALENDAR_ERROR_NONE) {
+		ERR("cal_ipc_unmarshal fail");
 		ret = CALENDAR_ERROR_INVALID_PARAMETER;
 		goto ERROR_RETURN;
 	}
 
-	if (_cal_ipc_unmarshal_int(ipc_data,(int*)&(que->asc)) != CALENDAR_ERROR_NONE) {
-		ERR("_cal_ipc_unmarshal fail");
+	if (cal_ipc_unmarshal_int(ipc_data,(int*)&(que->asc)) != CALENDAR_ERROR_NONE) {
+		ERR("cal_ipc_unmarshal fail");
 		ret = CALENDAR_ERROR_INVALID_PARAMETER;
 		goto ERROR_RETURN;
 	}
 
-	que->properties = (cal_property_info_s *)_cal_view_get_property_info(que->view_uri, &que->property_count);
+	que->properties = (cal_property_info_s *)cal_view_get_property_info(que->view_uri, &que->property_count);
 
-	if (_cal_ipc_unmarshal_int(ipc_data,(int*)&(que->distinct)) != CALENDAR_ERROR_NONE) {
-		ERR("_cal_ipc_unmarshal fail");
+	if (cal_ipc_unmarshal_int(ipc_data,(int*)&(que->distinct)) != CALENDAR_ERROR_NONE) {
+		ERR("cal_ipc_unmarshal fail");
 		ret = CALENDAR_ERROR_INVALID_PARAMETER;
 		goto ERROR_RETURN;
 	}
@@ -933,7 +933,7 @@ ERROR_RETURN:
 	return ret;
 }
 
-int _cal_ipc_marshal_query(const calendar_query_h query, pims_ipc_data_h ipc_data)
+int cal_ipc_marshal_query(const calendar_query_h query, pims_ipc_data_h ipc_data)
 {
 	cal_query_s *que = NULL;
 	int i = 0;
@@ -946,52 +946,52 @@ int _cal_ipc_marshal_query(const calendar_query_h query, pims_ipc_data_h ipc_dat
 	//view_uri
 	length = strlen(que->view_uri);
 	if (pims_ipc_data_put(ipc_data,(void*)que->view_uri,length+1) < 0) {
-		ERR("_cal_ipc_marshal fail");
+		ERR("cal_ipc_marshal fail");
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
 	if (que->filter) {
-		if (_cal_ipc_marshal_int(1,ipc_data) != CALENDAR_ERROR_NONE) {
-			ERR("_cal_ipc_marshal fail");
+		if (cal_ipc_marshal_int(1,ipc_data) != CALENDAR_ERROR_NONE) {
+			ERR("cal_ipc_marshal fail");
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
-		if (__cal_ipc_marshal_composite_filter(que->filter,ipc_data) != CALENDAR_ERROR_NONE) {
-			ERR("_cal_ipc_marshal fail");
+		if (_cal_ipc_marshal_composite_filter(que->filter,ipc_data) != CALENDAR_ERROR_NONE) {
+			ERR("cal_ipc_marshal fail");
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 	}
 	else
 	{
-		if (_cal_ipc_marshal_int(0,ipc_data) != CALENDAR_ERROR_NONE) {
-			ERR("_cal_ipc_marshal fail");
+		if (cal_ipc_marshal_int(0,ipc_data) != CALENDAR_ERROR_NONE) {
+			ERR("cal_ipc_marshal fail");
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 	}
 
-	if (_cal_ipc_marshal_int((que->projection_count),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("_cal_ipc_marshal fail");
+	if (cal_ipc_marshal_int((que->projection_count),ipc_data) != CALENDAR_ERROR_NONE) {
+		ERR("cal_ipc_marshal fail");
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
 	for(i=0;i<que->projection_count;i++) {
-		if (_cal_ipc_marshal_uint((que->projection[i]),ipc_data) != CALENDAR_ERROR_NONE) {
-			ERR("_cal_ipc_marshal fail");
+		if (cal_ipc_marshal_uint((que->projection[i]),ipc_data) != CALENDAR_ERROR_NONE) {
+			ERR("cal_ipc_marshal fail");
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 	}
 
-	if (_cal_ipc_marshal_int((que->sort_property_id),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("_cal_ipc_marshal fail");
+	if (cal_ipc_marshal_int((que->sort_property_id),ipc_data) != CALENDAR_ERROR_NONE) {
+		ERR("cal_ipc_marshal fail");
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	if (_cal_ipc_marshal_int((int)(que->asc),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("_cal_ipc_marshal fail");
+	if (cal_ipc_marshal_int((int)(que->asc),ipc_data) != CALENDAR_ERROR_NONE) {
+		ERR("cal_ipc_marshal fail");
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	if (_cal_ipc_marshal_int((int)(que->distinct),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("_cal_ipc_marshal fail");
+	if (cal_ipc_marshal_int((int)(que->distinct),ipc_data) != CALENDAR_ERROR_NONE) {
+		ERR("cal_ipc_marshal fail");
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -1000,7 +1000,7 @@ int _cal_ipc_marshal_query(const calendar_query_h query, pims_ipc_data_h ipc_dat
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_ipc_unmarshal_list(const pims_ipc_data_h ipc_data, calendar_list_h* list)
+int cal_ipc_unmarshal_list(const pims_ipc_data_h ipc_data, calendar_list_h* list)
 {
 	int count = 0, i = 0;
 	calendar_record_h record;
@@ -1014,15 +1014,15 @@ int _cal_ipc_unmarshal_list(const pims_ipc_data_h ipc_data, calendar_list_h* lis
 		return CALENDAR_ERROR_OUT_OF_MEMORY;
 	}
 
-	if (_cal_ipc_unmarshal_int(ipc_data,&(count)) != CALENDAR_ERROR_NONE) {
-		ERR("_cal_ipc_unmarshal fail");
+	if (cal_ipc_unmarshal_int(ipc_data,&(count)) != CALENDAR_ERROR_NONE) {
+		ERR("cal_ipc_unmarshal fail");
 		ret = CALENDAR_ERROR_INVALID_PARAMETER;
 		goto ERROR_RETURN;
 	}
 
 	for(i=0;i<count;i++) {
-		if (_cal_ipc_unmarshal_record(ipc_data,&record) != CALENDAR_ERROR_NONE ) {
-			ERR("_cal_ipc_unmarshal fail");
+		if (cal_ipc_unmarshal_record(ipc_data,&record) != CALENDAR_ERROR_NONE ) {
+			ERR("cal_ipc_unmarshal fail");
 			ret = CALENDAR_ERROR_INVALID_PARAMETER;
 			goto ERROR_RETURN;
 		}
@@ -1046,7 +1046,7 @@ ERROR_RETURN:
 	return ret;
 }
 
-int _cal_ipc_marshal_list(const calendar_list_h list, pims_ipc_data_h ipc_data)
+int cal_ipc_marshal_list(const calendar_list_h list, pims_ipc_data_h ipc_data)
 {
 	int count = 0, i = 0;
 	calendar_record_h record;
@@ -1059,8 +1059,8 @@ int _cal_ipc_marshal_list(const calendar_list_h list, pims_ipc_data_h ipc_data)
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	if (_cal_ipc_marshal_int(count,ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("_cal_ipc_marshal fail");
+	if (cal_ipc_marshal_int(count,ipc_data) != CALENDAR_ERROR_NONE) {
+		ERR("cal_ipc_marshal fail");
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -1072,8 +1072,8 @@ int _cal_ipc_marshal_list(const calendar_list_h list, pims_ipc_data_h ipc_data)
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 
-		if (_cal_ipc_marshal_record(record,ipc_data) != CALENDAR_ERROR_NONE) {
-			ERR("_cal_ipc_marshal fail");
+		if (cal_ipc_marshal_record(record,ipc_data) != CALENDAR_ERROR_NONE) {
+			ERR("cal_ipc_marshal fail");
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 		calendar_list_next(list);
@@ -1082,7 +1082,7 @@ int _cal_ipc_marshal_list(const calendar_list_h list, pims_ipc_data_h ipc_data)
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_ipc_unmarshal_child_list(const pims_ipc_data_h ipc_data, calendar_list_h* list)
+int cal_ipc_unmarshal_child_list(const pims_ipc_data_h ipc_data, calendar_list_h* list)
 {
 	unsigned int i = 0;
 	int count = 0;
@@ -1091,14 +1091,14 @@ int _cal_ipc_unmarshal_child_list(const pims_ipc_data_h ipc_data, calendar_list_
 	RETV_IF(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == ipc_data, CALENDAR_ERROR_INVALID_PARAMETER);
 
-	if (_cal_ipc_unmarshal_int(ipc_data,&(count)) != CALENDAR_ERROR_NONE) {
-		ERR("_cal_ipc_unmarshal_int fail");
+	if (cal_ipc_unmarshal_int(ipc_data,&(count)) != CALENDAR_ERROR_NONE) {
+		ERR("cal_ipc_unmarshal_int fail");
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
 	for(i=0;i<count;i++) {
-		if (_cal_ipc_unmarshal_record(ipc_data,&record) != CALENDAR_ERROR_NONE) {
-			ERR("_cal_ipc_unmarshal_record fail");
+		if (cal_ipc_unmarshal_record(ipc_data,&record) != CALENDAR_ERROR_NONE) {
+			ERR("cal_ipc_unmarshal_record fail");
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 

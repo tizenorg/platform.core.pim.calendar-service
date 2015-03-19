@@ -31,9 +31,9 @@ typedef struct {
 	int version;
 } cal_make_s ;
 
-cal_make_s* _cal_vcalendar_make_new(void);
-int _cal_vcalendar_make_vcalendar(cal_make_s *b, calendar_list_h list);
-char* _cal_vcalendar_make_get_data(cal_make_s *b);
-void _cal_vcalendar_make_free(cal_make_s **b);
+cal_make_s* cal_vcalendar_make_new(void);
+int cal_vcalendar_make_vcalendar(cal_make_s *b, calendar_list_h list);
+char* cal_vcalendar_make_get_data(cal_make_s *b);
+void cal_vcalendar_make_free(cal_make_s **b);
 
 #endif // __CALENDAR_SVC_VCALENDAR_MAKE_H__

@@ -48,7 +48,7 @@
 
 static UCalendar *_g_ucal_gmt = NULL;
 
-int _cal_time_is_registered_tzid(const char *tzid)
+int cal_time_is_registered_tzid(const char *tzid)
 {
 	int is_found = false;
 	int i;
@@ -78,7 +78,7 @@ int _cal_time_is_registered_tzid(const char *tzid)
 	return is_found;
 }
 
-void _cal_time_get_registered_tzid_with_offset(int offset, char *registered_tzid, int tzid_size) // offset unit: second
+void cal_time_get_registered_tzid_with_offset(int offset, char *registered_tzid, int tzid_size) // offset unit: second
 {
 	UErrorCode ec = U_ZERO_ERROR;
 
@@ -95,7 +95,7 @@ void _cal_time_get_registered_tzid_with_offset(int offset, char *registered_tzid
 	delete s;
 }
 
-int _cal_time_get_timezone_from_table(const char *tzid, calendar_record_h *timezone, int *timezone_id)
+int cal_time_get_timezone_from_table(const char *tzid, calendar_record_h *timezone, int *timezone_id)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	int count = 0;
@@ -187,7 +187,7 @@ ERROR_CONNECT:
 	return ret;
 }
 
-static int __cal_time_get_like_utzid(UChar *utzid, int len, const char *tzid, calendar_record_h timezone, char **like_tzid)
+static int _cal_time_get_like_utzid(UChar *utzid, int len, const char *tzid, calendar_record_h timezone, char **like_tzid)
 {
 	int gmtoffset;
 	UErrorCode ec = U_ZERO_ERROR;
@@ -315,7 +315,7 @@ static int __cal_time_get_like_utzid(UChar *utzid, int len, const char *tzid, ca
 	return CALENDAR_ERROR_NONE;
 }
 
-UCalendar *_cal_time_open_ucal(int calendar_system_type, const char *tzid, int wkst)
+UCalendar *cal_time_open_ucal(int calendar_system_type, const char *tzid, int wkst)
 {
 	UChar utf16_timezone[64] = {0};
 	u_uastrncpy(utf16_timezone, tzid, sizeof(utf16_timezone));
@@ -351,7 +351,7 @@ UCalendar *_cal_time_open_ucal(int calendar_system_type, const char *tzid, int w
 	return ucal;
 }
 
-UCalendar *_cal_time_get_ucal(const char *tzid, int wkst)
+UCalendar *cal_time_get_ucal(const char *tzid, int wkst)
 {
 	UChar utf16_timezone[64] = {0};
 	u_uastrncpy(utf16_timezone, tzid, sizeof(utf16_timezone));
@@ -372,7 +372,7 @@ UCalendar *_cal_time_get_ucal(const char *tzid, int wkst)
 	return ucal;
 }
 
-int _cal_time_get_like_tzid(const char *tzid, calendar_record_h timezone, char **like_tzid)
+int cal_time_get_like_tzid(const char *tzid, calendar_record_h timezone, char **like_tzid)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	UChar *utzid = NULL;
@@ -397,7 +397,7 @@ int _cal_time_get_like_tzid(const char *tzid, calendar_record_h timezone, char *
 	}
 	u_uastrcpy(utzid, tzid);
 
-	ret = __cal_time_get_like_utzid(utzid, u_strlen(utzid), tzid, timezone, like_tzid);
+	ret = _cal_time_get_like_utzid(utzid, u_strlen(utzid), tzid, timezone, like_tzid);
 	if (ret != CALENDAR_ERROR_NONE)
 	{
 		DBG("Failed to find from timezone table, so set GMT");
@@ -408,7 +408,7 @@ int _cal_time_get_like_tzid(const char *tzid, calendar_record_h timezone, char *
 	return CALENDAR_ERROR_NONE;
 }
 
-void _cal_time_set_caltime(UCalendar *ucal, calendar_time_s *ct)
+void cal_time_set_caltime(UCalendar *ucal, calendar_time_s *ct)
 {
 	UErrorCode status = U_ZERO_ERROR;
 
@@ -438,7 +438,7 @@ void _cal_time_set_caltime(UCalendar *ucal, calendar_time_s *ct)
 	}
 }
 
-char* _cal_time_extract_by(int calendar_system_type, const char *tzid, int wkst, calendar_time_s *ct, int field)
+char* cal_time_extract_by(int calendar_system_type, const char *tzid, int wkst, calendar_time_s *ct, int field)
 {
 	int vali;
 	char buf[8] = {0};
@@ -446,12 +446,12 @@ char* _cal_time_extract_by(int calendar_system_type, const char *tzid, int wkst,
 	UCalendar *ucal = NULL;
 	UErrorCode status = U_ZERO_ERROR;
 
-	ucal = _cal_time_open_ucal(calendar_system_type, tzid, wkst);
+	ucal = cal_time_open_ucal(calendar_system_type, tzid, wkst);
 	if (NULL == ucal) {
-		ERR("_cal_time_open_ucal() is failed");
+		ERR("cal_time_open_ucal() is failed");
 		return NULL;
 	}
-	_cal_time_set_caltime(ucal, ct);
+	cal_time_set_caltime(ucal, ct);
 
 	switch (field)
 	{
@@ -478,7 +478,7 @@ char* _cal_time_extract_by(int calendar_system_type, const char *tzid, int wkst,
 	return strdup(buf);
 }
 
-char* _cal_time_convert_ltos(const char *tzid, long long int lli, int is_allday)
+char* cal_time_convert_ltos(const char *tzid, long long int lli, int is_allday)
 {
 	int y, mon, d, h, min, s;
 	char buf[32] = {0};
@@ -491,7 +491,7 @@ char* _cal_time_convert_ltos(const char *tzid, long long int lli, int is_allday)
 		tzid = CAL_TZID_GMT;
 	}
 
-	ucal = _cal_time_get_ucal(tzid, -1);
+	ucal = cal_time_get_ucal(tzid, -1);
 	ucal_setMillis(ucal, sec2ms(lli), &status);
 	if (U_FAILURE(status)) {
 		ERR("ucal_setMillis failed (%s)", u_errorName(status));
@@ -521,13 +521,13 @@ char* _cal_time_convert_ltos(const char *tzid, long long int lli, int is_allday)
 	return strdup(buf);
 }
 
-long long int _cal_time_convert_itol(const char *tzid, int y, int mon, int d, int h, int min, int s)
+long long int cal_time_convert_itol(const char *tzid, int y, int mon, int d, int h, int min, int s)
 {
 	long long int lli;
 	UCalendar *ucal = NULL;
 	UErrorCode status = U_ZERO_ERROR;
 
-	ucal = _cal_time_get_ucal(tzid, -1);
+	ucal = cal_time_get_ucal(tzid, -1);
 
 	ucal_set(ucal, UCAL_YEAR, y);
 	ucal_set(ucal, UCAL_MONTH, mon -1);
@@ -542,12 +542,12 @@ long long int _cal_time_convert_itol(const char *tzid, int y, int mon, int d, in
 	return lli;
 }
 
-int _cal_time_utoi(long long int utime, char *tzid, int *y, int *m, int *d, int *h, int *min, int *s)
+int cal_time_utoi(long long int utime, char *tzid, int *y, int *m, int *d, int *h, int *min, int *s)
 {
 	UCalendar *ucal = NULL;
 	UErrorCode status = U_ZERO_ERROR;
 
-	ucal = _cal_time_get_ucal(tzid, -1);
+	ucal = cal_time_get_ucal(tzid, -1);
 	ucal_setMillis(ucal, sec2ms(utime), &status);
 	if (y) *y = ucal_get(ucal, UCAL_YEAR, &status);
 	if (m) *m = ucal_get(ucal, UCAL_MONTH, &status) + 1;
@@ -560,7 +560,7 @@ int _cal_time_utoi(long long int utime, char *tzid, int *y, int *m, int *d, int 
 	return CALENDAR_ERROR_NONE;
 }
 
-long long int _cal_time_convert_stol(char *tzid, char *datetime)
+long long int cal_time_convert_stol(char *tzid, char *datetime)
 {
 	int y, mon, d, h, min, s;
 	char t, z;
@@ -573,15 +573,15 @@ long long int _cal_time_convert_stol(char *tzid, char *datetime)
 	sscanf(datetime,  "%4d%2d%2d%c%2d%2d%2d%c",
 			&y, &mon, &d, &t, &h, &min, &s, &z);
 
-	return _cal_time_convert_itol(tzid, y, mon, d, h, min, s);
+	return cal_time_convert_itol(tzid, y, mon, d, h, min, s);
 }
 
-int _cal_time_ltoi(char *tzid, long long int lli, int *year, int *month, int *mday)
+int cal_time_ltoi(char *tzid, long long int lli, int *year, int *month, int *mday)
 {
 	UCalendar *ucal;
 	UErrorCode status = U_ZERO_ERROR;
 
-	ucal = _cal_time_get_ucal(tzid, 1);
+	ucal = cal_time_get_ucal(tzid, 1);
 	ucal_setMillis(ucal, sec2ms(lli), &status);
 
 	if (year) *year = ucal_get(ucal, UCAL_YEAR, &status);
@@ -592,12 +592,12 @@ int _cal_time_ltoi(char *tzid, long long int lli, int *year, int *month, int *md
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_time_ltoi2(char *tzid, long long int lli, int *nth, int *wday)
+int cal_time_ltoi2(char *tzid, long long int lli, int *nth, int *wday)
 {
 	UCalendar *ucal;
 	UErrorCode status = U_ZERO_ERROR;
 
-	ucal = _cal_time_get_ucal(tzid, 1);
+	ucal = cal_time_get_ucal(tzid, 1);
 	ucal_setMillis(ucal, sec2ms(lli), &status);
 
 	if (wday)  *wday = ucal_get(ucal, UCAL_DAY_OF_WEEK, &status);
@@ -616,12 +616,12 @@ int _cal_time_ltoi2(char *tzid, long long int lli, int *nth, int *wday)
 	return CALENDAR_ERROR_NONE;
 }
 
-long long int _cal_time_get_now(void)
+long long int cal_time_get_now(void)
 {
 	return ms2sec(ucal_getNow());
 }
 
-int _cal_time_get_next_date(calendar_time_s *today, calendar_time_s *next)
+int cal_time_get_next_date(calendar_time_s *today, calendar_time_s *next)
 {
 	if (NULL == today || NULL == next)
 	{
@@ -683,7 +683,7 @@ int _cal_time_get_next_date(calendar_time_s *today, calendar_time_s *next)
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_time_get_next_time(UCalendar *ucal, int offset, int freq, calendar_time_s *next)
+int cal_time_get_next_time(UCalendar *ucal, int offset, int freq, calendar_time_s *next)
 {
 	UErrorCode status = U_ZERO_ERROR;
 	if (NULL == next)
@@ -760,7 +760,7 @@ int _cal_time_get_next_time(UCalendar *ucal, int offset, int freq, calendar_time
  * Read link of /opt/etc/localtime,
  * and get timezone "Asia/Seoul" from the string (ig. "/usr/share/zoneinfo/Asia/Seoul")
  */
-char* _cal_time_get_timezone(void)
+char* cal_time_get_timezone(void)
 {
 	char buf[256] = {0};
 	ssize_t len = readlink("/opt/etc/localtime", buf, sizeof(buf)-1);
@@ -773,7 +773,7 @@ char* _cal_time_get_timezone(void)
 	return g_strdup(buf + strlen("/usr/share/zoneinfo/"));
 }
 
-long long int _cal_time_get_utime(UCalendar *ucal, int y, int mon, int d, int h, int min, int s)
+long long int cal_time_get_utime(UCalendar *ucal, int y, int mon, int d, int h, int min, int s)
 {
 	UErrorCode status = U_ZERO_ERROR;
 	if (ucal)
@@ -790,7 +790,7 @@ long long int _cal_time_get_utime(UCalendar *ucal, int y, int mon, int d, int h,
 	return 0;
 }
 
-int _cal_time_get_component_from_lli(UCalendar *ucal, long long int lli, int *year, int *month, int *mday, int *hour, int *minute, int *second)
+int cal_time_get_component_from_lli(UCalendar *ucal, long long int lli, int *year, int *month, int *mday, int *hour, int *minute, int *second)
 {
 	UErrorCode status = U_ZERO_ERROR;
 
@@ -806,17 +806,17 @@ int _cal_time_get_component_from_lli(UCalendar *ucal, long long int lli, int *ye
 	return CALENDAR_ERROR_NONE;
 }
 
-void _cal_time_u_cleanup(void)
+void cal_time_u_cleanup(void)
 {
 	u_cleanup();
 }
 
-void _cal_time_get_tz_offset(const char *tz, time_t *zone_offset, time_t *dst_offset)
+void cal_time_get_tz_offset(const char *tz, time_t *zone_offset, time_t *dst_offset)
 {
 	UErrorCode status = U_ZERO_ERROR;
 	UCalendar *ucal = NULL;
 
-	ucal = _cal_time_get_ucal(tz, -1);
+	ucal = cal_time_get_ucal(tz, -1);
 	int32_t zone = ucal_get(ucal, UCAL_ZONE_OFFSET, &status);
 	int32_t dst = ucal_get(ucal, UCAL_DST_OFFSET, &status);
 	ucal_close(ucal);
@@ -825,12 +825,12 @@ void _cal_time_get_tz_offset(const char *tz, time_t *zone_offset, time_t *dst_of
 	if (dst_offset) *dst_offset = ms2sec(dst);
 }
 
-bool _cal_time_in_dst(const char *tz, long long int t)
+bool cal_time_in_dst(const char *tz, long long int t)
 {
 	UErrorCode status = U_ZERO_ERROR;
 	UCalendar *ucal = NULL;
 
-	ucal = _cal_time_get_ucal(tz, -1);
+	ucal = cal_time_get_ucal(tz, -1);
 	ucal_setMillis(ucal, sec2ms(t), &status);
 	bool is_dst = ucal_inDaylightTime(ucal, &status);
 	ucal_close(ucal);
@@ -838,19 +838,19 @@ bool _cal_time_in_dst(const char *tz, long long int t)
 	return is_dst;
 }
 
-int _cal_time_init(void)
+int cal_time_init(void)
 {
 	UCalendar *ucal = NULL;
 
 	if (NULL == _g_ucal_gmt) {
-		ucal = _cal_time_get_ucal(NULL, -1);
-		RETVM_IF(NULL == ucal, CALENDAR_ERROR_SYSTEM, "_cal_time_get_ucal() is failed");
+		ucal = cal_time_get_ucal(NULL, -1);
+		RETVM_IF(NULL == ucal, CALENDAR_ERROR_SYSTEM, "cal_time_get_ucal() is failed");
 		_g_ucal_gmt = ucal;
 	}
 	return CALENDAR_ERROR_NONE;
 }
 
-void _cal_time_fini(void)
+void cal_time_fini(void)
 {
 	if (_g_ucal_gmt) {
 		ucal_close(_g_ucal_gmt);
@@ -861,12 +861,12 @@ void _cal_time_fini(void)
 static UCalendar* __get_gmt_ucal(void)
 {
 	if (NULL == _g_ucal_gmt) {
-		_cal_time_init();
+		cal_time_init();
 	}
 	return _g_ucal_gmt;
 }
 
-long long int _cal_time_convert_lli(char *p)
+long long int cal_time_convert_lli(char *p)
 {
 	UErrorCode status = U_ZERO_ERROR;
 
@@ -882,7 +882,7 @@ long long int _cal_time_convert_lli(char *p)
 	return 0;
 }
 
-void _cal_time_modify_caltime(calendar_time_s *caltime, long long int diff)
+void cal_time_modify_caltime(calendar_time_s *caltime, long long int diff)
 {
 	UErrorCode status = U_ZERO_ERROR;
 	RET_IF(NULL == caltime);
@@ -919,7 +919,7 @@ void _cal_time_modify_caltime(calendar_time_s *caltime, long long int diff)
 	}
 }
 
-void _cal_time_get_nth_wday(long long int t, int *nth, int *wday)
+void cal_time_get_nth_wday(long long int t, int *nth, int *wday)
 {
 	RET_IF(NULL == nth);
 	RET_IF(NULL == wday);
@@ -936,7 +936,7 @@ void _cal_time_get_nth_wday(long long int t, int *nth, int *wday)
 	DBG("nth(%d) wday(%d)", *nth, *wday);
 }
 
-void _cal_time_get_datetime(long long int t, int *y, int *m, int *d, int *h, int *n, int *s)
+void cal_time_get_datetime(long long int t, int *y, int *m, int *d, int *h, int *n, int *s)
 {
 	UErrorCode status = U_ZERO_ERROR;
 	UCalendar *ucal = __get_gmt_ucal();
@@ -951,10 +951,10 @@ void _cal_time_get_datetime(long long int t, int *y, int *m, int *d, int *h, int
 	DBG("%04d%02d%02dT%02d%02d%02d", *y, *m, *d, *h, *n, *s);
 }
 
-void _cal_time_get_local_datetime(char *tzid, long long int t, int *y, int *m, int *d, int *h, int *n, int *s)
+void cal_time_get_local_datetime(char *tzid, long long int t, int *y, int *m, int *d, int *h, int *n, int *s)
 {
 	UErrorCode status = U_ZERO_ERROR;
-	UCalendar *ucal = _cal_time_get_ucal(tzid, 0);
+	UCalendar *ucal = cal_time_get_ucal(tzid, 0);
 	ucal_setMillis(ucal, sec2ms(t), &status);
 	if (y) *y = ucal_get(ucal, UCAL_YEAR, &status);
 	if (m) *m = ucal_get(ucal, UCAL_MONTH, &status) + 1;
@@ -965,7 +965,7 @@ void _cal_time_get_local_datetime(char *tzid, long long int t, int *y, int *m, i
 	ucal_close(ucal);
 }
 
-bool _cal_time_is_available_tzid(char *tzid)
+bool cal_time_is_available_tzid(char *tzid)
 {
 	UErrorCode ec = U_ZERO_ERROR;
 	StringEnumeration* s = TimeZone::createEnumeration();

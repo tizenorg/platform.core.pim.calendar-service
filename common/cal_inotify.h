@@ -24,12 +24,12 @@
 #include "cal_typedef.h"
 
 #ifdef CAL_IPC_CLIENT
-void _cal_inotify_call_pending_callback(void);
+void cal_inotify_call_pending_callback(void);
 #endif
 
-int _cal_inotify_initialize(void);
-int _cal_inotify_subscribe(cal_noti_type_e type, const char *path, calendar_db_changed_cb callback, void *data);
-int _cal_inotify_unsubscribe_with_data(const char *path, calendar_db_changed_cb callback, void *user_data);
-void _cal_inotify_finalize(void);
+int cal_inotify_initialize(void);
+int cal_inotify_subscribe(cal_noti_type_e type, const char *path, calendar_db_changed_cb callback, void *data);
+int cal_inotify_unsubscribe_with_data(const char *path, calendar_db_changed_cb callback, void *user_data);
+void cal_inotify_finalize(void);
 
 #endif // __CALENDAR_SVC_INOTIFY_H__

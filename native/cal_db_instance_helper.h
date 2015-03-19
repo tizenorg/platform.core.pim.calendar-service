@@ -20,7 +20,7 @@
 #ifndef __CALENDAR_SVC_DB_INSTANCE_HELPER_H__
 #define __CALENDAR_SVC_DB_INSTANCE_HELPER_H__
 
-int _cal_db_instance_normal_insert_record(cal_instance_normal_s *normal, int* id);
-int _cal_db_instance_allday_insert_record(cal_instance_allday_s *normal, int* id);
+int cal_db_instance_normal_insert_record(cal_instance_normal_s *normal, int* id);
+int cal_db_instance_allday_insert_record(cal_instance_allday_s *normal, int* id);
 
 #endif // __CALENDAR_SVC_DB_INSTANCE_HELPER_H__

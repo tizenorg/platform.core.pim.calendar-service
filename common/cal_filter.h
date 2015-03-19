@@ -22,6 +22,6 @@
 
 #include "calendar_filter.h"
 
-int _cal_filter_clone(calendar_filter_h filter, calendar_filter_h* out_filter);
+int cal_filter_clone(calendar_filter_h filter, calendar_filter_h* out_filter);
 
 #endif //__CALENDAR_SVC_FILTER_H__

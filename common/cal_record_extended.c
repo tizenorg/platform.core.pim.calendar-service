@@ -27,27 +27,27 @@
 
 #include "cal_record.h"
 
-static int __cal_record_extended_create( calendar_record_h* out_record );
-static int __cal_record_extended_destroy( calendar_record_h record, bool delete_child );
-static int __cal_record_extended_clone( calendar_record_h record, calendar_record_h* out_record );
-static int __cal_record_extended_get_str( calendar_record_h record, unsigned int property_id, char** out_str );
-static int __cal_record_extended_get_str_p( calendar_record_h record, unsigned int property_id, char** out_str );
-static int __cal_record_extended_get_int( calendar_record_h record, unsigned int property_id, int* out_value );
-static int __cal_record_extended_set_str( calendar_record_h record, unsigned int property_id, const char* value );
-static int __cal_record_extended_set_int( calendar_record_h record, unsigned int property_id, int value );
+static int _cal_record_extended_create( calendar_record_h* out_record );
+static int _cal_record_extended_destroy( calendar_record_h record, bool delete_child );
+static int _cal_record_extended_clone( calendar_record_h record, calendar_record_h* out_record );
+static int _cal_record_extended_get_str( calendar_record_h record, unsigned int property_id, char** out_str );
+static int _cal_record_extended_get_str_p( calendar_record_h record, unsigned int property_id, char** out_str );
+static int _cal_record_extended_get_int( calendar_record_h record, unsigned int property_id, int* out_value );
+static int _cal_record_extended_set_str( calendar_record_h record, unsigned int property_id, const char* value );
+static int _cal_record_extended_set_int( calendar_record_h record, unsigned int property_id, int value );
 
-cal_record_plugin_cb_s _cal_record_extended_plugin_cb = {
-	.create = __cal_record_extended_create,
-	.destroy = __cal_record_extended_destroy,
-	.clone = __cal_record_extended_clone,
-	.get_str = __cal_record_extended_get_str,
-	.get_str_p = __cal_record_extended_get_str_p,
-	.get_int = __cal_record_extended_get_int,
+cal_record_plugin_cb_s cal_record_extended_plugin_cb = {
+	.create = _cal_record_extended_create,
+	.destroy = _cal_record_extended_destroy,
+	.clone = _cal_record_extended_clone,
+	.get_str = _cal_record_extended_get_str,
+	.get_str_p = _cal_record_extended_get_str_p,
+	.get_int = _cal_record_extended_get_int,
 	.get_double = NULL,
 	.get_lli = NULL,
 	.get_caltime = NULL,
-	.set_str = __cal_record_extended_set_str,
-	.set_int = __cal_record_extended_set_int,
+	.set_str = _cal_record_extended_set_str,
+	.set_int = _cal_record_extended_set_int,
 	.set_double = NULL,
 	.set_lli = NULL,
 	.set_caltime = NULL,
@@ -58,12 +58,12 @@ cal_record_plugin_cb_s _cal_record_extended_plugin_cb = {
 	.clone_child_record_list = NULL
 };
 
-static void __cal_record_extended_struct_init(cal_extended_s *record)
+static void _cal_record_extended_struct_init(cal_extended_s *record)
 {
 	memset(record,0,sizeof(cal_extended_s));
 }
 
-static int __cal_record_extended_create( calendar_record_h* out_record )
+static int _cal_record_extended_create( calendar_record_h* out_record )
 {
 	cal_extended_s *temp = NULL;
 	int ret= CALENDAR_ERROR_NONE;
@@ -71,14 +71,14 @@ static int __cal_record_extended_create( calendar_record_h* out_record )
 	temp = calloc(1,sizeof(cal_extended_s));
 	RETVM_IF(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "malloc(cal_extended_s) Failed(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
 
-	__cal_record_extended_struct_init(temp);
+	_cal_record_extended_struct_init(temp);
 
 	*out_record = (calendar_record_h)temp;
 
 	return ret;
 }
 
-static void __cal_record_extended_struct_free(cal_extended_s *record)
+static void _cal_record_extended_struct_free(cal_extended_s *record)
 {
 	CAL_FREE(record->key);
 	CAL_FREE(record->value);
@@ -86,18 +86,18 @@ static void __cal_record_extended_struct_free(cal_extended_s *record)
 
 }
 
-static int __cal_record_extended_destroy( calendar_record_h record, bool delete_child )
+static int _cal_record_extended_destroy( calendar_record_h record, bool delete_child )
 {
 	int ret = CALENDAR_ERROR_NONE;
 
 	cal_extended_s *temp = (cal_extended_s*)(record);
 
-	__cal_record_extended_struct_free(temp);
+	_cal_record_extended_struct_free(temp);
 
 	return ret;
 }
 
-static int __cal_record_extended_clone( calendar_record_h record, calendar_record_h* out_record )
+static int _cal_record_extended_clone( calendar_record_h record, calendar_record_h* out_record )
 {
 	cal_extended_s *out_data = NULL;
 	cal_extended_s *src_data = NULL;
@@ -120,7 +120,7 @@ static int __cal_record_extended_clone( calendar_record_h record, calendar_recor
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_record_extended_get_str( calendar_record_h record, unsigned int property_id, char** out_str )
+static int _cal_record_extended_get_str( calendar_record_h record, unsigned int property_id, char** out_str )
 {
 	cal_extended_s *rec = (cal_extended_s*)(record);
 	switch( property_id )
@@ -139,7 +139,7 @@ static int __cal_record_extended_get_str( calendar_record_h record, unsigned int
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_record_extended_get_str_p( calendar_record_h record, unsigned int property_id, char** out_str )
+static int _cal_record_extended_get_str_p( calendar_record_h record, unsigned int property_id, char** out_str )
 {
 	cal_extended_s *rec = (cal_extended_s*)(record);
 	switch( property_id )
@@ -158,7 +158,7 @@ static int __cal_record_extended_get_str_p( calendar_record_h record, unsigned i
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_record_extended_get_int( calendar_record_h record, unsigned int property_id, int* out_value )
+static int _cal_record_extended_get_int( calendar_record_h record, unsigned int property_id, int* out_value )
 {
 	cal_extended_s *rec = (cal_extended_s*)(record);
 	switch( property_id )
@@ -180,7 +180,7 @@ static int __cal_record_extended_get_int( calendar_record_h record, unsigned int
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_record_extended_set_str( calendar_record_h record, unsigned int property_id, const char* value )
+static int _cal_record_extended_set_str( calendar_record_h record, unsigned int property_id, const char* value )
 {
 	cal_extended_s *rec = (cal_extended_s*)(record);
 	switch( property_id )
@@ -201,7 +201,7 @@ static int __cal_record_extended_set_str( calendar_record_h record, unsigned int
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_record_extended_set_int( calendar_record_h record, unsigned int property_id, int value )
+static int _cal_record_extended_set_int( calendar_record_h record, unsigned int property_id, int value )
 {
 	cal_extended_s *rec = (cal_extended_s*)(record);
 	switch( property_id )

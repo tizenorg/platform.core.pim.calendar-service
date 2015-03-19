@@ -47,35 +47,35 @@ typedef struct {
 static pims_ipc_h __ipc = NULL;
 static GSList *__subscribe_list = NULL;
 
-int _cal_client_reminder_create_for_subscribe(void)
+int cal_client_reminder_create_for_subscribe(void)
 {
-	_cal_mutex_lock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+	cal_mutex_lock(CAL_MUTEX_PIMS_IPC_PUBSUB);
 	if (!__ipc) {
 		char sock_file[CAL_PATH_MAX_LEN] = {0};
 		snprintf(sock_file, sizeof(sock_file), CAL_SOCK_PATH"/.%s_for_subscribe", getuid(), CAL_IPC_SERVICE);
 		__ipc = pims_ipc_create_for_subscribe(sock_file);
 		if (!__ipc) {
 			ERR("pims_ipc_create_for_subscribe");
-			_cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+			cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
 			return CALENDAR_ERROR_IPC;
 		}
 	}
-	_cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+	cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_client_reminder_destroy_for_subscribe(void)
+int cal_client_reminder_destroy_for_subscribe(void)
 {
-	_cal_mutex_lock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+	cal_mutex_lock(CAL_MUTEX_PIMS_IPC_PUBSUB);
 
 	pims_ipc_destroy_for_subscribe(__ipc);
 	__ipc = NULL;
 
-	_cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+	cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
 	return CALENDAR_ERROR_NONE;
 }
 
-static void __cal_client_reminder_subscribe_callback(pims_ipc_h ipc, pims_ipc_data_h data, void *user_data)
+static void _cal_client_reminder_subscribe_callback(pims_ipc_h ipc, pims_ipc_data_h data, void *user_data)
 {
 	unsigned int size = 0;
 	const char *str = NULL;
@@ -118,13 +118,13 @@ API int calendar_reminder_add_cb(calendar_reminder_cb callback, void *user_data)
 	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "ctsvc_ipc_client_check_permission fail (%d)", ret);
 	RETVM_IF(result == false, CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied (calendar read)");
 
-	_cal_mutex_lock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+	cal_mutex_lock(CAL_MUTEX_PIMS_IPC_PUBSUB);
 
 	if (!__subscribe_list) {
 		if (pims_ipc_subscribe(__ipc, CAL_IPC_MODULE_FOR_SUBSCRIPTION, (char *)CAL_NOTI_REMINDER_CAHNGED,
-					__cal_client_reminder_subscribe_callback, NULL) != 0) {
+					_cal_client_reminder_subscribe_callback, NULL) != 0) {
 			ERR("pims_ipc_subscribe() failed");
-			_cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+			cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
 			return CALENDAR_ERROR_IPC;
 		}
 	}
@@ -136,7 +136,7 @@ API int calendar_reminder_add_cb(calendar_reminder_cb callback, void *user_data)
 		callback_info_s *cb_info = it->data;
 		if (callback == cb_info->cb && user_data == cb_info->user_data) {
 			ERR("The same callback(%s) is already exist");
-			_cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+			cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 	}
@@ -146,7 +146,7 @@ API int calendar_reminder_add_cb(calendar_reminder_cb callback, void *user_data)
 	cb_info->cb = callback;
 	__subscribe_list = g_slist_append(__subscribe_list, cb_info);
 
-	_cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+	cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
 
 	return CALENDAR_ERROR_NONE;
 }
@@ -157,7 +157,7 @@ API int calendar_reminder_remove_cb(calendar_reminder_cb callback, void *user_da
 
 	RETV_IF(NULL == callback, CALENDAR_ERROR_INVALID_PARAMETER);
 
-	_cal_mutex_lock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+	cal_mutex_lock(CAL_MUTEX_PIMS_IPC_PUBSUB);
 
 	for (it = __subscribe_list; it; it = it->next) {
 		if (NULL == it->data) continue;
@@ -176,7 +176,7 @@ API int calendar_reminder_remove_cb(calendar_reminder_cb callback, void *user_da
 		__subscribe_list = NULL;
 	}
 
-	_cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+	cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
 
 	return CALENDAR_ERROR_NONE;
 }

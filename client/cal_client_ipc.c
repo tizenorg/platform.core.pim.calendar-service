@@ -45,9 +45,9 @@ static int calendar_connection_count = 0;
 static int calendar_change_version = 0;
 static TLS int calendar_change_version_thread = 0;
 
-pims_ipc_h __cal_client_ipc_get_handle(void);
-void __cal_client_ipc_lock(void);
-void __cal_client_ipc_unlock(void);
+pims_ipc_h _cal_client_ipc_get_handle(void);
+void _cal_client_ipc_lock(void);
+void _cal_client_ipc_unlock(void);
 
 int cal_ipc_connect()
 {
@@ -248,12 +248,12 @@ API int calendar_connect_on_thread(void)
 		goto ERROR_RETURN;
 	}
 
-	if (_cal_inotify_initialize() !=  CALENDAR_ERROR_NONE)
+	if (cal_inotify_initialize() !=  CALENDAR_ERROR_NONE)
 	{
-		ERR("_cal_inotify_initialize failed");
+		ERR("cal_inotify_initialize failed");
 	}
 
-	_cal_view_initialize();
+	cal_view_initialize();
 	calendar_change_version_thread = 0;
 	return ret;
 
@@ -301,13 +301,13 @@ API int calendar_disconnect_on_thread(void)
 		goto ERROR_RETURN;
 	}
 
-	if (calendar_ipc_thread && ret == CALENDAR_ERROR_NONE)
+	if (calendar_ipc_thread && CALENDAR_ERROR_NONE == ret)
 	{
 		pims_ipc_destroy(calendar_ipc_thread);
 		calendar_ipc_thread = NULL;
 
-		_cal_inotify_finalize();
-		_cal_view_finalize();
+		cal_inotify_finalize();
+		cal_view_finalize();
 	}
 
 	return ret;
@@ -332,7 +332,7 @@ API int calendar_connect_with_flags(unsigned int flags)
 				usleep(retry_time*1000);
 				ret = calendar_connect();
 				DBG("retry cnt=%d, ret=%x",(i+1), ret);
-				if (ret == CALENDAR_ERROR_NONE)
+				if (CALENDAR_ERROR_NONE == ret)
 					break;
 				if (i>6)
 					retry_time += 30000;
@@ -346,12 +346,12 @@ API int calendar_connect_with_flags(unsigned int flags)
 	return ret;
 }
 
-bool _cal_client_ipc_is_call_inprogress(void)
+bool cal_client_ipc_is_call_inprogress(void)
 {
 	return pims_ipc_is_call_in_progress(calendar_ipc);
 }
 
-pims_ipc_h __cal_client_ipc_get_handle(void)
+pims_ipc_h _cal_client_ipc_get_handle(void)
 {
 	if (calendar_ipc_thread == NULL)
 	{
@@ -360,53 +360,53 @@ pims_ipc_h __cal_client_ipc_get_handle(void)
 	return calendar_ipc_thread;
 }
 
-void __cal_client_ipc_lock(void)
+void _cal_client_ipc_lock(void)
 {
 	if (calendar_ipc_thread == NULL)
 	{
-		_cal_mutex_lock(CAL_MUTEX_PIMS_IPC_CALL);
+		cal_mutex_lock(CAL_MUTEX_PIMS_IPC_CALL);
 	}
 }
 
-void __cal_client_ipc_unlock(void)
+void _cal_client_ipc_unlock(void)
 {
 	if (calendar_ipc_thread == NULL)
 	{
-		_cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_CALL);
+		cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_CALL);
 	}
 }
 
-int _cal_client_ipc_call(char *module, char *function, pims_ipc_h data_in,
+int cal_client_ipc_call(char *module, char *function, pims_ipc_h data_in,
 		pims_ipc_data_h *data_out)
 {
 	int ret = 0;
-	pims_ipc_h ipc_handle = __cal_client_ipc_get_handle();
+	pims_ipc_h ipc_handle = _cal_client_ipc_get_handle();
 
-	__cal_client_ipc_lock();
+	_cal_client_ipc_lock();
 
 	ret = pims_ipc_call(ipc_handle, module, function, data_in, data_out);
 
-	__cal_client_ipc_unlock();
+	_cal_client_ipc_unlock();
 
 	return ret;
 }
 
-int _cal_client_ipc_call_async(char *module, char *function, pims_ipc_h data_in,
+int cal_client_ipc_call_async(char *module, char *function, pims_ipc_h data_in,
 		pims_ipc_call_async_cb callback, void *userdata)
 {
 	int ret = 0;
-	pims_ipc_h ipc_handle = __cal_client_ipc_get_handle();
+	pims_ipc_h ipc_handle = _cal_client_ipc_get_handle();
 
-	__cal_client_ipc_lock();
+	_cal_client_ipc_lock();
 
 	ret = pims_ipc_call_async(ipc_handle, module, function, data_in, callback, userdata);
 
-	__cal_client_ipc_unlock();
+	_cal_client_ipc_unlock();
 
 	return ret;
 }
 
-void _cal_client_ipc_set_change_version(int version)
+void cal_client_ipc_set_change_version(int version)
 {
 	if (calendar_ipc_thread == NULL)
 	{
@@ -418,7 +418,7 @@ void _cal_client_ipc_set_change_version(int version)
 	DBG("change_version=%d",version);
 }
 
-int _cal_client_ipc_get_change_version(void)
+int cal_client_ipc_get_change_version(void)
 {
 	if (calendar_ipc_thread == NULL)
 	{
@@ -443,15 +443,15 @@ int cal_client_ipc_client_check_permission(int permission, bool *result)
 		return CALENDAR_ERROR_OUT_OF_MEMORY;
 	}
 
-	ret = _cal_ipc_marshal_int(permission, indata);
+	ret = cal_ipc_marshal_int(permission, indata);
 	if (ret != CALENDAR_ERROR_NONE) {
 		ERR("marshal fail");
 		pims_ipc_data_destroy(indata);
 		return ret;
 	}
 
-	if (_cal_client_ipc_call(CAL_IPC_MODULE, CAL_IPC_SERVER_CHECK_PERMISSION, indata, &outdata) != 0) {
-		ERR("_cal_client_ipc_call failed");
+	if (cal_client_ipc_call(CAL_IPC_MODULE, CAL_IPC_SERVER_CHECK_PERMISSION, indata, &outdata) != 0) {
+		ERR("cal_client_ipc_call failed");
 		pims_ipc_data_destroy(indata);
 		return CALENDAR_ERROR_IPC;
 	}
@@ -462,7 +462,7 @@ int cal_client_ipc_client_check_permission(int permission, bool *result)
 		unsigned int size = 0;
 		ret = *(int*) pims_ipc_data_get(outdata,&size);
 
-		if (ret == CALENDAR_ERROR_NONE) {
+		if (CALENDAR_ERROR_NONE == ret) {
 			if (result)
 				*result = *(bool*) pims_ipc_data_get(outdata, &size);
 		}

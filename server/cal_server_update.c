@@ -27,7 +27,7 @@
 
 #define __USER_VERSION 105
 
-static int __cal_server_update_get_db_version(sqlite3 *db, int *version)
+static int _cal_server_update_get_db_version(sqlite3 *db, int *version)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
@@ -53,7 +53,7 @@ static int __cal_server_update_get_db_version(sqlite3 *db, int *version)
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_server_update(void)
+int cal_server_update(void)
 {
 	CAL_FN_CALL();
 
@@ -70,7 +70,7 @@ int _cal_server_update(void)
 		ERR("db_util_open() fail(%d):[%s]", ret, db_file);
 		return CALENDAR_ERROR_DB_FAILED;
 	}
-	__cal_server_update_get_db_version(__db, &old_version);
+	_cal_server_update_get_db_version(__db, &old_version);
 	DBG("[%s] old version(%d)", db_file, old_version);
 
 	if (old_version < 100)

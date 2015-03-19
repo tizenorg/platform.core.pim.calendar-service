@@ -20,13 +20,13 @@
 #ifndef __CALENDAR_SVC_DB_EVENT_H__
 #define __CALENDAR_SVC_DB_EVENT_H__
 
-int _cal_db_event_update_original_event_version(int original_event_id, int version);
-int _cal_db_event_check_value_validation(cal_event_s *event);
-int _cal_db_event_insert_record(calendar_record_h record, int original_event_id, int *id);
-int _cal_db_event_insert_records(cal_list_s *list_s, int original_event_id);
-GList *_cal_db_event_get_list_with_uid(char *uid, int parent_id);
-void _cal_db_event_update_child_origina_event_id(int child_id, int parent_id);
-char *_cal_db_event_get_recurrence_id_from_exception(int child_id);
-void _cal_db_event_apply_recurrence_id(int parent_id, cal_event_s *event, char *recurrence_id, int child_id);
+int cal_db_event_update_original_event_version(int original_event_id, int version);
+int cal_db_event_check_value_validation(cal_event_s *event);
+int cal_db_event_insert_record(calendar_record_h record, int original_event_id, int *id);
+int cal_db_event_insert_records(cal_list_s *list_s, int original_event_id);
+GList *cal_db_event_get_list_with_uid(char *uid, int parent_id);
+void cal_db_event_update_child_origina_event_id(int child_id, int parent_id);
+char *cal_db_event_get_recurrence_id_from_exception(int child_id);
+void cal_db_event_apply_recurrence_id(int parent_id, cal_event_s *event, char *recurrence_id, int child_id);
 
 #endif // __CALENDAR_SVC_DB_EVENT_H__

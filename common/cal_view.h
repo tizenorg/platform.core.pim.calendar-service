@@ -347,12 +347,12 @@ typedef enum {
 
 } cal_property_ids_e;
 
-void _cal_view_initialize(void);
-cal_record_type_e _cal_view_get_type(const char *view_uri);
-void _cal_view_finalize(void);
+void cal_view_initialize(void);
+cal_record_type_e cal_view_get_type(const char *view_uri);
+void cal_view_finalize(void);
 
-const cal_property_info_s* _cal_view_get_property_info(const char *view_uri, int *count);
+const cal_property_info_s* cal_view_get_property_info(const char *view_uri, int *count);
 
-const char* _cal_view_get_uri(const char *view_uri);
+const char* cal_view_get_uri(const char *view_uri);
 
 #endif /* __CALENDAR_SVC_VIEW_H__ */

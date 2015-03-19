@@ -39,7 +39,7 @@ static TLS bool event_change=false;
 static TLS bool todo_change=false;
 static TLS bool calendar_change=false;
 
-static inline void __cal_db_util_notify_event_change(void)
+static inline void _cal_db_util_notify_event_change(void)
 {
 	int fd = open(CAL_NOTI_EVENT_CHANGED, O_TRUNC | O_RDWR);
 	if (0 <= fd) {
@@ -48,7 +48,7 @@ static inline void __cal_db_util_notify_event_change(void)
 	}
 }
 
-static inline void __cal_db_util_notify_todo_change(void)
+static inline void _cal_db_util_notify_todo_change(void)
 {
 	int fd = open(CAL_NOTI_TODO_CHANGED, O_TRUNC | O_RDWR);
 	if (0 <= fd) {
@@ -57,7 +57,7 @@ static inline void __cal_db_util_notify_todo_change(void)
 	}
 }
 
-static inline void __cal_db_util_notify_calendar_change(void)
+static inline void _cal_db_util_notify_calendar_change(void)
 {
 	int fd = open(CAL_NOTI_CALENDAR_CHANGED, O_TRUNC | O_RDWR);
 	if (0 <= fd) {
@@ -66,14 +66,14 @@ static inline void __cal_db_util_notify_calendar_change(void)
 	}
 }
 
-static inline void __cal_db_util_cancel_changes(void)
+static inline void _cal_db_util_cancel_changes(void)
 {
 	event_change = false;
 	calendar_change = false;
 	todo_change = false;
 }
 
-int _cal_db_util_notify(cal_noti_type_e type)
+int cal_db_util_notify(cal_noti_type_e type)
 {
 	if (0 < transaction_cnt) {
 		switch (type) {
@@ -95,13 +95,13 @@ int _cal_db_util_notify(cal_noti_type_e type)
 
 	switch(type) {
 	case CAL_NOTI_TYPE_EVENT:
-		__cal_db_util_notify_event_change();
+		_cal_db_util_notify_event_change();
 		break;
 	case CAL_NOTI_TYPE_TODO:
-		__cal_db_util_notify_todo_change();
+		_cal_db_util_notify_todo_change();
 		break;
 	case CAL_NOTI_TYPE_CALENDAR:
-		__cal_db_util_notify_calendar_change();
+		_cal_db_util_notify_calendar_change();
 		break;
 	default:
 		ERR("The type(%d) is not supported", type);
@@ -111,7 +111,7 @@ int _cal_db_util_notify(cal_noti_type_e type)
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_db_util_open(void)
+int cal_db_util_open(void)
 {
 	int ret = 0;
 
@@ -131,7 +131,7 @@ int _cal_db_util_open(void)
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_db_util_close(void)
+int cal_db_util_close(void)
 {
 	int ret = 0;
 
@@ -145,14 +145,14 @@ int _cal_db_util_close(void)
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_db_util_last_insert_id(void)
+int cal_db_util_last_insert_id(void)
 {
 	return sqlite3_last_insert_rowid(calendar_db_handle);
 }
 
 #define __CAL_QUERY_RETRY_TIME 2
 
-int _cal_db_util_query_get_first_int_result(const char *query, GSList *bind_text, int *result)
+int cal_db_util_query_get_first_int_result(const char *query, GSList *bind_text, int *result)
 {
 	int ret;
 	int index;
@@ -196,7 +196,7 @@ int _cal_db_util_query_get_first_int_result(const char *query, GSList *bind_text
 			text = (char *)g_slist_nth_data(bind_text, index);
 			if (text)
 			{
-				_cal_db_util_stmt_bind_text(stmt, index + 1, text);
+				cal_db_util_stmt_bind_text(stmt, index + 1, text);
 			}
 		}
 	}
@@ -239,21 +239,21 @@ int _cal_db_util_query_get_first_int_result(const char *query, GSList *bind_text
 	return CALENDAR_ERROR_NONE;
 }
 
-cal_db_util_error_e _cal_db_util_query_exec(char *query)
+cal_db_util_error_e cal_db_util_query_exec(char *query)
 {
 	int ret;
 	sqlite3_stmt *stmt = NULL;
 
 	RETVM_IF(NULL == calendar_db_handle, CALENDAR_ERROR_DB_FAILED, "Database is not opended");
 
-	stmt = _cal_db_util_query_prepare(query);
-	RETVM_IF(NULL == stmt, CAL_DB_ERROR_FAIL, "_cal_db_util_query_prepare() Failed");
+	stmt = cal_db_util_query_prepare(query);
+	RETVM_IF(NULL == stmt, CAL_DB_ERROR_FAIL, "cal_db_util_query_prepare() Failed");
 
-	ret = _cal_db_util_stmt_step(stmt);
+	ret = cal_db_util_stmt_step(stmt);
 
 	if (CAL_DB_DONE != ret) {
 		sqlite3_finalize(stmt);
-		ERR("_cal_db_util_stmt_step() Failed(%d)", ret);
+		ERR("cal_db_util_stmt_step() Failed(%d)", ret);
 		SEC_ERR("[ %s ]", query);
 		return ret;
 	}
@@ -262,7 +262,7 @@ cal_db_util_error_e _cal_db_util_query_exec(char *query)
 	return CAL_DB_OK;
 }
 
-sqlite3_stmt* _cal_db_util_query_prepare(char *query)
+sqlite3_stmt* cal_db_util_query_prepare(char *query)
 {
 	int ret = -1;
 	struct timeval from, now, diff;
@@ -293,7 +293,7 @@ sqlite3_stmt* _cal_db_util_query_prepare(char *query)
 	return stmt;
 }
 
-cal_db_util_error_e _cal_db_util_stmt_step(sqlite3_stmt *stmt)
+cal_db_util_error_e cal_db_util_stmt_step(sqlite3_stmt *stmt)
 {
 	int ret;
 	struct timeval from, now, diff;
@@ -349,28 +349,28 @@ cal_db_util_error_e _cal_db_util_stmt_step(sqlite3_stmt *stmt)
 }
 
 #define CAL_COMMIT_TRY_MAX 500000
-int _cal_db_util_begin_trans(void)
+int cal_db_util_begin_trans(void)
 {
 	if(transaction_cnt <= 0)
 	{
 		int ret, progress;
 
 		progress = 100000;
-		ret = _cal_db_util_query_exec("BEGIN IMMEDIATE TRANSACTION");
+		ret = cal_db_util_query_exec("BEGIN IMMEDIATE TRANSACTION");
 		// !! check error code
 		while(CAL_DB_OK != ret && progress < CAL_COMMIT_TRY_MAX) {
 			usleep(progress);
-			ret = _cal_db_util_query_exec("BEGIN IMMEDIATE TRANSACTION");
+			ret = cal_db_util_query_exec("BEGIN IMMEDIATE TRANSACTION");
 			progress *= 2;
 		}
 		RETVM_IF(CAL_DB_OK != ret, ret, "cal_query_exec() Failed(%d)", ret);
 
 		transaction_cnt = 0;
 		const char *query = "SELECT ver FROM "CAL_TABLE_VERSION;
-		ret = _cal_db_util_query_get_first_int_result(query, NULL, &transaction_ver);
+		ret = cal_db_util_query_get_first_int_result(query, NULL, &transaction_ver);
 		if (CALENDAR_ERROR_NONE != ret)
 		{
-			ERR("_cal_db_util_query_get_first_int_result() failed");
+			ERR("cal_db_util_query_get_first_int_result() failed");
 			return ret;
 		}
 		version_up = false;
@@ -381,7 +381,7 @@ int _cal_db_util_begin_trans(void)
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_db_util_end_trans(bool is_success)
+int cal_db_util_end_trans(bool is_success)
 {
 	int ret;
 	int progress = 0;
@@ -395,8 +395,8 @@ int _cal_db_util_end_trans(bool is_success)
 	}
 
 	if (false == is_success) {
-		__cal_db_util_cancel_changes();
-		ret = _cal_db_util_query_exec("ROLLBACK TRANSACTION");
+		_cal_db_util_cancel_changes();
+		ret = cal_db_util_query_exec("ROLLBACK TRANSACTION");
 		return CALENDAR_ERROR_NONE;
 	}
 
@@ -404,17 +404,17 @@ int _cal_db_util_end_trans(bool is_success)
 		transaction_ver++;
 		snprintf(query, sizeof(query), "UPDATE %s SET ver = %d",
 				CAL_TABLE_VERSION, transaction_ver);
-		ret = _cal_db_util_query_exec(query);
+		ret = cal_db_util_query_exec(query);
 		WARN_IF(CAL_DB_OK != ret, "cal_query_exec(version up) Failed(%d).", ret);
 	}
 
 	INFO("start commit");
 	progress = 100000;
-	ret = _cal_db_util_query_exec("COMMIT TRANSACTION");
+	ret = cal_db_util_query_exec("COMMIT TRANSACTION");
 	// !! check error code
 	while (CAL_DB_OK != ret && progress < CAL_COMMIT_TRY_MAX) {
 		usleep(progress);
-		ret = _cal_db_util_query_exec("COMMIT TRANSACTION");
+		ret = cal_db_util_query_exec("COMMIT TRANSACTION");
 		progress *= 2;
 	}
 	INFO("%s", (CAL_DB_OK == ret)?"commit": "rollback");
@@ -422,20 +422,20 @@ int _cal_db_util_end_trans(bool is_success)
 	if (CAL_DB_OK != ret) {
 		int tmp_ret;
 		ERR("cal_query_exec() Failed(%d)", ret);
-		__cal_db_util_cancel_changes();
-		tmp_ret = _cal_db_util_query_exec("ROLLBACK TRANSACTION");
+		_cal_db_util_cancel_changes();
+		tmp_ret = cal_db_util_query_exec("ROLLBACK TRANSACTION");
 		WARN_IF(CAL_DB_OK != tmp_ret, "cal_query_exec(ROLLBACK) Failed(%d).", tmp_ret);
 		return CALENDAR_ERROR_DB_FAILED;
 	}
-	if (event_change) __cal_db_util_notify_event_change();
-	if (todo_change) __cal_db_util_notify_todo_change();
-	if (calendar_change) __cal_db_util_notify_calendar_change();
+	if (event_change) _cal_db_util_notify_event_change();
+	if (todo_change) _cal_db_util_notify_todo_change();
+	if (calendar_change) _cal_db_util_notify_calendar_change();
 
 	DBG("transaction_ver = %d",transaction_ver);
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_db_util_get_next_ver(void)
+int cal_db_util_get_next_ver(void)
 {
 	int count = 0;
 	int ret;
@@ -448,16 +448,16 @@ int _cal_db_util_get_next_ver(void)
 
 	query = "SELECT ver FROM "CAL_TABLE_VERSION;
 
-	ret = _cal_db_util_query_get_first_int_result(query, NULL, &count);
+	ret = cal_db_util_query_get_first_int_result(query, NULL, &count);
 	if (CALENDAR_ERROR_NONE != ret)
 	{
-		ERR("_cal_db_util_query_get_first_int_result() failed");
+		ERR("cal_db_util_query_get_first_int_result() failed");
 		return ret;
 	}
 	return (1 + count);
 }
 
-int _cal_db_util_get_transaction_ver(void)
+int cal_db_util_get_transaction_ver(void)
 {
 	return transaction_ver;
 }

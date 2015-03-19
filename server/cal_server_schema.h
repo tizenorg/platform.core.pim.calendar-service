@@ -20,6 +20,6 @@
 #ifndef __CAL_SERVER_SCHEMA_H__
 #define __CAL_SERVER_SCHEMA_H__
 
-int _cal_server_schema_check(void);
+int cal_server_schema_check(void);
 
 #endif // __CAL_SERVER_SCHEMA_H__

@@ -26,12 +26,12 @@
 #define CAL_PRIVILEGE_READ "http://tizen.org/privilege/calendar.read"
 #define CAL_PRIVILEGE_WRITE "http://tizen.org/privilege/calendar.write"
 
-void _cal_access_control_set_client_info(pims_ipc_h ipc, const char* smack_label);
-void _cal_access_control_unset_client_info(void);
-char* _cal_access_control_get_label(void);
-void _cal_access_control_reset(void);  // reset read_list, write_list..
-bool _cal_access_control_have_write_permission(int calendarbook_id);
-int _cal_is_owner(int calendarbook_id);
+void cal_access_control_set_client_info(pims_ipc_h ipc, const char* smack_label);
+void cal_access_control_unset_client_info(void);
+char* cal_access_control_get_label(void);
+void cal_access_control_reset(void);  // reset read_list, write_list..
+bool cal_access_control_have_write_permission(int calendarbook_id);
+int cal_is_owner(int calendarbook_id);
 
 #endif // __CALENDAR_SVC_ACCESS_CONTROL_H__
 

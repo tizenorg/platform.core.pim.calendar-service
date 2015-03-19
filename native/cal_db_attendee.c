@@ -29,7 +29,7 @@
 #include "cal_db_query.h"
 #include "cal_db_attendee.h"
 
-static int __cal_db_attendee_insert_record(calendar_record_h record, int parent_id)
+static int _cal_db_attendee_insert_record(calendar_record_h record, int parent_id)
 {
 	int index;
 	cal_db_util_error_e dbret = CAL_DB_OK;
@@ -64,53 +64,53 @@ static int __cal_db_attendee_insert_record(calendar_record_h record, int parent_
 			attendee->attendee_role,
 			attendee->attendee_rsvp);
 
-	stmt = _cal_db_util_query_prepare(query);
+	stmt = cal_db_util_query_prepare(query);
 	if (NULL == stmt)
 	{
-		DBG("_cal_db_util_query_prepare() Failed");
+		DBG("cal_db_util_query_prepare() Failed");
 		DBG("query[%s]", query);
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 
 	index = 1;
 	if (attendee->attendee_name)
-		_cal_db_util_stmt_bind_text(stmt, index, attendee->attendee_name);
+		cal_db_util_stmt_bind_text(stmt, index, attendee->attendee_name);
 	index++;
 
 	if (attendee->attendee_email)
-		_cal_db_util_stmt_bind_text(stmt, index, attendee->attendee_email);
+		cal_db_util_stmt_bind_text(stmt, index, attendee->attendee_email);
 	index++;
 
 	if (attendee->attendee_number)
-		_cal_db_util_stmt_bind_text(stmt, index, attendee->attendee_number);
+		cal_db_util_stmt_bind_text(stmt, index, attendee->attendee_number);
 	index++;
 
 	if (attendee->attendee_group)
-		_cal_db_util_stmt_bind_text(stmt, index, attendee->attendee_group);
+		cal_db_util_stmt_bind_text(stmt, index, attendee->attendee_group);
 	index++;
 
 	if (attendee->attendee_delegator_uri)
-		_cal_db_util_stmt_bind_text(stmt, index, attendee->attendee_delegator_uri);
+		cal_db_util_stmt_bind_text(stmt, index, attendee->attendee_delegator_uri);
 	index++;
 
 	if (attendee->attendee_delegatee_uri)
-		_cal_db_util_stmt_bind_text(stmt, index, attendee->attendee_delegatee_uri);
+		cal_db_util_stmt_bind_text(stmt, index, attendee->attendee_delegatee_uri);
 	index++;
 
 	if (attendee->attendee_member)
-		_cal_db_util_stmt_bind_text(stmt, index, attendee->attendee_member);
+		cal_db_util_stmt_bind_text(stmt, index, attendee->attendee_member);
 	index++;
 
 	if (attendee->attendee_uid)
-		_cal_db_util_stmt_bind_text(stmt, index, attendee->attendee_uid);
+		cal_db_util_stmt_bind_text(stmt, index, attendee->attendee_uid);
 	index++;
 
-	dbret = _cal_db_util_stmt_step(stmt);
+	dbret = cal_db_util_stmt_step(stmt);
 	sqlite3_finalize(stmt);
 
 	if (CAL_DB_DONE != dbret)
 	{
-		ERR("_cal_db_util_stmt_step() Failed(%d)", dbret);
+		ERR("cal_db_util_stmt_step() Failed(%d)", dbret);
 		switch (dbret)
 		{
 		case CAL_DB_ERROR_NO_SPACE:
@@ -124,7 +124,7 @@ static int __cal_db_attendee_insert_record(calendar_record_h record, int parent_
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_db_attendee_insert_records(cal_list_s *list_s, int parent_id)
+int cal_db_attendee_insert_records(cal_list_s *list_s, int parent_id)
 {
 	int ret;
 	int count = 0;
@@ -139,15 +139,15 @@ int _cal_db_attendee_insert_records(cal_list_s *list_s, int parent_id)
 
 	calendar_list_first(list);
 	while (CALENDAR_ERROR_NONE == calendar_list_get_current_record_p(list, &record)) {
-		ret = __cal_db_attendee_insert_record(record, parent_id);
-		RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "_cal_db_extended_insert_record() Failed(%d)", ret);
+		ret = _cal_db_attendee_insert_record(record, parent_id);
+		RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_db_extended_insert_record() Failed(%d)", ret);
 		calendar_list_next(list);
 	}
 	return CALENDAR_ERROR_NONE;
 
 }
 
-int _cal_db_attendee_get_records(int parent_id, cal_list_s *list)
+int cal_db_attendee_get_records(int parent_id, cal_list_s *list)
 {
 	int ret;
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
@@ -174,19 +174,19 @@ int _cal_db_attendee_get_records(int parent_id, cal_list_s *list)
 			"FROM %s WHERE event_id = %d ",
 			CAL_TABLE_ATTENDEE, parent_id);
 
-	stmt = _cal_db_util_query_prepare(query);
-	RETVM_IF(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "_cal_db_util_query_prepare() failed");
+	stmt = cal_db_util_query_prepare(query);
+	RETVM_IF(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "cal_db_util_query_prepare() failed");
 
 	int index;
 	const unsigned char *temp;
 	calendar_record_h record = NULL;
 	cal_attendee_s *attendee = NULL;
 
-	while (CAL_DB_ROW == _cal_db_util_stmt_step(stmt)) {
+	while (CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
 		ret = calendar_record_create(_calendar_attendee._uri, &record);
 		if (CALENDAR_ERROR_NONE != ret) {
 			sqlite3_finalize(stmt);
-			_cal_list_clear(list);
+			cal_list_clear(list);
 			return ret;
 		}
 
@@ -234,7 +234,7 @@ int _cal_db_attendee_get_records(int parent_id, cal_list_s *list)
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_db_attendee_delete_with_id(int parent_id)
+int cal_db_attendee_delete_with_id(int parent_id)
 {
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	cal_db_util_error_e dbret = CAL_DB_OK;
@@ -242,10 +242,10 @@ int _cal_db_attendee_delete_with_id(int parent_id)
 	snprintf(query, sizeof(query), "DELETE FROM %s WHERE event_id=%d ",
 			CAL_TABLE_ATTENDEE, parent_id);
 
-	dbret = _cal_db_util_query_exec(query);
+	dbret = cal_db_util_query_exec(query);
 	if (dbret != CAL_DB_OK)
 	{
-		ERR("_cal_db_util_query_exec() failed (%d)", dbret);
+		ERR("cal_db_util_query_exec() failed (%d)", dbret);
 		switch (dbret)
 		{
 		case CAL_DB_ERROR_NO_SPACE:

@@ -106,6 +106,17 @@
 	} \
 } while (0)
 
+#define CAL_START_TIMESTAMP struct timeval timeval_s = {0}; \
+	struct timeval timeval_e = {0}; \
+	struct timeval timeval_d = {0}; \
+	DBG(COLOR_PURPLE">>>>>"COLOR_END); \
+	gettimeofday(&timeval_s, NULL);
+
+#define CAL_PRINT_TIMESTAMP gettimeofday(&timeval_e, NULL); \
+	timersub(&timeval_e, &timeval_s, &timeval_d); \
+	timeval_s = timeval_e; \
+	DBG(COLOR_PURPLE"<<<<< (%03d.%03dsec)"COLOR_END, timeval_d.tv_sec % 1000, timeval_d.tv_usec/1000);
+
 #define CAL_PROFILE
 #ifdef CAL_PROFILE
 #define CAL_PROFILE_GET_TIME() (clock() / (CLOCKS_PER_SEC / 1000));

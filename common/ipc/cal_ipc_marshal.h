@@ -33,34 +33,34 @@ typedef struct {
 	cal_ipc_marshal_record_get_primary_id_cb get_primary_id;
 } cal_ipc_marshal_record_plugin_cb_s;
 
-int _cal_ipc_unmarshal_record(const pims_ipc_data_h ipc_data, calendar_record_h* precord);
-int _cal_ipc_marshal_record(const calendar_record_h record, pims_ipc_data_h ipc_data);
-int _cal_ipc_marshal_record_get_primary_id(const calendar_record_h record, unsigned int *property_id, int *id);
+int cal_ipc_unmarshal_record(const pims_ipc_data_h ipc_data, calendar_record_h* precord);
+int cal_ipc_marshal_record(const calendar_record_h record, pims_ipc_data_h ipc_data);
+int cal_ipc_marshal_record_get_primary_id(const calendar_record_h record, unsigned int *property_id, int *id);
 
-int _cal_ipc_unmarshal_char(const pims_ipc_data_h ipc_data, char** ppbufchar);
-int _cal_ipc_unmarshal_int(const pims_ipc_data_h data, int *pout);
-int _cal_ipc_unmarshal_uint(const pims_ipc_data_h data, unsigned int *pout);
-int _cal_ipc_unmarshal_lli(const pims_ipc_data_h data, long long int *pout);
-int _cal_ipc_unmarshal_long(const pims_ipc_data_h data, long *pout);
-int _cal_ipc_unmarshal_double(const pims_ipc_data_h data, double *pout);
-int _cal_ipc_unmarshal_caltime(const pims_ipc_data_h data, calendar_time_s *pout);
-int _cal_ipc_unmarshal_record_common(const pims_ipc_data_h ipc_data, cal_record_s* common);
+int cal_ipc_unmarshal_char(const pims_ipc_data_h ipc_data, char** ppbufchar);
+int cal_ipc_unmarshal_int(const pims_ipc_data_h data, int *pout);
+int cal_ipc_unmarshal_uint(const pims_ipc_data_h data, unsigned int *pout);
+int cal_ipc_unmarshal_lli(const pims_ipc_data_h data, long long int *pout);
+int cal_ipc_unmarshal_long(const pims_ipc_data_h data, long *pout);
+int cal_ipc_unmarshal_double(const pims_ipc_data_h data, double *pout);
+int cal_ipc_unmarshal_caltime(const pims_ipc_data_h data, calendar_time_s *pout);
+int cal_ipc_unmarshal_record_common(const pims_ipc_data_h ipc_data, cal_record_s* common);
 
-int _cal_ipc_marshal_char(const char* bufchar, pims_ipc_data_h ipc_data);
-int _cal_ipc_marshal_int(const int in, pims_ipc_data_h ipc_data);
-int _cal_ipc_marshal_uint(const unsigned int in, pims_ipc_data_h ipc_data);
-int _cal_ipc_marshal_lli(const long long int in, pims_ipc_data_h ipc_data);
-int _cal_ipc_marshal_long(const long in, pims_ipc_data_h ipc_data);
-int _cal_ipc_marshal_double(const double in, pims_ipc_data_h ipc_data);
-int _cal_ipc_marshal_caltime(const calendar_time_s in, pims_ipc_data_h ipc_data);
-int _cal_ipc_marshal_record_common(const cal_record_s* common, pims_ipc_data_h ipc_data);
+int cal_ipc_marshal_char(const char* bufchar, pims_ipc_data_h ipc_data);
+int cal_ipc_marshal_int(const int in, pims_ipc_data_h ipc_data);
+int cal_ipc_marshal_uint(const unsigned int in, pims_ipc_data_h ipc_data);
+int cal_ipc_marshal_lli(const long long int in, pims_ipc_data_h ipc_data);
+int cal_ipc_marshal_long(const long in, pims_ipc_data_h ipc_data);
+int cal_ipc_marshal_double(const double in, pims_ipc_data_h ipc_data);
+int cal_ipc_marshal_caltime(const calendar_time_s in, pims_ipc_data_h ipc_data);
+int cal_ipc_marshal_record_common(const cal_record_s* common, pims_ipc_data_h ipc_data);
 
-int _cal_ipc_unmarshal_query(const pims_ipc_data_h ipc_data, calendar_query_h *query);
-int _cal_ipc_marshal_query(const calendar_query_h query, pims_ipc_data_h ipc_data);
-int _cal_ipc_unmarshal_list(const pims_ipc_data_h ipc_data, calendar_list_h *list);
-int _cal_ipc_marshal_list(const calendar_list_h list, pims_ipc_data_h ipc_data);
+int cal_ipc_unmarshal_query(const pims_ipc_data_h ipc_data, calendar_query_h *query);
+int cal_ipc_marshal_query(const calendar_query_h query, pims_ipc_data_h ipc_data);
+int cal_ipc_unmarshal_list(const pims_ipc_data_h ipc_data, calendar_list_h *list);
+int cal_ipc_marshal_list(const calendar_list_h list, pims_ipc_data_h ipc_data);
 
-int _cal_ipc_unmarshal_child_list(const pims_ipc_data_h ipc_data, calendar_list_h* list);
+int cal_ipc_unmarshal_child_list(const pims_ipc_data_h ipc_data, calendar_list_h* list);
 
 /*
  * for property_id

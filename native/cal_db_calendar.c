@@ -41,14 +41,14 @@ int calendar_db_delete_account(int account_id)
 	snprintf(query, sizeof(query), "SELECT id FROM %s where account_id = %d and deleted = 0",
 			CAL_TABLE_CALENDAR, account_id);
 
-	stmt = _cal_db_util_query_prepare(query);
+	stmt = cal_db_util_query_prepare(query);
 	if (NULL == stmt)
 	{
-		ERR("_cal_db_util_query_prepare() Failed");
+		ERR("cal_db_util_query_prepare() Failed");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 
-	while(CAL_DB_ROW == _cal_db_util_stmt_step(stmt))
+	while(CAL_DB_ROW == cal_db_util_stmt_step(stmt))
 	{
 		int id = 0;
 		id = sqlite3_column_int(stmt, 0);
@@ -59,7 +59,7 @@ int calendar_db_delete_account(int account_id)
 	if(calendar_list)
 		DBG("calendar cnt=%d",g_list_length(calendar_list) );
 
-	ret = _cal_db_util_begin_trans();
+	ret = cal_db_util_begin_trans();
 	if (CALENDAR_ERROR_NONE != ret)
 	{
 		g_list_free(calendar_list);
@@ -81,7 +81,7 @@ int calendar_db_delete_account(int account_id)
 	}
 
 	g_list_free(calendar_list);
-	_cal_db_util_end_trans(true);
+	cal_db_util_end_trans(true);
 	return CALENDAR_ERROR_NONE;
 }
 #endif

@@ -20,6 +20,6 @@
 #ifndef __CALENDAR_SVC_SERVICE_H__
 #define __CALENDAR_SVC_SERVICE_H__
 
-void _cal_calendar_internal_disconnect(void);
+void cal_calendar_internal_disconnect(void);
 
 #endif // __CALENDAR_SVC_SERVICE_H__

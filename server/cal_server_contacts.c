@@ -33,61 +33,11 @@
 
 #define CAL_SERVER_CONTACTS_SYNC_THREAD_NAME "cal_server_contacts_sync"
 
-static struct timeval stv; // check time
-static struct timeval etv; // check time
+GThread *_cal_server_contacts_sync_thread = NULL;
+GCond _cal_server_contacts_sync_cond;
+GMutex _cal_server_contacts_sync_mutex;
 
-GThread *__cal_server_contacts_sync_thread = NULL;
-GCond __cal_server_contacts_sync_cond;
-GMutex __cal_server_contacts_sync_mutex;
-
-static int __cal_server_contacts_get_contacts_db_version(int *version)
-{
-	int ver = 0;
-	int ret;
-	const char *query = "SELECT contacts_ver FROM "CAL_TABLE_VERSION;
-
-	DBG("query[%s]", query);
-	ret = _cal_db_util_query_get_first_int_result(query, NULL, &ver);
-	if (CALENDAR_ERROR_NONE != ret) {
-		ERR("_cal_db_util_query_get_first_int_result() failed");
-		return ret;
-	}
-
-	if (version) *version = ver;
-	return CALENDAR_ERROR_NONE;
-}
-
-static int __cal_server_contacts_set_contacts_db_version(int version)
-{
-	int ret = CALENDAR_ERROR_NONE;
-	cal_db_util_error_e dbret = CAL_DB_OK;
-	char query[CAL_DB_SQL_MAX_LEN] = {0};
-
-	ret = _cal_db_util_begin_trans();
-	if (CALENDAR_ERROR_NONE != ret)	{
-		ERR("_cal_db_util_begin_trans() failed");
-		return CALENDAR_ERROR_DB_FAILED;
-	}
-
-	snprintf(query, sizeof(query), "UPDATE %s SET contacts_ver = %d",
-			CAL_TABLE_VERSION, version);
-	dbret = _cal_db_util_query_exec(query);
-	if (CAL_DB_OK != dbret) {
-		ERR("_cal_db_util_query_exec() failed (%d)", dbret);
-		switch (dbret) {
-		case CAL_DB_ERROR_NO_SPACE:
-			_cal_db_util_end_trans(false);
-			return CALENDAR_ERROR_FILE_NO_SPACE;
-		default:
-			_cal_db_util_end_trans(false);
-			return CALENDAR_ERROR_DB_FAILED;
-		}
-	}
-	_cal_db_util_end_trans(true);
-	return CALENDAR_ERROR_NONE;
-}
-
-static int __cal_server_contacts_set_new_event(int id, char *label, int date, char *type, int account_id, calendar_record_h *out_event)
+static int _cal_server_contacts_set_new_event(int id, char *label, int date, char *type, int account_id, calendar_record_h *out_event)
 {
 	int ret;
 	char buf[4] = {0};
@@ -107,7 +57,7 @@ static int __cal_server_contacts_set_new_event(int id, char *label, int date, ch
 	st.time.date.second = 0;
 
 	et.type = CALENDAR_TIME_LOCALTIME;
-	_cal_time_get_next_date(&st, &et);
+	cal_time_get_next_date(&st, &et);
 
 	snprintf(buf, sizeof(buf), "%d", st.time.date.mday);
 
@@ -190,81 +140,21 @@ static int __cal_server_contacts_set_new_event(int id, char *label, int date, ch
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_server_contacts_find_delete_event(int id, int **delete_ids, int *delete_count)
+static int cal_server_contacts_delete_event(int contact_id)
 {
-	int ret;
-	int event_id;
-	int count;
-	calendar_list_h list = NULL;
-	calendar_record_h event = NULL;
-	calendar_query_h query = NULL;
-	calendar_filter_h filter = NULL;
+	int ret = 0;;
 
-	ret = calendar_query_create(_calendar_event._uri, &query);
-	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "calendar_query_create() failed");
-	ret = calendar_filter_create(_calendar_event._uri, &filter);
-	if (CALENDAR_ERROR_NONE != ret) {
-		ERR("calendar_filter_create() failed");
-		calendar_query_destroy(query);
-		return ret;
-	}
-	ret = calendar_filter_add_int(filter, _calendar_event.person_id,
-			CALENDAR_MATCH_EQUAL, id);
-	if (CALENDAR_ERROR_NONE != ret) {
-		ERR("Failed to add _calendar_event.person_id");
-		calendar_filter_destroy(filter);
-		calendar_query_destroy(query);
-		return ret;
-	}
-	ret = calendar_query_set_filter(query, filter);
-	if (CALENDAR_ERROR_NONE != ret) {
-		ERR("calendar_query_set_filter() failed");
-		calendar_filter_destroy(filter);
-		calendar_query_destroy(query);
-		return ret;
-	}
-	ret = calendar_db_get_records_with_query(query, 0, 0, &list);
-	if (CALENDAR_ERROR_NONE != ret) {
-		ERR("calendar_db_get_records_with_query() failed");
-		calendar_list_destroy(list, true);
-		calendar_filter_destroy(filter);
-		calendar_query_destroy(query);
-		return ret;
-	}
-	ret = calendar_list_get_count(list, &count);
-	if (CALENDAR_ERROR_NONE != ret) {
-		ERR("calendar_list_get_count() failed");
-		calendar_list_destroy(list, true);
-		calendar_filter_destroy(filter);
-		calendar_query_destroy(query);
-		return ret;
-	}
-	DBG("event count(%d)\n", count);
+	char query[CAL_DB_SQL_MAX_LEN] = {0};
+	snprintf(query, sizeof(query), "SELECT id FROM %s WHERE contact_id=%d", CAL_TABLE_SCHEDULE, contact_id);
+	int event_id = 0;
+	ret = cal_db_util_query_get_first_int_result(query, NULL, &event_id);
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_db_util_query_get_first_int_result() Fail(%d)", ret);
 
-	calendar_list_first(list);
-	*delete_count = 0;
-	*delete_ids = calloc(count, sizeof(int));
-	do {
-		if (calendar_list_get_current_record_p(list, &event) == CALENDAR_ERROR_NONE) {
-			if (event == NULL) {
-				DBG("No event\n");
-				break;
-			}
-			calendar_record_get_int(event, _calendar_event.id, &event_id);
-			(*delete_ids)[*delete_count] = event_id;
-			(*delete_count)++;
-			DBG("delete event_id(%d)\n", event_id);
-		}
-	} while (calendar_list_next(list) != CALENDAR_ERROR_NO_DATA);
-
-	calendar_list_destroy(list, true);
-	calendar_filter_destroy(filter);
-	calendar_query_destroy(query);
-
+	cal_db_event_delete_record(event_id);
 	return CALENDAR_ERROR_NONE;
 }
 
-static int __cal_server_contacts_make_insert_event(int id, calendar_list_h *out_list)
+static int cal_server_contacts_insert_event(int id)
 {
 	int ret;
 	int index;
@@ -282,12 +172,11 @@ static int __cal_server_contacts_make_insert_event(int id, calendar_list_h *out_
 	ret = contacts_record_get_int(contact, _contacts_contact.address_book_id, &address_book_id);
 	if (ret != CONTACTS_ERROR_NONE) {
 		DBG("get fail");
-	}
-	else if (address_book_id > 0) { // default phone addressbook is 0
-		if (contacts_db_get_record(_contacts_address_book._uri, address_book_id, &address_book) != CONTACTS_ERROR_NONE) {
+	} else if (address_book_id > 0) { // default phone addressbook is 0
+		ret = contacts_db_get_record(_contacts_address_book._uri, address_book_id, &address_book);
+		if (CONTACTS_ERROR_NONE != ret) {
 			DBG("contacts_db_get_record(%d)", address_book_id);
-		}
-		else {
+		} else {
 			contacts_record_get_int(address_book, _contacts_address_book.account_id, &account_id);
 			DBG("account_id[%d]",account_id);
 			contacts_record_destroy(address_book, true);
@@ -295,8 +184,7 @@ static int __cal_server_contacts_make_insert_event(int id, calendar_list_h *out_
 	}
 
 	index = 0;
-	while (CONTACTS_ERROR_NONE == contacts_record_get_child_record_at_p(contact,
-				_contacts_contact.event, index++, &ctevent)) {
+	while (CONTACTS_ERROR_NONE == contacts_record_get_child_record_at_p(contact, _contacts_contact.event, index++, &ctevent)) {
 		ret = contacts_record_get_int(ctevent, _contacts_event.type, &type);
 		if (CONTACTS_ERROR_NONE != ret) {
 			ERR("Failed to get _contacts_event.type");
@@ -314,15 +202,12 @@ static int __cal_server_contacts_make_insert_event(int id, calendar_list_h *out_
 		case CONTACTS_EVENT_TYPE_BIRTH:
 			caltype = "birthday";
 			break;
-
 		case CONTACTS_EVENT_TYPE_ANNIVERSARY:
 			caltype = "anniversary";
 			break;
-
 		case CONTACTS_EVENT_TYPE_OTHER:
 			caltype = "other";
 			break;
-
 		case CONTACTS_EVENT_TYPE_CUSTOM:
 			ret = contacts_record_get_str_p(ctevent, _contacts_event.label, &caltype);
 			if (CALENDAR_ERROR_NONE != ret) {
@@ -330,9 +215,8 @@ static int __cal_server_contacts_make_insert_event(int id, calendar_list_h *out_
 				break;
 			}
 			break;
-
 		default:
-			DBG("Couldn't find type(%d)", type);
+			DBG("Invalid type(%d)", type);
 			is_proper_type = false;
 			break;
 		}
@@ -348,181 +232,111 @@ static int __cal_server_contacts_make_insert_event(int id, calendar_list_h *out_
 		}
 		SEC_DBG("id(%d) display[%s] type(%d)", id, display, type);
 
-		__cal_server_contacts_set_new_event(id, display, date, caltype, account_id, &out_event);
-		calendar_list_add(*out_list, out_event);
+		_cal_server_contacts_set_new_event(id, display, date, caltype, account_id, &out_event);
+		cal_db_event_insert_record(out_event, -1, NULL);
 	}
 
 	contacts_record_destroy(contact, true);
-	contact = NULL;
 	return CALENDAR_ERROR_NONE;
 }
 
 static void __contacts_changed_cb(const char* view_uri, void *user_data)
 {
-	_cal_server_contacts_sync_start();
-}
-
-static void __cal_server_contacts_append_delete_ids(int **delete_ids, int *size, int *delete_count, int *del_ids, int dcount)
-{
-	if (*size < *delete_count + dcount) {
-		do {
-			(*size) = (*size) * 2;
-		} while(*size < *delete_count + dcount);
-		*delete_ids = realloc(*delete_ids, *size * sizeof(int));
-	}
-
-	int i=0;
-	for(;i<dcount;i++) {
-		(*delete_ids)[*delete_count] = del_ids[i];
-		(*delete_count)++;
-	}
+	cal_server_contacts_sync_start();
 }
 
 #define BULK_MAX_COUNT		100
 #define SYNC_USLEEP		500
 
-static int __cal_server_contacts_sync()
+static int _cal_server_contacts_sync(void)
 {
+	CAL_START_TIMESTAMP
+
 	int ret;
-	int db_ver = -1;
-	int latest_ver = -1;
+	int contacts_ver = -1;
 	int status;
-	int id;
-	int count = 0;
-	contacts_list_h list = NULL;
 	contacts_record_h updated = NULL;
 
-	calendar_list_h insert_list = NULL;
+	char query[CAL_DB_SQL_MAX_LEN] = {0};
+	snprintf(query, sizeof(query), "SELECT contacts_ver FROM %s", CAL_TABLE_VERSION);
+	ret = cal_db_util_query_get_first_int_result(query, NULL, &contacts_ver);
+	if(CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_get_first_int_result() Fail(%d)", ret);
+		return ret;
+	}
+	DBG("contacts_ver(%d)", contacts_ver);
 
-	gettimeofday(&stv, NULL); // check time
-
-	ret = __cal_server_contacts_get_contacts_db_version(&db_ver);
-	if (ret != CALENDAR_ERROR_NONE)
-		return false;
-
-	DBG("contacts db version(%d)", db_ver);
-
+	contacts_list_h contacts_list = NULL;
+	int latest_ver = -1;
 	ret = contacts_db_get_changes_by_version(_contacts_contact_updated_info._uri,
-			-1, db_ver, &list, &latest_ver);
+			-1, contacts_ver, &contacts_list, &latest_ver);
 	if (CONTACTS_ERROR_NONE != ret) {
-		ERR("contacts_db_get_changes_by_version() failed");
-		contacts_list_destroy(list, true);
-		return false;
+		ERR("contacts_db_get_changes_by_version() Fail(%d)", ret);
+		contacts_list_destroy(contacts_list, true);
+		return ret;
 	}
 
-	if (list == NULL) {
-		DBG("list is NULL");
-		return false;
+	if (NULL == contacts_list) {
+		DBG("contacts_list is NULL");
+		contacts_list_destroy(contacts_list, true);
+		return CALENDAR_ERROR_NO_DATA;
 	}
 	DBG("get changes and get the latest contacts version(%d)\n", latest_ver);
 
-	ret = contacts_list_get_count(list, &count);
-	DBG("contacts count(%d)", count);
+	int count = 0;
+	ret = contacts_list_get_count(contacts_list, &count);
 	if (count == 0) {
-		if (db_ver != latest_ver) {
-			__cal_server_contacts_set_contacts_db_version(latest_ver);
-			DBG("set latest ver(%d)", latest_ver);
+		if (contacts_ver == latest_ver) {
+			contacts_list_destroy(contacts_list, true);
+			return CALENDAR_ERROR_NO_DATA;
 		}
-		return false;
+	}
+	DBG("contacts count(%d)", count);
+
+	ret = cal_db_util_begin_trans();
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_db_util_begin_trans() Fail(%d)", ret);
+
+	snprintf(query, sizeof(query), "UPDATE %s SET contacts_ver=%d", CAL_TABLE_VERSION, latest_ver);
+	ret = cal_db_util_query_exec(query);
+	if(CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_exec() Fail(%d)", ret);
+		contacts_list_destroy(contacts_list, true);
+		cal_db_util_end_trans(false);
+		return ret;
 	}
 
-	int size = 100;
-	int *delete_ids = calloc(size, sizeof(int));
-	int delete_count = 0;
-
-	calendar_list_create(&insert_list);
-
-	while (CONTACTS_ERROR_NONE == ret) {
-		int *del_ids = NULL;
-		int dcount = 0;
-		contacts_list_get_current_record_p(list, &updated);
-		contacts_record_get_int(updated, _contacts_contact_updated_info.contact_id, &id);
+	contacts_list_first(contacts_list);
+	do {
+		int contact_id = 0;
+		contacts_list_get_current_record_p(contacts_list, &updated);
+		contacts_record_get_int(updated, _contacts_contact_updated_info.contact_id, &contact_id);
 		contacts_record_get_int(updated, _contacts_contact_updated_info.type, &status);
 
 		switch (status) {
 		case CONTACTS_CHANGE_INSERTED:
-			__cal_server_contacts_make_insert_event(id, &insert_list);
+			cal_server_contacts_insert_event(contact_id);
 			break;
-
 		case CONTACTS_CHANGE_UPDATED:
-			__cal_server_contacts_find_delete_event(id, &del_ids, &dcount);
-			__cal_server_contacts_append_delete_ids(&delete_ids, &size, &delete_count, del_ids, dcount);
-			free(del_ids);
-			__cal_server_contacts_make_insert_event(id, &insert_list);
+			cal_server_contacts_delete_event(contact_id);
+			cal_server_contacts_insert_event(contact_id);
 			break;
-
 		case CONTACTS_CHANGE_DELETED:
-			__cal_server_contacts_find_delete_event(id, &del_ids, &dcount);
-			__cal_server_contacts_append_delete_ids(&delete_ids, &size, &delete_count, del_ids, dcount);
-			free(del_ids);
+			cal_server_contacts_delete_event(contact_id);
 			break;
-
 		default:
 			ERR("Not valid");
 			break;
 		}
-		ret = contacts_list_next(list);
-	}
+	} while (CONTACTS_ERROR_NONE == contacts_list_next(contacts_list));
 
-	// delete events
-	int index = 0;
-	int remain_count = delete_count;
-	while (remain_count > 0) {
-		int ids[BULK_MAX_COUNT] = {0};
-		int i;
-		for (i=0;i<BULK_MAX_COUNT && index<delete_count;i++) {
-			ids[i] = delete_ids[index];
-			remain_count--;
-			index++;
-		}
-		DBG("delete record : count(%d)", index);
-		calendar_db_delete_records(_calendar_event._uri, ids, i);
-		usleep(SYNC_USLEEP);
-	}
-	free(delete_ids);
+	contacts_list_destroy(contacts_list, true);
+	cal_db_util_end_trans(true);
 
-	// insert events
-	int insert_count = 0;
-	calendar_list_get_count(insert_list, &insert_count);
-	while (insert_count > BULK_MAX_COUNT) {
-		calendar_list_h temp = NULL;
-		calendar_list_create(&temp);
-		int i;
-		for (i=0;i<BULK_MAX_COUNT;i++) {
-			calendar_record_h temp_record = NULL;
-			calendar_list_first(insert_list);
-			calendar_list_get_current_record_p(insert_list, &temp_record);
-			calendar_list_remove(insert_list, temp_record);
-			calendar_list_add(temp, temp_record);
-			insert_count--;
-		}
-		calendar_db_insert_records(temp, NULL, NULL);
-		calendar_list_destroy(temp, true);
-		calendar_list_get_count(insert_list, &insert_count);
-		usleep(SYNC_USLEEP);
-	}
-	if (insert_count > 0) {
-		DBG("insert record : count(%d)", insert_count);
-		calendar_db_insert_records(insert_list, NULL, NULL);
-		usleep(SYNC_USLEEP);
-	}
-	calendar_list_destroy(insert_list, true);
-
-	contacts_list_destroy(list, true);
-	__cal_server_contacts_set_contacts_db_version(latest_ver);
-	DBG("set latest ver(%d)", latest_ver);
-
-	int diff;
-	gettimeofday(&etv, NULL);
-	diff = ((int)etv.tv_sec *1000 + (int)etv.tv_usec/1000)
-		-((int)stv.tv_sec *1000 + (int)stv.tv_usec/1000);
-	DBG(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"); // time check
-	DBG("diff %ld(%d.%d)",diff, diff/1000, diff%1000); // time check
-
-	return true;
+	CAL_PRINT_TIMESTAMP
+	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_server_contacts(void)
+int cal_server_contacts(void)
 {
 	int ret;
 
@@ -532,7 +346,7 @@ int _cal_server_contacts(void)
 	return CALENDAR_ERROR_NONE;
 }
 
-void _cal_server_contacts_delete(int account_id)
+void cal_server_contacts_delete(int account_id)
 {
 	int ret;
 	int event_id;
@@ -641,7 +455,7 @@ void _cal_server_contacts_delete(int account_id)
 	return;
 }
 
-static gpointer  __cal_server_contacts_sync_main(gpointer user_data)
+static gpointer  _cal_server_contacts_sync_main(gpointer user_data)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	CAL_FN_CALL();
@@ -650,39 +464,39 @@ static gpointer  __cal_server_contacts_sync_main(gpointer user_data)
 		ret = calendar_connect();
 		if (CALENDAR_ERROR_NONE != ret)
 			break;
-		_cal_access_control_set_client_info(NULL, NULL);
+		cal_access_control_set_client_info(NULL, NULL);
 
 		while(1) {
-			if (__cal_server_contacts_sync() == false) {
+			if (CALENDAR_ERROR_NONE != _cal_server_contacts_sync()) {
 				DBG("end");
 				break;
 			}
 		}
-		_cal_access_control_unset_client_info();
+		cal_access_control_unset_client_info();
 
 		calendar_disconnect();
 
-		g_mutex_lock(&__cal_server_contacts_sync_mutex);
+		g_mutex_lock(&_cal_server_contacts_sync_mutex);
 		DBG("wait");
-		g_cond_wait(&__cal_server_contacts_sync_cond, &__cal_server_contacts_sync_mutex);
-		g_mutex_unlock(&__cal_server_contacts_sync_mutex);
+		g_cond_wait(&_cal_server_contacts_sync_cond, &_cal_server_contacts_sync_mutex);
+		g_mutex_unlock(&_cal_server_contacts_sync_mutex);
 	}
 
 	return NULL;
 }
 
-void _cal_server_contacts_sync_start(void)
+void cal_server_contacts_sync_start(void)
 {
 	CAL_FN_CALL();
 
-	if (__cal_server_contacts_sync_thread == NULL) {
-		g_mutex_init(&__cal_server_contacts_sync_mutex);
-		g_cond_init(&__cal_server_contacts_sync_cond);
-		__cal_server_contacts_sync_thread = g_thread_new(CAL_SERVER_CONTACTS_SYNC_THREAD_NAME, __cal_server_contacts_sync_main,NULL);
+	if (_cal_server_contacts_sync_thread == NULL) {
+		g_mutex_init(&_cal_server_contacts_sync_mutex);
+		g_cond_init(&_cal_server_contacts_sync_cond);
+		_cal_server_contacts_sync_thread = g_thread_new(CAL_SERVER_CONTACTS_SYNC_THREAD_NAME, _cal_server_contacts_sync_main,NULL);
 	}
 
 	// don't use mutex.
-	g_cond_signal(&__cal_server_contacts_sync_cond);
+	g_cond_signal(&_cal_server_contacts_sync_cond);
 
 	return;
 }

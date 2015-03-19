@@ -35,56 +35,56 @@
 	return CALENDAR_ERROR_NOT_PERMITTED; \
 }
 
-extern cal_record_plugin_cb_s _cal_record_calendar_plugin_cb;
-extern cal_record_plugin_cb_s _cal_record_event_plugin_cb;
-extern cal_record_plugin_cb_s _cal_record_todo_plugin_cb;
-extern cal_record_plugin_cb_s _cal_record_alarm_plugin_cb;
-extern cal_record_plugin_cb_s _cal_record_attendee_plugin_cb;
-extern cal_record_plugin_cb_s _cal_record_timezone_plugin_cb;
-extern cal_record_plugin_cb_s _cal_record_updated_info_plugin_cb;
-extern cal_record_plugin_cb_s _cal_record_instance_normal_plugin_cb;
-extern cal_record_plugin_cb_s _cal_record_instance_allday_plugin_cb;
-extern cal_record_plugin_cb_s _cal_record_instance_normal_extended_plugin_cb;
-extern cal_record_plugin_cb_s _cal_record_instance_allday_extended_plugin_cb;
-extern cal_record_plugin_cb_s _cal_record_search_plugin_cb;
-extern cal_record_plugin_cb_s _cal_record_extended_plugin_cb;
+extern cal_record_plugin_cb_s cal_record_calendar_plugin_cb;
+extern cal_record_plugin_cb_s cal_record_event_plugin_cb;
+extern cal_record_plugin_cb_s cal_record_todo_plugin_cb;
+extern cal_record_plugin_cb_s cal_record_alarm_plugin_cb;
+extern cal_record_plugin_cb_s cal_record_attendee_plugin_cb;
+extern cal_record_plugin_cb_s cal_record_timezone_plugin_cb;
+extern cal_record_plugin_cb_s cal_record_updated_info_plugin_cb;
+extern cal_record_plugin_cb_s cal_record_instance_normal_plugin_cb;
+extern cal_record_plugin_cb_s cal_record_instance_allday_plugin_cb;
+extern cal_record_plugin_cb_s cal_record_instance_normal_extended_plugin_cb;
+extern cal_record_plugin_cb_s cal_record_instance_allday_extended_plugin_cb;
+extern cal_record_plugin_cb_s cal_record_search_plugin_cb;
+extern cal_record_plugin_cb_s cal_record_extended_plugin_cb;
 
-cal_record_plugin_cb_s* _cal_record_get_plugin_cb(cal_record_type_e type)
+cal_record_plugin_cb_s* cal_record_get_plugin_cb(cal_record_type_e type)
 {
 	switch (type)
 	{
 	case CAL_RECORD_TYPE_CALENDAR:
-		return (&_cal_record_calendar_plugin_cb);
+		return (&cal_record_calendar_plugin_cb);
 	case CAL_RECORD_TYPE_EVENT:
-		return (&_cal_record_event_plugin_cb);
+		return (&cal_record_event_plugin_cb);
 	case CAL_RECORD_TYPE_TODO:
-		return (&_cal_record_todo_plugin_cb);
+		return (&cal_record_todo_plugin_cb);
 	case CAL_RECORD_TYPE_ALARM:
-		return (&_cal_record_alarm_plugin_cb);
+		return (&cal_record_alarm_plugin_cb);
 	case CAL_RECORD_TYPE_ATTENDEE:
-		return (&_cal_record_attendee_plugin_cb);
+		return (&cal_record_attendee_plugin_cb);
 	case CAL_RECORD_TYPE_TIMEZONE:
-		return (&_cal_record_timezone_plugin_cb);
+		return (&cal_record_timezone_plugin_cb);
 	case CAL_RECORD_TYPE_INSTANCE_NORMAL:
-		return (&_cal_record_instance_normal_plugin_cb);
+		return (&cal_record_instance_normal_plugin_cb);
 	case CAL_RECORD_TYPE_INSTANCE_ALLDAY:
-		return (&_cal_record_instance_allday_plugin_cb);
+		return (&cal_record_instance_allday_plugin_cb);
 	case CAL_RECORD_TYPE_INSTANCE_NORMAL_EXTENDED:
-		return (&_cal_record_instance_normal_extended_plugin_cb);
+		return (&cal_record_instance_normal_extended_plugin_cb);
 	case CAL_RECORD_TYPE_INSTANCE_ALLDAY_EXTENDED:
-		return (&_cal_record_instance_allday_extended_plugin_cb);
+		return (&cal_record_instance_allday_extended_plugin_cb);
 	case CAL_RECORD_TYPE_UPDATED_INFO:
-		return (&_cal_record_updated_info_plugin_cb);
+		return (&cal_record_updated_info_plugin_cb);
 	case CAL_RECORD_TYPE_SEARCH:
-		return (&_cal_record_search_plugin_cb);
+		return (&cal_record_search_plugin_cb);
 	case CAL_RECORD_TYPE_EXTENDED:
-		return (&_cal_record_extended_plugin_cb);
+		return (&cal_record_extended_plugin_cb);
 	default:
 		return NULL;
 	}
 }
 
-static inline void __cal_record_set_property_flag(calendar_record_h record, unsigned int property_id, cal_properties_flag_e flag)
+static inline void _cal_record_set_property_flag(calendar_record_h record, unsigned int property_id, cal_properties_flag_e flag)
 {
 	int index;
 	cal_record_s *_record = NULL;
@@ -95,7 +95,7 @@ static inline void __cal_record_set_property_flag(calendar_record_h record, unsi
 	if (_record->properties_flags == NULL)
 	{
 		int count = 0;
-		_cal_view_get_property_info(_record->view_uri,&count);
+		cal_view_get_property_info(_record->view_uri,&count);
 
 		if (count > 0)
 		{
@@ -118,7 +118,7 @@ static inline void __cal_record_set_property_flag(calendar_record_h record, unsi
 	_record->property_flag |= flag;
 }
 
-bool _cal_record_check_property_flag(calendar_record_h record, unsigned int property_id, cal_properties_flag_e flag)
+bool cal_record_check_property_flag(calendar_record_h record, unsigned int property_id, cal_properties_flag_e flag)
 {
 	int index;
 	cal_record_s *_record = NULL;
@@ -151,7 +151,7 @@ bool _cal_record_check_property_flag(calendar_record_h record, unsigned int prop
 
 }
 
-int _cal_record_set_projection(calendar_record_h record, const unsigned int *projection, const int projection_count, int properties_max_count)
+int cal_record_set_projection(calendar_record_h record, const unsigned int *projection, const int projection_count, int properties_max_count)
 {
 	int i;
 
@@ -170,7 +170,7 @@ int _cal_record_set_projection(calendar_record_h record, const unsigned int *pro
 
 	for (i = 0; i < projection_count; i++)
 	{
-		__cal_record_set_property_flag(record, projection[i], CAL_PROPERTY_FLAG_PROJECTION);
+		_cal_record_set_property_flag(record, projection[i], CAL_PROPERTY_FLAG_PROJECTION);
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -184,18 +184,18 @@ API int calendar_record_create( const char* view_uri, calendar_record_h* out_rec
 	RETV_IF(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == out_record, CALENDAR_ERROR_INVALID_PARAMETER);
 
-	type =_cal_view_get_type(view_uri);
+	type =cal_view_get_type(view_uri);
 	RETV_IF(CAL_RECORD_TYPE_INVALID == type, CALENDAR_ERROR_INVALID_PARAMETER);
 
-	cal_record_plugin_cb_s *plugin_cb = _cal_record_get_plugin_cb(type);
+	cal_record_plugin_cb_s *plugin_cb = cal_record_get_plugin_cb(type);
 	RETV_IF(NULL == plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETVM_IF(NULL == plugin_cb->create, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted in [%s]", view_uri);
 
 	ret = plugin_cb->create(out_record);
 
-	if(ret == CALENDAR_ERROR_NONE)
+	if(CALENDAR_ERROR_NONE == ret)
 	{
-		CAL_RECORD_INIT_COMMON((cal_record_s*)*out_record, type, plugin_cb, _cal_view_get_uri(view_uri));
+		CAL_RECORD_INIT_COMMON((cal_record_s*)*out_record, type, plugin_cb, cal_view_get_uri(view_uri));
 	}
 
 	return ret;
@@ -260,7 +260,7 @@ API int calendar_record_get_str( calendar_record_h record, unsigned int property
 	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == out_str, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETVM_IF(NULL == temp->plugin_cb->get_str, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
-	RETVM_IF(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETVM_IF(false == cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->get_str(record, property_id, out_str);
 
@@ -277,7 +277,7 @@ API int calendar_record_get_str_p( calendar_record_h record, unsigned int proper
 	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == out_str, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETVM_IF(NULL == temp->plugin_cb->get_str_p, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
-	RETVM_IF(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETVM_IF(false == cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->get_str_p(record, property_id, out_str);
 
@@ -293,7 +293,7 @@ API int calendar_record_get_int( calendar_record_h record, unsigned int property
 	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == out_value, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETVM_IF(NULL == temp->plugin_cb->get_int, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
-	RETVM_IF(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETVM_IF(false == cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->get_int(record, property_id, out_value);
 
@@ -310,7 +310,7 @@ API int calendar_record_get_double( calendar_record_h record, unsigned int prope
 	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == out_value, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETVM_IF(NULL == temp->plugin_cb->get_double, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
-	RETVM_IF(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETVM_IF(false == cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->get_double(record, property_id, out_value);
 
@@ -326,7 +326,7 @@ API int calendar_record_get_lli( calendar_record_h record, unsigned int property
 	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == out_value, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETVM_IF(NULL == temp->plugin_cb->get_lli, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
-	RETVM_IF(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETVM_IF(false == cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->get_lli(record, property_id, out_value);
 
@@ -343,7 +343,7 @@ API int calendar_record_get_caltime(calendar_record_h record, unsigned int prope
 	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == out_value, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETVM_IF(NULL == temp->plugin_cb->get_caltime, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
-	RETVM_IF(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETVM_IF(false == cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->get_caltime(record, property_id, out_value);
 
@@ -355,7 +355,7 @@ API int calendar_record_set_str( calendar_record_h record, unsigned int property
 	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 	__CHECK_READ_ONLY_PROPERTY();
 
-	int ret = _cal_record_set_str(record, property_id, value);
+	int ret = cal_record_set_str(record, property_id, value);
 
 	return ret;
 }
@@ -365,7 +365,7 @@ API int calendar_record_set_int( calendar_record_h record, unsigned int property
 	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 	__CHECK_READ_ONLY_PROPERTY();
 
-	int ret = _cal_record_set_int(record, property_id, value);
+	int ret = cal_record_set_int(record, property_id, value);
 
 	return ret;
 }
@@ -375,7 +375,7 @@ API int calendar_record_set_double( calendar_record_h record, unsigned int prope
 	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 	__CHECK_READ_ONLY_PROPERTY();
 
-	int ret = _cal_record_set_double(record, property_id, value);
+	int ret = cal_record_set_double(record, property_id, value);
 
 	return ret;
 }
@@ -385,7 +385,7 @@ API int calendar_record_set_lli( calendar_record_h record, unsigned int property
 	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 	__CHECK_READ_ONLY_PROPERTY();
 
-	int ret = _cal_record_set_lli(record, property_id, value);
+	int ret = cal_record_set_lli(record, property_id, value);
 
 	return ret;
 }
@@ -395,7 +395,7 @@ API int calendar_record_set_caltime( calendar_record_h record, unsigned int prop
 	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 	__CHECK_READ_ONLY_PROPERTY();
 
-	int ret = _cal_record_set_caltime(record, property_id, value);
+	int ret = cal_record_set_caltime(record, property_id, value);
 
 	return ret;
 }
@@ -411,7 +411,7 @@ API int calendar_record_add_child_record( calendar_record_h record, unsigned int
 	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == child_record, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETVM_IF(NULL == temp->plugin_cb->add_child_record, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
-	RETVM_IF(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETVM_IF(false == cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->add_child_record(record, property_id, child_record);
 
@@ -427,7 +427,7 @@ API int calendar_record_remove_child_record( calendar_record_h record, unsigned 
 	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == child_record, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETVM_IF(NULL == temp->plugin_cb->remove_child_record, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
-	RETVM_IF(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETVM_IF(false == cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->remove_child_record(record, property_id, child_record);
 
@@ -444,7 +444,7 @@ API int calendar_record_get_child_record_count( calendar_record_h record, unsign
 	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == count, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETVM_IF(NULL == temp->plugin_cb->get_child_record_count, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
-	RETVM_IF(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETVM_IF(false == cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->get_child_record_count(record, property_id, count);
 
@@ -460,7 +460,7 @@ API int calendar_record_get_child_record_at_p( calendar_record_h record, unsigne
 	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == child_record, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETVM_IF(NULL == temp->plugin_cb->get_child_record_at_p, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
-	RETVM_IF(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETVM_IF(false == cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->get_child_record_at_p(record, property_id, index, child_record);
 
@@ -477,14 +477,14 @@ API int calendar_record_clone_child_record_list( calendar_record_h record, unsig
 	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == out_list, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETVM_IF(NULL == temp->plugin_cb->clone_child_record_list, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
-	RETVM_IF(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETVM_IF(false == cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->clone_child_record_list(record, property_id, out_list);
 
 	return ret;
 }
 
-int _cal_record_set_str( calendar_record_h record, unsigned int property_id, const char* value )
+int cal_record_set_str( calendar_record_h record, unsigned int property_id, const char* value )
 {
 	int ret = CALENDAR_ERROR_NONE;
 
@@ -493,17 +493,17 @@ int _cal_record_set_str( calendar_record_h record, unsigned int property_id, con
 	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETVM_IF(NULL == temp->plugin_cb->set_str, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
-	RETVM_IF(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETVM_IF(false == cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->set_str(record, property_id, value);
-	if (ret == CALENDAR_ERROR_NONE)
+	if (CALENDAR_ERROR_NONE == ret)
 	{
-		__cal_record_set_property_flag(record,property_id,CAL_PROPERTY_FLAG_DIRTY);
+		_cal_record_set_property_flag(record,property_id,CAL_PROPERTY_FLAG_DIRTY);
 	}
 	return ret;
 }
 
-int _cal_record_set_int( calendar_record_h record, unsigned int property_id, int value )
+int cal_record_set_int( calendar_record_h record, unsigned int property_id, int value )
 {
 	int ret = CALENDAR_ERROR_NONE;
 
@@ -512,17 +512,17 @@ int _cal_record_set_int( calendar_record_h record, unsigned int property_id, int
 	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETVM_IF(NULL == temp->plugin_cb->set_int, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
-	RETVM_IF(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETVM_IF(false == cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->set_int(record, property_id, value);
-	if (ret == CALENDAR_ERROR_NONE)
+	if (CALENDAR_ERROR_NONE == ret)
 	{
-		__cal_record_set_property_flag(record,property_id,CAL_PROPERTY_FLAG_DIRTY);
+		_cal_record_set_property_flag(record,property_id,CAL_PROPERTY_FLAG_DIRTY);
 	}
 	return ret;
 }
 
-int _cal_record_set_double( calendar_record_h record, unsigned int property_id, double value )
+int cal_record_set_double( calendar_record_h record, unsigned int property_id, double value )
 {
 	int ret = CALENDAR_ERROR_NONE;
 
@@ -531,17 +531,17 @@ int _cal_record_set_double( calendar_record_h record, unsigned int property_id, 
 	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETVM_IF(NULL == temp->plugin_cb->set_double, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
-	RETVM_IF(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETVM_IF(false == cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->set_double(record, property_id, value);
-	if (ret == CALENDAR_ERROR_NONE)
+	if (CALENDAR_ERROR_NONE == ret)
 	{
-		__cal_record_set_property_flag(record,property_id,CAL_PROPERTY_FLAG_DIRTY);
+		_cal_record_set_property_flag(record,property_id,CAL_PROPERTY_FLAG_DIRTY);
 	}
 	return ret;
 }
 
-int _cal_record_set_lli( calendar_record_h record, unsigned int property_id, long long int value )
+int cal_record_set_lli( calendar_record_h record, unsigned int property_id, long long int value )
 {
 	int ret = CALENDAR_ERROR_NONE;
 
@@ -550,17 +550,17 @@ int _cal_record_set_lli( calendar_record_h record, unsigned int property_id, lon
 	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETVM_IF(NULL == temp->plugin_cb->set_lli, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
-	RETVM_IF(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETVM_IF(false == cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->set_lli(record, property_id, value);
-	if (ret == CALENDAR_ERROR_NONE)
+	if (CALENDAR_ERROR_NONE == ret)
 	{
-		__cal_record_set_property_flag(record,property_id,CAL_PROPERTY_FLAG_DIRTY);
+		_cal_record_set_property_flag(record,property_id,CAL_PROPERTY_FLAG_DIRTY);
 	}
 	return ret;
 }
 
-int _cal_record_set_caltime( calendar_record_h record, unsigned int property_id, calendar_time_s value )
+int cal_record_set_caltime( calendar_record_h record, unsigned int property_id, calendar_time_s value )
 {
 	int ret = CALENDAR_ERROR_NONE;
 
@@ -569,12 +569,12 @@ int _cal_record_set_caltime( calendar_record_h record, unsigned int property_id,
 	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == temp->plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETVM_IF(NULL == temp->plugin_cb->set_caltime, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted(%x) in [%s]", property_id, temp->view_uri);
-	RETVM_IF(false == _cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
+	RETVM_IF(false == cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->set_caltime(record, property_id, value);
-	if (ret == CALENDAR_ERROR_NONE)
+	if (CALENDAR_ERROR_NONE == ret)
 	{
-		__cal_record_set_property_flag(record,property_id,CAL_PROPERTY_FLAG_DIRTY);
+		_cal_record_set_property_flag(record,property_id,CAL_PROPERTY_FLAG_DIRTY);
 	}
 	return ret;
 }

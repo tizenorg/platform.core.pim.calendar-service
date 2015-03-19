@@ -41,13 +41,13 @@ API int calendar_connect(void)
 	CAL_FN_CALL();
 	int ret = 0;
 
-	_cal_mutex_lock(CAL_MUTEX_CONNECTION);
+	cal_mutex_lock(CAL_MUTEX_CONNECTION);
 	if (0 == calsvc_connection) {
-		ret = _cal_inotify_initialize();
-		_cal_view_initialize();
+		ret = cal_inotify_initialize();
+		cal_view_initialize();
 		if (CALENDAR_ERROR_NONE != ret) {
-			ERR("_cal_inotify_initialize() Fail(%d)", ret);
-			_cal_mutex_unlock(CAL_MUTEX_CONNECTION);
+			ERR("cal_inotify_initialize() Fail(%d)", ret);
+			cal_mutex_unlock(CAL_MUTEX_CONNECTION);
 			return ret;
 		}
 	}
@@ -58,15 +58,15 @@ API int calendar_connect(void)
 
 	if (0 == thread_connection) {
 		g_type_init();	// added for alarmmgr
-		ret = _cal_db_open();
+		ret = cal_db_open();
 		if (CALENDAR_ERROR_NONE != ret) {
 			ERR("_cal_db_open() Fail(%d)", ret);
-			_cal_mutex_unlock(CAL_MUTEX_CONNECTION);
+			cal_mutex_unlock(CAL_MUTEX_CONNECTION);
 			return ret;
 		}
 	}
 	thread_connection++;
-	_cal_mutex_unlock(CAL_MUTEX_CONNECTION);
+	cal_mutex_unlock(CAL_MUTEX_CONNECTION);
 
 	return CALENDAR_ERROR_NONE;
 }
@@ -75,48 +75,48 @@ API int calendar_disconnect(void)
 {
 	CAL_FN_CALL();
 
-	_cal_mutex_lock(CAL_MUTEX_CONNECTION);
+	cal_mutex_lock(CAL_MUTEX_CONNECTION);
 	if (1 == thread_connection) {
-		_cal_db_close();
+		cal_db_close();
 	}
 	else if (thread_connection <= 0) {
 		DBG("System : please call calendar_connect_on_thread(), thread_connection count is (%d)", thread_connection);
-		_cal_mutex_unlock(CAL_MUTEX_CONNECTION);
+		cal_mutex_unlock(CAL_MUTEX_CONNECTION);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 	thread_connection--;
 
 	if (1 == calsvc_connection) {
-		_cal_inotify_finalize();
-		_cal_view_finalize();
+		cal_inotify_finalize();
+		cal_view_finalize();
 	}
 	else if (1 < calsvc_connection) {
 		DBG("System : connection count is %d", calsvc_connection);
 	}
 	else {
 		DBG("System : please call calendar_connect(), connection count is (%d)", calsvc_connection);
-		_cal_mutex_unlock(CAL_MUTEX_CONNECTION);
+		cal_mutex_unlock(CAL_MUTEX_CONNECTION);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 	calsvc_connection--;
-	_cal_mutex_unlock(CAL_MUTEX_CONNECTION);
+	cal_mutex_unlock(CAL_MUTEX_CONNECTION);
 
 	return CALENDAR_ERROR_NONE;
 }
 
-void _cal_calendar_internal_disconnect(void)
+void cal_calendar_internal_disconnect(void)
 {
-	_cal_mutex_lock(CAL_MUTEX_CONNECTION);
+	cal_mutex_lock(CAL_MUTEX_CONNECTION);
 
 	if (1 == thread_connection) {
-		_cal_db_close();
+		cal_db_close();
 		thread_connection--;
 
 		if (1 <= calsvc_connection) {
 			calsvc_connection--;
 		}
 	}
-	_cal_mutex_unlock(CAL_MUTEX_CONNECTION);
+	cal_mutex_unlock(CAL_MUTEX_CONNECTION);
 
 	return CALENDAR_ERROR_NONE;
 }

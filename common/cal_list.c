@@ -242,7 +242,7 @@ API int calendar_list_destroy( calendar_list_h list, bool delete_record )
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_list_clone(calendar_list_h list, calendar_list_h *out_list)
+int cal_list_clone(calendar_list_h list, calendar_list_h *out_list)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	int count = 0, i = 0;
@@ -305,7 +305,7 @@ int _cal_list_clone(calendar_list_h list, calendar_list_h *out_list)
 	return CALENDAR_ERROR_NONE;
 }
 
-int _cal_list_get_nth_record_p(cal_list_s *list_s, int index, calendar_record_h *record)
+int cal_list_get_nth_record_p(cal_list_s *list_s, int index, calendar_record_h *record)
 {
 	RETV_IF(index < 0, CALENDAR_ERROR_INVALID_PARAMETER);
 
@@ -323,7 +323,7 @@ int _cal_list_get_nth_record_p(cal_list_s *list_s, int index, calendar_record_h 
 	return CALENDAR_ERROR_NO_DATA;
 }
 
-int _cal_list_clear(cal_list_s *list_s)
+int cal_list_clear(cal_list_s *list_s)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	calendar_record_h record = NULL;

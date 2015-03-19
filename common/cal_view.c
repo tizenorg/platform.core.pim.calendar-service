@@ -1034,19 +1034,19 @@ static GHashTable *cal_uri_property_hash = NULL;
 static int calendar_view_count = 0;
 #endif
 
-void _cal_view_initialize(void)
+void cal_view_initialize(void)
 {
 	bool bmutex = false;
 
 #ifdef CAL_IPC_CLIENT
-	_cal_mutex_lock(CAL_MUTEX_PROPERTY_HASH);
+	cal_mutex_lock(CAL_MUTEX_PROPERTY_HASH);
 	calendar_view_count++;
-	_cal_mutex_unlock(CAL_MUTEX_PROPERTY_HASH);
+	cal_mutex_unlock(CAL_MUTEX_PROPERTY_HASH);
 #endif
 
 	if (cal_uri_property_flag == false)
 	{
-		_cal_mutex_lock(CAL_MUTEX_PROPERTY_HASH);
+		cal_mutex_lock(CAL_MUTEX_PROPERTY_HASH);
 		bmutex = true;
 	}
 
@@ -1076,13 +1076,13 @@ void _cal_view_initialize(void)
 	if (bmutex == true)
 	{
 		cal_uri_property_flag = true;
-		_cal_mutex_unlock(CAL_MUTEX_PROPERTY_HASH);
+		cal_mutex_unlock(CAL_MUTEX_PROPERTY_HASH);
 	}
 
 	return ;
 }
 
-cal_record_type_e _cal_view_get_type(const char *view_uri)
+cal_record_type_e cal_view_get_type(const char *view_uri)
 {
 	cal_view_uri_info_s* view_uri_info = NULL;
 	cal_record_type_e type = CAL_RECORD_TYPE_INVALID;
@@ -1105,13 +1105,13 @@ cal_record_type_e _cal_view_get_type(const char *view_uri)
 	return type;
 }
 
-void _cal_view_finalize(void)
+void cal_view_finalize(void)
 {
 #ifdef CAL_IPC_CLIENT
-	_cal_mutex_lock(CAL_MUTEX_PROPERTY_HASH);
+	cal_mutex_lock(CAL_MUTEX_PROPERTY_HASH);
 	if (calendar_view_count <= 0)
 	{
-		_cal_mutex_unlock(CAL_MUTEX_PROPERTY_HASH);
+		cal_mutex_unlock(CAL_MUTEX_PROPERTY_HASH);
 		return ;
 	}
 	calendar_view_count--;
@@ -1123,11 +1123,11 @@ void _cal_view_finalize(void)
 			cal_uri_property_hash = NULL;
 		}
 	}
-	_cal_mutex_unlock(CAL_MUTEX_PROPERTY_HASH);
+	cal_mutex_unlock(CAL_MUTEX_PROPERTY_HASH);
 #endif
 }
 
-const cal_property_info_s* _cal_view_get_property_info(const char *view_uri, int *count)
+const cal_property_info_s* cal_view_get_property_info(const char *view_uri, int *count)
 {
 	cal_property_info_s* tmp = NULL;
 	cal_view_uri_info_s* view_uri_info = NULL;
@@ -1143,7 +1143,7 @@ const cal_property_info_s* _cal_view_get_property_info(const char *view_uri, int
 	return tmp;
 }
 
-const char* _cal_view_get_uri(const char *view_uri)
+const char* cal_view_get_uri(const char *view_uri)
 {
 	cal_view_uri_info_s* view_uri_info = NULL;
 

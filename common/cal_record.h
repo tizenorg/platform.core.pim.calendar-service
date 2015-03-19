@@ -132,16 +132,16 @@ typedef struct {
 	}\
 } while (0)
 
-cal_record_plugin_cb_s* _cal_record_get_plugin_cb(cal_record_type_e type);
+cal_record_plugin_cb_s* cal_record_get_plugin_cb(cal_record_type_e type);
 
-bool _cal_record_check_property_flag(calendar_record_h record, unsigned int property_id, cal_properties_flag_e flag);
-int _cal_record_set_projection(calendar_record_h record, const unsigned int *projection, const int projection_count, int properties_max_count);
+bool cal_record_check_property_flag(calendar_record_h record, unsigned int property_id, cal_properties_flag_e flag);
+int cal_record_set_projection(calendar_record_h record, const unsigned int *projection, const int projection_count, int properties_max_count);
 
-int _cal_record_set_str( calendar_record_h record, unsigned int property_id, const char* value );
-int _cal_record_set_int( calendar_record_h record, unsigned int property_id, int value );
-int _cal_record_set_double( calendar_record_h record, unsigned int property_id, double value );
-int _cal_record_set_lli( calendar_record_h record, unsigned int property_id, long long int value );
-int _cal_record_set_caltime( calendar_record_h record, unsigned int property_id, calendar_time_s value );
+int cal_record_set_str( calendar_record_h record, unsigned int property_id, const char* value );
+int cal_record_set_int( calendar_record_h record, unsigned int property_id, int value );
+int cal_record_set_double( calendar_record_h record, unsigned int property_id, double value );
+int cal_record_set_lli( calendar_record_h record, unsigned int property_id, long long int value );
+int cal_record_set_caltime( calendar_record_h record, unsigned int property_id, calendar_time_s value );
 
 #ifdef __cplusplus
 }
