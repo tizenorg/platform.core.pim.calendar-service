@@ -330,7 +330,7 @@ static int __server_main(void)
 	}
 
 	// access_control
-	_cal_access_control_set_client_info("calendar-service", NULL);
+	_cal_access_control_set_client_info(NULL, NULL);
 
 	ret = account_subscribe_create(&cal_account_h);
 	if (ACCOUNT_ERROR_NONE == ret) {

@@ -570,8 +570,6 @@ API int calendar_db_get_changes_by_version(const char* view_uri, int calendar_bo
 	int ret = 0;
 	int is_deleted = 0;
 
-	retvm_if(!_cal_access_control_have_permission(CAL_PERMISSION_READ),
-			CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied : read ");
 	retvm_if(NULL == current_calendar_db_version || NULL == view_uri || NULL == record_list,
 			CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
 
@@ -698,8 +696,6 @@ API int calendar_db_get_current_version(int* current_version)
 	int transaction_ver = 0;
 	int ret;
 
-	retvm_if(!_cal_access_control_have_permission(CAL_PERMISSION_READ),
-			CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied : read ");
 	retvm_if(NULL == current_version, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
 
 	ret = _cal_db_util_query_get_first_int_result(query, NULL, &transaction_ver);
@@ -717,8 +713,6 @@ API int calendar_db_insert_record( calendar_record_h record, int* id )
 {
 	int ret = CALENDAR_ERROR_NONE;
 
-	retvm_if(!_cal_access_control_have_permission(CAL_PERMISSION_WRITE),
-			CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied : write ");
 	retvm_if(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
 
 	cal_db_plugin_cb_s* plugin_cb = __cal_db_get_plugin(((cal_record_s *)record)->type);
@@ -763,8 +757,6 @@ int _cal_db_get_record( const char* view_uri, int id, calendar_record_h* out_rec
 API int calendar_db_get_record( const char* view_uri, int id, calendar_record_h* out_record )
 {
 
-	retvm_if(!_cal_access_control_have_permission(CAL_PERMISSION_READ),
-			CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied : read ");
 
 	return _cal_db_get_record(view_uri, id, out_record);
 }
@@ -774,8 +766,6 @@ API int calendar_db_update_record( calendar_record_h record )
 	cal_record_s *temp=NULL ;
 	int ret = CALENDAR_ERROR_NONE;
 
-	retvm_if(!_cal_access_control_have_permission(CAL_PERMISSION_WRITE),
-			CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied : write ");
 	retvm_if(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
 
 	temp = (cal_record_s*)(record);
@@ -806,8 +796,6 @@ API int calendar_db_delete_record( const char* view_uri, int id )
 	int ret = CALENDAR_ERROR_NONE;
 	cal_record_type_e type = CAL_RECORD_TYPE_INVALID;
 
-	retvm_if(!_cal_access_control_have_permission(CAL_PERMISSION_WRITE),
-			CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied : write ");
 	retvm_if(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
 
 	type = _cal_view_get_type(view_uri);
@@ -839,8 +827,6 @@ API int calendar_db_get_all_records( const char* view_uri, int offset, int limit
 	cal_record_type_e type = CAL_RECORD_TYPE_INVALID;
 	calendar_list_h list = NULL;
 
-	retvm_if(!_cal_access_control_have_permission(CAL_PERMISSION_READ),
-			CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied : read ");
 	retvm_if(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
 
 	type = _cal_view_get_type(view_uri);
@@ -868,8 +854,6 @@ API int calendar_db_get_records_with_query( calendar_query_h query, int offset, 
 	cal_query_s *que = NULL;
 	calendar_list_h list = NULL;
 
-	retvm_if(!_cal_access_control_have_permission(CAL_PERMISSION_READ),
-			CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied : read ");
 	retvm_if(NULL == query, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
 	que = (cal_query_s *)query;
 
@@ -898,8 +882,6 @@ API int calendar_db_clean_after_sync( int calendar_book_id,  int calendar_db_ver
 	cal_db_util_error_e dbret = CAL_DB_OK;
 	int len = 0;
 
-	retvm_if(!_cal_access_control_have_permission(CAL_PERMISSION_WRITE),
-			CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied : write ");
 	retvm_if(calendar_book_id < 0, CALENDAR_ERROR_INVALID_PARAMETER, "calendar_id(%d) is Invalid", calendar_book_id);
 
 	ret = _cal_db_util_begin_trans();
@@ -975,8 +957,6 @@ API int calendar_db_get_count( const char* view_uri, int *out_count )
 	int ret = CALENDAR_ERROR_NONE;
 	cal_record_type_e type = CAL_RECORD_TYPE_INVALID;
 
-	retvm_if(!_cal_access_control_have_permission(CAL_PERMISSION_READ),
-			CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied : read ");
 	retvm_if(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
 
 	type = _cal_view_get_type(view_uri);
@@ -995,8 +975,6 @@ API int calendar_db_get_count_with_query( calendar_query_h query, int *out_count
 	cal_record_type_e type = CAL_RECORD_TYPE_INVALID;
 	cal_query_s *que = NULL;
 
-	retvm_if(!_cal_access_control_have_permission(CAL_PERMISSION_READ),
-			CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied : read ");
 	retvm_if(NULL == query, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
 	que = (cal_query_s *)query;
 
@@ -1017,8 +995,6 @@ API int calendar_db_insert_records(calendar_list_h list, int** ids, int* count)
 	int *_ids = NULL;
 	int _count = 0;
 
-	retvm_if(!_cal_access_control_have_permission(CAL_PERMISSION_WRITE),
-			CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied : write ");
 	retvm_if(NULL == list, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = _cal_db_util_begin_trans();
@@ -1103,8 +1079,6 @@ API int calendar_db_insert_records(calendar_list_h list, int** ids, int* count)
 
 API int calendar_db_insert_records_async(calendar_list_h list, calendar_db_insert_result_cb callback, void *user_data)
 {
-	retvm_if(!_cal_access_control_have_permission(CAL_PERMISSION_WRITE),
-			CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied : write ");
 	retvm_if(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
 
 #ifdef CAL_NATIVE
@@ -1194,8 +1168,6 @@ API int calendar_db_update_records( calendar_list_h list)
 	int count = 0;
 	int ret = CALENDAR_ERROR_NONE;
 
-	retvm_if(!_cal_access_control_have_permission(CAL_PERMISSION_WRITE),
-			CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied : write ");
 	retvm_if(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
 
 	ret = _cal_db_util_begin_trans();
@@ -1264,8 +1236,6 @@ API int calendar_db_update_records( calendar_list_h list)
 
 API int calendar_db_update_records_async( calendar_list_h list, calendar_db_result_cb callback, void *user_data)
 {
-	retvm_if(!_cal_access_control_have_permission(CAL_PERMISSION_WRITE),
-			CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied : write ");
 
 #ifdef CAL_NATIVE
 	if (callback != NULL)
@@ -1345,8 +1315,6 @@ API int calendar_db_update_records_async( calendar_list_h list, calendar_db_resu
 
 API int calendar_db_delete_records(const char* view_uri, int record_id_array[], int count)
 {
-	retvm_if(!_cal_access_control_have_permission(CAL_PERMISSION_WRITE),
-			CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied : write ");
 	retvm_if(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
 	retvm_if(NULL == record_id_array, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
 	retvm_if(count <= 0, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
@@ -1378,8 +1346,6 @@ API int calendar_db_delete_records(const char* view_uri, int record_id_array[], 
 
 API int calendar_db_delete_records_async(const char* view_uri, int ids[], int count, calendar_db_result_cb callback, void *user_data)
 {
-	retvm_if(!_cal_access_control_have_permission(CAL_PERMISSION_WRITE),
-			CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied : write ");
 	retvm_if(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
 	retvm_if(NULL == ids, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
 	retvm_if(count <= 0, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
@@ -1443,8 +1409,6 @@ API int calendar_db_insert_vcalendars(const char* vcalendar_stream, int **record
 	int i = 0;
 	int *ids = NULL;
 
-	retvm_if(!_cal_access_control_have_permission(CAL_PERMISSION_WRITE),
-			CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied : write ");
 	retvm_if(NULL == vcalendar_stream, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
 	retvm_if(NULL == record_id_array, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
 	retvm_if(NULL == count, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
@@ -1519,8 +1483,6 @@ API int calendar_db_insert_vcalendars(const char* vcalendar_stream, int **record
 API int calendar_db_insert_vcalendars_async(const char* vcalendar_stream, calendar_db_insert_result_cb callback, void *user_data)
 {
 	int ret = CALENDAR_ERROR_NONE;
-	retvm_if(!_cal_access_control_have_permission(CAL_PERMISSION_WRITE),
-			CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied : write ");
 	retvm_if(NULL == vcalendar_stream, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
 	retvm_if(NULL == callback, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
 
@@ -1550,8 +1512,6 @@ API int calendar_db_replace_vcalendars(const char* vcalendar_stream, int *record
 	int list_count = 0;
 	int i = 0;
 
-	retvm_if(!_cal_access_control_have_permission(CAL_PERMISSION_WRITE),
-			CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied : write ");
 	retvm_if(NULL == vcalendar_stream, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
 	retvm_if(NULL == record_id_array, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
 	retvm_if(count <= 0, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
@@ -1672,8 +1632,6 @@ API int calendar_db_replace_vcalendars(const char* vcalendar_stream, int *record
 API int calendar_db_replace_vcalendars_async(const char* vcalendar_stream, int *record_id_array, int count, calendar_db_result_cb callback, void *user_data)
 {
 	int ret = CALENDAR_ERROR_NONE;
-	retvm_if(!_cal_access_control_have_permission(CAL_PERMISSION_WRITE),
-			CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied : write ");
 	retvm_if(NULL == vcalendar_stream, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
 	retvm_if(NULL == callback, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
 	retvm_if(NULL == record_id_array, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
@@ -1712,8 +1670,6 @@ API int calendar_db_replace_record(calendar_record_h record, int record_id)
 	cal_record_s *temp=NULL ;
 	int ret = CALENDAR_ERROR_NONE;
 
-	retvm_if(!_cal_access_control_have_permission(CAL_PERMISSION_WRITE),
-			CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied : write ");
 	retvm_if(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
 	retvm_if(record_id < 0, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
 
@@ -1745,8 +1701,6 @@ API int calendar_db_replace_records(calendar_list_h list, int *ids, int count)
 	int i;
 	int ret = CALENDAR_ERROR_NONE;
 
-	retvm_if(!_cal_access_control_have_permission(CAL_PERMISSION_WRITE),
-			CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied : write ");
 	retvm_if(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
 	retvm_if(NULL == ids, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
 	retvm_if(count <= 0, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
@@ -1797,8 +1751,6 @@ API int calendar_db_replace_records_async(calendar_list_h record_list, int *reco
 {
 	int ret = CALENDAR_ERROR_NONE;
 
-	retvm_if(!_cal_access_control_have_permission(CAL_PERMISSION_WRITE),
-			CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied : write ");
 	retvm_if(NULL == record_list, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
 	retvm_if(NULL == callback, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
 	retvm_if(NULL == record_id_array, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
@@ -1841,8 +1793,6 @@ API int calendar_db_replace_records_async(calendar_list_h record_list, int *reco
 
 API int calendar_db_get_last_change_version(int* last_version)
 {
-	retvm_if(!_cal_access_control_have_permission(CAL_PERMISSION_READ),
-			CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied : read ");
 	retvm_if(NULL == last_version, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
 	*last_version = _cal_db_util_get_transaction_ver();
 	return CALENDAR_ERROR_NONE;
@@ -1857,8 +1807,6 @@ API int calendar_db_get_changes_exception_by_version(const char* view_uri, int o
 	int ret = 0;
 	int is_deleted = 0;
 
-	retvm_if(!_cal_access_control_have_permission(CAL_PERMISSION_READ),
-			CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied : read ");
 	retvm_if(NULL == view_uri || NULL == record_list || original_event_id <= 0,
 			CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
 

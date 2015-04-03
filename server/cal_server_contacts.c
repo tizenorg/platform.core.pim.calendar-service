@@ -650,7 +650,7 @@ static gpointer  __cal_server_contacts_sync_main(gpointer user_data)
 		ret = calendar_connect();
 		if (CALENDAR_ERROR_NONE != ret)
 			break;
-		_cal_access_control_set_client_info("calendar-service", NULL);
+		_cal_access_control_set_client_info(NULL, NULL);
 
 		while(1) {
 			if (__cal_server_contacts_sync() == false) {
