@@ -23,10 +23,9 @@ pkg_check_modules(pkgs REQUIRED
 	alarm-service
 	icu-i18n
 	contacts-service2
-	security-server
 	capi-appfw-package-manager
 	libtzplatform-config
-	)
+)
 
 FOREACH(flag ${pkgs_CFLAGS})
 	SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} ${flag}")

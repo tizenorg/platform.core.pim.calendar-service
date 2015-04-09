@@ -19,14 +19,11 @@
 
 #include <pthread.h>
 #include <signal.h>
-#include <security-server.h>
-#include <sys/smack.h>
-
 #include <string.h>
+#include <sys/smack.h>
 #include <pims-ipc-svc.h>
 
 #include "calendar_db.h"
-
 #include "cal_internal.h"
 #include "cal_typedef.h"
 #include "cal_view.h"
@@ -40,17 +37,16 @@
 
 typedef struct {
 	unsigned int thread_id;
+	pims_ipc_h ipc;
 	char *smack_label;
-	cal_permission_e permission;
 	int *write_list;
-}calendar_permission_info_s;
+} calendar_permission_info_s;
 
 static GList *__thread_list = NULL;
 
 static int have_smack = -1;
 
 static calendar_permission_info_s* __cal_access_control_find_permission_info(unsigned int thread_id);
-static void __cal_access_control_set_permission_info(unsigned int thread_id, const char *cookie);
 static void __cal_access_control_disconnected_cb(pims_ipc_h ipc, void *user_data);
 
 static calendar_permission_info_s* __cal_access_control_find_permission_info(unsigned int thread_id)
@@ -78,10 +74,8 @@ static int __cal_have_smack(void)
 	return have_smack;
 }
 
-static void __cal_access_control_set_permission_info(unsigned int thread_id, const char *cookie)
+static void __cal_access_control_set_permission_info(calendar_permission_info_s *info)
 {
-	calendar_permission_info_s *info = NULL;
-	const char *smack_label;
 	bool smack_enabled = false;
 
 	if (__cal_have_smack() == 1)
@@ -89,28 +83,10 @@ static void __cal_access_control_set_permission_info(unsigned int thread_id, con
 	else
 		INFO("SAMCK disabled");
 
-	info = __cal_access_control_find_permission_info(thread_id);
-	if(info == NULL) {
-		ERR("dont' have access info of this thread(%d)", thread_id);
-		return ;
-	}
-	smack_label = info->smack_label;
+	free(info->write_list);
+	info->write_list = NULL;
 
-	if ((smack_label && 0 == strcmp(smack_label, "calendar-service")) || !smack_enabled) {
-		info->permission |= CAL_PERMISSION_READ;
-		info->permission |= CAL_PERMISSION_WRITE;
-	}
-	else if (cookie) {
-		if (SECURITY_SERVER_API_SUCCESS == security_server_check_privilege_by_cookie(cookie, "calendar-service::svc", "r"))
-			info->permission |= CAL_PERMISSION_READ;
-		if (SECURITY_SERVER_API_SUCCESS == security_server_check_privilege_by_cookie(cookie, "calendar-service::svc", "w"))
-			info->permission |= CAL_PERMISSION_WRITE;
-	}
-	SEC_INFO("Thread(0x%x), info(%p), smack :%s, permission:%d", thread_id, info, smack_label, info->permission);
-
-	CAL_FREE(info->write_list);
-
-	char query[CAL_DB_SQL_MAX_LEN] = {0,};
+	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	int count = 0;
 	int ret = 0;
 	sqlite3_stmt *stmt;
@@ -123,71 +99,63 @@ static void __cal_access_control_set_permission_info(unsigned int thread_id, con
 		ERR("DB get Failed");
 		return;
 	}
-
-	if (info->permission & CAL_PERMISSION_WRITE) {
-		info->write_list = calloc(count+1, sizeof(int));
-		info->write_list[0] = -1;
-	}
+	info->write_list = calloc(count, sizeof(int));
+	retm_if(NULL == info->write_list, "calloc() Fail");
+	info->write_list[0] = -1;
 
 	snprintf(query, sizeof(query),
 			"SELECT id, mode, owner_label FROM %s WHERE deleted = 0 ", CAL_TABLE_CALENDAR);
 	stmt = _cal_db_util_query_prepare(query);
 	if (NULL == stmt) {
-		ERR("DB Failed");
+		ERR("_cal_db_util_query_prepare() Fail");
 		return;
 	}
 
 	while (CAL_DB_ROW == _cal_db_util_stmt_step(stmt)) {
-		int id = 0;
-		int mode = 0;
-		char *temp = NULL;
+		int id = sqlite3_column_int(stmt, 0);
+		int mode = sqlite3_column_int(stmt, 1);
+		char temp = (char *)sqlite3_column_text(stmt, 2);
 
-		id = sqlite3_column_int(stmt, 0);
-		mode = sqlite3_column_int(stmt, 1);
-		temp = (char *)sqlite3_column_text(stmt, 2);
-
-		if ( temp && ( (smack_label && 0 == strcmp(temp, smack_label)) ||
-					( smack_label && 0 == strcmp(smack_label, "calendar-service") ) ) )  {// owner and calendar-service
-			if (info->permission & CAL_PERMISSION_WRITE)
-				info->write_list[write_index++] = id;
-		}
-		else {
-			switch(mode) {
-			case CALENDAR_BOOK_MODE_NONE:
-				if (info->permission & CAL_PERMISSION_WRITE)
-					info->write_list[write_index++] = id;
-				break;
-			case CALENDAR_BOOK_MODE_RECORD_READONLY:
-			default:
-				break;
-			}
-		}
-	} // while
-
-	if (info->permission & CAL_PERMISSION_WRITE)
-		info->write_list[write_index] = -1;
-
+		if (!smack_enabled) // smack disabled
+			info->write_list[write_index++] = id;
+		else if (NULL == info->ipc) // calendar-service daemon
+			info->write_list[write_index++] = id;
+		else if (info->smack_label && temp && 0 == strcmp(temp, info->smack_label)) // owner
+			info->write_list[write_index++] = id;
+		else if (CALENDAR_BOOK_MODE_NONE == mode)
+			info->write_list[write_index++] = id;
+	}
+	info->write_list[write_index] = -1;
 	sqlite3_finalize(stmt);
 }
 
-void _cal_access_control_set_client_info(const char* smack_label, const char* cookie)
+void _cal_access_control_set_client_info(pims_ipc_h ipc, const char *smack_label)
 {
-	unsigned int thread_id = (unsigned int)pthread_self();
+	unsigned int thread_id = 0;
 	calendar_permission_info_s *info = NULL;
 
 	_cal_mutex_lock(CAL_MUTEX_ACCESS_CONTROL);
+
+	thread_id = (unsigned int)pthread_self();
 	info = __cal_access_control_find_permission_info(thread_id);
 	if (NULL == info) {
 		info = calloc(1, sizeof(calendar_permission_info_s));
+		if (NULL == info) {
+			ERR("calloc() Fail");
+			_cal_mutex_unlock(CAL_MUTEX_ACCESS_CONTROL);
+			return;
+		}
 		__thread_list  = g_list_append(__thread_list, info);
 	}
 	info->thread_id = thread_id;
-	CAL_FREE(info->smack_label);
-	info->smack_label = SAFE_STRDUP(smack_label);
-	__cal_access_control_set_permission_info(thread_id, cookie);
+	info->ipc = ipc;
 
-	// for close DB or free access_control when client is disconnected
-	pims_ipc_svc_set_client_disconnected_cb(__cal_access_control_disconnected_cb,NULL);
+	free(info->smack_label);
+	info->smack_label = SAFE_STRDUP(smack_label);
+	__cal_access_control_set_permission_info(info);
+
+	if (info->ipc)
+		pims_ipc_svc_set_client_disconnected_cb(__cal_access_control_disconnected_cb,NULL);
 
 	_cal_mutex_unlock(CAL_MUTEX_ACCESS_CONTROL);
 }
@@ -207,53 +175,39 @@ void _cal_access_control_unset_client_info(void)
 	_cal_mutex_unlock(CAL_MUTEX_ACCESS_CONTROL);
 }
 
-bool _cal_access_control_have_permission(cal_permission_e permission)
+bool _cal_access_control_have_permission(pims_ipc_h ipc, cal_permission_e permission)
 {
-	calendar_permission_info_s *find = NULL;
-
-	_cal_mutex_lock(CAL_MUTEX_ACCESS_CONTROL);
-	find = __cal_access_control_find_permission_info(pthread_self());
-	if (!find) {
-		_cal_mutex_unlock(CAL_MUTEX_ACCESS_CONTROL);
-		return false;
-	}
-
-	if (CAL_PERMISSION_NONE == permission) {
-		_cal_mutex_unlock(CAL_MUTEX_ACCESS_CONTROL);
-		return false;
-	}
-
-	if ((find->permission & permission) == permission) {
-		_cal_mutex_unlock(CAL_MUTEX_ACCESS_CONTROL);
+	have_smack = __cal_have_smack();
+	if (have_smack != 1) // smack disabled
 		return true;
-	}
 
-	_cal_mutex_unlock(CAL_MUTEX_ACCESS_CONTROL);
-	ERR("Does not have permission %d, this module has permission %d",
-			permission, find->permission);
+	if (NULL == ipc) // calendar-service daemon
+		return true;
 
-	return false;
+	if ((CAL_PERMISSION_READ& permission) && !pims_ipc_svc_check_privilege(ipc, CAL_PRIVILEGE_READ))
+		return false;
+
+	if ((CAL_PERMISSION_WRITE & permission) && !pims_ipc_svc_check_privilege(ipc, CAL_PRIVILEGE_WRITE))
+		return false;
+
+	return true;
 }
 
 char* _cal_access_control_get_label(void)
 {
 	unsigned int thread_id = (unsigned int)pthread_self();
 	calendar_permission_info_s *info = NULL;
-	char *tmp = NULL;
 
 	_cal_mutex_lock(CAL_MUTEX_ACCESS_CONTROL);
 	info = __cal_access_control_find_permission_info(thread_id);
 
-	if (info == NULL) {
-		_cal_mutex_unlock(CAL_MUTEX_ACCESS_CONTROL);
-		return NULL;
+	char *smack_label = NULL;
+	if (info && info->smack_label) {
+		smack_label = strdup(info->smack_label);
 	}
-	tmp = SAFE_STRDUP(info->smack_label);
 	_cal_mutex_unlock(CAL_MUTEX_ACCESS_CONTROL);
-
-	return tmp;
+	return smack_label;
 }
-
 
 void _cal_access_control_reset(void)
 {
@@ -263,7 +217,7 @@ void _cal_access_control_reset(void)
 		calendar_permission_info_s *info = NULL;
 		info = cursor->data;
 		if (info)
-			__cal_access_control_set_permission_info(info->thread_id, NULL);
+			__cal_access_control_set_permission_info(info);
 	}
 	_cal_mutex_unlock(CAL_MUTEX_ACCESS_CONTROL);
 }
@@ -304,17 +258,19 @@ bool _cal_access_control_have_write_permission(int calendarbook_id)
 static void __cal_access_control_disconnected_cb(pims_ipc_h ipc, void *user_data)
 {
 	ENTER();
-	calendar_permission_info_s *find = NULL;
+	calendar_permission_info_s *info = NULL;
 
 	_cal_mutex_lock(CAL_MUTEX_ACCESS_CONTROL);
-	find = __cal_access_control_find_permission_info(pthread_self());
-	if (find) {
-		CAL_FREE(find->smack_label);
-		CAL_FREE(find->write_list);
-		__thread_list = g_list_remove(__thread_list, find);
-		free(find);
+	info = (calendar_permission_info_s *)user_data;
+	if (info) {
+		INFO("Thread(0x%x), info(%p)", info->thread_id, info);
+		free(info->smack_label);
+		free(info->write_list);
+		__thread_list = g_list_remove(__thread_list, info);
+		free(info);
 	}
 	_cal_mutex_unlock(CAL_MUTEX_ACCESS_CONTROL);
+
 	// if client did not call disconnect function such as disconnect
 	// DB will be closed in _cal_db_internal_disconnect()
 	_cal_calendar_internal_disconnect();

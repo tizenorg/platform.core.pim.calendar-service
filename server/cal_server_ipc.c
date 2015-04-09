@@ -19,7 +19,7 @@
 
 #include <stdlib.h>
 #include <malloc.h>		// malloc_trim
-#include <security-server.h>
+#include <pims-ipc-svc.h>
 
 #include "calendar_service.h"
 #include "calendar_db.h"
@@ -37,81 +37,31 @@
 void _cal_server_ipc_connect(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
 {
 	int ret = CALENDAR_ERROR_NONE;
-	char *smack_label = NULL;
-	char *cookie = NULL;
-
-	if (indata)
-	{
-		int cookie_size = 0;
-		char *buf = NULL;
-		gsize buf_len;
-		// Access control : get cookie from indata
-		ret = _cal_ipc_unmarshal_int(indata, &cookie_size);
-		if (ret != CALENDAR_ERROR_NONE)
-		{
-			ERR("_cal_ipc_unmarshal_int fail");
-			goto ERROR_RETURN;
-		}
-
-		if (cookie_size <= 0)
-		{
-			ERR("cookie size is %d", cookie_size);
-			ret = CALENDAR_ERROR_IPC;
-			goto ERROR_RETURN;
-		}
-
-		ret = _cal_ipc_unmarshal_char(indata, &buf);
-		if (ret != CALENDAR_ERROR_NONE)
-		{
-			ERR("_cal_ipc_unmarshal_char fail");
-			goto ERROR_RETURN;
-		}
-		cookie = (char*)g_base64_decode((const gchar*)buf, &buf_len);
-		CAL_FREE(buf);
-		smack_label = security_server_get_smacklabel_cookie(cookie);
-		if (NULL == smack_label)
-		{
-			ERR("security_server_get_smacklabel_cookie fail");
-			ret = CALENDAR_ERROR_SYSTEM;
-			CAL_FREE(cookie);
-			goto ERROR_RETURN;
-		}
-	}
-	else
-	{
-		ERR("There is no indata fail");
-		ret = CALENDAR_ERROR_SYSTEM;
-		goto ERROR_RETURN;
-	}
 
 	ret = calendar_connect();
 	if (ret == CALENDAR_ERROR_NONE) {
-		_cal_access_control_set_client_info(smack_label, cookie);
+		char *smack_label = NULL;
+		if (0 != pims_ipc_svc_get_smack_label(ipc, &smack_label))
+			ERR("pims_ipc_svc_get_smack_label() Fail");
+		_cal_access_control_set_client_info(ipc, smack_label);
 	}
 
-ERROR_RETURN:
 	if (outdata) {
 		*outdata = pims_ipc_data_create(0);
 		if (!*outdata) {
 			ERR("pims_ipc_data_create fail");
-			goto DATA_FREE;
+			return;
 		}
 
 		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0) {
 			pims_ipc_data_destroy(*outdata);
 			*outdata = NULL;
 			ERR("pims_ipc_data_put fail");
-			goto DATA_FREE;
+			return;
 		}
-	}
-	else {
+	} else {
 		ERR("outdata is NULL");
 	}
-
-DATA_FREE:
-	CAL_FREE(cookie);
-	CAL_FREE(smack_label);
-	return;
 }
 
 void _cal_server_ipc_disconnect(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -162,7 +112,7 @@ void _cal_server_ipc_check_permission(pims_ipc_h ipc, pims_ipc_data_h indata,
 		goto ERROR_RETURN;
 	}
 
-	result = _cal_access_control_have_permission(permission);
+	result = _cal_access_control_have_permission(ipc, permission);
 
 ERROR_RETURN:
 	*outdata = pims_ipc_data_create(0);
@@ -193,20 +143,21 @@ void _cal_server_ipc_db_insert_record(pims_ipc_h ipc, pims_ipc_data_h indata, pi
 	calendar_record_h record = NULL;
 	int id = 0;
 
-	if (indata)
-	{
+	if (indata) {
 		ret = _cal_ipc_unmarshal_record(indata,&record);
-		if (ret != CALENDAR_ERROR_NONE)
-		{
+		if (ret != CALENDAR_ERROR_NONE) {
 			ERR("_cal_ipc_unmarshal_record fail");
 			record = NULL;
 			goto ERROR_RETURN;
 		}
-	}
-	else
-	{
+	} else {
 		ret = CALENDAR_ERROR_INVALID_PARAMETER;
 		ERR("_cal_server_ipc_db_insert_record fail");
+		goto ERROR_RETURN;
+	}
+
+	if (false == _cal_access_control_have_permission(ipc, CAL_PRIVILEGE_WRITE)) {
+		ret = CALENDAR_ERROR_PERMISSION_DENIED;
 		goto ERROR_RETURN;
 	}
 
@@ -313,6 +264,11 @@ void _cal_server_ipc_db_get_record(pims_ipc_h ipc, pims_ipc_data_h indata, pims_
 		goto ERROR_RETURN;
 	}
 
+	if (false == _cal_access_control_have_permission(ipc, CAL_PRIVILEGE_READ)) {
+		ret = CALENDAR_ERROR_PERMISSION_DENIED;
+		goto ERROR_RETURN;
+	}
+
 	ret = calendar_db_get_record(view_uri,id,&record);
 
 ERROR_RETURN:
@@ -371,6 +327,11 @@ void _cal_server_ipc_db_update_record(pims_ipc_h ipc, pims_ipc_data_h indata, pi
 	{
 		ret = CALENDAR_ERROR_INVALID_PARAMETER;
 		ERR("_cal_server_ipc_db_insert_record fail");
+		goto ERROR_RETURN;
+	}
+
+	if (false == _cal_access_control_have_permission(ipc, CAL_PRIVILEGE_WRITE)) {
+		ret = CALENDAR_ERROR_PERMISSION_DENIED;
 		goto ERROR_RETURN;
 	}
 
@@ -441,6 +402,11 @@ void _cal_server_ipc_db_delete_record(pims_ipc_h ipc, pims_ipc_data_h indata, pi
 	{
 		ret = CALENDAR_ERROR_INVALID_PARAMETER;
 		ERR("_cal_server_ipc_db_insert_record fail");
+		goto ERROR_RETURN;
+	}
+
+	if (false == _cal_access_control_have_permission(ipc, CAL_PRIVILEGE_WRITE)) {
+		ret = CALENDAR_ERROR_PERMISSION_DENIED;
 		goto ERROR_RETURN;
 	}
 
@@ -517,6 +483,11 @@ void _cal_server_ipc_db_get_all_records(pims_ipc_h ipc, pims_ipc_data_h indata, 
 	{
 		ret = CALENDAR_ERROR_INVALID_PARAMETER;
 		ERR("_cal_server_ipc_db_insert_record fail");
+		goto ERROR_RETURN;
+	}
+
+	if (false == _cal_access_control_have_permission(ipc, CAL_PRIVILEGE_READ)) {
+		ret = CALENDAR_ERROR_PERMISSION_DENIED;
 		goto ERROR_RETURN;
 	}
 
@@ -623,6 +594,11 @@ void _cal_server_ipc_db_get_records_with_query(pims_ipc_h ipc, pims_ipc_data_h i
 		goto ERROR_RETURN;
 	}
 
+	if (false == _cal_access_control_have_permission(ipc, CAL_PRIVILEGE_READ)) {
+		ret = CALENDAR_ERROR_PERMISSION_DENIED;
+		goto ERROR_RETURN;
+	}
+
 	ret = calendar_db_get_records_with_query(query,offset,limit,&list);
 
 	if (outdata)
@@ -720,6 +696,11 @@ void _cal_server_ipc_db_clean_after_sync(pims_ipc_h ipc, pims_ipc_data_h indata,
 		goto ERROR_RETURN;
 	}
 
+	if (false == _cal_access_control_have_permission(ipc, CAL_PRIVILEGE_WRITE)) {
+		ret = CALENDAR_ERROR_PERMISSION_DENIED;
+		goto ERROR_RETURN;
+	}
+
 	ret = calendar_db_clean_after_sync(calendar_book_id, calendar_db_version);
 
 ERROR_RETURN:
@@ -766,6 +747,11 @@ void _cal_server_ipc_db_get_count(pims_ipc_h ipc, pims_ipc_data_h indata, pims_i
 	{
 		ret = CALENDAR_ERROR_INVALID_PARAMETER;
 		ERR("_cal_server_ipc_db_insert_record fail");
+		goto ERROR_RETURN;
+	}
+
+	if (false == _cal_access_control_have_permission(ipc, CAL_PRIVILEGE_READ)) {
+		ret = CALENDAR_ERROR_PERMISSION_DENIED;
 		goto ERROR_RETURN;
 	}
 
@@ -848,6 +834,11 @@ void _cal_server_ipc_db_get_count_with_query(pims_ipc_h ipc, pims_ipc_data_h ind
 	{
 		ret = CALENDAR_ERROR_INVALID_PARAMETER;
 		ERR("_cal_server_ipc_db_insert_record fail");
+		goto ERROR_RETURN;
+	}
+
+	if (false == _cal_access_control_have_permission(ipc, CAL_PRIVILEGE_READ)) {
+		ret = CALENDAR_ERROR_PERMISSION_DENIED;
 		goto ERROR_RETURN;
 	}
 
@@ -934,6 +925,11 @@ void _cal_server_ipc_db_insert_records(pims_ipc_h ipc, pims_ipc_data_h indata, p
 	{
 		ret = CALENDAR_ERROR_INVALID_PARAMETER;
 		ERR("_cal_server_ipc_db_insert_record fail");
+		goto ERROR_RETURN;
+	}
+
+	if (false == _cal_access_control_have_permission(ipc, CAL_PRIVILEGE_WRITE)) {
+		ret = CALENDAR_ERROR_PERMISSION_DENIED;
 		goto ERROR_RETURN;
 	}
 
@@ -1046,6 +1042,11 @@ void _cal_server_ipc_db_update_records(pims_ipc_h ipc, pims_ipc_data_h indata, p
 		goto ERROR_RETURN;
 	}
 
+	if (false == _cal_access_control_have_permission(ipc, CAL_PRIVILEGE_WRITE)) {
+		ret = CALENDAR_ERROR_PERMISSION_DENIED;
+		goto ERROR_RETURN;
+	}
+
 	ret = calendar_db_update_records(list);
 
 	if (outdata)
@@ -1154,6 +1155,11 @@ void _cal_server_ipc_db_delete_records(pims_ipc_h ipc, pims_ipc_data_h indata, p
 		goto ERROR_RETURN;
 	}
 
+	if (false == _cal_access_control_have_permission(ipc, CAL_PRIVILEGE_WRITE)) {
+		ret = CALENDAR_ERROR_PERMISSION_DENIED;
+		goto ERROR_RETURN;
+	}
+
 	ret = calendar_db_delete_records(uri,ids,count);
 
 	if (outdata)
@@ -1253,6 +1259,11 @@ void _cal_server_ipc_db_get_changes_by_version(pims_ipc_h ipc, pims_ipc_data_h i
 		goto ERROR_RETURN;
 	}
 
+	if (false == _cal_access_control_have_permission(ipc, CAL_PRIVILEGE_READ)) {
+		ret = CALENDAR_ERROR_PERMISSION_DENIED;
+		goto ERROR_RETURN;
+	}
+
 	ret = calendar_db_get_changes_by_version(view_uri,calendar_book_id,calendar_db_version,&record_list,&current_calendar_db_version);
 
 	if (outdata)
@@ -1327,8 +1338,15 @@ void _cal_server_ipc_db_get_current_version(pims_ipc_h ipc, pims_ipc_data_h inda
 	int ret = CALENDAR_ERROR_NONE;
 	int calendar_db_version = 0;
 
+	if (false == _cal_access_control_have_permission(ipc, CAL_PRIVILEGE_READ)) {
+		ret = CALENDAR_ERROR_PERMISSION_DENIED;
+		return;
+		goto ERROR_RETURN;
+	}
+
 	ret = calendar_db_get_current_version(&calendar_db_version);
 
+ERROR_RETURN:
 	if (outdata)
 	{
 		*outdata = pims_ipc_data_create(0);
@@ -1380,6 +1398,11 @@ void _cal_server_ipc_db_insert_vcalendars(pims_ipc_h ipc, pims_ipc_data_h indata
 	{
 		ret = CALENDAR_ERROR_INVALID_PARAMETER;
 		ERR("db_insert_vcalendars fail.");
+		goto ERROR_RETURN;
+	}
+
+	if (false == _cal_access_control_have_permission(ipc, CAL_PRIVILEGE_WRITE)) {
+		ret = CALENDAR_ERROR_PERMISSION_DENIED;
 		goto ERROR_RETURN;
 	}
 
@@ -1518,6 +1541,11 @@ void _cal_server_ipc_db_replace_vcalendars(pims_ipc_h ipc, pims_ipc_data_h indat
 		goto ERROR_RETURN;
 	}
 
+	if (false == _cal_access_control_have_permission(ipc, CAL_PRIVILEGE_WRITE)) {
+		ret = CALENDAR_ERROR_PERMISSION_DENIED;
+		goto ERROR_RETURN;
+	}
+
 	ret = calendar_db_replace_vcalendars(stream, ids, count);
 
 	if (ret != CALENDAR_ERROR_NONE)
@@ -1617,6 +1645,11 @@ void _cal_server_ipc_db_replace_record(pims_ipc_h ipc, pims_ipc_data_h indata, p
 		goto ERROR_RETURN;
 	}
 
+	if (false == _cal_access_control_have_permission(ipc, CAL_PRIVILEGE_WRITE)) {
+		ret = CALENDAR_ERROR_PERMISSION_DENIED;
+		goto ERROR_RETURN;
+	}
+
 	ret = calendar_db_replace_record(record, id);
 
 ERROR_RETURN:
@@ -1701,6 +1734,11 @@ void _cal_server_ipc_db_replace_records(pims_ipc_h ipc, pims_ipc_data_h indata, 
 	{
 		ret = CALENDAR_ERROR_INVALID_PARAMETER;
 		ERR("_cal_server_ipc_db_insert_record fail");
+		goto ERROR_RETURN;
+	}
+
+	if (false == _cal_access_control_have_permission(ipc, CAL_PRIVILEGE_WRITE)) {
+		ret = CALENDAR_ERROR_PERMISSION_DENIED;
 		goto ERROR_RETURN;
 	}
 
@@ -1803,6 +1841,11 @@ void _cal_server_ipc_db_changes_exception(pims_ipc_h ipc, pims_ipc_data_h indata
 	{
 		ret = CALENDAR_ERROR_INVALID_PARAMETER;
 		ERR("_cal_server_ipc_db_insert_record fail");
+		goto ERROR_RETURN;
+	}
+
+	if (false == _cal_access_control_have_permission(ipc, CAL_PRIVILEGE_READ)) {
+		ret = CALENDAR_ERROR_PERMISSION_DENIED;
 		goto ERROR_RETURN;
 	}
 

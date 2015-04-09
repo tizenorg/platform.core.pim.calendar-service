@@ -24,11 +24,11 @@ BuildRequires: pkgconfig(icu-i18n)
 BuildRequires: pkgconfig(capi-base-common)
 BuildRequires: pkgconfig(contacts-service2)
 BuildRequires: pkgconfig(pims-ipc)
-BuildRequires: pkgconfig(security-server)
 BuildRequires: pkgconfig(capi-appfw-package-manager)
 BuildRequires: pkgconfig(accounts-svc)
 BuildRequires: pkgconfig(capi-appfw-application)
 BuildRequires: pkgconfig(libtzplatform-config)
+BuildRequires: pkgconfig(libsmack)
 
 %description
 DB library for calendar

@@ -21,7 +21,6 @@
 #include <stdlib.h>     //calloc
 #include <pims-ipc.h>
 #include <glib-object.h> //g_type_init
-#include <security-server.h>
 #include <errno.h>
 
 #include "calendar_service.h"
@@ -52,58 +51,9 @@ pims_ipc_h __cal_client_ipc_get_handle(void);
 void __cal_client_ipc_lock(void);
 void __cal_client_ipc_unlock(void);
 
-static int __cal_client_ipc_get_cookie_for_access_control(pims_ipc_data_h *indata)
-{
-	int ret = CALENDAR_ERROR_NONE;
-	size_t cookie_size =0;
-	pims_ipc_data_h data;
-
-	cookie_size = security_server_get_cookie_size();
-	retvm_if(cookie_size<=0,CALENDAR_ERROR_NOT_PERMITTED,"get cookie_size fail");
-
-	char cookie[256] = {0,};
-	char *e_cookie = NULL;
-	ret = security_server_request_cookie(cookie, cookie_size);
-	retvm_if(ret<0,CALENDAR_ERROR_NOT_PERMITTED,"get cookie fail");
-
-	data = pims_ipc_data_create(0);
-	retvm_if(data==NULL,CALENDAR_ERROR_OUT_OF_MEMORY,"ipc data created fail!");
-
-	ret = _cal_ipc_marshal_int(cookie_size, data);
-
-	if (ret != CALENDAR_ERROR_NONE)
-	{
-		ERR("ipc marshal fail");
-		pims_ipc_data_destroy(data);
-		return ret;
-	}
-	e_cookie = g_base64_encode((const guchar *)cookie, cookie_size);
-	if (e_cookie == NULL)
-	{
-		ERR("base64 encode fail");
-		pims_ipc_data_destroy(data);
-		ret = CALENDAR_ERROR_OUT_OF_MEMORY;
-		return ret;
-	}
-
-	ret = _cal_ipc_marshal_char(e_cookie, data);
-	CAL_FREE(e_cookie);
-	if (ret != CALENDAR_ERROR_NONE)
-	{
-		ERR("ipc marshal fail");
-		pims_ipc_data_destroy(data);
-		return ret;
-	}
-
-	*indata = data;
-
-	return CALENDAR_ERROR_NONE;
-}
-
 API int calendar_connect(void)
 {
 	int ret = CALENDAR_ERROR_NONE;
-	pims_ipc_data_h indata = NULL;
 	pims_ipc_data_h outdata = NULL;
 	pims_ipc_h ipc_handle = NULL;
 
@@ -111,26 +61,19 @@ API int calendar_connect(void)
 
 	_cal_mutex_lock(CAL_MUTEX_CONNECTION);
 	// ipc create
-	if (calendar_ipc == NULL)
-	{
+	if (calendar_ipc == NULL) {
 		ipc_handle = pims_ipc_create(CAL_IPC_SOCKET_PATH);
-		if (ipc_handle == NULL)
-		{
-			if (errno == EACCES)
-			{
+		if (ipc_handle == NULL) {
+			if (errno == EACCES) {
 				ERR("pims_ipc_create() Failed : Permission denied");
 				ret = CALENDAR_ERROR_PERMISSION_DENIED;
-			}
-			else
-			{
+			} else {
 				ERR("pims_ipc_create() Failed(%d)", CALENDAR_ERROR_IPC);
 				ret = CALENDAR_ERROR_IPC;
 			}
 			goto ERROR_RETURN;
 		}
-	}
-	else
-	{
+	} else {
 		calendar_connection_count++;
 		CAL_DBG("calendar already connected = %d",calendar_connection_count);
 		ret = CALENDAR_ERROR_NONE;
@@ -138,40 +81,23 @@ API int calendar_connect(void)
 		return ret;
 	}
 
-	ret = __cal_client_ipc_get_cookie_for_access_control(&indata);
-	if( ret != CALENDAR_ERROR_NONE)
-	{
-		goto ERROR_RETURN;
-	}
-
 	// ipc call
-	if (pims_ipc_call(ipc_handle, CAL_IPC_MODULE, CAL_IPC_SERVER_CONNECT, indata, &outdata) != 0)
-	{
+	if (pims_ipc_call(ipc_handle, CAL_IPC_MODULE, CAL_IPC_SERVER_CONNECT, NULL, &outdata) != 0) {
 		ERR("pims_ipc_call failed");
-		pims_ipc_data_destroy(indata);
 		ret = CALENDAR_ERROR_IPC;
 		goto ERROR_RETURN;
 	}
 
-	pims_ipc_data_destroy(indata);
-	indata = NULL;
-
-	if (outdata)
-	{
+	if (outdata) {
 		// check outdata
 		unsigned int size = 0;
 		ret = *(int*) pims_ipc_data_get(outdata,&size);
-
 		pims_ipc_data_destroy(outdata);
-
-		if (ret != CALENDAR_ERROR_NONE)
-		{
+		if (ret != CALENDAR_ERROR_NONE) {
 			ERR("calendar_connect return (%d)",ret);
 			goto ERROR_RETURN;
 		}
-	}
-	else
-	{
+	} else {
 		ERR("ipc outdata is NULL");
 		ret = CALENDAR_ERROR_IPC;
 		goto ERROR_RETURN;
@@ -278,56 +204,38 @@ ERROR_RETURN:
 API int calendar_connect_on_thread(void)
 {
 	int ret = CALENDAR_ERROR_NONE;
-	pims_ipc_data_h indata = NULL;
 	pims_ipc_data_h outdata = NULL;
 
 	CAL_FN_CALL;
 
 	// ipc create
-	if (calendar_ipc_thread == NULL)
-	{
+	if (calendar_ipc_thread == NULL) {
 		calendar_ipc_thread = pims_ipc_create(CAL_IPC_SOCKET_PATH);
-		if (calendar_ipc_thread == NULL)
-		{
+		if (calendar_ipc_thread == NULL) {
 			if (errno == EACCES) {
 				ERR("pims_ipc_create() Failed(%d)", CALENDAR_ERROR_PERMISSION_DENIED);
 				ret = CALENDAR_ERROR_PERMISSION_DENIED;
 				goto ERROR_RETURN;
-			}
-			else {
+			} else {
 				ERR("pims_ipc_create() Failed(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
 				ret = CALENDAR_ERROR_OUT_OF_MEMORY;
 				goto ERROR_RETURN;
 			}
 		}
-	}
-	else
-	{
+	} else {
 		CAL_DBG("calendar already connected");
 		ret = CALENDAR_ERROR_NONE;
 		goto ERROR_RETURN;
 	}
 
-	ret = __cal_client_ipc_get_cookie_for_access_control(&indata);
-	if( ret != CALENDAR_ERROR_NONE)
-	{
-		goto ERROR_RETURN;
-	}
-
 	// ipc call
-	if (pims_ipc_call(calendar_ipc_thread, CAL_IPC_MODULE, CAL_IPC_SERVER_CONNECT, indata, &outdata) != 0)
-	{
+	if (pims_ipc_call(calendar_ipc_thread, CAL_IPC_MODULE, CAL_IPC_SERVER_CONNECT, NULL, &outdata) != 0) {
 		ERR("pims_ipc_call failed");
-		pims_ipc_data_destroy(indata);
 		ret = CALENDAR_ERROR_IPC;
 		goto ERROR_RETURN;
 	}
 
-	pims_ipc_data_destroy(indata);
-	indata = NULL;
-
-	if (outdata)
-	{
+	if (outdata) {
 		// check outdata
 		unsigned int size = 0;
 		ret = *(int*) pims_ipc_data_get(outdata,&size);

@@ -89,7 +89,8 @@ pkg_check_modules(calserver_pkgs REQUIRED
 	accounts-svc
 	capi-appfw-application
 	libtzplatform-config
-	)
+	libsmack
+)
 
 FOREACH(flag ${calserver_pkgs_CFLAGS})
 	SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} ${flag}")
