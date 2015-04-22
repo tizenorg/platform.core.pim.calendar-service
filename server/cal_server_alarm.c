@@ -21,7 +21,6 @@
 
 #include <sys/time.h>
 #include <unistd.h>
-
 #include <alarm.h>
 #include <vconf.h>
 #include <app.h>

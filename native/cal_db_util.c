@@ -25,15 +25,10 @@
 #include "cal_internal.h"
 #include "cal_typedef.h"
 #include "cal_db.h"
-
 #include "cal_db_util.h"
 
-#define DB_PATH tzplatform_getenv(TZ_USER_DB)
-#define DATA_PATH tzplatform_getenv(TZ_USER_DATA)
-#define CAL_DATA_PATH tzplatform_mkpath(TZ_USER_DATA,"calendar-svc")
 // For Security
 #define CALS_SECURITY_FILE_GROUP 6003
-#define CALS_SECURITY_DEFAULT_PERMISSION 0660
 
 static TLS sqlite3 *calendar_db_handle;
 static TLS int transaction_cnt = 0;
@@ -47,7 +42,7 @@ static TLS bool calendar_change=false;
 static inline int create_noti_file(const char* noti_file)
 {
 	int fd, ret;
-	fd = creat(noti_file, CALS_SECURITY_DEFAULT_PERMISSION);
+	fd = creat(noti_file, CAL_SECURITY_DEFAULT_PERMISSION);
 	if (-1 == fd)
 	{
 		printf("open Failed\n");
@@ -171,11 +166,11 @@ int _cal_db_util_open(void)
 		{
 			mkdir(DB_PATH, 755);
 		}
-		if (-1 == access (CAL_DB_PATH, F_OK))
+		if (-1 == access (CAL_DB_FILE, F_OK))
 		{
 			mkdir(DB_PATH, 755);
 		}
-		ret = db_util_open(CAL_DB_PATH, &calendar_db_handle, 0);
+		ret = db_util_open(CAL_DB_FILE, &calendar_db_handle, 0);
 		retvm_if(SQLITE_OK != ret, CALENDAR_ERROR_DB_FAILED,
 				"db_util_open() Failed(%d).", ret);
 	}

@@ -114,7 +114,7 @@ static void __cal_access_control_set_permission_info(calendar_permission_info_s 
 	while (CAL_DB_ROW == _cal_db_util_stmt_step(stmt)) {
 		int id = sqlite3_column_int(stmt, 0);
 		int mode = sqlite3_column_int(stmt, 1);
-		char temp = (char *)sqlite3_column_text(stmt, 2);
+		char *temp = (char *)sqlite3_column_text(stmt, 2);
 
 		if (!smack_enabled) // smack disabled
 			info->write_list[write_index++] = id;

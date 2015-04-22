@@ -11,7 +11,6 @@ Requires(post): /sbin/ldconfig
 Requires(post): /usr/bin/sqlite3, /bin/chown
 Requires(post): contacts-service2
 Requires(postun): /sbin/ldconfig
-Requires: sys-assert
 
 BuildRequires: cmake
 BuildRequires: pkgconfig(db-util)

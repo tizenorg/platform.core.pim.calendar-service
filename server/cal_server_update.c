@@ -47,7 +47,8 @@ static int __cal_server_update_get_db_version(sqlite3 *db, int *version)
 		sqlite3_finalize(stmt);
 		return CALENDAR_ERROR_DB_FAILED;
 	}
-	if (version) *version = (int)sqlite3_column_int(stmt, 0);
+	if (version)
+		*version = (int)sqlite3_column_int(stmt, 0);
 	sqlite3_finalize(stmt);
 	return CALENDAR_ERROR_NONE;
 }
@@ -62,14 +63,15 @@ int _cal_server_update(void)
 	sqlite3 *__db;
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 
-	ret = db_util_open(CAL_DB_PATH, &__db, 0);
-	if (SQLITE_OK != ret)
-	{
-		ERR("db_util_open() failed");
+	char db_file[256] = {0};
+	snprintf(db_file, sizeof(db_file), "%s/%s", DB_PATH, CALS_DB_NAME);
+	ret = db_util_open(db_file, &__db, 0);
+	if (SQLITE_OK != ret) {
+		ERR("db_util_open() fail(%d):[%s]", ret, db_file);
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 	__cal_server_update_get_db_version(__db, &old_version);
-	DBG("old version(%d)", old_version);
+	DBG("[%s] old version(%d)", db_file, old_version);
 
 	if (old_version < 100)
 	{

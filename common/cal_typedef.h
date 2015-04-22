@@ -28,11 +28,13 @@
 #include <tzplatform_config.h>
 
 #define CAL_TZID_GMT "Etc/GMT"
+#define CAL_SOCK_PATH "/run/user/%d"
 #define CAL_NOTI_EVENT_CHANGED tzplatform_mkpath(TZ_USER_DATA,"calendar-svc/.CALENDAR_SVC_EVENT_CHANGED")
 #define CAL_NOTI_TODO_CHANGED tzplatform_mkpath(TZ_USER_DATA,"calendar-svc/.CALENDAR_SVC_TODO_CHANGED")
 #define CAL_NOTI_CALENDAR_CHANGED tzplatform_mkpath(TZ_USER_DATA,"calendar-svc/.CALENDAR_SVC_CALENDAR_CHANGED")
 #define CAL_NOTI_REMINDER_CAHNGED "reminder"
 #define CAL_FORMAT_LOCAL_DATETIME "%04d-%02d-%02dT%02d:%02d:%02d"
+#define CAL_PATH_MAX_LEN 1024
 
 /**
  * @enum cal_priority_e

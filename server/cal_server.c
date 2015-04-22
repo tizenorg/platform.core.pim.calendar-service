@@ -169,7 +169,9 @@ static int __server_main(void)
 	int try_count = 0;
 	g_type_init();
 
-	pims_ipc_svc_init(CAL_IPC_SOCKET_PATH,CAL_SECURITY_FILE_GROUP, 0777);
+	char sock_file[CAL_PATH_MAX_LEN] = {0};
+	snprintf(sock_file, sizeof(sock_file), CAL_SOCK_PATH"/.%s", getuid(), CAL_IPC_SERVICE);
+	pims_ipc_svc_init(sock_file,CAL_SECURITY_FILE_GROUP, 0777);
 
 	if (pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_CONNECT, _cal_server_ipc_connect, NULL) != 0)
 	{
@@ -294,7 +296,7 @@ static int __server_main(void)
 	//loop = g_main_loop_new(NULL, FALSE);
 
 	//calendar_alarm_init();
-
+/*
 	ret = contacts_connect();
 	if (CONTACTS_ERROR_NONE != ret)
 	{
@@ -306,7 +308,7 @@ static int __server_main(void)
 		DBG("contacts connected");
 		on_contact = 1;
 	}
-
+*/
 	ret = calendar_connect();
 	if (CALENDAR_ERROR_NONE != ret)
 	{
@@ -318,7 +320,7 @@ static int __server_main(void)
 
 	if (on_contact)
 	{
-		ret = _cal_server_contacts();
+/*		ret = _cal_server_contacts();
 		if (CALENDAR_ERROR_NONE != ret)
 		{
 			contacts_disconnect();
@@ -327,7 +329,7 @@ static int __server_main(void)
 		}
 
 		_cal_server_contacts_sync_start();
-	}
+*/	}
 
 	// access_control
 	_cal_access_control_set_client_info(NULL, NULL);
@@ -348,10 +350,10 @@ static int __server_main(void)
 	{
 		if (on_contact)
 		{
-			contacts_disconnect();
+//			contacts_disconnect();
 		}
 		ERR("_cal_server_alarm() failed");
-		return -1;
+//		return -1;
 	}
 
 	_cal_server_calendar_delete_start();
@@ -371,7 +373,7 @@ static int __server_main(void)
 	_cal_inotify_finalize();
 	calendar_disconnect();
 
-	contacts_disconnect();
+//	contacts_disconnect();
 	on_contact = 0;
 
 	if (cal_account_h)

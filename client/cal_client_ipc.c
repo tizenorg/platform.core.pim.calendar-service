@@ -34,10 +34,8 @@
 #include "cal_record.h"
 #include "cal_list.h"
 #include "cal_mutex.h"
-
 #include "cal_ipc.h"
 #include "cal_ipc_marshal.h"
-
 #include "cal_client_ipc.h"
 #include "cal_client_reminder.h"
 
@@ -62,7 +60,9 @@ API int calendar_connect(void)
 	_cal_mutex_lock(CAL_MUTEX_CONNECTION);
 	// ipc create
 	if (calendar_ipc == NULL) {
-		ipc_handle = pims_ipc_create(CAL_IPC_SOCKET_PATH);
+		char sock_file[CAL_PATH_MAX_LEN] = {0};
+		snprintf(sock_file, sizeof(sock_file), CAL_SOCK_PATH"/.%s", getuid(), CAL_IPC_SERVICE);
+		ipc_handle = pims_ipc_create(sock_file);
 		if (ipc_handle == NULL) {
 			if (errno == EACCES) {
 				ERR("pims_ipc_create() Failed : Permission denied");
@@ -210,7 +210,9 @@ API int calendar_connect_on_thread(void)
 
 	// ipc create
 	if (calendar_ipc_thread == NULL) {
-		calendar_ipc_thread = pims_ipc_create(CAL_IPC_SOCKET_PATH);
+		char sock_file[CAL_PATH_MAX_LEN] = {0};
+		snprintf(sock_file, sizeof(sock_file), CAL_SOCK_PATH"/.%s", getuid(), CAL_IPC_SERVICE);
+		calendar_ipc_thread = pims_ipc_create(sock_file);
 		if (calendar_ipc_thread == NULL) {
 			if (errno == EACCES) {
 				ERR("pims_ipc_create() Failed(%d)", CALENDAR_ERROR_PERMISSION_DENIED);
