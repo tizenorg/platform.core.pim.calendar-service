@@ -22,7 +22,6 @@
 #include "cal_internal.h"
 #include "cal_typedef.h"
 #include "cal_view.h"
-
 #include "cal_filter.h"
 
 static int _cal_filter_create_attribute(cal_composite_filter_s *com_filter, unsigned int property_id,

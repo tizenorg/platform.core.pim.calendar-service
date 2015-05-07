@@ -19,8 +19,6 @@
 
 #include <stdlib.h>
 
-#include "calendar_db.h"  //calendar_db_get_record
-
 #include "cal_internal.h"
 #include "cal_typedef.h"
 #include "cal_view.h"

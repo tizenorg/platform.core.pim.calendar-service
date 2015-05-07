@@ -25,10 +25,10 @@
 #include <vconf.h>
 #include <app.h>
 
-#include "cal_internal.h"
 #include "calendar.h"
-#include "cal_time.h"
 #include "cal_typedef.h"
+#include "cal_internal.h"
+#include "cal_time.h"
 #include "cal_inotify.h"
 
 #include "cal_db_util.h"

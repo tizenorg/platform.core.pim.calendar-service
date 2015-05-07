@@ -20,6 +20,7 @@
 
 #include <stdlib.h>
 #include <pims-ipc-svc.h>
+#include <pims-ipc-data.h>
 
 #include "calendar.h"
 #include "cal_internal.h" // DBG

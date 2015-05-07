@@ -21,8 +21,8 @@
 #include <db-util.h>
 #include <stdlib.h>
 
-#include "cal_internal.h"
 #include "cal_typedef.h"
+#include "cal_internal.h"
 #include "cal_db.h"
 
 #define __USER_VERSION 105

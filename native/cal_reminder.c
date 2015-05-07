@@ -20,7 +20,6 @@
 #include <stdlib.h>
 
 #include "calendar_reminder.h"
-
 #include "cal_internal.h"
 #include "cal_typedef.h"
 #include "cal_view.h"

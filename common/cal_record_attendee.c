@@ -16,14 +16,14 @@
  * limitations under the License.
  *
  */
-#include <stdlib.h>		//calloc
-#include <stdbool.h>		//bool
+
+#include <stdlib.h>	// calloc
+#include <stdbool.h> // bool
 #include <string.h>
 
 #include "cal_internal.h"
 #include "cal_typedef.h"
 #include "cal_view.h"
-
 #include "cal_record.h"
 
 static int _cal_record_attendee_create( calendar_record_h* out_record );

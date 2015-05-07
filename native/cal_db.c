@@ -17,7 +17,7 @@
  *
  */
 
-#include <unistd.h>
+#include <unistd.h> // sleep
 #include <glib.h>
 #include <db-util.h>
 

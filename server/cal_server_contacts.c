@@ -23,8 +23,8 @@
 #include <unistd.h>	// usleep
 
 #include "calendar.h"
-#include "cal_internal.h" // DBG
 #include "cal_typedef.h"
+#include "cal_internal.h" // DBG
 #include "cal_db.h"
 #include "cal_db_util.h"
 #include "cal_time.h"

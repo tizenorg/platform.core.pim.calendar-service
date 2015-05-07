@@ -18,14 +18,13 @@
  */
 
 
-#include <stdlib.h>		//calloc
-#include <stdbool.h>		//bool
+#include <stdlib.h> // calloc
+#include <stdbool.h> // bool
 #include <string.h>
 
 #include "cal_internal.h"
 #include "cal_typedef.h"
 #include "cal_view.h"
-
 #include "cal_record.h"
 
 #define __CHECK_READ_ONLY_PROPERTY() \

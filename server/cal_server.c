@@ -20,11 +20,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <grp.h>
 #include <sys/types.h>
 #include <unistd.h>     //getuid
-#include <pims-ipc.h>
-#include <pims-ipc-svc.h>
 #include <glib-object.h>
 #include <alarm.h>
 #include <contacts.h>
@@ -34,11 +31,8 @@
 #include "cal_internal.h" // DBG
 #include "cal_ipc.h"
 #include "cal_server_ipc.h"
-#include "cal_typedef.h"
 #include "cal_inotify.h"
-
 #include "cal_db.h" // CAL_SECURITY_FILE_GROUP
-
 #include "cal_server_contacts.h"
 #include "cal_server_alarm.h"
 #include "cal_server_calendar_delete.h"

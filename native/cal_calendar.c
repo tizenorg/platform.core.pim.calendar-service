@@ -17,15 +17,9 @@
  *
  */
 
-#include <unistd.h>
-#include <glib.h>
-#include <glib-object.h>
-#include <db-util.h>
-
-#include "cal_service.h"
 #include "cal_internal.h"
 #include "cal_typedef.h"
-#include "cal_db.h"
+#include "cal_db_util.h"
 #include "cal_view.h"
 #include "cal_mutex.h"
 

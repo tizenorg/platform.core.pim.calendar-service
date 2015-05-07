@@ -20,14 +20,12 @@
 #include <stdlib.h>
 
 #include "calendar_vcalendar.h"
-
 #include "cal_internal.h"
 #include "cal_typedef.h"
 #include "cal_record.h"
 #include "cal_view.h"
 #include "cal_time.h"
 #include "cal_list.h"
-
 #include "cal_vcalendar.h"
 #include "cal_vcalendar_make.h"
 #include "cal_vcalendar_parse.h"

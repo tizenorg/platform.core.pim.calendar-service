@@ -16,8 +16,9 @@
  * limitations under the License.
  *
  */
-#include <stdlib.h>		//calloc
-#include <stdbool.h>		//bool
+
+#include <stdlib.h>	// calloc
+#include <stdbool.h> // bool
 #include <string.h>
 
 #include "calendar_list.h"

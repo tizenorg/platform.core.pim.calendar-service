@@ -20,11 +20,7 @@
 #include <stdlib.h>     //calloc
 #include <pims-ipc.h>
 
-#include "calendar_service.h"
-#include "calendar_db.h"
-#include "calendar_types.h"
-#include "calendar_reminder.h"
-
+#include "calendar.h"
 #include "cal_internal.h"
 #include "cal_typedef.h"
 #include "cal_inotify.h"

@@ -23,7 +23,6 @@
 #include "cal_typedef.h"
 #include "cal_view.h"
 #include "cal_filter.h"
-
 #include "cal_query.h"
 
 static bool _cal_query_property_check(const cal_property_info_s *properties,

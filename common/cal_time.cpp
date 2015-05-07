@@ -37,7 +37,6 @@
 #include "calendar.h"
 #include "cal_internal.h"
 #include "cal_typedef.h"
-
 #include "cal_time.h"
 
 #define ULOC_LOCALE_IDENTIFIER_CAPACITY (ULOC_FULLNAME_CAPACITY + 1 + ULOC_KEYWORD_AND_VALUES_CAPACITY)

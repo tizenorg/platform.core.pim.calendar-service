@@ -17,17 +17,15 @@
  *
  */
 
-#include <stdlib.h>     //calloc
+#include <stdlib.h> //calloc
 #include <pims-ipc.h>
-#include <glib-object.h>    //g_type_init
+#include <glib-object.h> //g_type_init
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "calendar_service.h"
-#include "calendar_db.h"
-#include "calendar_types.h"
+#include "calendar.h"
 #include "cal_internal.h"
 #include "cal_typedef.h"
 #include "cal_inotify.h"
