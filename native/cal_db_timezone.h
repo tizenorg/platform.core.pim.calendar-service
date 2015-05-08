@@ -17,20 +17,9 @@
  *
  */
 
-#ifndef __CALENDAR_SVC_ACCESS_CONTROL_H__
-#define __CALENDAR_SVC_ACCESS_CONTROL_H__
+#ifndef __CALENDAR_SVC_DB_TIMEZONE_H__
+#define __CALENDAR_SVC_DB_TIMEZONE_H__
 
-#include <pims-ipc.h>
-#include "cal_typedef.h"
+void cal_db_timezone_search_with_tzid(const char *zone, char *tzid, int *timezone_id);
 
-#define CAL_PRIVILEGE_READ "http://tizen.org/privilege/calendar.read"
-#define CAL_PRIVILEGE_WRITE "http://tizen.org/privilege/calendar.write"
-
-void cal_access_control_set_client_info(pims_ipc_h ipc, const char* smack_label);
-void cal_access_control_unset_client_info(void);
-char* cal_access_control_get_label(void);
-void cal_access_control_reset(void);  // reset read_list, write_list..
-bool cal_access_control_have_write_permission(int calendarbook_id);
-int cal_is_owner(int calendarbook_id);
-
-#endif // __CALENDAR_SVC_ACCESS_CONTROL_H__
+#endif  //__CALENDAR_SVC_DB_TIMEZONE_H__
