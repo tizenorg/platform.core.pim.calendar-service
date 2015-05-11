@@ -645,7 +645,7 @@ int cal_db_event_insert_record(calendar_record_h record, int original_event_id, 
 		is_allday = 1;
 	}
 
-	snprintf(query, sizeof(query), "INSERT INTO %s ( "
+	snprintf(query, sizeof(query), "INSERT INTO %s ("
 			"type, "
 			"created_ver, changed_ver, "
 			"summary, description, location, categories, exdate, "
@@ -665,7 +665,7 @@ int cal_db_event_insert_record(calendar_record_h record, int original_event_id, 
 			"has_alarm, system_type, updated, "
 			"sync_data1, sync_data2, sync_data3, sync_data4,"
 			"has_exception, has_extended, freq, is_allday "
-			") VALUES ( "
+			") VALUES ("
 			"%d, "
 			"%d, %d, "
 			"?, ?, ?, ?, ?, "

@@ -43,25 +43,25 @@ typedef enum
 	CAL_RECORD_TYPE_EXTENDED,
 } cal_record_type_e;
 
-typedef int (*cal_record_create_cb)( calendar_record_h* out_record );
-typedef int (*cal_record_destroy_cb)( calendar_record_h record, bool delete_child );
-typedef int (*cal_record_clone_cb)( calendar_record_h record, calendar_record_h* out_record );
-typedef int (*cal_record_get_str_cb)( calendar_record_h record, unsigned int property_id, char** out_str );
-typedef int (*cal_record_get_str_p_cb)( calendar_record_h record, unsigned int property_id, char** out_str );
-typedef int (*cal_record_get_int_cb)( calendar_record_h record, unsigned int property_id, int* out_value );
-typedef int (*cal_record_get_double_cb)( calendar_record_h record, unsigned int property_id, double* out_value );
-typedef int (*cal_record_get_lli_cb)( calendar_record_h record, unsigned int property_id, long long int* out_value );
-typedef int (*cal_record_get_caltime_cb)( calendar_record_h record, unsigned int property_id, calendar_time_s* out_value );
-typedef int (*cal_record_set_str_cb)( calendar_record_h record, unsigned int property_id, const char* value );
-typedef int (*cal_record_set_int_cb)( calendar_record_h record, unsigned int property_id, int value );
-typedef int (*cal_record_set_double_cb)( calendar_record_h record, unsigned int property_id, double value );
-typedef int (*cal_record_set_lli_cb)( calendar_record_h record, unsigned int property_id, long long int value );
-typedef int (*cal_record_set_caltime_cb)( calendar_record_h record, unsigned int property_id, calendar_time_s value );
-typedef int (*cal_record_add_child_record_cb)( calendar_record_h record, unsigned int property_id, calendar_record_h child_record );
-typedef int (*cal_record_remove_child_record_cb)( calendar_record_h record, unsigned int property_id, calendar_record_h child_record );
-typedef int (*cal_record_get_child_record_count_cb)( calendar_record_h record, unsigned int property_id, unsigned int* count );
-typedef int (*cal_record_get_child_record_at_p_cb)( calendar_record_h record, unsigned int property_id, int index, calendar_record_h* child_record );
-typedef int (*cal_record_clone_child_record_list_cb)( calendar_record_h record, unsigned int property_id, calendar_list_h* out_list );
+typedef int (*cal_record_create_cb)(calendar_record_h* out_record);
+typedef int (*cal_record_destroy_cb)(calendar_record_h record, bool delete_child);
+typedef int (*cal_record_clone_cb)(calendar_record_h record, calendar_record_h* out_record);
+typedef int (*cal_record_get_str_cb)(calendar_record_h record, unsigned int property_id, char** out_str);
+typedef int (*cal_record_get_str_p_cb)(calendar_record_h record, unsigned int property_id, char** out_str);
+typedef int (*cal_record_get_int_cb)(calendar_record_h record, unsigned int property_id, int* out_value);
+typedef int (*cal_record_get_double_cb)(calendar_record_h record, unsigned int property_id, double* out_value);
+typedef int (*cal_record_get_lli_cb)(calendar_record_h record, unsigned int property_id, long long int* out_value);
+typedef int (*cal_record_get_caltime_cb)(calendar_record_h record, unsigned int property_id, calendar_time_s* out_value);
+typedef int (*cal_record_set_str_cb)(calendar_record_h record, unsigned int property_id, const char* value);
+typedef int (*cal_record_set_int_cb)(calendar_record_h record, unsigned int property_id, int value);
+typedef int (*cal_record_set_double_cb)(calendar_record_h record, unsigned int property_id, double value);
+typedef int (*cal_record_set_lli_cb)(calendar_record_h record, unsigned int property_id, long long int value);
+typedef int (*cal_record_set_caltime_cb)(calendar_record_h record, unsigned int property_id, calendar_time_s value);
+typedef int (*cal_record_add_child_record_cb)(calendar_record_h record, unsigned int property_id, calendar_record_h child_record);
+typedef int (*cal_record_remove_child_record_cb)(calendar_record_h record, unsigned int property_id, calendar_record_h child_record);
+typedef int (*cal_record_get_child_record_count_cb)(calendar_record_h record, unsigned int property_id, unsigned int* count);
+typedef int (*cal_record_get_child_record_at_p_cb)(calendar_record_h record, unsigned int property_id, int index, calendar_record_h* child_record);
+typedef int (*cal_record_clone_child_record_list_cb)(calendar_record_h record, unsigned int property_id, calendar_list_h* out_list);
 
 typedef enum {
 	CAL_PROPERTY_FLAG_PROJECTION = 0x00000001,
@@ -137,11 +137,11 @@ cal_record_plugin_cb_s* cal_record_get_plugin_cb(cal_record_type_e type);
 bool cal_record_check_property_flag(calendar_record_h record, unsigned int property_id, cal_properties_flag_e flag);
 int cal_record_set_projection(calendar_record_h record, const unsigned int *projection, const int projection_count, int properties_max_count);
 
-int cal_record_set_str( calendar_record_h record, unsigned int property_id, const char* value );
-int cal_record_set_int( calendar_record_h record, unsigned int property_id, int value );
-int cal_record_set_double( calendar_record_h record, unsigned int property_id, double value );
-int cal_record_set_lli( calendar_record_h record, unsigned int property_id, long long int value );
-int cal_record_set_caltime( calendar_record_h record, unsigned int property_id, calendar_time_s value );
+int cal_record_set_str(calendar_record_h record, unsigned int property_id, const char* value);
+int cal_record_set_int(calendar_record_h record, unsigned int property_id, int value);
+int cal_record_set_double(calendar_record_h record, unsigned int property_id, double value);
+int cal_record_set_lli(calendar_record_h record, unsigned int property_id, long long int value);
+int cal_record_set_caltime(calendar_record_h record, unsigned int property_id, calendar_time_s value);
 
 #ifdef __cplusplus
 }

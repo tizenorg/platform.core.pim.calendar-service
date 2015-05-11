@@ -78,7 +78,7 @@ typedef void (*calendar_db_changed_cb)(const char* view_uri, void* user_data);
  * @see calendar_db_delete_record()
  * @see calendar_db_get_record()
  */
-int calendar_db_insert_record( calendar_record_h record, int* record_id );
+int calendar_db_insert_record(calendar_record_h record, int* record_id);
 
 /**
  * @brief Gets a record from the calendar database.
@@ -114,7 +114,7 @@ int calendar_db_insert_record( calendar_record_h record, int* record_id );
  * @see calendar_connect()
  * @see calendar_record_destroy()
  */
-int calendar_db_get_record( const char* view_uri, int record_id, calendar_record_h* record );
+int calendar_db_get_record(const char* view_uri, int record_id, calendar_record_h* record);
 
 /**
  * @brief Updates a record in the calendar database.
@@ -144,7 +144,7 @@ int calendar_db_get_record( const char* view_uri, int record_id, calendar_record
  * @see calendar_db_delete_record()
  * @see calendar_db_get_record()
  */
-int calendar_db_update_record( calendar_record_h record );
+int calendar_db_update_record(calendar_record_h record);
 
 /**
  * @brief Deletes a record from the calendar database with related child records.
@@ -173,7 +173,7 @@ int calendar_db_update_record( calendar_record_h record );
  * @see calendar_connect()
  * @see calendar_db_insert_record()
  */
-int calendar_db_delete_record( const char* view_uri, int record_id );
+int calendar_db_delete_record(const char* view_uri, int record_id);
 
 /**
  * @brief Retrieves all records as a list.
@@ -205,7 +205,7 @@ int calendar_db_delete_record( const char* view_uri, int record_id );
  * @see calendar_connect()
  * @see calendar_list_destroy()
  */
-int calendar_db_get_all_records( const char* view_uri, int offset, int limit, calendar_list_h* record_list );
+int calendar_db_get_all_records(const char* view_uri, int offset, int limit, calendar_list_h* record_list);
 
 /**
  * @brief Retrieves records using a query handle.
@@ -237,7 +237,7 @@ int calendar_db_get_all_records( const char* view_uri, int offset, int limit, ca
  * @see calendar_connect()
  * @see calendar_list_destroy()
  */
-int calendar_db_get_records_with_query( calendar_query_h query, int offset, int limit, calendar_list_h* record_list );
+int calendar_db_get_records_with_query(calendar_query_h query, int offset, int limit, calendar_list_h* record_list);
 
 /**
  * @brief Gets the record count of a specific view.
@@ -264,7 +264,7 @@ int calendar_db_get_records_with_query( calendar_query_h query, int offset, int 
  *
  * @see calendar_connect()
  */
-int calendar_db_get_count( const char* view_uri, int *count );
+int calendar_db_get_count(const char* view_uri, int *count);
 
 /**
  * @brief Gets the record count with a query handle.
@@ -291,7 +291,7 @@ int calendar_db_get_count( const char* view_uri, int *count );
  *
  * @see calendar_connect2()
  */
-int calendar_db_get_count_with_query( calendar_query_h query, int *count );
+int calendar_db_get_count_with_query(calendar_query_h query, int *count);
 
 /**
  * @brief Inserts multiple records into the calendar database as a batch operation.
@@ -322,7 +322,7 @@ int calendar_db_get_count_with_query( calendar_query_h query, int *count );
  * @see calendar_db_update_records()
  * @see calendar_db_delete_records()
  */
-int calendar_db_insert_records( calendar_list_h record_list, int** record_id_array, int* count);
+int calendar_db_insert_records(calendar_list_h record_list, int** record_id_array, int* count);
 
 /**
  * @brief Updates multiple records into the calendar database as a batch operation.
@@ -351,7 +351,7 @@ int calendar_db_insert_records( calendar_list_h record_list, int** record_id_arr
  * @see calendar_db_insert_records()
  * @see calendar_db_delete_records()
  */
-int calendar_db_update_records( calendar_list_h record_list);
+int calendar_db_update_records(calendar_list_h record_list);
 
 /**
  * @brief   Deletes multiple records with related child records from the calendar database as a batch operation.
@@ -442,7 +442,7 @@ int calendar_db_get_current_version(int* calendar_db_version);
  * @see calendar_db_changed_cb()
  * @see calendar_db_remove_changed_cb()
  */
-int calendar_db_add_changed_cb(const char* view_uri, calendar_db_changed_cb callback, void* user_data );
+int calendar_db_add_changed_cb(const char* view_uri, calendar_db_changed_cb callback, void* user_data);
 
 /**
  * @brief Unregisters a callback function.
@@ -468,7 +468,7 @@ int calendar_db_add_changed_cb(const char* view_uri, calendar_db_changed_cb call
  * @see calendar_db_changed_cb()
  * @see calendar_db_add_changed_cb()
  */
-int calendar_db_remove_changed_cb( const char* view_uri, calendar_db_changed_cb callback, void* user_data );
+int calendar_db_remove_changed_cb(const char* view_uri, calendar_db_changed_cb callback, void* user_data);
 
 /**
  * @brief Retrieves records with the given calendar database version.
@@ -502,7 +502,7 @@ int calendar_db_remove_changed_cb( const char* view_uri, calendar_db_changed_cb 
  * @see calendar_connect()
  * @see calendar_list_destroy()
  */
-int calendar_db_get_changes_by_version(const char* view_uri, int calendar_book_id, int calendar_db_version, calendar_list_h* record_list, int *current_calendar_db_version );
+int calendar_db_get_changes_by_version(const char* view_uri, int calendar_book_id, int calendar_db_version, calendar_list_h* record_list, int *current_calendar_db_version);
 
 /**
  * @brief Inserts a vcalendar stream into the calendar database.
@@ -705,7 +705,7 @@ int calendar_db_get_changes_exception_by_version(const char* view_uri, int origi
  *
  * @see calendar_connect()
  */
-int calendar_db_clean_after_sync( int calendar_book_id, int calendar_db_version );
+int calendar_db_clean_after_sync(int calendar_book_id, int calendar_db_version);
 
 /**
  * @}

@@ -289,7 +289,7 @@ void cal_db_initialize_view_table(void)
 			"WHERE A.type = 1 AND c.deleted = 0 AND A.is_deleted = 0 ",
 			CAL_VIEW_TABLE_EVENT_CALENDAR,
 			CAL_TABLE_SCHEDULE, CAL_TABLE_CALENDAR,
-			CAL_TABLE_RRULE );
+			CAL_TABLE_RRULE);
 	dbret = cal_db_util_query_exec(query);
 	//SEC_DBG("%s",query);
 	if (dbret != CAL_DB_OK)
@@ -341,7 +341,7 @@ void cal_db_initialize_view_table(void)
 			"WHERE A.type = 1 AND c.deleted = 0 AND A.is_deleted = 0 ",
 			CAL_VIEW_TABLE_EVENT_CALENDAR_ATTENDEE,
 			CAL_TABLE_SCHEDULE, CAL_TABLE_ATTENDEE, CAL_TABLE_CALENDAR,
-			CAL_TABLE_RRULE );
+			CAL_TABLE_RRULE);
 	dbret = cal_db_util_query_exec(query);
 	//SEC_DBG("%s",query);
 	if (dbret != CAL_DB_OK)
@@ -370,7 +370,7 @@ int cal_db_close(void)
 	return ret;
 }
 
-API int calendar_db_get_changes_by_version(const char* view_uri, int calendar_book_id, int calendar_db_version, calendar_list_h* record_list, int *current_calendar_db_version )
+API int calendar_db_get_changes_by_version(const char* view_uri, int calendar_book_id, int calendar_db_version, calendar_list_h* record_list, int *current_calendar_db_version)
 {
 	const char *query_cur_version = "SELECT ver FROM "CAL_TABLE_VERSION;
 	int transaction_ver = 0;
@@ -441,7 +441,7 @@ API int calendar_db_get_changes_by_version(const char* view_uri, int calendar_bo
 		int created_ver = 0;
 		// stmt -> record
 		ret = calendar_record_create(_calendar_updated_info._uri,&record);
-		if( ret != CALENDAR_ERROR_NONE )
+		if(ret != CALENDAR_ERROR_NONE)
 		{
 			ERR("calendar_record_create() failed");
 			calendar_list_destroy(*record_list, true);
@@ -482,7 +482,7 @@ API int calendar_db_get_changes_by_version(const char* view_uri, int calendar_bo
 		cal_record_set_int(record,_calendar_updated_info.version,ver);
 
 		ret = calendar_list_add(*record_list,record);
-		if( ret != CALENDAR_ERROR_NONE )
+		if(ret != CALENDAR_ERROR_NONE)
 		{
 			calendar_list_destroy(*record_list, true);
 			*record_list = NULL;
@@ -519,7 +519,7 @@ API int calendar_db_get_current_version(int* current_version)
 	return CALENDAR_ERROR_NONE;
 }
 
-API int calendar_db_insert_record( calendar_record_h record, int* id )
+API int calendar_db_insert_record(calendar_record_h record, int* id)
 {
 	int ret = CALENDAR_ERROR_NONE;
 
@@ -546,7 +546,7 @@ API int calendar_db_insert_record( calendar_record_h record, int* id )
 	return ret;
 }
 
-int cal_db_get_record( const char* view_uri, int id, calendar_record_h* out_record )
+int cal_db_get_record(const char* view_uri, int id, calendar_record_h* out_record)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	cal_record_type_e type = CAL_RECORD_TYPE_INVALID;
@@ -564,12 +564,12 @@ int cal_db_get_record( const char* view_uri, int id, calendar_record_h* out_reco
 	return ret;
 }
 
-API int calendar_db_get_record( const char* view_uri, int id, calendar_record_h* out_record )
+API int calendar_db_get_record(const char* view_uri, int id, calendar_record_h* out_record)
 {
 	return cal_db_get_record(view_uri, id, out_record);
 }
 
-API int calendar_db_update_record( calendar_record_h record )
+API int calendar_db_update_record(calendar_record_h record)
 {
 	cal_record_s *temp=NULL ;
 	int ret = CALENDAR_ERROR_NONE;
@@ -583,7 +583,7 @@ API int calendar_db_update_record( calendar_record_h record )
 	RETVM_IF(NULL == plugin_cb->update_record, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = cal_db_util_begin_trans();
-	RETVM_IF( CALENDAR_ERROR_NONE != ret,CALENDAR_ERROR_DB_FAILED, "Db failed" );
+	RETVM_IF(CALENDAR_ERROR_NONE != ret,CALENDAR_ERROR_DB_FAILED, "Db failed");
 
 	ret = plugin_cb->update_record(record);
 
@@ -599,7 +599,7 @@ API int calendar_db_update_record( calendar_record_h record )
 	return ret;
 }
 
-API int calendar_db_delete_record( const char* view_uri, int id )
+API int calendar_db_delete_record(const char* view_uri, int id)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	cal_record_type_e type = CAL_RECORD_TYPE_INVALID;
@@ -613,7 +613,7 @@ API int calendar_db_delete_record( const char* view_uri, int id )
 	RETVM_IF(NULL == plugin_cb->delete_record, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = cal_db_util_begin_trans();
-	RETVM_IF( CALENDAR_ERROR_NONE != ret,CALENDAR_ERROR_DB_FAILED, "Db failed" );
+	RETVM_IF(CALENDAR_ERROR_NONE != ret,CALENDAR_ERROR_DB_FAILED, "Db failed");
 
 	ret = plugin_cb->delete_record(id);
 
@@ -629,7 +629,7 @@ API int calendar_db_delete_record( const char* view_uri, int id )
 	return ret;
 }
 
-API int calendar_db_get_all_records( const char* view_uri, int offset, int limit, calendar_list_h* out_list )
+API int calendar_db_get_all_records(const char* view_uri, int offset, int limit, calendar_list_h* out_list)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	cal_record_type_e type = CAL_RECORD_TYPE_INVALID;
@@ -655,7 +655,7 @@ API int calendar_db_get_all_records( const char* view_uri, int offset, int limit
 	return CALENDAR_ERROR_NONE;
 }
 
-API int calendar_db_get_records_with_query( calendar_query_h query, int offset, int limit, calendar_list_h* out_list )
+API int calendar_db_get_records_with_query(calendar_query_h query, int offset, int limit, calendar_list_h* out_list)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	cal_record_type_e type = CAL_RECORD_TYPE_INVALID;
@@ -683,7 +683,7 @@ API int calendar_db_get_records_with_query( calendar_query_h query, int offset, 
 	return CALENDAR_ERROR_NONE;
 }
 
-API int calendar_db_clean_after_sync( int calendar_book_id,  int calendar_db_version )
+API int calendar_db_clean_after_sync(int calendar_book_id,  int calendar_db_version)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	char query[CAL_DB_SQL_MIN_LEN] = {0};
@@ -760,7 +760,7 @@ API int calendar_db_clean_after_sync( int calendar_book_id,  int calendar_db_ver
 	return CALENDAR_ERROR_NONE;
 }
 
-API int calendar_db_get_count( const char* view_uri, int *out_count )
+API int calendar_db_get_count(const char* view_uri, int *out_count)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	cal_record_type_e type = CAL_RECORD_TYPE_INVALID;
@@ -777,7 +777,7 @@ API int calendar_db_get_count( const char* view_uri, int *out_count )
 	return ret;
 }
 
-API int calendar_db_get_count_with_query( calendar_query_h query, int *out_count )
+API int calendar_db_get_count_with_query(calendar_query_h query, int *out_count)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	cal_record_type_e type = CAL_RECORD_TYPE_INVALID;
@@ -806,7 +806,7 @@ API int calendar_db_insert_records(calendar_list_h list, int** ids, int* count)
 	RETVM_IF(NULL == list, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = cal_db_util_begin_trans();
-	if ( ret != CALENDAR_ERROR_NONE)
+	if (ret != CALENDAR_ERROR_NONE)
 	{
 		ERR("Db failed");
 		return CALENDAR_ERROR_DB_FAILED;
@@ -861,7 +861,7 @@ API int calendar_db_insert_records(calendar_list_h list, int** ids, int* count)
 			cal_db_util_end_trans(true);
 			sleep(1);
 			ret = cal_db_util_begin_trans();
-			if ( ret != CALENDAR_ERROR_NONE)
+			if (ret != CALENDAR_ERROR_NONE)
 			{
 				calendar_list_destroy(list, true);
 				CAL_FREE(_ids);
@@ -885,7 +885,7 @@ API int calendar_db_insert_records(calendar_list_h list, int** ids, int* count)
 	return ret;
 }
 
-API int calendar_db_update_records( calendar_list_h list)
+API int calendar_db_update_records(calendar_list_h list)
 {
 	int i;
 	int count = 0;
@@ -894,7 +894,7 @@ API int calendar_db_update_records( calendar_list_h list)
 	RETV_IF(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	ret = cal_db_util_begin_trans();
-	if ( ret != CALENDAR_ERROR_NONE)
+	if (ret != CALENDAR_ERROR_NONE)
 	{
 		ERR("Db failed");
 		return CALENDAR_ERROR_DB_FAILED;
@@ -944,7 +944,7 @@ API int calendar_db_update_records( calendar_list_h list)
 			cal_db_util_end_trans(true);
 			sleep(1);
 			ret = cal_db_util_begin_trans();
-			if ( ret != CALENDAR_ERROR_NONE)
+			if (ret != CALENDAR_ERROR_NONE)
 			{
 				calendar_list_destroy(list, true);
 				ERR("Db failed");
@@ -973,7 +973,7 @@ API int calendar_db_delete_records(const char* view_uri, int record_id_array[], 
 	RETVM_IF(NULL == plugin_cb->delete_records, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = cal_db_util_begin_trans();
-	RETVM_IF( CALENDAR_ERROR_NONE != ret,CALENDAR_ERROR_DB_FAILED, "Db failed" );
+	RETVM_IF(CALENDAR_ERROR_NONE != ret,CALENDAR_ERROR_DB_FAILED, "Db failed");
 
 	ret = plugin_cb->delete_records(record_id_array,count);
 
@@ -1022,7 +1022,7 @@ API int calendar_db_insert_vcalendars(const char* vcalendar_stream, int **record
 
 	ret = cal_db_util_begin_trans();
 
-	if ( ret != CALENDAR_ERROR_NONE)
+	if (ret != CALENDAR_ERROR_NONE)
 	{
 		calendar_list_destroy(list, true);
 		CAL_FREE(ids);
@@ -1035,7 +1035,7 @@ API int calendar_db_insert_vcalendars(const char* vcalendar_stream, int **record
 		calendar_record_h record = NULL;
 
 		ret = calendar_list_get_current_record_p(list, &record);
-		if( ret != CALENDAR_ERROR_NONE)
+		if(ret != CALENDAR_ERROR_NONE)
 		{
 			calendar_list_destroy(list, true);
 			CAL_FREE(ids);
@@ -1046,7 +1046,7 @@ API int calendar_db_insert_vcalendars(const char* vcalendar_stream, int **record
 
 		// insert
 		ret = calendar_db_insert_record(record, &ids[i]);
-		if( ret != CALENDAR_ERROR_NONE)
+		if(ret != CALENDAR_ERROR_NONE)
 		{
 			calendar_list_destroy(list, true);
 			CAL_FREE(ids);
@@ -1100,7 +1100,7 @@ API int calendar_db_replace_vcalendars(const char* vcalendar_stream, int *record
 	calendar_list_first(list);
 
 	ret = cal_db_util_begin_trans();
-	if ( ret != CALENDAR_ERROR_NONE)
+	if (ret != CALENDAR_ERROR_NONE)
 	{
 		calendar_list_destroy(list, true);
 		ERR("Db failed");
@@ -1117,7 +1117,7 @@ API int calendar_db_replace_vcalendars(const char* vcalendar_stream, int *record
 		char *view_uri = NULL;
 
 		ret = calendar_list_get_current_record_p(list, &record);
-		if( ret != CALENDAR_ERROR_NONE)
+		if(ret != CALENDAR_ERROR_NONE)
 		{
 			calendar_list_destroy(list, true);
 			ERR("list get fail");
@@ -1127,7 +1127,7 @@ API int calendar_db_replace_vcalendars(const char* vcalendar_stream, int *record
 
 		// set_id
 		ret = calendar_record_get_uri_p(record, &view_uri);
-		if( ret != CALENDAR_ERROR_NONE)
+		if(ret != CALENDAR_ERROR_NONE)
 		{
 			calendar_list_destroy(list, true);
 			ERR("record get uri fail");
@@ -1150,7 +1150,7 @@ API int calendar_db_replace_vcalendars(const char* vcalendar_stream, int *record
 			continue;
 		}
 
-		if( ret != CALENDAR_ERROR_NONE)
+		if(ret != CALENDAR_ERROR_NONE)
 		{
 			calendar_list_destroy(list, true);
 			ERR("record set fail");
@@ -1160,7 +1160,7 @@ API int calendar_db_replace_vcalendars(const char* vcalendar_stream, int *record
 
 		// update
 		ret = calendar_db_update_record(record);
-		if( ret != CALENDAR_ERROR_NONE)
+		if(ret != CALENDAR_ERROR_NONE)
 		{
 			calendar_list_destroy(list, true);
 			ERR("list get fail");
@@ -1175,7 +1175,7 @@ API int calendar_db_replace_vcalendars(const char* vcalendar_stream, int *record
 			cal_db_util_end_trans(true);
 			sleep(1);
 			ret = cal_db_util_begin_trans();
-			if ( ret != CALENDAR_ERROR_NONE)
+			if (ret != CALENDAR_ERROR_NONE)
 			{
 				calendar_list_destroy(list, true);
 				ERR("Db failed");
@@ -1206,7 +1206,7 @@ API int calendar_db_replace_record(calendar_record_h record, int record_id)
 	RETVM_IF(NULL == plugin_cb->replace_record, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = cal_db_util_begin_trans();
-	RETVM_IF( CALENDAR_ERROR_NONE != ret,CALENDAR_ERROR_DB_FAILED, "Db failed" );
+	RETVM_IF(CALENDAR_ERROR_NONE != ret,CALENDAR_ERROR_DB_FAILED, "Db failed");
 
 	ret = plugin_cb->replace_record(record, record_id);
 
@@ -1232,7 +1232,7 @@ API int calendar_db_replace_records(calendar_list_h list, int *ids, int count)
 	RETVM_IF(count <= 0, CALENDAR_ERROR_INVALID_PARAMETER, "count(%d)", count);
 
 	ret = cal_db_util_begin_trans();
-	if ( ret != CALENDAR_ERROR_NONE)
+	if (ret != CALENDAR_ERROR_NONE)
 	{
 		ERR("Db failed");
 		return CALENDAR_ERROR_DB_FAILED;
@@ -1339,7 +1339,7 @@ API int calendar_db_get_changes_exception_by_version(const char* view_uri, int o
 		int created_ver = 0;
 		// stmt -> record
 		ret = calendar_record_create(_calendar_updated_info._uri,&record);
-		if( ret != CALENDAR_ERROR_NONE )
+		if(ret != CALENDAR_ERROR_NONE)
 		{
 			ERR("calendar_record_create() failed");
 			calendar_list_destroy(*record_list, true);
@@ -1380,7 +1380,7 @@ API int calendar_db_get_changes_exception_by_version(const char* view_uri, int o
 		cal_record_set_int(record,_calendar_updated_info.version,ver);
 
 		ret = calendar_list_add(*record_list,record);
-		if( ret != CALENDAR_ERROR_NONE )
+		if(ret != CALENDAR_ERROR_NONE)
 		{
 			calendar_list_destroy(*record_list, true);
 			*record_list = NULL;

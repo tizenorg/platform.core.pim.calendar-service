@@ -26,20 +26,20 @@
 #include "cal_view.h"
 #include "cal_record.h"
 
-static int _cal_record_search_create( calendar_record_h* out_record );
-static int _cal_record_search_destroy( calendar_record_h record, bool delete_child );
-static int _cal_record_search_clone( calendar_record_h record, calendar_record_h* out_record );
-static int _cal_record_search_get_str( calendar_record_h record, unsigned int property_id, char** out_str );
-static int _cal_record_search_get_str_p( calendar_record_h record, unsigned int property_id, char** out_str );
-static int _cal_record_search_get_int( calendar_record_h record, unsigned int property_id, int* out_value );
-static int _cal_record_search_get_double( calendar_record_h record, unsigned int property_id, double* out_value );
-static int _cal_record_search_get_lli( calendar_record_h record, unsigned int property_id, long long int* out_value );
-static int _cal_record_search_get_caltime( calendar_record_h record, unsigned int property_id, calendar_time_s* out_value );
-static int _cal_record_search_set_str( calendar_record_h record, unsigned int property_id, const char* value );
-static int _cal_record_search_set_int( calendar_record_h record, unsigned int property_id, int value );
-static int _cal_record_search_set_double( calendar_record_h record, unsigned int property_id, double value );
-static int _cal_record_search_set_lli( calendar_record_h record, unsigned int property_id, long long int value );
-static int _cal_record_search_set_caltime( calendar_record_h record, unsigned int property_id, calendar_time_s value );
+static int _cal_record_search_create(calendar_record_h* out_record);
+static int _cal_record_search_destroy(calendar_record_h record, bool delete_child);
+static int _cal_record_search_clone(calendar_record_h record, calendar_record_h* out_record);
+static int _cal_record_search_get_str(calendar_record_h record, unsigned int property_id, char** out_str);
+static int _cal_record_search_get_str_p(calendar_record_h record, unsigned int property_id, char** out_str);
+static int _cal_record_search_get_int(calendar_record_h record, unsigned int property_id, int* out_value);
+static int _cal_record_search_get_double(calendar_record_h record, unsigned int property_id, double* out_value);
+static int _cal_record_search_get_lli(calendar_record_h record, unsigned int property_id, long long int* out_value);
+static int _cal_record_search_get_caltime(calendar_record_h record, unsigned int property_id, calendar_time_s* out_value);
+static int _cal_record_search_set_str(calendar_record_h record, unsigned int property_id, const char* value);
+static int _cal_record_search_set_int(calendar_record_h record, unsigned int property_id, int value);
+static int _cal_record_search_set_double(calendar_record_h record, unsigned int property_id, double value);
+static int _cal_record_search_set_lli(calendar_record_h record, unsigned int property_id, long long int value);
+static int _cal_record_search_set_caltime(calendar_record_h record, unsigned int property_id, calendar_time_s value);
 
 cal_record_plugin_cb_s cal_record_search_plugin_cb = {
 	.create = _cal_record_search_create,
@@ -63,7 +63,7 @@ cal_record_plugin_cb_s cal_record_search_plugin_cb = {
 	.clone_child_record_list = NULL
 };
 
-static int _cal_record_search_create( calendar_record_h* out_record )
+static int _cal_record_search_create(calendar_record_h* out_record)
 {
 	cal_search_s *temp = NULL;
 	int ret= CALENDAR_ERROR_NONE;
@@ -76,7 +76,7 @@ static int _cal_record_search_create( calendar_record_h* out_record )
 	return ret;
 }
 
-static int _cal_record_search_destroy( calendar_record_h record, bool delete_child )
+static int _cal_record_search_destroy(calendar_record_h record, bool delete_child)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	GSList *cursor;
@@ -99,7 +99,7 @@ static int _cal_record_search_destroy( calendar_record_h record, bool delete_chi
 	return ret;
 }
 
-static int _cal_record_search_clone( calendar_record_h record, calendar_record_h* out_record )
+static int _cal_record_search_clone(calendar_record_h record, calendar_record_h* out_record)
 {
 	cal_search_s *out_data = NULL;
 	cal_search_s *src_data = NULL;
@@ -157,7 +157,7 @@ static int _cal_record_search_clone( calendar_record_h record, calendar_record_h
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_search_get_str( calendar_record_h record, unsigned int property_id, char** out_str )
+static int _cal_record_search_get_str(calendar_record_h record, unsigned int property_id, char** out_str)
 {
 	cal_search_s *rec = (cal_search_s*)(record);
 	GSList *cursor;
@@ -183,7 +183,7 @@ static int _cal_record_search_get_str( calendar_record_h record, unsigned int pr
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_search_get_str_p( calendar_record_h record, unsigned int property_id, char** out_str )
+static int _cal_record_search_get_str_p(calendar_record_h record, unsigned int property_id, char** out_str)
 {
 	cal_search_s *rec = (cal_search_s*)(record);
 	GSList *cursor;
@@ -209,7 +209,7 @@ static int _cal_record_search_get_str_p( calendar_record_h record, unsigned int 
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_search_get_int( calendar_record_h record, unsigned int property_id, int* out_value )
+static int _cal_record_search_get_int(calendar_record_h record, unsigned int property_id, int* out_value)
 {
 	cal_search_s *rec = (cal_search_s*)(record);
 	GSList *cursor;
@@ -235,7 +235,7 @@ static int _cal_record_search_get_int( calendar_record_h record, unsigned int pr
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_search_get_double( calendar_record_h record, unsigned int property_id, double* out_value )
+static int _cal_record_search_get_double(calendar_record_h record, unsigned int property_id, double* out_value)
 {
 	cal_search_s *rec = (cal_search_s*)(record);
 	GSList *cursor;
@@ -261,7 +261,7 @@ static int _cal_record_search_get_double( calendar_record_h record, unsigned int
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_search_get_lli( calendar_record_h record, unsigned int property_id, long long int* out_value )
+static int _cal_record_search_get_lli(calendar_record_h record, unsigned int property_id, long long int* out_value)
 {
 	cal_search_s *rec = (cal_search_s*)(record);
 	GSList *cursor;
@@ -287,7 +287,7 @@ static int _cal_record_search_get_lli( calendar_record_h record, unsigned int pr
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_search_get_caltime( calendar_record_h record, unsigned int property_id, calendar_time_s* out_value )
+static int _cal_record_search_get_caltime(calendar_record_h record, unsigned int property_id, calendar_time_s* out_value)
 {
 	cal_search_s *rec = (cal_search_s*)(record);
 	GSList *cursor;
@@ -313,7 +313,7 @@ static int _cal_record_search_get_caltime( calendar_record_h record, unsigned in
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_search_set_str( calendar_record_h record, unsigned int property_id, const char* value )
+static int _cal_record_search_set_str(calendar_record_h record, unsigned int property_id, const char* value)
 {
 	cal_search_s *rec = (cal_search_s*)(record);
 	GSList *cursor;
@@ -347,7 +347,7 @@ static int _cal_record_search_set_str( calendar_record_h record, unsigned int pr
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_search_set_int( calendar_record_h record, unsigned int property_id, int value )
+static int _cal_record_search_set_int(calendar_record_h record, unsigned int property_id, int value)
 {
 	cal_search_s *rec = (cal_search_s*)(record);
 	GSList *cursor;
@@ -380,7 +380,7 @@ static int _cal_record_search_set_int( calendar_record_h record, unsigned int pr
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_search_set_double( calendar_record_h record, unsigned int property_id, double value )
+static int _cal_record_search_set_double(calendar_record_h record, unsigned int property_id, double value)
 {
 	cal_search_s *rec = (cal_search_s*)(record);
 	GSList *cursor;
@@ -413,7 +413,7 @@ static int _cal_record_search_set_double( calendar_record_h record, unsigned int
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_search_set_lli( calendar_record_h record, unsigned int property_id, long long int value )
+static int _cal_record_search_set_lli(calendar_record_h record, unsigned int property_id, long long int value)
 {
 	cal_search_s *rec = (cal_search_s*)(record);
 	GSList *cursor;
@@ -446,7 +446,7 @@ static int _cal_record_search_set_lli( calendar_record_h record, unsigned int pr
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_search_set_caltime( calendar_record_h record, unsigned int property_id, calendar_time_s value )
+static int _cal_record_search_set_caltime(calendar_record_h record, unsigned int property_id, calendar_time_s value)
 {
 	cal_search_s *rec = (cal_search_s*)(record);
 	GSList *cursor;

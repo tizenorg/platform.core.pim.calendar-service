@@ -75,17 +75,17 @@
 				"A.last_mod, A.rrule_id, A.recurrence_id, A.rdate, A.has_attendee, A.has_alarm, A.system_type, A.updated, "\
 				"A.sync_data1, A.sync_data2, A.sync_data3, A.sync_data4, A.has_exception, A.has_extended, A.freq, A.is_allday "
 
-typedef int (*cal_db_insert_record_cb)( calendar_record_h record, int* id );
-typedef int (*cal_db_get_record_cb)( int id, calendar_record_h* out_record );
-typedef int (*cal_db_update_record_cb)( calendar_record_h record );
-typedef int (*cal_db_delete_record_cb)( int id );
-typedef int (*cal_db_get_all_records_cb)( int offset, int limit, calendar_list_h* out_list );
-typedef int (*cal_db_get_records_with_query_cb)( calendar_query_h query, int offset, int limit, calendar_list_h* out_list );
+typedef int (*cal_db_insert_record_cb)(calendar_record_h record, int* id);
+typedef int (*cal_db_get_record_cb)(int id, calendar_record_h* out_record);
+typedef int (*cal_db_update_record_cb)(calendar_record_h record);
+typedef int (*cal_db_delete_record_cb)(int id);
+typedef int (*cal_db_get_all_records_cb)(int offset, int limit, calendar_list_h* out_list);
+typedef int (*cal_db_get_records_with_query_cb)(calendar_query_h query, int offset, int limit, calendar_list_h* out_list);
 typedef int (*cal_db_insert_records_cb)(const calendar_list_h in_list, int** ids);
 typedef int (*cal_db_update_records_cb)(const calendar_list_h in_list);
 typedef int (*cal_db_delete_records_cb)(int ids[], int count);
-typedef int (*cal_db_get_count_cb)( int *out_count );
-typedef int (*cal_db_get_count_with_query_cb)( calendar_query_h query, int *out_count );
+typedef int (*cal_db_get_count_cb)(int *out_count);
+typedef int (*cal_db_get_count_with_query_cb)(calendar_query_h query, int *out_count);
 typedef int (*cal_db_replace_record)(calendar_record_h record, int record_id);
 typedef int (*cal_db_replace_records)(calendar_list_h record_list, int *record_id_array, int count);
 
@@ -109,7 +109,7 @@ typedef struct {
 int cal_db_open(void);
 int cal_db_close(void);
 
-int cal_db_get_record( const char* view_uri, int record_id, calendar_record_h* record );
+int cal_db_get_record(const char* view_uri, int record_id, calendar_record_h* record);
 int cal_db_append_string(char **dst, char *src);
 void cal_db_initialize_view_table(void);
 

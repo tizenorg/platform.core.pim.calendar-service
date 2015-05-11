@@ -96,5 +96,5 @@ static int _cal_ipc_marshal_extended(const calendar_record_h record, pims_ipc_da
 static int _cal_ipc_marshal_extended_get_primary_id(const calendar_record_h record, unsigned int *property_id, int *id)
 {
 	*property_id = CAL_PROPERTY_EXTENDED_ID;
-	return calendar_record_get_int(record, *property_id, id );
+	return calendar_record_get_int(record, *property_id, id);
 }

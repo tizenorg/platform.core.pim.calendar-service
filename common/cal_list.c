@@ -23,7 +23,7 @@
 #include "cal_typedef.h"
 #include "cal_list.h"
 
-API int calendar_list_create( calendar_list_h* out_list )
+API int calendar_list_create(calendar_list_h* out_list)
 {
 	if (NULL == out_list)
 	{
@@ -46,7 +46,7 @@ API int calendar_list_create( calendar_list_h* out_list )
 	return CALENDAR_ERROR_NONE;
 }
 
-API int calendar_list_get_count( calendar_list_h list, int *count )
+API int calendar_list_get_count(calendar_list_h list, int *count)
 {
 	cal_list_s *l;
 
@@ -65,7 +65,7 @@ API int calendar_list_get_count( calendar_list_h list, int *count )
 	return CALENDAR_ERROR_NONE;
 }
 
-API int calendar_list_add( calendar_list_h list, calendar_record_h record )
+API int calendar_list_add(calendar_list_h list, calendar_record_h record)
 {
 	cal_list_s *l;
 
@@ -87,7 +87,7 @@ API int calendar_list_add( calendar_list_h list, calendar_record_h record )
 	return CALENDAR_ERROR_NONE;
 }
 
-API int calendar_list_remove( calendar_list_h list, calendar_record_h record )
+API int calendar_list_remove(calendar_list_h list, calendar_record_h record)
 {
 	GList *cursor;
 	cal_list_s *l;
@@ -116,7 +116,7 @@ API int calendar_list_remove( calendar_list_h list, calendar_record_h record )
 	return CALENDAR_ERROR_NO_DATA;
 }
 
-API int calendar_list_get_current_record_p( calendar_list_h list, calendar_record_h* record )
+API int calendar_list_get_current_record_p(calendar_list_h list, calendar_record_h* record)
 {
 	cal_list_s *l;
 
@@ -140,7 +140,7 @@ API int calendar_list_get_current_record_p( calendar_list_h list, calendar_recor
 	return CALENDAR_ERROR_NONE;
 }
 
-API int calendar_list_prev( calendar_list_h list )
+API int calendar_list_prev(calendar_list_h list)
 {
 	cal_list_s *l;
 
@@ -159,7 +159,7 @@ API int calendar_list_prev( calendar_list_h list )
 	return CALENDAR_ERROR_NONE;
 }
 
-API int calendar_list_next( calendar_list_h list )
+API int calendar_list_next(calendar_list_h list)
 {
 	cal_list_s *l;
 
@@ -178,7 +178,7 @@ API int calendar_list_next( calendar_list_h list )
 	return CALENDAR_ERROR_NONE;
 }
 
-API int calendar_list_first( calendar_list_h list )
+API int calendar_list_first(calendar_list_h list)
 {
 	cal_list_s *l;
 
@@ -193,7 +193,7 @@ API int calendar_list_first( calendar_list_h list )
 	return CALENDAR_ERROR_NONE;
 }
 
-API int calendar_list_last( calendar_list_h list )
+API int calendar_list_last(calendar_list_h list)
 {
 	cal_list_s *l;
 
@@ -208,7 +208,7 @@ API int calendar_list_last( calendar_list_h list )
 	return CALENDAR_ERROR_NONE;
 }
 
-API int calendar_list_destroy( calendar_list_h list, bool delete_record )
+API int calendar_list_destroy(calendar_list_h list, bool delete_record)
 {
 	GList *cursor;
 	cal_list_s *l = NULL;

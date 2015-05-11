@@ -49,13 +49,13 @@ static int _cal_db_attendee_insert_record(calendar_record_h record, int parent_i
 			"attendee_role, attendee_rsvp, attendee_group, "
 			"attendee_delegator_uri, attendee_delegatee_uri, "
 			"attendee_member, attendee_uid "
-			") VALUES ( "
+			") VALUES ("
 			"%d, "
 			"?, ?, ?, "
 			"%d, %d, %d, "
 			"%d, %d, ?, "
 			"?, ?, "
-			"?, ? )",
+			"?, ?)",
 			CAL_TABLE_ATTENDEE,
 			parent_id,
 			attendee->attendee_status,

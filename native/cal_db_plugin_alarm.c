@@ -121,7 +121,7 @@ static void _cal_db_alarm_get_stmt(sqlite3_stmt *stmt,calendar_record_h record)
 	alarm->id = sqlite3_column_int(stmt, index++);
 }
 
-static int _cal_db_alarm_get_all_records(int offset, int limit, calendar_list_h* out_list )
+static int _cal_db_alarm_get_all_records(int offset, int limit, calendar_list_h* out_list)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
@@ -155,7 +155,7 @@ static int _cal_db_alarm_get_all_records(int offset, int limit, calendar_list_h*
 		calendar_record_h record = NULL;
 		// stmt -> record
 		ret = calendar_record_create(_calendar_alarm._uri,&record);
-		if( ret != CALENDAR_ERROR_NONE ) {
+		if(ret != CALENDAR_ERROR_NONE) {
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
 			sqlite3_finalize(stmt);
@@ -164,7 +164,7 @@ static int _cal_db_alarm_get_all_records(int offset, int limit, calendar_list_h*
 		_cal_db_alarm_get_stmt(stmt,record);
 
 		ret = calendar_list_add(*out_list,record);
-		if( ret != CALENDAR_ERROR_NONE ) {
+		if(ret != CALENDAR_ERROR_NONE) {
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
 			calendar_record_destroy(record, true);
@@ -265,7 +265,7 @@ static void _cal_db_alarm_get_projection_stmt(sqlite3_stmt *stmt,
 		_cal_db_alarm_get_property_stmt(stmt,projection[i],&stmt_count,record);
 }
 
-static int _cal_db_alarm_get_records_with_query(calendar_query_h query, int offset, int limit, calendar_list_h* out_list )
+static int _cal_db_alarm_get_records_with_query(calendar_query_h query, int offset, int limit, calendar_list_h* out_list)
 {
 	cal_query_s *que = NULL;
 	int ret = CALENDAR_ERROR_NONE;
@@ -280,7 +280,7 @@ static int _cal_db_alarm_get_records_with_query(calendar_query_h query, int offs
 
 	que = (cal_query_s *)query;
 
-	if ( 0 == strcmp(que->view_uri, CALENDAR_VIEW_ALARM)) {
+	if (0 == strcmp(que->view_uri, CALENDAR_VIEW_ALARM)) {
 		table_name = SAFE_STRDUP(CAL_TABLE_ALARM);
 	}
 	else {
@@ -376,7 +376,7 @@ static int _cal_db_alarm_get_records_with_query(calendar_query_h query, int offs
 		calendar_record_h record;
 		// stmt -> record
 		ret = calendar_record_create(_calendar_alarm._uri,&record);
-		if( ret != CALENDAR_ERROR_NONE ) {
+		if(ret != CALENDAR_ERROR_NONE) {
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
 
@@ -401,7 +401,7 @@ static int _cal_db_alarm_get_records_with_query(calendar_query_h query, int offs
 		}
 
 		ret = calendar_list_add(*out_list,record);
-		if( ret != CALENDAR_ERROR_NONE ) {
+		if(ret != CALENDAR_ERROR_NONE) {
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
 			calendar_record_destroy(record, true);
@@ -459,7 +459,7 @@ static int _cal_db_alarm_get_count_with_query(calendar_query_h query, int *out_c
 
 	que = (cal_query_s *)query;
 
-	if ( 0 == strcmp(que->view_uri, CALENDAR_VIEW_ALARM))	{
+	if (0 == strcmp(que->view_uri, CALENDAR_VIEW_ALARM))	{
 		table_name = SAFE_STRDUP(CAL_TABLE_ALARM);
 	}
 	else {

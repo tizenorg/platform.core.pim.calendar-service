@@ -59,7 +59,7 @@ extern "C" {
  *
  * @see calendar_filter_destroy()
  */
-int calendar_filter_create( const char* view_uri, calendar_filter_h* filter );
+int calendar_filter_create(const char* view_uri, calendar_filter_h* filter);
 
 /**
  * @brief Destroys a filter handle.
@@ -75,7 +75,7 @@ int calendar_filter_create( const char* view_uri, calendar_filter_h* filter );
  *
  * @see calendar_filter_create()
  */
-int	calendar_filter_destroy( calendar_filter_h filter );
+int	calendar_filter_destroy(calendar_filter_h filter);
 
 /**
  * @brief Adds a condition for the string type property.
@@ -94,7 +94,7 @@ int	calendar_filter_destroy( calendar_filter_h filter );
  *
  * @see calendar_filter_add_operator()
  */
-int	calendar_filter_add_str( calendar_filter_h filter, unsigned int property_id, calendar_match_str_flag_e match, const char* match_value );
+int	calendar_filter_add_str(calendar_filter_h filter, unsigned int property_id, calendar_match_str_flag_e match, const char* match_value);
 
 /**
  * @brief Adds a condition for the integer type property.
@@ -113,7 +113,7 @@ int	calendar_filter_add_str( calendar_filter_h filter, unsigned int property_id,
  *
  * @see calendar_filter_add_operator()
  */
-int	calendar_filter_add_int( calendar_filter_h filter, unsigned int property_id, calendar_match_int_flag_e match, int match_value );
+int	calendar_filter_add_int(calendar_filter_h filter, unsigned int property_id, calendar_match_int_flag_e match, int match_value);
 
 /**
  * @brief Adds a condition for the double type property.
@@ -132,7 +132,7 @@ int	calendar_filter_add_int( calendar_filter_h filter, unsigned int property_id,
  *
  * @see calendar_filter_add_operator()
  */
-int	calendar_filter_add_double( calendar_filter_h filter, unsigned int property_id, calendar_match_int_flag_e match, double match_value );
+int	calendar_filter_add_double(calendar_filter_h filter, unsigned int property_id, calendar_match_int_flag_e match, double match_value);
 
 /**
  * @brief Adds a condition for the long long int type property.
@@ -151,7 +151,7 @@ int	calendar_filter_add_double( calendar_filter_h filter, unsigned int property_
  *
  * @see calendar_filter_add_operator()
  */
-int	calendar_filter_add_lli( calendar_filter_h filter, unsigned int property_id, calendar_match_int_flag_e match, long long int match_value );
+int	calendar_filter_add_lli(calendar_filter_h filter, unsigned int property_id, calendar_match_int_flag_e match, long long int match_value);
 
 /**
  * @brief Adds a condition for the calendar_time_s type property.
@@ -170,7 +170,7 @@ int	calendar_filter_add_lli( calendar_filter_h filter, unsigned int property_id,
  *
  * @see calendar_filter_add_operator()
  */
-int	calendar_filter_add_caltime( calendar_filter_h filter, unsigned int property_id, calendar_match_int_flag_e match, calendar_time_s match_value );
+int	calendar_filter_add_caltime(calendar_filter_h filter, unsigned int property_id, calendar_match_int_flag_e match, calendar_time_s match_value);
 
 /**
  * @brief Adds a child filter to a parent filter.
@@ -187,7 +187,7 @@ int	calendar_filter_add_caltime( calendar_filter_h filter, unsigned int property
  *
  * @see calendar_filter_add_operator()
  */
-int calendar_filter_add_filter( calendar_filter_h parent_filter, calendar_filter_h child_filter);
+int calendar_filter_add_filter(calendar_filter_h parent_filter, calendar_filter_h child_filter);
 
 /**
  * @brief Adds an operator between conditions.
@@ -208,7 +208,7 @@ int calendar_filter_add_filter( calendar_filter_h parent_filter, calendar_filter
  * @see calendar_filter_add_caltime()
  * @see calendar_filter_add_filter()
  */
-int calendar_filter_add_operator( calendar_filter_h filter, calendar_filter_operator_e operator_type );
+int calendar_filter_add_operator(calendar_filter_h filter, calendar_filter_operator_e operator_type);
 
 /**
  * @}

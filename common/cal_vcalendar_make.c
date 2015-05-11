@@ -133,7 +133,7 @@ static inline int _cal_vcalendar_make_set_str(cal_make_s *b, const char *s)
 	remain_str = _strlen(s);
 
 	k = 0;
-	while ( remain_lbuf - 1 < remain_str) {
+	while (remain_lbuf - 1 < remain_str) {
 		strncat(b->lbuf, s + k, remain_lbuf - 1);
 		k += remain_lbuf - 1;
 		remain_str -= remain_lbuf - 1;

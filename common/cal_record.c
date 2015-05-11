@@ -135,9 +135,9 @@ bool cal_record_check_property_flag(calendar_record_h record, unsigned int prope
 
 	if (flag == CAL_PROPERTY_FLAG_PROJECTION)
 	{
-		if (_record->property_flag & CAL_PROPERTY_FLAG_PROJECTION )
+		if (_record->property_flag & CAL_PROPERTY_FLAG_PROJECTION)
 		{
-			if (_record->properties_flags[index] & CAL_PROPERTY_FLAG_PROJECTION )
+			if (_record->properties_flags[index] & CAL_PROPERTY_FLAG_PROJECTION)
 				return true;
 			else
 				return false;
@@ -175,7 +175,7 @@ int cal_record_set_projection(calendar_record_h record, const unsigned int *proj
 	return CALENDAR_ERROR_NONE;
 }
 
-API int calendar_record_create( const char* view_uri, calendar_record_h* out_record )
+API int calendar_record_create(const char* view_uri, calendar_record_h* out_record)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	cal_record_type_e type = CAL_RECORD_TYPE_INVALID;
@@ -200,7 +200,7 @@ API int calendar_record_create( const char* view_uri, calendar_record_h* out_rec
 	return ret;
 }
 
-API int calendar_record_destroy( calendar_record_h record, bool delete_child )
+API int calendar_record_destroy(calendar_record_h record, bool delete_child)
 {
 	int ret = CALENDAR_ERROR_NONE;
 
@@ -218,7 +218,7 @@ API int calendar_record_destroy( calendar_record_h record, bool delete_child )
 	return ret;
 }
 
-API int calendar_record_clone( calendar_record_h record, calendar_record_h* out_record )
+API int calendar_record_clone(calendar_record_h record, calendar_record_h* out_record)
 {
 	int ret = CALENDAR_ERROR_NONE;
 
@@ -234,7 +234,7 @@ API int calendar_record_clone( calendar_record_h record, calendar_record_h* out_
 	return ret;
 }
 
-API int calendar_record_get_uri_p( calendar_record_h record, char** out_str )
+API int calendar_record_get_uri_p(calendar_record_h record, char** out_str)
 {
 	int ret = CALENDAR_ERROR_NONE;
 
@@ -249,7 +249,7 @@ API int calendar_record_get_uri_p( calendar_record_h record, char** out_str )
 }
 
 // Record get/set int,str, etc..
-API int calendar_record_get_str( calendar_record_h record, unsigned int property_id, char** out_str )
+API int calendar_record_get_str(calendar_record_h record, unsigned int property_id, char** out_str)
 {
 	int ret = CALENDAR_ERROR_NONE;
 
@@ -266,7 +266,7 @@ API int calendar_record_get_str( calendar_record_h record, unsigned int property
 	return ret;
 }
 
-API int calendar_record_get_str_p( calendar_record_h record, unsigned int property_id, char** out_str )
+API int calendar_record_get_str_p(calendar_record_h record, unsigned int property_id, char** out_str)
 {
 	int ret = CALENDAR_ERROR_NONE;
 
@@ -282,7 +282,7 @@ API int calendar_record_get_str_p( calendar_record_h record, unsigned int proper
 
 	return ret;
 }
-API int calendar_record_get_int( calendar_record_h record, unsigned int property_id, int* out_value )
+API int calendar_record_get_int(calendar_record_h record, unsigned int property_id, int* out_value)
 {
 	int ret = CALENDAR_ERROR_NONE;
 
@@ -299,7 +299,7 @@ API int calendar_record_get_int( calendar_record_h record, unsigned int property
 	return ret;
 }
 
-API int calendar_record_get_double( calendar_record_h record, unsigned int property_id, double* out_value )
+API int calendar_record_get_double(calendar_record_h record, unsigned int property_id, double* out_value)
 {
 	int ret = CALENDAR_ERROR_NONE;
 
@@ -315,7 +315,7 @@ API int calendar_record_get_double( calendar_record_h record, unsigned int prope
 
 	return ret;
 }
-API int calendar_record_get_lli( calendar_record_h record, unsigned int property_id, long long int* out_value )
+API int calendar_record_get_lli(calendar_record_h record, unsigned int property_id, long long int* out_value)
 {
 	int ret = CALENDAR_ERROR_NONE;
 
@@ -332,7 +332,7 @@ API int calendar_record_get_lli( calendar_record_h record, unsigned int property
 	return ret;
 }
 
-API int calendar_record_get_caltime(calendar_record_h record, unsigned int property_id, calendar_time_s *out_value )
+API int calendar_record_get_caltime(calendar_record_h record, unsigned int property_id, calendar_time_s *out_value)
 {
 	int ret = CALENDAR_ERROR_NONE;
 
@@ -349,7 +349,7 @@ API int calendar_record_get_caltime(calendar_record_h record, unsigned int prope
 	return ret;
 }
 
-API int calendar_record_set_str( calendar_record_h record, unsigned int property_id, const char* value )
+API int calendar_record_set_str(calendar_record_h record, unsigned int property_id, const char* value)
 {
 	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 	__CHECK_READ_ONLY_PROPERTY();
@@ -359,7 +359,7 @@ API int calendar_record_set_str( calendar_record_h record, unsigned int property
 	return ret;
 }
 
-API int calendar_record_set_int( calendar_record_h record, unsigned int property_id, int value )
+API int calendar_record_set_int(calendar_record_h record, unsigned int property_id, int value)
 {
 	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 	__CHECK_READ_ONLY_PROPERTY();
@@ -369,7 +369,7 @@ API int calendar_record_set_int( calendar_record_h record, unsigned int property
 	return ret;
 }
 
-API int calendar_record_set_double( calendar_record_h record, unsigned int property_id, double value )
+API int calendar_record_set_double(calendar_record_h record, unsigned int property_id, double value)
 {
 	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 	__CHECK_READ_ONLY_PROPERTY();
@@ -379,7 +379,7 @@ API int calendar_record_set_double( calendar_record_h record, unsigned int prope
 	return ret;
 }
 
-API int calendar_record_set_lli( calendar_record_h record, unsigned int property_id, long long int value )
+API int calendar_record_set_lli(calendar_record_h record, unsigned int property_id, long long int value)
 {
 	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 	__CHECK_READ_ONLY_PROPERTY();
@@ -389,7 +389,7 @@ API int calendar_record_set_lli( calendar_record_h record, unsigned int property
 	return ret;
 }
 
-API int calendar_record_set_caltime( calendar_record_h record, unsigned int property_id, calendar_time_s value )
+API int calendar_record_set_caltime(calendar_record_h record, unsigned int property_id, calendar_time_s value)
 {
 	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 	__CHECK_READ_ONLY_PROPERTY();
@@ -400,7 +400,7 @@ API int calendar_record_set_caltime( calendar_record_h record, unsigned int prop
 }
 
 // Record get/set child records
-API int calendar_record_add_child_record( calendar_record_h record, unsigned int property_id, calendar_record_h child_record )
+API int calendar_record_add_child_record(calendar_record_h record, unsigned int property_id, calendar_record_h child_record)
 {
 	int ret = CALENDAR_ERROR_NONE;
 
@@ -416,7 +416,7 @@ API int calendar_record_add_child_record( calendar_record_h record, unsigned int
 
 	return ret;
 }
-API int calendar_record_remove_child_record( calendar_record_h record, unsigned int property_id, calendar_record_h child_record )
+API int calendar_record_remove_child_record(calendar_record_h record, unsigned int property_id, calendar_record_h child_record)
 {
 	int ret = CALENDAR_ERROR_NONE;
 
@@ -433,7 +433,7 @@ API int calendar_record_remove_child_record( calendar_record_h record, unsigned 
 	return ret;
 }
 
-API int calendar_record_get_child_record_count( calendar_record_h record, unsigned int property_id, unsigned int* count  )
+API int calendar_record_get_child_record_count(calendar_record_h record, unsigned int property_id, unsigned int* count)
 {
 	int ret = CALENDAR_ERROR_NONE;
 
@@ -449,7 +449,7 @@ API int calendar_record_get_child_record_count( calendar_record_h record, unsign
 
 	return ret;
 }
-API int calendar_record_get_child_record_at_p( calendar_record_h record, unsigned int property_id, int index, calendar_record_h* child_record )
+API int calendar_record_get_child_record_at_p(calendar_record_h record, unsigned int property_id, int index, calendar_record_h* child_record)
 {
 	int ret = CALENDAR_ERROR_NONE;
 
@@ -466,7 +466,7 @@ API int calendar_record_get_child_record_at_p( calendar_record_h record, unsigne
 	return ret;
 }
 
-API int calendar_record_clone_child_record_list( calendar_record_h record, unsigned int property_id, calendar_list_h* out_list )
+API int calendar_record_clone_child_record_list(calendar_record_h record, unsigned int property_id, calendar_list_h* out_list)
 {
 	int ret = CALENDAR_ERROR_NONE;
 
@@ -483,7 +483,7 @@ API int calendar_record_clone_child_record_list( calendar_record_h record, unsig
 	return ret;
 }
 
-int cal_record_set_str( calendar_record_h record, unsigned int property_id, const char* value )
+int cal_record_set_str(calendar_record_h record, unsigned int property_id, const char* value)
 {
 	int ret = CALENDAR_ERROR_NONE;
 
@@ -502,7 +502,7 @@ int cal_record_set_str( calendar_record_h record, unsigned int property_id, cons
 	return ret;
 }
 
-int cal_record_set_int( calendar_record_h record, unsigned int property_id, int value )
+int cal_record_set_int(calendar_record_h record, unsigned int property_id, int value)
 {
 	int ret = CALENDAR_ERROR_NONE;
 
@@ -521,7 +521,7 @@ int cal_record_set_int( calendar_record_h record, unsigned int property_id, int 
 	return ret;
 }
 
-int cal_record_set_double( calendar_record_h record, unsigned int property_id, double value )
+int cal_record_set_double(calendar_record_h record, unsigned int property_id, double value)
 {
 	int ret = CALENDAR_ERROR_NONE;
 
@@ -540,7 +540,7 @@ int cal_record_set_double( calendar_record_h record, unsigned int property_id, d
 	return ret;
 }
 
-int cal_record_set_lli( calendar_record_h record, unsigned int property_id, long long int value )
+int cal_record_set_lli(calendar_record_h record, unsigned int property_id, long long int value)
 {
 	int ret = CALENDAR_ERROR_NONE;
 
@@ -559,7 +559,7 @@ int cal_record_set_lli( calendar_record_h record, unsigned int property_id, long
 	return ret;
 }
 
-int cal_record_set_caltime( calendar_record_h record, unsigned int property_id, calendar_time_s value )
+int cal_record_set_caltime(calendar_record_h record, unsigned int property_id, calendar_time_s value)
 {
 	int ret = CALENDAR_ERROR_NONE;
 

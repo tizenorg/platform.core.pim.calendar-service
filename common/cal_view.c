@@ -1017,7 +1017,7 @@ static const cal_view_uri_info_s __tables[] = {
 	{CALENDAR_VIEW_ALARM,           CAL_RECORD_TYPE_ALARM,              PTR_COUNT(__property_alarm) },
 	{CALENDAR_VIEW_UPDATED_INFO,    CAL_RECORD_TYPE_UPDATED_INFO,       PTR_COUNT(__property_updated_info) },
 	{CALENDAR_VIEW_EVENT_CALENDAR,  CAL_RECORD_TYPE_SEARCH,             PTR_COUNT(__property_search_event_calendar) },
-	{CALENDAR_VIEW_TODO_CALENDAR,   CAL_RECORD_TYPE_SEARCH,             PTR_COUNT(__property_search_todo_calendar ) },
+	{CALENDAR_VIEW_TODO_CALENDAR,   CAL_RECORD_TYPE_SEARCH,             PTR_COUNT(__property_search_todo_calendar) },
 	{CALENDAR_VIEW_EVENT_CALENDAR_ATTENDEE,  CAL_RECORD_TYPE_SEARCH,    PTR_COUNT(__property_search_event_calendar_attendee) },
 	{CALENDAR_VIEW_INSTANCE_UTIME_CALENDAR, CAL_RECORD_TYPE_INSTANCE_NORMAL, PTR_COUNT(__property_search_instance_utime_calendar) },
 	{CALENDAR_VIEW_INSTANCE_LOCALTIME_CALENDAR, CAL_RECORD_TYPE_INSTANCE_ALLDAY, PTR_COUNT(__property_search_instance_localtime_calendar) },
@@ -1050,14 +1050,14 @@ void cal_view_initialize(void)
 		bmutex = true;
 	}
 
-	if ( cal_uri_property_hash == NULL)
+	if (cal_uri_property_hash == NULL)
 	{
 		cal_uri_property_hash = g_hash_table_new(g_str_hash, g_str_equal);
 		if (cal_uri_property_hash)
 		{
-			g_hash_table_insert(cal_uri_property_hash, CALENDAR_VIEW_CALENDAR, GINT_TO_POINTER(&(__tables[0])) );
-			g_hash_table_insert(cal_uri_property_hash, CALENDAR_VIEW_EVENT, GINT_TO_POINTER(&(__tables[1])) );
-			g_hash_table_insert(cal_uri_property_hash, CALENDAR_VIEW_TODO, GINT_TO_POINTER(&(__tables[2])) );
+			g_hash_table_insert(cal_uri_property_hash, CALENDAR_VIEW_CALENDAR, GINT_TO_POINTER(&(__tables[0])));
+			g_hash_table_insert(cal_uri_property_hash, CALENDAR_VIEW_EVENT, GINT_TO_POINTER(&(__tables[1])));
+			g_hash_table_insert(cal_uri_property_hash, CALENDAR_VIEW_TODO, GINT_TO_POINTER(&(__tables[2])));
 			g_hash_table_insert(cal_uri_property_hash, CALENDAR_VIEW_TIMEZONE, GINT_TO_POINTER(&(__tables[3])));
 			g_hash_table_insert(cal_uri_property_hash, CALENDAR_VIEW_ATTENDEE, GINT_TO_POINTER(&(__tables[4])));
 			g_hash_table_insert(cal_uri_property_hash, CALENDAR_VIEW_ALARM, GINT_TO_POINTER(&(__tables[5])));
@@ -1089,7 +1089,7 @@ cal_record_type_e cal_view_get_type(const char *view_uri)
 
 	if(cal_uri_property_hash){
 		view_uri_info = g_hash_table_lookup(cal_uri_property_hash, view_uri);
-		if( view_uri_info ) {
+		if(view_uri_info) {
 			type = view_uri_info->type;
 		}
 		else
@@ -1134,7 +1134,7 @@ const cal_property_info_s* cal_view_get_property_info(const char *view_uri, int 
 
 	if(cal_uri_property_hash){
 		view_uri_info = g_hash_table_lookup(cal_uri_property_hash, view_uri);
-		if( view_uri_info ) {
+		if(view_uri_info) {
 			tmp = view_uri_info->properties;
 			*count = view_uri_info->property_count;
 		}
@@ -1149,7 +1149,7 @@ const char* cal_view_get_uri(const char *view_uri)
 
 	if(cal_uri_property_hash){
 		view_uri_info = g_hash_table_lookup(cal_uri_property_hash, view_uri);
-		if( view_uri_info ) {
+		if(view_uri_info) {
 			return view_uri_info->view_uri;
 		}
 	}

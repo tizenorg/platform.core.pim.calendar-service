@@ -62,7 +62,7 @@ static int _cal_db_alarm_insert_record(calendar_record_h record, int parent_id)
 			"alarm_type,  "
 			"alarm_summary, alarm_action, alarm_attach, "
 			"alarm_utime, alarm_datetime "
-			") VALUES ( "
+			") VALUES ("
 			"%d, "
 			"%d, %d, "
 			"?, "

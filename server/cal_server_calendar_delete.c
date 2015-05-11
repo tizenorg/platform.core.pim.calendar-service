@@ -135,7 +135,7 @@ static int _cal_server_calendar_delete_step1(__calendar_delete_data_s* data)
 	}
 
 	count = g_list_length(data->calendar_id_list);
-	if ( count <= 0)
+	if (count <= 0)
 	{
 		return CALENDAR_ERROR_NO_DATA;
 	}
@@ -196,7 +196,7 @@ static int _cal_server_calendar_delete_step2(__calendar_delete_data_s* data)
 	stmt = NULL;
 
 	count = g_list_length(list);
-	if ( count <= 0)
+	if (count <= 0)
 	{
 		cal_db_util_end_trans(false);
 		return CALENDAR_ERROR_NO_DATA;

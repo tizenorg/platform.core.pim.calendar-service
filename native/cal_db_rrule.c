@@ -224,14 +224,14 @@ int _cal_db_rrule_insert_record(int id, cal_rrule_s *rrule)
 			"Invalid argument: rrule is NULL");
 
 	snprintf(query, sizeof(query),
-			"INSERT INTO %s ( "
+			"INSERT INTO %s ("
 			"event_id, freq, range_type, "
 			"until_type, until_utime, until_datetime, "
 			"count, interval, "
 			"bysecond, byminute, byhour, byday, "
 			"bymonthday, byyearday, byweekno, bymonth, "
 			"bysetpos, wkst "
-			") VALUES ( "
+			") VALUES ("
 			"%d, %d, %d, "
 			"%d, %lld, ?, "
 			"%d, %d, "

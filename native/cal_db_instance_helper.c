@@ -95,7 +95,7 @@ int cal_db_instance_helper_insert_utime_instance(int event_id, long long int s, 
 {
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	snprintf(query, sizeof(query), "INSERT INTO %s (event_id, dtstart_utime, dtend_utime) "
-			"VALUES ( %d, %lld, %lld) ", CAL_TABLE_NORMAL_INSTANCE, event_id, s, e);
+			"VALUES (%d, %lld, %lld) ", CAL_TABLE_NORMAL_INSTANCE, event_id, s, e);
 
 	cal_db_util_error_e dbret = CAL_DB_OK;
 	dbret = cal_db_util_query_exec(query);
@@ -115,7 +115,7 @@ int cal_db_instance_helper_insert_localtime_instance(int event_id, const char *s
 {
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	snprintf(query, sizeof(query), "INSERT INTO %s (event_id, dtstart_datetime, dtend_datetime) "
-			"VALUES ( %d, '%s', '%s') ", CAL_TABLE_ALLDAY_INSTANCE, event_id, s, e);
+			"VALUES (%d, '%s', '%s') ", CAL_TABLE_ALLDAY_INSTANCE, event_id, s, e);
 
 	cal_db_util_error_e dbret = CAL_DB_OK;
 	dbret = cal_db_util_query_exec(query);

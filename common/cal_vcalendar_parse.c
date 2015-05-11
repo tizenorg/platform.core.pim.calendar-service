@@ -649,7 +649,7 @@ static char* __decode_datetime(char *p, struct user_data *ud)
 
 static void __decode_duration(char *cursor, int len, int *tick, int *unit)
 {
-	RET_IF(NULL == cursor );
+	RET_IF(NULL == cursor);
 	RET_IF('\0' == *cursor);
 	RET_IF(NULL == tick);
 	RET_IF(NULL == unit);

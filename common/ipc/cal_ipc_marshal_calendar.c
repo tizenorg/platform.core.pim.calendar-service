@@ -184,5 +184,5 @@ static int _cal_ipc_marshal_calendar(const calendar_record_h record, pims_ipc_da
 static int _cal_ipc_marshal_calendar_get_primary_id(const calendar_record_h record, unsigned int *property_id, int *id)
 {
 	*property_id = CAL_PROPERTY_CALENDAR_ID;
-	return calendar_record_get_int(record, *property_id, id );
+	return calendar_record_get_int(record, *property_id, id);
 }

@@ -26,11 +26,11 @@
 #include "cal_view.h"
 #include "cal_record.h"
 
-static int _cal_record_updated_info_create( calendar_record_h* out_record );
-static int _cal_record_updated_info_destroy( calendar_record_h record, bool delete_child );
-static int _cal_record_updated_info_clone( calendar_record_h record, calendar_record_h* out_record );
-static int _cal_record_updated_info_get_int( calendar_record_h record, unsigned int property_id, int* out_value );
-static int _cal_record_updated_info_set_int( calendar_record_h record, unsigned int property_id, int value );
+static int _cal_record_updated_info_create(calendar_record_h* out_record);
+static int _cal_record_updated_info_destroy(calendar_record_h record, bool delete_child);
+static int _cal_record_updated_info_clone(calendar_record_h record, calendar_record_h* out_record);
+static int _cal_record_updated_info_get_int(calendar_record_h record, unsigned int property_id, int* out_value);
+static int _cal_record_updated_info_set_int(calendar_record_h record, unsigned int property_id, int value);
 
 cal_record_plugin_cb_s cal_record_updated_info_plugin_cb = {
 	.create = _cal_record_updated_info_create,
@@ -54,7 +54,7 @@ cal_record_plugin_cb_s cal_record_updated_info_plugin_cb = {
 	.clone_child_record_list = NULL
 };
 
-static int _cal_record_updated_info_create( calendar_record_h* out_record )
+static int _cal_record_updated_info_create(calendar_record_h* out_record)
 {
 	cal_updated_info_s *temp = NULL;
 	int ret= CALENDAR_ERROR_NONE;
@@ -67,7 +67,7 @@ static int _cal_record_updated_info_create( calendar_record_h* out_record )
 	return ret;
 }
 
-static int _cal_record_updated_info_destroy( calendar_record_h record, bool delete_child )
+static int _cal_record_updated_info_destroy(calendar_record_h record, bool delete_child)
 {
 	int ret = CALENDAR_ERROR_NONE;
 
@@ -78,7 +78,7 @@ static int _cal_record_updated_info_destroy( calendar_record_h record, bool dele
 	return ret;
 }
 
-static int _cal_record_updated_info_clone( calendar_record_h record, calendar_record_h* out_record )
+static int _cal_record_updated_info_clone(calendar_record_h record, calendar_record_h* out_record)
 {
 	cal_updated_info_s *out_data = NULL;
 	cal_updated_info_s *src_data = NULL;
@@ -100,11 +100,11 @@ static int _cal_record_updated_info_clone( calendar_record_h record, calendar_re
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_updated_info_get_int( calendar_record_h record, unsigned int property_id, int* out_value )
+static int _cal_record_updated_info_get_int(calendar_record_h record, unsigned int property_id, int* out_value)
 {
 	cal_updated_info_s *rec = (cal_updated_info_s*)(record);
 
-	switch( property_id )
+	switch(property_id)
 	{
 	case CAL_PROPERTY_UPDATED_INFO_ID:
 		*out_value = (rec->id);
@@ -126,10 +126,10 @@ static int _cal_record_updated_info_get_int( calendar_record_h record, unsigned 
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_updated_info_set_int( calendar_record_h record, unsigned int property_id, int value )
+static int _cal_record_updated_info_set_int(calendar_record_h record, unsigned int property_id, int value)
 {
 	cal_updated_info_s *rec = (cal_updated_info_s*)(record);
-	switch( property_id )
+	switch(property_id)
 	{
 	case CAL_PROPERTY_UPDATED_INFO_ID:
 		(rec->id) = value;

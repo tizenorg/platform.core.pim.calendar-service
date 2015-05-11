@@ -531,7 +531,7 @@ int cal_client_db_get_all_records( const char* view_uri, int offset, int limit, 
 	return ret;
 }
 
-int cal_client_db_get_records_with_query( calendar_query_h query, int offset, int limit, calendar_list_h* out_list )
+int cal_client_db_get_records_with_query(calendar_query_h query, int offset, int limit, calendar_list_h* out_list)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	pims_ipc_data_h indata = NULL;
@@ -1057,7 +1057,7 @@ int cal_client_db_replace_records(calendar_list_h record_list, int *record_id_ar
 	}
 
 	// ipc call
-	ret = cal_client_ipc_call( CAL_IPC_MODULE, CAL_IPC_SERVER_DB_REPLACE_RECORDS, indata, &outdata);
+	ret = cal_client_ipc_call(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_REPLACE_RECORDS, indata, &outdata);
 	pims_ipc_data_destroy(indata);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("pims_ipc_call Fail(%d)", ret);

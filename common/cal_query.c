@@ -40,7 +40,7 @@ static bool _cal_query_property_check(const cal_property_info_s *properties,
 	return false;
 }
 
-API int calendar_query_create( const char* view_uri, calendar_query_h* out_query )
+API int calendar_query_create(const char* view_uri, calendar_query_h* out_query)
 {
 	cal_query_s *query;
 
@@ -151,7 +151,7 @@ API int calendar_query_set_sort(calendar_query_h query, unsigned int property_id
 	return CALENDAR_ERROR_NONE;
 }
 
-API int calendar_query_destroy( calendar_query_h query )
+API int calendar_query_destroy(calendar_query_h query)
 {
 	cal_query_s *que;
 

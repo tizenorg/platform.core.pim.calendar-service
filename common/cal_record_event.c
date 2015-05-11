@@ -29,25 +29,25 @@
 #include "cal_list.h"
 #include "cal_record.h"
 
-static int _cal_record_event_create( calendar_record_h* out_record );
-static int _cal_record_event_destroy( calendar_record_h record, bool delete_child );
-static int _cal_record_event_clone( calendar_record_h record, calendar_record_h* out_record );
-static int _cal_record_event_get_str( calendar_record_h record, unsigned int property_id, char** out_str );
-static int _cal_record_event_get_str_p( calendar_record_h record, unsigned int property_id, char** out_str );
-static int _cal_record_event_get_int( calendar_record_h record, unsigned int property_id, int* out_value );
-static int _cal_record_event_get_double( calendar_record_h record, unsigned int property_id, double* out_value );
-static int _cal_record_event_get_lli( calendar_record_h record, unsigned int property_id, long long int* out_value );
-static int _cal_record_event_get_caltime( calendar_record_h record, unsigned int property_id, calendar_time_s* out_value );
-static int _cal_record_event_set_str( calendar_record_h record, unsigned int property_id, const char* value );
-static int _cal_record_event_set_int( calendar_record_h record, unsigned int property_id, int value );
-static int _cal_record_event_set_double( calendar_record_h record, unsigned int property_id, double value );
-static int _cal_record_event_set_lli( calendar_record_h record, unsigned int property_id, long long int value );
-static int _cal_record_event_set_caltime( calendar_record_h record, unsigned int property_id, calendar_time_s value );
-static int _cal_record_event_add_child_record( calendar_record_h record, unsigned int property_id, calendar_record_h child_record );
-static int _cal_record_event_remove_child_record( calendar_record_h record, unsigned int property_id, calendar_record_h child_record );
-static int _cal_record_event_get_child_record_count( calendar_record_h record, unsigned int property_id, unsigned int* count  );
-static int _cal_record_event_get_child_record_at_p( calendar_record_h record, unsigned int property_id, int index, calendar_record_h* child_record );
-static int _cal_record_event_clone_child_record_list( calendar_record_h record, unsigned int property_id, calendar_list_h* out_list );
+static int _cal_record_event_create(calendar_record_h* out_record);
+static int _cal_record_event_destroy(calendar_record_h record, bool delete_child);
+static int _cal_record_event_clone(calendar_record_h record, calendar_record_h* out_record);
+static int _cal_record_event_get_str(calendar_record_h record, unsigned int property_id, char** out_str);
+static int _cal_record_event_get_str_p(calendar_record_h record, unsigned int property_id, char** out_str);
+static int _cal_record_event_get_int(calendar_record_h record, unsigned int property_id, int* out_value);
+static int _cal_record_event_get_double(calendar_record_h record, unsigned int property_id, double* out_value);
+static int _cal_record_event_get_lli(calendar_record_h record, unsigned int property_id, long long int* out_value);
+static int _cal_record_event_get_caltime(calendar_record_h record, unsigned int property_id, calendar_time_s* out_value);
+static int _cal_record_event_set_str(calendar_record_h record, unsigned int property_id, const char* value);
+static int _cal_record_event_set_int(calendar_record_h record, unsigned int property_id, int value);
+static int _cal_record_event_set_double(calendar_record_h record, unsigned int property_id, double value);
+static int _cal_record_event_set_lli(calendar_record_h record, unsigned int property_id, long long int value);
+static int _cal_record_event_set_caltime(calendar_record_h record, unsigned int property_id, calendar_time_s value);
+static int _cal_record_event_add_child_record(calendar_record_h record, unsigned int property_id, calendar_record_h child_record);
+static int _cal_record_event_remove_child_record(calendar_record_h record, unsigned int property_id, calendar_record_h child_record);
+static int _cal_record_event_get_child_record_count(calendar_record_h record, unsigned int property_id, unsigned int* count);
+static int _cal_record_event_get_child_record_at_p(calendar_record_h record, unsigned int property_id, int index, calendar_record_h* child_record);
+static int _cal_record_event_clone_child_record_list(calendar_record_h record, unsigned int property_id, calendar_list_h* out_list);
 
 cal_record_plugin_cb_s cal_record_event_plugin_cb = {
 	.create = _cal_record_event_create,
@@ -108,7 +108,7 @@ static void _cal_record_event_struct_init(cal_event_s *record)
 	return ;
 }
 
-static int _cal_record_event_create( calendar_record_h* out_record )
+static int _cal_record_event_create(calendar_record_h* out_record)
 {
 	cal_event_s *temp = NULL;
 	int ret= CALENDAR_ERROR_NONE;
@@ -161,7 +161,7 @@ static void _cal_record_event_struct_free(cal_event_s *record, bool delete_child
 	CAL_FREE(record);
 }
 
-static int _cal_record_event_destroy( calendar_record_h record, bool delete_child )
+static int _cal_record_event_destroy(calendar_record_h record, bool delete_child)
 {
 	int ret = CALENDAR_ERROR_NONE;
 
@@ -172,7 +172,7 @@ static int _cal_record_event_destroy( calendar_record_h record, bool delete_chil
 	return ret;
 }
 
-static int _cal_record_event_clone( calendar_record_h record, calendar_record_h* out_record )
+static int _cal_record_event_clone(calendar_record_h record, calendar_record_h* out_record)
 {
 	cal_event_s *out_data = NULL;
 	cal_event_s *src_data = NULL;
@@ -255,10 +255,10 @@ static int _cal_record_event_clone( calendar_record_h record, calendar_record_h*
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_event_get_str( calendar_record_h record, unsigned int property_id, char** out_str )
+static int _cal_record_event_get_str(calendar_record_h record, unsigned int property_id, char** out_str)
 {
 	cal_event_s *rec = (cal_event_s*)(record);
-	switch( property_id ) {
+	switch(property_id) {
 	case CAL_PROPERTY_EVENT_SUMMARY:
 		*out_str = SAFE_STRDUP(rec->summary);
 		break;
@@ -342,10 +342,10 @@ static int _cal_record_event_get_str( calendar_record_h record, unsigned int pro
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_event_get_str_p( calendar_record_h record, unsigned int property_id, char** out_str )
+static int _cal_record_event_get_str_p(calendar_record_h record, unsigned int property_id, char** out_str)
 {
 	cal_event_s *rec = (cal_event_s*)(record);
-	switch( property_id ) {
+	switch(property_id) {
 	case CAL_PROPERTY_EVENT_SUMMARY:
 		*out_str = (rec->summary);
 		break;
@@ -429,10 +429,10 @@ static int _cal_record_event_get_str_p( calendar_record_h record, unsigned int p
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_event_get_int( calendar_record_h record, unsigned int property_id, int* out_value )
+static int _cal_record_event_get_int(calendar_record_h record, unsigned int property_id, int* out_value)
 {
 	cal_event_s *rec = (cal_event_s*)(record);
-	switch( property_id ) {
+	switch(property_id) {
 	case CAL_PROPERTY_EVENT_ID:
 		*out_value = (rec->index);
 		break;
@@ -503,10 +503,10 @@ static int _cal_record_event_get_int( calendar_record_h record, unsigned int pro
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_event_get_double( calendar_record_h record, unsigned int property_id, double* out_value )
+static int _cal_record_event_get_double(calendar_record_h record, unsigned int property_id, double* out_value)
 {
 	cal_event_s *rec = (cal_event_s*)(record);
-	switch( property_id ) {
+	switch(property_id) {
 	case CAL_PROPERTY_EVENT_LATITUDE:
 		*out_value = (rec->latitude);
 		break;
@@ -521,10 +521,10 @@ static int _cal_record_event_get_double( calendar_record_h record, unsigned int 
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_event_get_lli( calendar_record_h record, unsigned int property_id, long long int* out_value )
+static int _cal_record_event_get_lli(calendar_record_h record, unsigned int property_id, long long int* out_value)
 {
 	cal_event_s *rec = (cal_event_s*)(record);
-	switch( property_id ) {
+	switch(property_id) {
 	case CAL_PROPERTY_EVENT_CREATED_TIME:
 		*out_value = (rec->created_time);
 		break;
@@ -538,10 +538,10 @@ static int _cal_record_event_get_lli( calendar_record_h record, unsigned int pro
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_event_get_caltime( calendar_record_h record, unsigned int property_id, calendar_time_s* out_value )
+static int _cal_record_event_get_caltime(calendar_record_h record, unsigned int property_id, calendar_time_s* out_value)
 {
 	cal_event_s *rec = (cal_event_s*)(record);
-	switch( property_id ) {
+	switch(property_id) {
 	case CAL_PROPERTY_EVENT_START:
 		*out_value = rec->start;
 		break;
@@ -559,10 +559,10 @@ static int _cal_record_event_get_caltime( calendar_record_h record, unsigned int
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_event_set_str( calendar_record_h record, unsigned int property_id, const char* value )
+static int _cal_record_event_set_str(calendar_record_h record, unsigned int property_id, const char* value)
 {
 	cal_event_s *rec = (cal_event_s*)(record);
-	switch( property_id ) {
+	switch(property_id) {
 	case CAL_PROPERTY_EVENT_SUMMARY:
 		CAL_FREE(rec->summary);
 		rec->summary = SAFE_STRDUP(value);
@@ -671,10 +671,10 @@ static int _cal_record_event_set_str( calendar_record_h record, unsigned int pro
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_event_set_int( calendar_record_h record, unsigned int property_id, int value )
+static int _cal_record_event_set_int(calendar_record_h record, unsigned int property_id, int value)
 {
 	cal_event_s *rec = (cal_event_s*)(record);
-	switch( property_id ) {
+	switch(property_id) {
 	case CAL_PROPERTY_EVENT_ID:
 		(rec->index) = value;
 		break;
@@ -837,10 +837,10 @@ static int _cal_record_event_set_int( calendar_record_h record, unsigned int pro
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_event_set_double( calendar_record_h record, unsigned int property_id, double value )
+static int _cal_record_event_set_double(calendar_record_h record, unsigned int property_id, double value)
 {
 	cal_event_s *rec = (cal_event_s*)(record);
-	switch( property_id ) {
+	switch(property_id) {
 	case CAL_PROPERTY_EVENT_LATITUDE:
 		(rec->latitude) = value;
 		break;
@@ -855,10 +855,10 @@ static int _cal_record_event_set_double( calendar_record_h record, unsigned int 
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_event_set_lli( calendar_record_h record, unsigned int property_id, long long int value )
+static int _cal_record_event_set_lli(calendar_record_h record, unsigned int property_id, long long int value)
 {
 	cal_event_s *rec = (cal_event_s*)(record);
-	switch( property_id ) {
+	switch(property_id) {
 	case CAL_PROPERTY_EVENT_CREATED_TIME:
 		(rec->created_time) = value;
 		break;
@@ -873,10 +873,10 @@ static int _cal_record_event_set_lli( calendar_record_h record, unsigned int pro
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_event_set_caltime( calendar_record_h record, unsigned int property_id, calendar_time_s value )
+static int _cal_record_event_set_caltime(calendar_record_h record, unsigned int property_id, calendar_time_s value)
 {
 	cal_event_s *rec = (cal_event_s*)(record);
-	switch( property_id ) {
+	switch(property_id) {
 	case CAL_PROPERTY_EVENT_START:
 		rec->start = value;
 		break;
@@ -921,13 +921,13 @@ static int _cal_record_event_reset_child_record_id(calendar_record_h child_recor
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_event_add_child_record( calendar_record_h record, unsigned int property_id, calendar_record_h child_record )
+static int _cal_record_event_add_child_record(calendar_record_h record, unsigned int property_id, calendar_record_h child_record)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	cal_event_s *rec = (cal_event_s*)(record);
 	_cal_record_event_reset_child_record_id(child_record);
 
-	switch( property_id ) {
+	switch(property_id) {
 	case CAL_PROPERTY_EVENT_CALENDAR_ALARM:
 		ret = calendar_list_add((calendar_list_h)rec->alarm_list, child_record);
 		rec->has_alarm = 1;
@@ -952,7 +952,7 @@ static int _cal_record_event_add_child_record( calendar_record_h record, unsigne
 	return ret;
 }
 
-static int _cal_record_event_remove_child_record( calendar_record_h record, unsigned int property_id, calendar_record_h child_record )
+static int _cal_record_event_remove_child_record(calendar_record_h record, unsigned int property_id, calendar_record_h child_record)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	cal_event_s *rec = (cal_event_s *)record;
@@ -980,7 +980,7 @@ static int _cal_record_event_remove_child_record( calendar_record_h record, unsi
 	return ret;
 }
 
-static int _cal_record_event_get_child_record_count( calendar_record_h record, unsigned int property_id, unsigned int* count  )
+static int _cal_record_event_get_child_record_count(calendar_record_h record, unsigned int property_id, unsigned int* count)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	cal_event_s *rec = (cal_event_s *)record;
@@ -1008,7 +1008,7 @@ static int _cal_record_event_get_child_record_count( calendar_record_h record, u
 	return ret;
 }
 
-static int _cal_record_event_get_child_record_at_p( calendar_record_h record, unsigned int property_id, int index, calendar_record_h* child_record)
+static int _cal_record_event_get_child_record_at_p(calendar_record_h record, unsigned int property_id, int index, calendar_record_h* child_record)
 {
 	int ret;
 	cal_event_s *rec = (cal_event_s*)(record);
@@ -1036,7 +1036,7 @@ static int _cal_record_event_get_child_record_at_p( calendar_record_h record, un
 	return ret;
 }
 
-static int _cal_record_event_clone_child_record_list( calendar_record_h record, unsigned int property_id, calendar_list_h* out_list )
+static int _cal_record_event_clone_child_record_list(calendar_record_h record, unsigned int property_id, calendar_list_h* out_list)
 {
 	int ret;
 	cal_event_s *rec = (cal_event_s*)(record);

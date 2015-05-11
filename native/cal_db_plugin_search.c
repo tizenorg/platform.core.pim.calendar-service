@@ -31,7 +31,7 @@
 /*
  * db plugin function
  */
-static int _cal_db_search_get_records_with_query( calendar_query_h query, int offset, int limit, calendar_list_h* out_list );
+static int _cal_db_search_get_records_with_query(calendar_query_h query, int offset, int limit, calendar_list_h* out_list);
 static int _cal_db_search_get_count_with_query(calendar_query_h query, int *out_count);
 
 /*
@@ -64,7 +64,7 @@ cal_db_plugin_cb_s cal_db_search_plugin_cb = {
 	.replace_records=NULL
 };
 
-static int _cal_db_search_get_records_with_query( calendar_query_h query, int offset, int limit, calendar_list_h* out_list )
+static int _cal_db_search_get_records_with_query(calendar_query_h query, int offset, int limit, calendar_list_h* out_list)
 {
 	cal_query_s *que = NULL;
 	int ret = CALENDAR_ERROR_NONE;
@@ -194,7 +194,7 @@ static int _cal_db_search_get_records_with_query( calendar_query_h query, int of
 		calendar_record_h record;
 		// stmt -> record
 		ret = calendar_record_create(que->view_uri,&record);
-		if( ret != CALENDAR_ERROR_NONE )
+		if(ret != CALENDAR_ERROR_NONE)
 		{
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
@@ -219,7 +219,7 @@ static int _cal_db_search_get_records_with_query( calendar_query_h query, int of
 		}
 
 		ret = calendar_list_add(*out_list,record);
-		if( ret != CALENDAR_ERROR_NONE )
+		if(ret != CALENDAR_ERROR_NONE)
 		{
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
@@ -259,17 +259,17 @@ static int _cal_db_search_get_count_with_query(calendar_query_h query, int *out_
 
 	que = (cal_query_s *)query;
 
-	if ( 0 == strcmp(que->view_uri, CALENDAR_VIEW_EVENT_CALENDAR))
+	if (0 == strcmp(que->view_uri, CALENDAR_VIEW_EVENT_CALENDAR))
 	{
 		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_EVENT_CALENDAR);
 		projection = SAFE_STRDUP("id");
 	}
-	else if ( 0 == strcmp(que->view_uri, CALENDAR_VIEW_TODO_CALENDAR))
+	else if (0 == strcmp(que->view_uri, CALENDAR_VIEW_TODO_CALENDAR))
 	{
 		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_TODO_CALENDAR);
 		projection = SAFE_STRDUP("id");
 	}
-	else if ( 0 == strcmp(que->view_uri, CALENDAR_VIEW_EVENT_CALENDAR_ATTENDEE))
+	else if (0 == strcmp(que->view_uri, CALENDAR_VIEW_EVENT_CALENDAR_ATTENDEE))
 	{
 		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_EVENT_CALENDAR_ATTENDEE);
 		projection = SAFE_STRDUP("id");
@@ -371,7 +371,7 @@ static void _cal_db_search_get_stmt(sqlite3_stmt *stmt,calendar_query_h query,
 	{
 		properties = &(query_s->properties[i]);
 
-		if ( CAL_PROPERTY_CHECK_FLAGS(properties->property_id, CAL_PROPERTY_FLAGS_FILTER) == true)
+		if (CAL_PROPERTY_CHECK_FLAGS(properties->property_id, CAL_PROPERTY_FLAGS_FILTER) == true)
 		{
 			break;
 		}
@@ -485,7 +485,7 @@ static int _cal_db_search_make_projection(calendar_query_h query, char **project
 		properties = &(query_s->properties[i]);
 		field_name = properties->fields;
 
-		if ( CAL_PROPERTY_CHECK_FLAGS(properties->property_id, CAL_PROPERTY_FLAGS_FILTER) == true)
+		if (CAL_PROPERTY_CHECK_FLAGS(properties->property_id, CAL_PROPERTY_FLAGS_FILTER) == true)
 		{
 			break;
 		}

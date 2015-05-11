@@ -116,7 +116,7 @@ static int _cal_ipc_unmarshal_attendee(const pims_ipc_data_h ipc_data, calendar_
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_ipc_marshal_attendee(const calendar_record_h record, pims_ipc_data_h ipc_data )
+static int _cal_ipc_marshal_attendee(const calendar_record_h record, pims_ipc_data_h ipc_data)
 {
 	cal_attendee_s* pattendee = (cal_attendee_s*) record;
 

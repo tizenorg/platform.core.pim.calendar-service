@@ -245,7 +245,7 @@ static int _cal_db_attendee_get_records_with_query(calendar_query_h query, int o
 
 	que = (cal_query_s *)query;
 
-	if ( 0 == strcmp(que->view_uri, CALENDAR_VIEW_ATTENDEE)) {
+	if (0 == strcmp(que->view_uri, CALENDAR_VIEW_ATTENDEE)) {
 		table_name = SAFE_STRDUP(CAL_TABLE_ATTENDEE);
 	}
 	else {
@@ -341,7 +341,7 @@ static int _cal_db_attendee_get_records_with_query(calendar_query_h query, int o
 		calendar_record_h record;
 		// stmt -> record
 		ret = calendar_record_create(_calendar_attendee._uri,&record);
-		if( ret != CALENDAR_ERROR_NONE ) {
+		if(ret != CALENDAR_ERROR_NONE) {
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
 
@@ -366,7 +366,7 @@ static int _cal_db_attendee_get_records_with_query(calendar_query_h query, int o
 		}
 
 		ret = calendar_list_add(*out_list,record);
-		if( ret != CALENDAR_ERROR_NONE ) {
+		if(ret != CALENDAR_ERROR_NONE) {
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
 			calendar_record_destroy(record, true);
@@ -424,7 +424,7 @@ static int _cal_db_attendee_get_count_with_query(calendar_query_h query, int *ou
 
 	que = (cal_query_s *)query;
 
-	if ( 0 == strcmp(que->view_uri, CALENDAR_VIEW_ATTENDEE)) {
+	if (0 == strcmp(que->view_uri, CALENDAR_VIEW_ATTENDEE)) {
 		table_name = SAFE_STRDUP(CAL_TABLE_ATTENDEE);
 	}
 	else {

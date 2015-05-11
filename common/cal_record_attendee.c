@@ -26,14 +26,14 @@
 #include "cal_view.h"
 #include "cal_record.h"
 
-static int _cal_record_attendee_create( calendar_record_h* out_record );
-static int _cal_record_attendee_destroy( calendar_record_h record, bool delete_child );
-static int _cal_record_attendee_clone( calendar_record_h record, calendar_record_h* out_record );
-static int _cal_record_attendee_get_str( calendar_record_h record, unsigned int property_id, char** out_str );
-static int _cal_record_attendee_get_str_p( calendar_record_h record, unsigned int property_id, char** out_str );
-static int _cal_record_attendee_get_int( calendar_record_h record, unsigned int property_id, int* out_value );
-static int _cal_record_attendee_set_str( calendar_record_h record, unsigned int property_id, const char* value );
-static int _cal_record_attendee_set_int( calendar_record_h record, unsigned int property_id, int value );
+static int _cal_record_attendee_create(calendar_record_h* out_record);
+static int _cal_record_attendee_destroy(calendar_record_h record, bool delete_child);
+static int _cal_record_attendee_clone(calendar_record_h record, calendar_record_h* out_record);
+static int _cal_record_attendee_get_str(calendar_record_h record, unsigned int property_id, char** out_str);
+static int _cal_record_attendee_get_str_p(calendar_record_h record, unsigned int property_id, char** out_str);
+static int _cal_record_attendee_get_int(calendar_record_h record, unsigned int property_id, int* out_value);
+static int _cal_record_attendee_set_str(calendar_record_h record, unsigned int property_id, const char* value);
+static int _cal_record_attendee_set_int(calendar_record_h record, unsigned int property_id, int value);
 
 cal_record_plugin_cb_s cal_record_attendee_plugin_cb = {
 	.create = _cal_record_attendee_create,
@@ -62,7 +62,7 @@ static void _cal_record_attendee_struct_init(cal_attendee_s *record)
 	memset(record,0,sizeof(cal_attendee_s));
 }
 
-static int _cal_record_attendee_create(calendar_record_h* out_record )
+static int _cal_record_attendee_create(calendar_record_h* out_record)
 {
 	cal_attendee_s *temp = NULL;
 	int ret= CALENDAR_ERROR_NONE;
@@ -90,7 +90,7 @@ static void _cal_record_attendee_struct_free(cal_attendee_s *record)
 	CAL_FREE(record);
 }
 
-static int _cal_record_attendee_destroy( calendar_record_h record, bool delete_child )
+static int _cal_record_attendee_destroy(calendar_record_h record, bool delete_child)
 {
 	int ret = CALENDAR_ERROR_NONE;
 
@@ -101,7 +101,7 @@ static int _cal_record_attendee_destroy( calendar_record_h record, bool delete_c
 	return ret;
 }
 
-static int _cal_record_attendee_clone( calendar_record_h record, calendar_record_h* out_record )
+static int _cal_record_attendee_clone(calendar_record_h record, calendar_record_h* out_record)
 {
 	cal_attendee_s *out_data = NULL;
 	cal_attendee_s *src_data = NULL;
@@ -133,10 +133,10 @@ static int _cal_record_attendee_clone( calendar_record_h record, calendar_record
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_attendee_get_str( calendar_record_h record, unsigned int property_id, char** out_str )
+static int _cal_record_attendee_get_str(calendar_record_h record, unsigned int property_id, char** out_str)
 {
 	cal_attendee_s *rec = (cal_attendee_s*)(record);
-	switch( property_id )
+	switch(property_id)
 	{
 	case CAL_PROPERTY_ATTENDEE_NUMBER:
 		*out_str = SAFE_STRDUP(rec->attendee_number);
@@ -170,10 +170,10 @@ static int _cal_record_attendee_get_str( calendar_record_h record, unsigned int 
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_attendee_get_str_p( calendar_record_h record, unsigned int property_id, char** out_str )
+static int _cal_record_attendee_get_str_p(calendar_record_h record, unsigned int property_id, char** out_str)
 {
 	cal_attendee_s *rec = (cal_attendee_s*)(record);
-	switch( property_id )
+	switch(property_id)
 	{
 	case CAL_PROPERTY_ATTENDEE_NUMBER:
 		*out_str = (rec->attendee_number);
@@ -207,10 +207,10 @@ static int _cal_record_attendee_get_str_p( calendar_record_h record, unsigned in
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_attendee_get_int( calendar_record_h record, unsigned int property_id, int* out_value )
+static int _cal_record_attendee_get_int(calendar_record_h record, unsigned int property_id, int* out_value)
 {
 	cal_attendee_s *rec = (cal_attendee_s*)(record);
-	switch( property_id )
+	switch(property_id)
 	{
 	case CAL_PROPERTY_ATTENDEE_CUTYPE:
 		*out_value = (rec->attendee_cutype);
@@ -238,10 +238,10 @@ static int _cal_record_attendee_get_int( calendar_record_h record, unsigned int 
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_attendee_set_str( calendar_record_h record, unsigned int property_id, const char* value )
+static int _cal_record_attendee_set_str(calendar_record_h record, unsigned int property_id, const char* value)
 {
 	cal_attendee_s *rec = (cal_attendee_s*)(record);
-	switch( property_id )
+	switch(property_id)
 	{
 	case CAL_PROPERTY_ATTENDEE_NUMBER:
 		CAL_FREE(rec->attendee_number);
@@ -283,10 +283,10 @@ static int _cal_record_attendee_set_str( calendar_record_h record, unsigned int 
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_attendee_set_int( calendar_record_h record, unsigned int property_id, int value )
+static int _cal_record_attendee_set_int(calendar_record_h record, unsigned int property_id, int value)
 {
 	cal_attendee_s *rec = (cal_attendee_s*)(record);
-	switch( property_id )
+	switch(property_id)
 	{
 	case CAL_PROPERTY_ATTENDEE_CUTYPE:
 		(rec->attendee_cutype) = value;

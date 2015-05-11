@@ -59,11 +59,11 @@ extern "C" {
 #define _CALENDAR_END_READ_ONLY_VIEW(name) } name##_property_ids; \
     extern API const name##_property_ids name;
 
-_CALENDAR_HANDLE( calendar_record_h )
-_CALENDAR_HANDLE( calendar_filter_h )
-_CALENDAR_HANDLE( calendar_list_h )
-_CALENDAR_HANDLE( calendar_query_h )
-
+_CALENDAR_HANDLE(calendar_record_h)
+_CALENDAR_HANDLE(calendar_filter_h)
+_CALENDAR_HANDLE(calendar_list_h)
+_CALENDAR_HANDLE(calendar_query_h)
+_CALENDAR_HANDLE(calendar_h)
 
 /**
  * @file calendar_types.h

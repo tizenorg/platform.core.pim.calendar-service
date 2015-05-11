@@ -60,7 +60,7 @@ extern "C" {
  *
  * @see calendar_record_destroy()
  */
-int calendar_record_create( const char* view_uri, calendar_record_h* out_record );
+int calendar_record_create(const char* view_uri, calendar_record_h* out_record);
 
 /**
  * @brief Destroys a record handle and releases all its resources.
@@ -79,7 +79,7 @@ int calendar_record_create( const char* view_uri, calendar_record_h* out_record 
  *
  * @see calendar_record_create()
  */
-int calendar_record_destroy( calendar_record_h record, bool delete_child );
+int calendar_record_destroy(calendar_record_h record, bool delete_child);
 
 /**
  * @brief Makes a clone of a record handle.
@@ -99,7 +99,7 @@ int calendar_record_destroy( calendar_record_h record, bool delete_child );
  *
  * @see calendar_record_destroy()
  */
-int calendar_record_clone( calendar_record_h record, calendar_record_h* out_record );
+int calendar_record_clone(calendar_record_h record, calendar_record_h* out_record);
 
 /**
  * @brief Gets a URI string from a record.
@@ -114,7 +114,7 @@ int calendar_record_clone( calendar_record_h record, calendar_record_h* out_reco
  * @retval  #CALENDAR_ERROR_NONE                 Successful
  * @retval  #CALENDAR_ERROR_INVALID_PARAMETER    Invalid parameter
  */
-int calendar_record_get_uri_p( calendar_record_h record, char** uri );
+int calendar_record_get_uri_p(calendar_record_h record, char** uri);
 
 /**
  * @brief Gets a string from a record.
@@ -136,7 +136,7 @@ int calendar_record_get_uri_p( calendar_record_h record, char** uri );
  * @see calendar_record_get_str_p()
  * @see calendar_record_set_str()
  */
-int calendar_record_get_str( calendar_record_h record, unsigned int property_id, char** out_str );
+int calendar_record_get_str(calendar_record_h record, unsigned int property_id, char** out_str);
 
 /**
  * @brief Gets a string pointer from a record.
@@ -158,7 +158,7 @@ int calendar_record_get_str( calendar_record_h record, unsigned int property_id,
  * @see calendar_record_get_str()
  * @see calendar_record_set_str()
  */
-int calendar_record_get_str_p( calendar_record_h record, unsigned int property_id, char** out_str );
+int calendar_record_get_str_p(calendar_record_h record, unsigned int property_id, char** out_str);
 
 /**
  * @brief Gets an integer value from a record.
@@ -177,7 +177,7 @@ int calendar_record_get_str_p( calendar_record_h record, unsigned int property_i
  *
  * @see calendar_record_set_int()
  */
-int calendar_record_get_int( calendar_record_h record, unsigned int property_id, int* out_value );
+int calendar_record_get_int(calendar_record_h record, unsigned int property_id, int* out_value);
 
 /**
  * @brief Gets a double value from a record.
@@ -196,7 +196,7 @@ int calendar_record_get_int( calendar_record_h record, unsigned int property_id,
  *
  * @see calendar_record_set_double()
  */
-int calendar_record_get_double( calendar_record_h record, unsigned int property_id, double* out_value );
+int calendar_record_get_double(calendar_record_h record, unsigned int property_id, double* out_value);
 
 /**
  * @brief Gets a long long integer value from a record.
@@ -215,7 +215,7 @@ int calendar_record_get_double( calendar_record_h record, unsigned int property_
  *
  * @see calendar_record_set_lli()
  */
-int calendar_record_get_lli( calendar_record_h record, unsigned int property_id, long long int* out_value );
+int calendar_record_get_lli(calendar_record_h record, unsigned int property_id, long long int* out_value);
 
 /**
  * @brief Gets a calendar_caltime_s value from a record.
@@ -234,7 +234,7 @@ int calendar_record_get_lli( calendar_record_h record, unsigned int property_id,
  *
  * @see calendar_record_set_caltime()
  */
-int calendar_record_get_caltime( calendar_record_h record, unsigned int property_id, calendar_time_s* out_value );
+int calendar_record_get_caltime(calendar_record_h record, unsigned int property_id, calendar_time_s* out_value);
 
 /**
  * @brief Sets a string to a record.
@@ -254,7 +254,7 @@ int calendar_record_get_caltime( calendar_record_h record, unsigned int property
  * @see calendar_record_get_str()
  * @see calendar_record_get_str_p()
  */
-int calendar_record_set_str( calendar_record_h record, unsigned int property_id, const char* value );
+int calendar_record_set_str(calendar_record_h record, unsigned int property_id, const char* value);
 
 /**
  * @brief Sets an integer value to a record.
@@ -273,7 +273,7 @@ int calendar_record_set_str( calendar_record_h record, unsigned int property_id,
  *
  * @see calendar_record_get_int()
  */
-int calendar_record_set_int( calendar_record_h record, unsigned int property_id, int value );
+int calendar_record_set_int(calendar_record_h record, unsigned int property_id, int value);
 
 /**
  * @brief Sets a double value to a record.
@@ -292,7 +292,7 @@ int calendar_record_set_int( calendar_record_h record, unsigned int property_id,
  *
  * @see calendar_record_get_double()
  */
-int calendar_record_set_double( calendar_record_h record, unsigned int property_id, double value );
+int calendar_record_set_double(calendar_record_h record, unsigned int property_id, double value);
 
 /**
  * @brief Sets a long long integer value to a record.
@@ -311,7 +311,7 @@ int calendar_record_set_double( calendar_record_h record, unsigned int property_
  *
  * @see calendar_record_get_lli()
  */
-int calendar_record_set_lli( calendar_record_h record, unsigned int property_id, long long int value );
+int calendar_record_set_lli(calendar_record_h record, unsigned int property_id, long long int value);
 
 /**
  * @brief Sets a calendar_time_s value to a record.
@@ -330,7 +330,7 @@ int calendar_record_set_lli( calendar_record_h record, unsigned int property_id,
  *
  * @see calendar_record_get_caltime()
  */
-int calendar_record_set_caltime( calendar_record_h record, unsigned int property_id, calendar_time_s value );
+int calendar_record_set_caltime(calendar_record_h record, unsigned int property_id, calendar_time_s value);
 
 /**
  * @brief Adds a child record to the parent record.
@@ -349,7 +349,7 @@ int calendar_record_set_caltime( calendar_record_h record, unsigned int property
  *
  * @see calendar_record_remove_child_record()
  */
-int calendar_record_add_child_record( calendar_record_h record, unsigned int property_id, calendar_record_h child_record );
+int calendar_record_add_child_record(calendar_record_h record, unsigned int property_id, calendar_record_h child_record);
 
 /**
  * @brief Removes a child record from the parent record.
@@ -368,7 +368,7 @@ int calendar_record_add_child_record( calendar_record_h record, unsigned int pro
  *
  * @see calendar_record_add_child_record()
  */
-int calendar_record_remove_child_record( calendar_record_h record, unsigned int property_id, calendar_record_h child_record );
+int calendar_record_remove_child_record(calendar_record_h record, unsigned int property_id, calendar_record_h child_record);
 
 /**
  * @brief Gets the number of child records in a record.
@@ -388,7 +388,7 @@ int calendar_record_remove_child_record( calendar_record_h record, unsigned int 
  * @see calendar_record_add_child_record()
  * @see calendar_record_remove_child_record()
  */
-int calendar_record_get_child_record_count( calendar_record_h record, unsigned int property_id,unsigned int* count );
+int calendar_record_get_child_record_count(calendar_record_h record, unsigned int property_id,unsigned int* count);
 
 /**
  * @brief Gets a child record handle pointer from the parent record.
@@ -412,7 +412,7 @@ int calendar_record_get_child_record_count( calendar_record_h record, unsigned i
  * @see calendar_record_remove_child_record()
  * @see calendar_record_get_child_record_count()
  */
-int calendar_record_get_child_record_at_p( calendar_record_h record, unsigned int property_id, int index, calendar_record_h* child_record );
+int calendar_record_get_child_record_at_p(calendar_record_h record, unsigned int property_id, int index, calendar_record_h* child_record);
 
 /**
  * @brief Makes a clone of a given record's child record list.
@@ -433,7 +433,7 @@ int calendar_record_get_child_record_at_p( calendar_record_h record, unsigned in
  *
  * @see calendar_list_destroy()
  */
-int calendar_record_clone_child_record_list( calendar_record_h record, unsigned int property_id, calendar_list_h* out_list );
+int calendar_record_clone_child_record_list(calendar_record_h record, unsigned int property_id, calendar_list_h* out_list);
 
 /**
  * @}

@@ -26,16 +26,16 @@
 #include "cal_view.h"
 #include "cal_record.h"
 
-static int _cal_record_alarm_create( calendar_record_h* out_record );
-static int _cal_record_alarm_destroy( calendar_record_h record, bool delete_child );
-static int _cal_record_alarm_clone( calendar_record_h record, calendar_record_h* out_record );
-static int _cal_record_alarm_get_str( calendar_record_h record, unsigned int property_id, char** out_str );
-static int _cal_record_alarm_get_str_p( calendar_record_h record, unsigned int property_id, char** out_str );
-static int _cal_record_alarm_get_int( calendar_record_h record, unsigned int property_id, int* out_value );
-static int _cal_record_alarm_get_caltime( calendar_record_h record, unsigned int property_id, calendar_time_s* out_value );
-static int _cal_record_alarm_set_str( calendar_record_h record, unsigned int property_id, const char* value );
-static int _cal_record_alarm_set_int( calendar_record_h record, unsigned int property_id, int value );
-static int _cal_record_alarm_set_caltime( calendar_record_h record, unsigned int property_id, calendar_time_s value );
+static int _cal_record_alarm_create(calendar_record_h* out_record);
+static int _cal_record_alarm_destroy(calendar_record_h record, bool delete_child);
+static int _cal_record_alarm_clone(calendar_record_h record, calendar_record_h* out_record);
+static int _cal_record_alarm_get_str(calendar_record_h record, unsigned int property_id, char** out_str);
+static int _cal_record_alarm_get_str_p(calendar_record_h record, unsigned int property_id, char** out_str);
+static int _cal_record_alarm_get_int(calendar_record_h record, unsigned int property_id, int* out_value);
+static int _cal_record_alarm_get_caltime(calendar_record_h record, unsigned int property_id, calendar_time_s* out_value);
+static int _cal_record_alarm_set_str(calendar_record_h record, unsigned int property_id, const char* value);
+static int _cal_record_alarm_set_int(calendar_record_h record, unsigned int property_id, int value);
+static int _cal_record_alarm_set_caltime(calendar_record_h record, unsigned int property_id, calendar_time_s value);
 
 cal_record_plugin_cb_s cal_record_alarm_plugin_cb = {
 	.create = _cal_record_alarm_create,
@@ -64,7 +64,7 @@ static void _cal_record_alarm_struct_init(cal_alarm_s *record)
 	memset(record,0,sizeof(cal_alarm_s));
 }
 
-static int _cal_record_alarm_create(calendar_record_h* out_record )
+static int _cal_record_alarm_create(calendar_record_h* out_record)
 {
 	cal_alarm_s *temp = NULL;
 	int ret= CALENDAR_ERROR_NONE;
@@ -87,7 +87,7 @@ static void _cal_record_alarm_struct_free(cal_alarm_s *record)
 	CAL_FREE(record);
 }
 
-static int _cal_record_alarm_destroy( calendar_record_h record, bool delete_child )
+static int _cal_record_alarm_destroy(calendar_record_h record, bool delete_child)
 {
 	int ret = CALENDAR_ERROR_NONE;
 
@@ -98,7 +98,7 @@ static int _cal_record_alarm_destroy( calendar_record_h record, bool delete_chil
 	return ret;
 }
 
-static int _cal_record_alarm_clone( calendar_record_h record, calendar_record_h* out_record )
+static int _cal_record_alarm_clone(calendar_record_h record, calendar_record_h* out_record)
 {
 	cal_alarm_s *out_data = NULL;
 	cal_alarm_s *src_data = NULL;
@@ -125,10 +125,10 @@ static int _cal_record_alarm_clone( calendar_record_h record, calendar_record_h*
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_alarm_get_str( calendar_record_h record, unsigned int property_id, char** out_str )
+static int _cal_record_alarm_get_str(calendar_record_h record, unsigned int property_id, char** out_str)
 {
 	cal_alarm_s *rec = (cal_alarm_s*)(record);
-	switch( property_id )
+	switch(property_id)
 	{
 	case CAL_PROPERTY_ALARM_DESCRIPTION:
 		*out_str = SAFE_STRDUP(rec->alarm_description);
@@ -147,10 +147,10 @@ static int _cal_record_alarm_get_str( calendar_record_h record, unsigned int pro
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_alarm_get_str_p( calendar_record_h record, unsigned int property_id, char** out_str )
+static int _cal_record_alarm_get_str_p(calendar_record_h record, unsigned int property_id, char** out_str)
 {
 	cal_alarm_s *rec = (cal_alarm_s*)(record);
-	switch( property_id )
+	switch(property_id)
 	{
 	case CAL_PROPERTY_ALARM_DESCRIPTION:
 		*out_str = (rec->alarm_description);
@@ -169,10 +169,10 @@ static int _cal_record_alarm_get_str_p( calendar_record_h record, unsigned int p
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_alarm_get_int( calendar_record_h record, unsigned int property_id, int* out_value )
+static int _cal_record_alarm_get_int(calendar_record_h record, unsigned int property_id, int* out_value)
 {
 	cal_alarm_s *rec = (cal_alarm_s*)(record);
-	switch( property_id )
+	switch(property_id)
 	{
 	case CAL_PROPERTY_ALARM_TICK:
 		*out_value = (rec->remind_tick);
@@ -194,10 +194,10 @@ static int _cal_record_alarm_get_int( calendar_record_h record, unsigned int pro
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_alarm_get_caltime( calendar_record_h record, unsigned int property_id, calendar_time_s* out_value )
+static int _cal_record_alarm_get_caltime(calendar_record_h record, unsigned int property_id, calendar_time_s* out_value)
 {
 	cal_alarm_s *rec = (cal_alarm_s*)(record);
-	switch( property_id )
+	switch(property_id)
 	{
 	case CAL_PROPERTY_ALARM_ALARM:
 		*out_value = rec->alarm;
@@ -209,10 +209,10 @@ static int _cal_record_alarm_get_caltime( calendar_record_h record, unsigned int
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_alarm_set_str( calendar_record_h record, unsigned int property_id, const char* value )
+static int _cal_record_alarm_set_str(calendar_record_h record, unsigned int property_id, const char* value)
 {
 	cal_alarm_s *rec = (cal_alarm_s*)(record);
-	switch( property_id )
+	switch(property_id)
 	{
 	case CAL_PROPERTY_ALARM_DESCRIPTION:
 		CAL_FREE(rec->alarm_description);
@@ -234,10 +234,10 @@ static int _cal_record_alarm_set_str( calendar_record_h record, unsigned int pro
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_alarm_set_int( calendar_record_h record, unsigned int property_id, int value )
+static int _cal_record_alarm_set_int(calendar_record_h record, unsigned int property_id, int value)
 {
 	cal_alarm_s *rec = (cal_alarm_s*)(record);
-	switch( property_id )
+	switch(property_id)
 	{
 	case CAL_PROPERTY_ALARM_TICK:
 		(rec->remind_tick)=value;
@@ -282,10 +282,10 @@ static int _cal_record_alarm_set_int( calendar_record_h record, unsigned int pro
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_record_alarm_set_caltime( calendar_record_h record, unsigned int property_id, calendar_time_s value )
+static int _cal_record_alarm_set_caltime(calendar_record_h record, unsigned int property_id, calendar_time_s value)
 {
 	cal_alarm_s *rec = (cal_alarm_s*)(record);
-	switch( property_id )
+	switch(property_id)
 	{
 	case CAL_PROPERTY_ALARM_ALARM:
 		rec->alarm = value;

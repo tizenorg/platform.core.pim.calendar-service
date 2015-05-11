@@ -59,7 +59,7 @@ extern "C" {
  *
  * @see calendar_query_destroy()
  */
-int calendar_query_create( const char* view_uri, calendar_query_h* query );
+int calendar_query_create(const char* view_uri, calendar_query_h* query);
 
 /**
  * @brief Destroys a query handle.
@@ -75,7 +75,7 @@ int calendar_query_create( const char* view_uri, calendar_query_h* query );
  *
  * @see calendar_query_create()
  */
-int calendar_query_destroy( calendar_query_h query );
+int calendar_query_destroy(calendar_query_h query);
 
 /**
  * @brief Adds property IDs for projection.

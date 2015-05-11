@@ -147,7 +147,7 @@ static int _cal_db_todo_insert_record(calendar_record_h record, int* id)
 			"organizer_name, organizer_email, "
 			"has_attendee, has_extended, "
 			"freq, is_allday "
-			") VALUES ( "
+			") VALUES ("
 			"%d, "
 			"%d, %d, "
 			"?, ?, ?, ?, "
@@ -330,7 +330,7 @@ static int _cal_db_todo_get_record(int id, calendar_record_h* out_record)
 	calendar_book_sync_event_type_e sync_event_type = CALENDAR_BOOK_SYNC_EVENT_FOR_ME;
 	int ret = 0;
 
-	rc = calendar_record_create( _calendar_todo._uri ,out_record);
+	rc = calendar_record_create(_calendar_todo._uri ,out_record);
 	if (rc != CALENDAR_ERROR_NONE)
 	{
 		ERR("calendar_record_create(%d)", rc);
@@ -1000,7 +1000,7 @@ static int _cal_db_todo_get_all_records(int offset, int limit, calendar_list_h* 
 		int extended = 0;
 		// stmt -> record
 		ret = calendar_record_create(_calendar_todo._uri,&record);
-		if( ret != CALENDAR_ERROR_NONE )
+		if(ret != CALENDAR_ERROR_NONE)
 		{
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
@@ -1017,14 +1017,14 @@ static int _cal_db_todo_get_all_records(int offset, int limit, calendar_list_h* 
 		calendar_record_get_int(record, _calendar_todo.id, &record_id);
 		if(calendar_record_get_int(record, _calendar_todo.has_attendee,&has_attendee) == CALENDAR_ERROR_NONE)
 		{
-			if( has_attendee == 1)
+			if(has_attendee == 1)
 			{
 				cal_db_attendee_get_records(record_id, ptodo->attendee_list);
 			}
 		}
 		if(calendar_record_get_int(record, _calendar_todo.has_alarm,&has_alarm) == CALENDAR_ERROR_NONE)
 		{
-			if( has_alarm == 1)
+			if(has_alarm == 1)
 			{
 				cal_db_alarm_get_records(record_id, ptodo->alarm_list);
 			}
@@ -1034,7 +1034,7 @@ static int _cal_db_todo_get_all_records(int offset, int limit, calendar_list_h* 
 			cal_db_extended_get_records(record_id, CALENDAR_RECORD_TYPE_TODO, ptodo->extended_list);
 
 		ret = calendar_list_add(*out_list,record);
-		if( ret != CALENDAR_ERROR_NONE )
+		if(ret != CALENDAR_ERROR_NONE)
 		{
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
@@ -1063,11 +1063,11 @@ static int _cal_db_todo_get_records_with_query(calendar_query_h query, int offse
 
 	que = (cal_query_s *)query;
 
-	if ( 0 == strcmp(que->view_uri, CALENDAR_VIEW_TODO))
+	if (0 == strcmp(que->view_uri, CALENDAR_VIEW_TODO))
 	{
 		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_TODO);
 	}
-	else if ( 0 == strcmp(que->view_uri, CALENDAR_VIEW_TODO_CALENDAR))
+	else if (0 == strcmp(que->view_uri, CALENDAR_VIEW_TODO_CALENDAR))
 	{
 		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_TODO_CALENDAR);
 	}
@@ -1190,7 +1190,7 @@ static int _cal_db_todo_get_records_with_query(calendar_query_h query, int offse
 		int attendee = 1, alarm = 1;
 		// stmt -> record
 		ret = calendar_record_create(_calendar_todo._uri,&record);
-		if( ret != CALENDAR_ERROR_NONE )
+		if(ret != CALENDAR_ERROR_NONE)
 		{
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
@@ -1243,7 +1243,7 @@ static int _cal_db_todo_get_records_with_query(calendar_query_h query, int offse
 		}
 
 		ret = calendar_list_add(*out_list,record);
-		if( ret != CALENDAR_ERROR_NONE )
+		if(ret != CALENDAR_ERROR_NONE)
 		{
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
@@ -1300,9 +1300,9 @@ static int _cal_db_todo_insert_records(const calendar_list_h list, int** ids)
 	}
 	do
 	{
-		if( calendar_list_get_current_record_p(list, &record) == CALENDAR_ERROR_NONE)
+		if(calendar_list_get_current_record_p(list, &record) == CALENDAR_ERROR_NONE)
 		{
-			if( _cal_db_todo_insert_record(record, &id[i]) != CALENDAR_ERROR_NONE)
+			if(_cal_db_todo_insert_record(record, &id[i]) != CALENDAR_ERROR_NONE)
 			{
 				ERR("db insert error");
 				CAL_FREE(id);
@@ -1337,9 +1337,9 @@ static int _cal_db_todo_update_records(const calendar_list_h list)
 	}
 	do
 	{
-		if( calendar_list_get_current_record_p(list, &record) == CALENDAR_ERROR_NONE)
+		if(calendar_list_get_current_record_p(list, &record) == CALENDAR_ERROR_NONE)
 		{
-			if( _cal_db_todo_update_record(record) != CALENDAR_ERROR_NONE)
+			if(_cal_db_todo_update_record(record) != CALENDAR_ERROR_NONE)
 			{
 				ERR("db insert error");
 				return CALENDAR_ERROR_DB_FAILED;
@@ -1409,9 +1409,9 @@ static int _cal_db_todo_replace_records(const calendar_list_h list, int ids[], i
 
 	for (i = 0; i < count; i++)
 	{
-		if( calendar_list_get_current_record_p(list, &record) == CALENDAR_ERROR_NONE)
+		if(calendar_list_get_current_record_p(list, &record) == CALENDAR_ERROR_NONE)
 		{
-			if( _cal_db_todo_replace_record(record, ids[i]) != CALENDAR_ERROR_NONE)
+			if(_cal_db_todo_replace_record(record, ids[i]) != CALENDAR_ERROR_NONE)
 			{
 				ERR("db insert error");
 				return CALENDAR_ERROR_DB_FAILED;
@@ -1438,11 +1438,11 @@ static int _cal_db_todo_get_count_with_query(calendar_query_h query, int *out_co
 
 	que = (cal_query_s *)query;
 
-	if ( 0 == strcmp(que->view_uri, CALENDAR_VIEW_TODO))
+	if (0 == strcmp(que->view_uri, CALENDAR_VIEW_TODO))
 	{
 		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_TODO);
 	}
-	else if ( 0 == strcmp(que->view_uri, CALENDAR_VIEW_TODO_CALENDAR))
+	else if (0 == strcmp(que->view_uri, CALENDAR_VIEW_TODO_CALENDAR))
 	{
 		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_TODO_CALENDAR);
 	}

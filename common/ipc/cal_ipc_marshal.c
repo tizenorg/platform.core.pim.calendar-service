@@ -517,8 +517,8 @@ int cal_ipc_unmarshal_int(const pims_ipc_data_h data, int *pout)
 	RETV_IF(pout==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
 
 	tmp = pims_ipc_data_get(data,&size);
-	if ( tmp == NULL) {
-		ERR("pims_ipc_data_get fail");
+	if (tmp == NULL) {
+		ERR("pims_ipc_data_get Fail");
 		return CALENDAR_ERROR_NO_DATA;
 	}
 	else {
@@ -536,8 +536,8 @@ int cal_ipc_unmarshal_uint(const pims_ipc_data_h data, unsigned int *pout)
 	RETV_IF(pout==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
 
 	tmp = pims_ipc_data_get(data,&size);
-	if ( tmp == NULL) {
-		ERR("pims_ipc_data_get fail");
+	if (tmp == NULL) {
+		ERR("pims_ipc_data_get Fail");
 		return CALENDAR_ERROR_NO_DATA;
 	}
 	else {
@@ -554,8 +554,8 @@ int cal_ipc_unmarshal_lli(const pims_ipc_data_h data, long long int *pout)
 	RETV_IF(data==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(pout==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
 	tmp = pims_ipc_data_get(data,&size);
-	if ( tmp == NULL) {
-		ERR("pims_ipc_data_get fail");
+	if (tmp == NULL) {
+		ERR("pims_ipc_data_get Fail");
 		return CALENDAR_ERROR_NO_DATA;
 	}
 	else {
@@ -572,8 +572,8 @@ int cal_ipc_unmarshal_long(const pims_ipc_data_h data, long *pout)
 	RETV_IF(data==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(pout==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
 	tmp = pims_ipc_data_get(data,&size);
-	if ( tmp == NULL) {
-		ERR("pims_ipc_data_get fail");
+	if (tmp == NULL) {
+		ERR("pims_ipc_data_get Fail");
 		return CALENDAR_ERROR_NO_DATA;
 	}
 	else {
@@ -590,8 +590,8 @@ int cal_ipc_unmarshal_double(const pims_ipc_data_h data, double *pout)
 	RETV_IF(data==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(pout==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
 	tmp = pims_ipc_data_get(data,&size);
-	if ( tmp == NULL) {
-		ERR("pims_ipc_data_get fail");
+	if (tmp == NULL) {
+		ERR("pims_ipc_data_get Fail");
 		return CALENDAR_ERROR_NO_DATA;
 	}
 	else {
@@ -609,8 +609,8 @@ int cal_ipc_unmarshal_caltime(const pims_ipc_data_h data, calendar_time_s *pout)
 	RETV_IF(data==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(pout==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
 	tmp = pims_ipc_data_get(data,&size);
-	if ( tmp == NULL) {
-		ERR("pims_ipc_data_get fail");
+	if (tmp == NULL) {
+		ERR("pims_ipc_data_get Fail");
 		return CALENDAR_ERROR_NO_DATA;
 	}
 	else {
@@ -698,13 +698,13 @@ int cal_ipc_marshal_char(const char* bufchar, pims_ipc_data_h ipc_data)
 
 	RETV_IF(ipc_data==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
 
-	if( bufchar != NULL) {
+	if(bufchar != NULL) {
 		int length = strlen(bufchar);
 		if (pims_ipc_data_put(ipc_data,(void*)&length,sizeof(int)) != 0) {
 			ret = CALENDAR_ERROR_OUT_OF_MEMORY;
 		}
 
-		if ( pims_ipc_data_put(ipc_data,(void*)bufchar,length+1) != 0) {
+		if (pims_ipc_data_put(ipc_data,(void*)bufchar,length+1) != 0) {
 			ret = CALENDAR_ERROR_OUT_OF_MEMORY;
 			return ret;
 		}
@@ -778,7 +778,7 @@ int cal_ipc_marshal_caltime(const calendar_time_s in, pims_ipc_data_h ipc_data)
 		return CALENDAR_ERROR_OUT_OF_MEMORY;
 	}
 
-	if ( in.type == CALENDAR_TIME_UTIME) {
+	if (in.type == CALENDAR_TIME_UTIME) {
 		return cal_ipc_marshal_lli(in.time.utime,ipc_data);
 	}
 	else {
@@ -1033,8 +1033,8 @@ int cal_ipc_unmarshal_list(const pims_ipc_data_h ipc_data, calendar_list_h* list
 	}
 
 	for(i=0;i<count;i++) {
-		if (cal_ipc_unmarshal_record(ipc_data,&record) != CALENDAR_ERROR_NONE ) {
-			ERR("cal_ipc_unmarshal fail");
+		if (cal_ipc_unmarshal_record(ipc_data,&record) != CALENDAR_ERROR_NONE) {
+			ERR("cal_ipc_unmarshal Fail");
 			ret = CALENDAR_ERROR_INVALID_PARAMETER;
 			goto ERROR_RETURN;
 		}

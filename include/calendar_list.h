@@ -52,7 +52,7 @@ extern "C" {
  *
  * @see calendar_list_destroy()
  */
-int calendar_list_create( calendar_list_h* out_list );
+int calendar_list_create(calendar_list_h* out_list);
 
 /**
  * @brief Destroys a calendar list handle and releases all its resources.
@@ -70,7 +70,7 @@ int calendar_list_create( calendar_list_h* out_list );
  *
  * @see calendar_list_create()
  */
-int calendar_list_destroy( calendar_list_h list, bool delete_record );
+int calendar_list_destroy(calendar_list_h list, bool delete_record);
 
 
 /**
@@ -88,7 +88,7 @@ int calendar_list_destroy( calendar_list_h list, bool delete_record );
  *
  * @see calendar_list_add()
  */
-int calendar_list_get_count( calendar_list_h list, int *count );
+int calendar_list_get_count(calendar_list_h list, int *count);
 
 /**
  * @brief Adds a record to the calendar list.
@@ -105,7 +105,7 @@ int calendar_list_get_count( calendar_list_h list, int *count );
  *
  * @see calendar_list_remove()
  */
-int calendar_list_add( calendar_list_h list, calendar_record_h record );
+int calendar_list_add(calendar_list_h list, calendar_record_h record);
 
 /**
  * @brief Removes a record from the calendar list.
@@ -125,7 +125,7 @@ int calendar_list_add( calendar_list_h list, calendar_record_h record );
  *
  * @see calendar_list_add()
  */
-int calendar_list_remove( calendar_list_h list, calendar_record_h record );
+int calendar_list_remove(calendar_list_h list, calendar_record_h record);
 
 /**
  * @brief Retrieves a record from the calendar list.
@@ -145,7 +145,7 @@ int calendar_list_remove( calendar_list_h list, calendar_record_h record );
  * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
  * @retval  #CALENDAR_ERROR_NO_DATA             Requested data does not exist
  */
-int calendar_list_get_current_record_p( calendar_list_h list, calendar_record_h* record );
+int calendar_list_get_current_record_p(calendar_list_h list, calendar_record_h* record);
 
 /**
  * @brief Moves a calendar list to the previous position.
@@ -162,7 +162,7 @@ int calendar_list_get_current_record_p( calendar_list_h list, calendar_record_h*
  *
  * @see calendar_list_next()
  */
-int calendar_list_prev( calendar_list_h list );
+int calendar_list_prev(calendar_list_h list);
 
 /**
  * @brief Moves a calendar list to the next position.
@@ -179,7 +179,7 @@ int calendar_list_prev( calendar_list_h list );
  *
  * @see calendar_list_prev()
  */
-int calendar_list_next( calendar_list_h list );
+int calendar_list_next(calendar_list_h list);
 
 /**
  * @brief Moves a calendar list to the first position.
@@ -195,7 +195,7 @@ int calendar_list_next( calendar_list_h list );
  *
  * @see calendar_list_last()
  */
-int calendar_list_first( calendar_list_h list );
+int calendar_list_first(calendar_list_h list);
 
 /**
  * @brief Moves a calendar list to the last position.
@@ -211,7 +211,7 @@ int calendar_list_first( calendar_list_h list );
  *
  * @see calendar_list_first()
  */
-int calendar_list_last( calendar_list_h list );
+int calendar_list_last(calendar_list_h list);
 
 /**
  * @}
