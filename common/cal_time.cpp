@@ -604,11 +604,15 @@ int cal_time_ltoi(char *tzid, long long int lli, int *year, int *month, int *mda
 	UErrorCode status = U_ZERO_ERROR;
 
 	ucal = cal_time_get_ucal(tzid, 1);
+	RETVM_IF(NULL == ucal, CALENDAR_ERROR_SYSTEM, "cal_time_get_ucal() Fail");
 	ucal_setMillis(ucal, sec2ms(lli), &status);
 
-	if (year) *year = ucal_get(ucal, UCAL_YEAR, &status);
-	if (month) *month = ucal_get(ucal, UCAL_MONTH, &status) +1;
-	if (mday) *mday = ucal_get(ucal, UCAL_DATE, &status);
+	if (year)
+		*year = ucal_get(ucal, UCAL_YEAR, &status);
+	if (month)
+		*month = ucal_get(ucal, UCAL_MONTH, &status) +1;
+	if (mday)
+		*mday = ucal_get(ucal, UCAL_DATE, &status);
 
 	ucal_close(ucal);
 	return CALENDAR_ERROR_NONE;

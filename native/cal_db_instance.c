@@ -105,6 +105,10 @@ static void __get_allday_date(cal_event_s *event, UCalendar *ucal, int *y, int *
 	{
 	case CALENDAR_SYSTEM_EAST_ASIAN_LUNISOLAR:
 		s_ucal = cal_time_get_ucal(event->start_tzid, event->wkst);
+		if (NULL == s_ucal) {
+			ERR("cal_time_get_ucal() Fail");
+			return;
+		}
 		ucal_setMillis(s_ucal, ucal_getMillis(ucal, &ec), &ec);
 		break;
 
