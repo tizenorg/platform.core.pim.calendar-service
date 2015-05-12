@@ -142,7 +142,7 @@ static int _cal_db_instance_normal_extended_get_records_with_query(calendar_quer
 		ret = cal_db_query_create_condition(query, &condition, &bind_text);
 		if (CALENDAR_ERROR_NONE != ret) {
 			CAL_FREE(table_name);
-			ERR("filter create fail");
+			ERR("cal_db_query_create_condition() Fail(%d), ret");
 			return ret;
 		}
 	}
@@ -322,7 +322,7 @@ static int _cal_db_instance_normal_extended_get_count_with_query(calendar_query_
 		ret = cal_db_query_create_condition(query, &condition, &bind_text);
 		if (CALENDAR_ERROR_NONE != ret) {
 			CAL_FREE(table_name);
-			ERR("filter create fail");
+			ERR("cal_db_query_create_condition() Fail(%d), ret");
 			return ret;
 		}
 	}

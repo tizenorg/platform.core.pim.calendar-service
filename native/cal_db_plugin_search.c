@@ -82,7 +82,7 @@ static int _cal_db_search_get_records_with_query(calendar_query_h query, int off
 		ret = cal_db_query_create_condition(query,
 				&condition, &bind_text);
 		if (CALENDAR_ERROR_NONE != ret) {
-			ERR("filter create Fail");
+			ERR("cal_db_query_create_condition() Fail(%d), ret");
 			return ret;
 		}
 	}
@@ -267,7 +267,7 @@ static int _cal_db_search_get_count_with_query(calendar_query_h query, int *out_
 		ret = cal_db_query_create_condition(query, &condition, &bind_text);
 		if (CALENDAR_ERROR_NONE != ret) {
 			CAL_FREE(table_name);
-			ERR("filter create Fail");
+			ERR("cal_db_query_create_condition() Fail(%d), ret");
 			CAL_FREE(projection);
 			return ret;
 		}
@@ -352,23 +352,23 @@ static void _cal_db_search_get_property_stmt(sqlite3_stmt *stmt,
 	double d_tmp = 0;
 	long long int lli_tmp = 0;
 
-	if (CAL_PROPERTY_CHECK_DATA_TYPE(property,CAL_PROPERTY_DATA_TYPE_INT) == true) {
+	if (CAL_PROPERTY_CHECK_DATA_TYPE(property, CAL_PROPERTY_DATA_TYPE_INT) == true) {
 		int_tmp = sqlite3_column_int(stmt, *stmt_count);
 		cal_record_set_int(record,property,int_tmp);
 	}
-	else if (CAL_PROPERTY_CHECK_DATA_TYPE(property,CAL_PROPERTY_DATA_TYPE_STR) == true) {
+	else if (CAL_PROPERTY_CHECK_DATA_TYPE(property, CAL_PROPERTY_DATA_TYPE_STR) == true) {
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		cal_record_set_str(record,property,(const char*)temp);
+		cal_record_set_str(record,property, (const char*)temp);
 	}
-	else if (CAL_PROPERTY_CHECK_DATA_TYPE(property,CAL_PROPERTY_DATA_TYPE_DOUBLE) == true) {
+	else if (CAL_PROPERTY_CHECK_DATA_TYPE(property, CAL_PROPERTY_DATA_TYPE_DOUBLE) == true) {
 		d_tmp = sqlite3_column_double(stmt,*stmt_count);
 		cal_record_set_double(record,property,d_tmp);
 	}
-	else if (CAL_PROPERTY_CHECK_DATA_TYPE(property,CAL_PROPERTY_DATA_TYPE_LLI) == true) {
+	else if (CAL_PROPERTY_CHECK_DATA_TYPE(property, CAL_PROPERTY_DATA_TYPE_LLI) == true) {
 		lli_tmp = sqlite3_column_int64(stmt, *stmt_count);
 		cal_record_set_lli(record,property,lli_tmp);
 	}
-	else if (CAL_PROPERTY_CHECK_DATA_TYPE(property,CAL_PROPERTY_DATA_TYPE_CALTIME) == true) {
+	else if (CAL_PROPERTY_CHECK_DATA_TYPE(property, CAL_PROPERTY_DATA_TYPE_CALTIME) == true) {
 		calendar_time_s caltime_tmp;
 		caltime_tmp.type = sqlite3_column_int(stmt,*stmt_count);
 		switch (caltime_tmp.type) {

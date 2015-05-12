@@ -59,7 +59,7 @@ cal_record_plugin_cb_s cal_record_attendee_plugin_cb = {
 
 static void _cal_record_attendee_struct_init(cal_attendee_s *record)
 {
-	memset(record,0,sizeof(cal_attendee_s));
+	memset(record, 0, sizeof(cal_attendee_s));
 }
 
 static int _cal_record_attendee_create(calendar_record_h* out_record)
@@ -67,8 +67,8 @@ static int _cal_record_attendee_create(calendar_record_h* out_record)
 	cal_attendee_s *temp = NULL;
 	int ret= CALENDAR_ERROR_NONE;
 
-	temp = calloc(1,sizeof(cal_attendee_s));
-	RETVM_IF(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc(cal_attendee_s:sch) Fail(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
+	temp = calloc(1, sizeof(cal_attendee_s));
+	RETVM_IF(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc() Fail");
 
 	_cal_record_attendee_struct_init(temp);
 
@@ -109,7 +109,7 @@ static int _cal_record_attendee_clone(calendar_record_h record, calendar_record_
 	src_data = (cal_attendee_s*)(record);
 
 	out_data = calloc(1, sizeof(cal_attendee_s));
-	RETVM_IF(NULL == out_data, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc(cal_attendee_s) Fail(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
+	RETVM_IF(NULL == out_data, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc() Fail");
 
 	CAL_RECORD_COPY_COMMON(&(out_data->common), &(src_data->common));
 

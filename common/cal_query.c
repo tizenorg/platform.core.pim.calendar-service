@@ -180,7 +180,7 @@ int cal_query_clone(calendar_query_h query, calendar_query_h* out_query)
 	out_que = (cal_query_s *)*out_query;
 
 	if (que->filter) {
-		cal_filter_clone((calendar_filter_h)que->filter,(calendar_filter_h*)&out_filter);
+		cal_filter_clone((calendar_filter_h)que->filter, (calendar_filter_h*)&out_filter);
 	}
 
 	if (0 < que->projection_count) {

@@ -443,7 +443,7 @@ void cal_server_contacts_delete(int account_id)
 
 		calendar_list_first(list);
 		do {
-			if (calendar_list_get_current_record_p(list, &event) == CALENDAR_ERROR_NONE) {
+			if (CALENDAR_ERROR_NONE == calendar_list_get_current_record_p(list, &event)) {
 				if (NULL == event) {
 					DBG("No event\n");
 					break;
@@ -453,12 +453,12 @@ void cal_server_contacts_delete(int account_id)
 				record_id_array[i] = event_id;
 				i++;
 			}
-		} while (calendar_list_next(list) != CALENDAR_ERROR_NO_DATA);
+		} while (CALENDAR_ERROR_NO_DATA != calendar_list_next(list));
 
 		// delete
 		ret = calendar_db_delete_records(_calendar_event._uri, record_id_array, i);
 		if (CALENDAR_ERROR_NONE != ret)
-			DBG("calendar_db_delete_records fail");
+			DBG("calendar_db_delete_records() Fail(%d)", ret);
 		free(record_id_array);
 	}
 	calendar_list_destroy(list, true);

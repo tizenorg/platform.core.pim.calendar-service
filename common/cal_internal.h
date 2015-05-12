@@ -49,32 +49,32 @@
 #define IPC_ROLE COLOR_GREEN"[LIB]"COLOR_END
 #endif
 
-#define INFO(fmt, arg...) SLOGI(IPC_ROLE" "fmt, ##arg)
-#define ERR(fmt, arg...) SLOGE(IPC_ROLE" "fmt, ##arg)
-#define DBG(fmt, arg...) SLOGD(IPC_ROLE" "fmt, ##arg)
-#define WARN(fmt, arg...) SLOGD(IPC_ROLE" "fmt, ##arg)
-#define VERBOSE(fmt, arg...) SLOGV(IPC_ROLE" "fmt, ##arg)
+#ifdef CAL_DEBUGGING
+ #define INFO(fmt, arg...) SLOGI(IPC_ROLE" "fmt, ##arg)
+ #define ERR(fmt, arg...) SLOGE(IPC_ROLE" "fmt, ##arg)
+ #define DBG(fmt, arg...) SLOGD(IPC_ROLE" "fmt, ##arg)
+ #define WARN(fmt, arg...) SLOGD(IPC_ROLE" "fmt, ##arg)
+ #define VERBOSE(fmt, arg...) SLOGV(IPC_ROLE" "fmt, ##arg)
+#else /* CAL_DEBUGGING */
+ #define INFO(fmt, arg...)
+ #define ERR(fmt, arg...)
+ #define DBG(fmt, arg...)
+ #define WARN(fmt, arg...)
+ #define VERBOSE(fmt, arg...)
+#endif /* CAL_DEBUGGING */
 
 #define SEC_INFO(fmt, arg...) SECURE_LOGI(fmt, ##arg)
 #define SEC_ERR(fmt, arg...) SECURE_LOGE(fmt, ##arg)
 #define SEC_DBG(fmt, arg...) SECURE_LOGD(fmt, ##arg)
+#define SECURE(fmt, arg...) SECURE_LOGD(fmt, ##arg)
 
-#ifdef CAL_DEBUGGING
- #define CAL_FN_CALL() DBG(">>>>>>>> called")
- #define CAL_FN_END() DBG("<<<<<<<< ended")
- #define CAL_DBG(fmt, arg...) DBG(fmt, ##arg)
- #define CAL_WARN(fmt, arg...) WARN(fmt, ##arg)
- #define CAL_ERR(fmt, arg...) ERR(fmt, ##arg)
- #define CAL_INFO(fmt, arg...) INFO(fmt, ##arg)
- #define CAL_VERBOSE(fmt, arg...) VERBOSE(fmt, ##arg)
-#else /* CAL_DEBUGGING */
- #define CAL_FN_CALL()
- #define CAL_FN_END()
- #define CAL_DBG(fmt, arg...)
- #define CAL_WARN(fmt, arg...)
- #define CAL_ERR(fmt, arg...)
- #define CAL_INFO(fmt, arg...)
-#endif /* CAL_DEBUGGING */
+#define CAL_FN_CALL() DBG(">>>>>>>> called")
+#define CAL_FN_END() DBG("<<<<<<<< ended")
+#define CAL_DBG(fmt, arg...) DBG(fmt, ##arg)
+#define CAL_WARN(fmt, arg...) WARN(fmt, ##arg)
+#define CAL_ERR(fmt, arg...) ERR(fmt, ##arg)
+#define CAL_INFO(fmt, arg...) INFO(fmt, ##arg)
+#define CAL_VERBOSE(fmt, arg...) VERBOSE(fmt, ##arg)
 
 #define WARN_IF(expr, fmt, arg...) do { \
 	if (expr) { \
@@ -112,7 +112,6 @@
 	} \
 } while (0)
 
-
 #define CAL_START_TIMESTAMP struct timeval timeval_s = {0}; \
 	struct timeval timeval_e = {0}; \
 	struct timeval timeval_d = {0}; \
@@ -127,7 +126,7 @@
 #define CAL_PROFILE
 #ifdef CAL_PROFILE
 #define CAL_PROFILE_GET_TIME() (clock() / (CLOCKS_PER_SEC / 1000));
-#define CAL_PROFILE_PRINT(starttime,endtime) ERR("%ld ~ %ld : %ld(%d sec) msec",starttime,endtime,endtime-starttime,(endtime-starttime)/1000);
+#define CAL_PROFILE_PRINT(starttime,endtime) ERR("%ld ~ %ld : %ld(%d sec) msec",starttime,endtime,endtime-starttime, (endtime-starttime)/1000);
 #else
 #define CAL_PROFILE_GET_TIME(input_time) 0
 #define CAL_PROFILE_PRINT(starttime,endtime)

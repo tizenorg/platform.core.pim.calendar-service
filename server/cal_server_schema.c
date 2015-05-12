@@ -47,7 +47,7 @@ static inline int __remake_db_file(char* db_path)
 
 	ret = sqlite3_exec(db, schema_query, NULL, 0, &errmsg);
 	if (SQLITE_OK != ret) {
-		ERR("remake calendar DB file Fail : %s ", errmsg);
+		ERR("sqlite3_exec() Fail[%s]", errmsg);
 		sqlite3_free(errmsg);
 	}
 	db_util_close(db);

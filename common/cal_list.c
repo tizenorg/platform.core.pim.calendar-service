@@ -209,22 +209,25 @@ int cal_list_clone(calendar_list_h list, calendar_list_h *out_list)
 	for(i = 0; i < count; i++) {
 		calendar_record_h record = NULL;
 		calendar_record_h clone_record = NULL;
-		if (calendar_list_get_current_record_p(list,&record) != CALENDAR_ERROR_NONE) {
-			ERR("calendar_list_get_count fail");
+		ret = calendar_list_get_current_record_p(list, &record);
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("calendar_list_get_current_record_p() Fail(%d)", ret);
 			calendar_list_destroy(l, true);
-			return CALENDAR_ERROR_INVALID_PARAMETER;
+			return ret;
 		}
 
-		if (calendar_record_clone(record, &clone_record) != CALENDAR_ERROR_NONE) {
-			ERR("calendar_list_get_count Fail");
+		ret = calendar_record_clone(record, &clone_record);
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("calendar_record_clone() Fail(%d)", ret);
 			calendar_list_destroy(l, true);
-			return CALENDAR_ERROR_INVALID_PARAMETER;
+			return ret;
 		}
 
-		if (calendar_list_add(l, clone_record) != CALENDAR_ERROR_NONE) {
-			ERR("calendar_list_get_count Fail");
+		ret = calendar_list_add(l, clone_record);
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("calendar_list_add() Fail(%d)", ret);
 			calendar_list_destroy(l, true);
-			return CALENDAR_ERROR_INVALID_PARAMETER;
+			return ret;
 		}
 		calendar_list_next(list);
 	}

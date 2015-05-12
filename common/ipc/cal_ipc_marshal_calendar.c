@@ -33,74 +33,91 @@ cal_ipc_marshal_record_plugin_cb_s cal_ipc_record_calendar_plugin_cb = {
 
 static int _cal_ipc_unmarshal_calendar(pims_ipc_data_h ipc_data, calendar_record_h record)
 {
+	int ret = 0;
 	cal_calendar_s* pcalendar = NULL;
-	RETV_IF(ipc_data==NULL,CALENDAR_ERROR_NO_DATA);
-	RETV_IF(record==NULL,CALENDAR_ERROR_NO_DATA);
+	RETV_IF(NULL == ipc_data, CALENDAR_ERROR_NO_DATA);
+	RETV_IF(NULL == record, CALENDAR_ERROR_NO_DATA);
 
 	pcalendar = (cal_calendar_s*) record;
 
-	if (cal_ipc_unmarshal_int(ipc_data,&pcalendar->index) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_unmarshal fail");
+	ret = cal_ipc_unmarshal_int(ipc_data, &pcalendar->index);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_unmarshal_int(ipc_data,&pcalendar->store_type) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_unmarshal fail");
+	ret = cal_ipc_unmarshal_int(ipc_data, &pcalendar->store_type);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_unmarshal_char(ipc_data,&pcalendar->uid) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_unmarshal fail");
+	ret = cal_ipc_unmarshal_char(ipc_data, &pcalendar->uid);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_char() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_unmarshal_long(ipc_data,&pcalendar->updated) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_unmarshal fail");
+	ret = cal_ipc_unmarshal_long(ipc_data, &pcalendar->updated);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_long() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_unmarshal_char(ipc_data,&pcalendar->name) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_unmarshal fail");
+	ret = cal_ipc_unmarshal_char(ipc_data, &pcalendar->name);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_char() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_unmarshal_char(ipc_data,&pcalendar->description) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_unmarshal fail");
+	ret = cal_ipc_unmarshal_char(ipc_data, &pcalendar->description);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_char() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_unmarshal_char(ipc_data,&pcalendar->color) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_unmarshal fail");
+	ret = cal_ipc_unmarshal_char(ipc_data, &pcalendar->color);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_char() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_unmarshal_char(ipc_data,&pcalendar->location) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_unmarshal fail");
+	ret = cal_ipc_unmarshal_char(ipc_data, &pcalendar->location);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_char() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_unmarshal_int(ipc_data,&pcalendar->visibility) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_unmarshal fail");
+	ret = cal_ipc_unmarshal_int(ipc_data, &pcalendar->visibility);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_unmarshal_int(ipc_data,&pcalendar->sync_event) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_unmarshal fail");
+	ret = cal_ipc_unmarshal_int(ipc_data, &pcalendar->sync_event);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_unmarshal_int(ipc_data,&pcalendar->account_id) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_unmarshal fail");
+	ret = cal_ipc_unmarshal_int(ipc_data, &pcalendar->account_id);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_unmarshal_char(ipc_data,&pcalendar->sync_data1) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_unmarshal fail");
+	ret = cal_ipc_unmarshal_char(ipc_data, &pcalendar->sync_data1);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_char() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_unmarshal_char(ipc_data,&pcalendar->sync_data2) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_unmarshal fail");
+	ret = cal_ipc_unmarshal_char(ipc_data, &pcalendar->sync_data2);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_char() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_unmarshal_char(ipc_data,&pcalendar->sync_data3) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_unmarshal fail");
+	ret = cal_ipc_unmarshal_char(ipc_data, &pcalendar->sync_data3);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_char() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_unmarshal_char(ipc_data,&pcalendar->sync_data4) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_unmarshal fail");
+	ret = cal_ipc_unmarshal_char(ipc_data, &pcalendar->sync_data4);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_char() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_unmarshal_int(ipc_data,&pcalendar->mode) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_unmarshal fail");
+	ret = cal_ipc_unmarshal_int(ipc_data, &pcalendar->mode);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -109,72 +126,89 @@ static int _cal_ipc_unmarshal_calendar(pims_ipc_data_h ipc_data, calendar_record
 
 static int _cal_ipc_marshal_calendar(const calendar_record_h record, pims_ipc_data_h ipc_data)
 {
+	int ret = 0;
 	cal_calendar_s* pcalendar = (cal_calendar_s*)record;
-	RETV_IF(ipc_data==NULL,CALENDAR_ERROR_NO_DATA);
-	RETV_IF(pcalendar==NULL,CALENDAR_ERROR_NO_DATA);
+	RETV_IF(NULL == ipc_data, CALENDAR_ERROR_NO_DATA);
+	RETV_IF(NULL == pcalendar, CALENDAR_ERROR_NO_DATA);
 
-	if (cal_ipc_marshal_int((pcalendar->index),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_marshal fail");
+	ret = cal_ipc_marshal_int((pcalendar->index), ipc_data);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_marshal_int() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_marshal_int((pcalendar->store_type),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_marshal fail");
+	ret = cal_ipc_marshal_int((pcalendar->store_type), ipc_data);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_marshal_int() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_marshal_char((pcalendar->uid),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_marshal fail");
+	ret = cal_ipc_marshal_char((pcalendar->uid), ipc_data);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_marshal_char() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_marshal_long((pcalendar->updated),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_marshal fail");
+	ret = cal_ipc_marshal_long((pcalendar->updated), ipc_data);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_marshal_long() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_marshal_char((pcalendar->name),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_marshal fail");
+	ret = cal_ipc_marshal_char((pcalendar->name), ipc_data);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_marshal_char() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_marshal_char((pcalendar->description),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_marshal fail");
+	ret = cal_ipc_marshal_char((pcalendar->description), ipc_data);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_marshal_char() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_marshal_char((pcalendar->color),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_marshal fail");
+	ret = cal_ipc_marshal_char((pcalendar->color), ipc_data);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_marshal_char() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_marshal_char((pcalendar->location),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_marshal fail");
+	ret = cal_ipc_marshal_char((pcalendar->location), ipc_data);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_marshal_char() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_marshal_int((pcalendar->visibility),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_marshal fail");
+	ret = cal_ipc_marshal_int((pcalendar->visibility), ipc_data);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_marshal_int() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_marshal_int((pcalendar->sync_event),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_marshal fail");
+	ret = cal_ipc_marshal_int((pcalendar->sync_event), ipc_data);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_marshal_int() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_marshal_int((pcalendar->account_id),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_marshal fail");
+	ret = cal_ipc_marshal_int((pcalendar->account_id), ipc_data);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_marshal_int() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_marshal_char((pcalendar->sync_data1),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_marshal fail");
+	ret = cal_ipc_marshal_char((pcalendar->sync_data1), ipc_data);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_marshal_char() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_marshal_char((pcalendar->sync_data2),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_marshal fail");
+	ret = cal_ipc_marshal_char((pcalendar->sync_data2), ipc_data);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_marshal_char() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_marshal_char((pcalendar->sync_data3),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_marshal fail");
+	ret = cal_ipc_marshal_char((pcalendar->sync_data3), ipc_data);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_marshal_char() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_marshal_char((pcalendar->sync_data4),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_marshal fail");
+	ret = cal_ipc_marshal_char((pcalendar->sync_data4), ipc_data);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_marshal_char() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_marshal_int((pcalendar->mode),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_marshal fail");
+	ret = cal_ipc_marshal_int((pcalendar->mode), ipc_data);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_marshal_int() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 

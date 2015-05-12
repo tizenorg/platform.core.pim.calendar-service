@@ -2208,7 +2208,7 @@ static int __make_vcalendar(cal_make_s *b, calendar_list_h list)
 			DBG("Unable to understand uri[%s]", uri);
 		}
 
-	} while (calendar_list_next(list) != CALENDAR_ERROR_NO_DATA);
+	} while (CALENDAR_ERROR_NO_DATA != calendar_list_next(list));
 	__make_footer(b);
 
 	return CALENDAR_ERROR_NONE;
@@ -2239,7 +2239,7 @@ int cal_vcalendar_make_vcalendar(cal_make_s *b, calendar_list_h list)
 				break;
 			}
 		}
-	} while (calendar_list_next(list) != CALENDAR_ERROR_NO_DATA);
+	} while (CALENDAR_ERROR_NO_DATA != calendar_list_next(list));
 	b->version = version;
 	DBG("make as version(%d)", version);
 

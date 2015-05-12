@@ -117,7 +117,7 @@ typedef struct {
 	{\
 		(dst)->properties_flags  = calloc((dst)->properties_max_count, sizeof(char));\
 		if ((dst)->properties_flags)\
-		memcpy((dst)->properties_flags,(src)->properties_flags,sizeof(char)*(dst)->properties_max_count);\
+		memcpy((dst)->properties_flags, (src)->properties_flags, sizeof(char)*(dst)->properties_max_count);\
 	}\
 	(dst)->property_flag = (src)->property_flag;\
 } while (0)

@@ -31,60 +31,71 @@ cal_ipc_marshal_record_plugin_cb_s cal_ipc_record_alarm_plugin_cb = {
 
 static int _cal_ipc_unmarshal_alarm(pims_ipc_data_h ipc_data, calendar_record_h record)
 {
+	int ret = 0;
 	cal_alarm_s* palarm = NULL;
-	RETV_IF(ipc_data==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
-	RETV_IF(record==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == ipc_data, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	palarm = (cal_alarm_s*) record;
 
 	// read only or primary/secondary key
-	if (cal_ipc_unmarshal_int(ipc_data,&palarm->id) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_unmarshal fail");
+	ret = cal_ipc_unmarshal_int(ipc_data, &palarm->id);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	if (cal_ipc_unmarshal_int(ipc_data,&palarm->parent_id) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_unmarshal fail");
+	ret = cal_ipc_unmarshal_int(ipc_data, &palarm->parent_id);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	if (cal_ipc_unmarshal_int(ipc_data,&palarm->is_deleted) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_unmarshal fail");
+	ret = cal_ipc_unmarshal_int(ipc_data, &palarm->is_deleted);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	if (cal_ipc_unmarshal_int(ipc_data,&palarm->remind_tick) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_unmarshal fail");
+	ret = cal_ipc_unmarshal_int(ipc_data, &palarm->remind_tick);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	if (cal_ipc_unmarshal_int(ipc_data,(int*)&palarm->remind_tick_unit) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_unmarshal fail");
+	ret = cal_ipc_unmarshal_int(ipc_data, (int*)&palarm->remind_tick_unit);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	if (cal_ipc_unmarshal_char(ipc_data,&palarm->alarm_description) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_unmarshal fail");
+	ret = cal_ipc_unmarshal_char(ipc_data, &palarm->alarm_description);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_char() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	if (cal_ipc_unmarshal_char(ipc_data,&palarm->alarm_summary) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_unmarshal fail");
+	ret = cal_ipc_unmarshal_char(ipc_data, &palarm->alarm_summary);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_char() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	if (cal_ipc_unmarshal_int(ipc_data,&palarm->alarm_action) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_unmarshal fail");
+	ret = cal_ipc_unmarshal_int(ipc_data, &palarm->alarm_action);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	if (cal_ipc_unmarshal_char(ipc_data,&palarm->alarm_attach) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_unmarshal fail");
+	ret = cal_ipc_unmarshal_char(ipc_data, &palarm->alarm_attach);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_char() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	if (cal_ipc_unmarshal_caltime(ipc_data,&palarm->alarm) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_unmarshal fail");
+	ret = cal_ipc_unmarshal_caltime(ipc_data, &palarm->alarm);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_caltime() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 	return CALENDAR_ERROR_NONE;
@@ -92,51 +103,62 @@ static int _cal_ipc_unmarshal_alarm(pims_ipc_data_h ipc_data, calendar_record_h 
 
 static int _cal_ipc_marshal_alarm(const calendar_record_h record, pims_ipc_data_h ipc_data)
 {
+	int ret = 0;
 	cal_alarm_s* palarm = (cal_alarm_s*) record;
-	RETV_IF(ipc_data==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
-	RETV_IF(palarm==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == ipc_data, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == palarm, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	// read only or primary/secondary key
-	if (cal_ipc_marshal_int((palarm->id),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_unmarshal fail");
+	ret = cal_ipc_marshal_int((palarm->id), ipc_data);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_marshal_int() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_marshal_int((palarm->parent_id),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_unmarshal fail");
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
-
-	if (cal_ipc_marshal_int((palarm->is_deleted),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_unmarshal fail");
+	ret = cal_ipc_marshal_int((palarm->parent_id), ipc_data);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_marshal_int() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	if (cal_ipc_marshal_int((palarm->remind_tick),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_marshal fail");
+	ret = cal_ipc_marshal_int((palarm->is_deleted), ipc_data);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_marshal_int() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_marshal_int((palarm->remind_tick_unit),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_marshal fail");
+
+	ret = cal_ipc_marshal_int((palarm->remind_tick), ipc_data);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_marshal_int() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_marshal_char((palarm->alarm_description),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_marshal fail");
+	ret = cal_ipc_marshal_int((palarm->remind_tick_unit), ipc_data);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_marshal_int() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_marshal_char((palarm->alarm_summary),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_marshal fail");
+	ret = cal_ipc_marshal_char((palarm->alarm_description), ipc_data);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_marshal_char() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_marshal_int((palarm->alarm_action),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_marshal fail");
+	ret = cal_ipc_marshal_char((palarm->alarm_summary), ipc_data);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_marshal_char() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_marshal_char((palarm->alarm_attach),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_marshal fail");
+	ret = cal_ipc_marshal_int((palarm->alarm_action), ipc_data);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_marshal_int() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	if (cal_ipc_marshal_caltime((palarm->alarm),ipc_data) != CALENDAR_ERROR_NONE) {
-		ERR("cal_ipc_marshal fail");
+	ret = cal_ipc_marshal_char((palarm->alarm_attach), ipc_data);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_marshal_char() Fail(%d)", ret);
+		return CALENDAR_ERROR_INVALID_PARAMETER;
+	}
+	ret = cal_ipc_marshal_caltime((palarm->alarm), ipc_data);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_marshal_caltime() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 	return CALENDAR_ERROR_NONE;

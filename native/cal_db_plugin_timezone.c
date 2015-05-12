@@ -195,7 +195,7 @@ static int _cal_db_timezone_get_record(int id, calendar_record_h* out_record)
 
 	ret = calendar_record_create(_calendar_timezone._uri ,out_record);
 	if (CALENDAR_ERROR_NONE != ret) {
-		ERR("record create Fail");
+		ERR("calendar_record_create() Fail(%d)", ret);
 		return CALENDAR_ERROR_OUT_OF_MEMORY;
 	}
 
@@ -204,9 +204,9 @@ static int _cal_db_timezone_get_record(int id, calendar_record_h* out_record)
 			CAL_TABLE_TIMEZONE, id,
 			CAL_TABLE_CALENDAR);
 	stmt = cal_db_util_query_prepare(query);
-	if (NULL == stmt)
-	{
-		ERR("cal_db_util_query_prepare() Fail");
+	if (NULL == stmt) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
+		SECURE("query[%s]", query);
 		calendar_record_destroy(*out_record, true);
 		*out_record = NULL;
 		return CALENDAR_ERROR_DB_FAILED;
@@ -314,11 +314,9 @@ static int _cal_db_timezone_delete_record(int id)
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	cal_db_util_error_e dbret = CAL_DB_OK;
 
-	snprintf(query, sizeof(query), "DELETE FROM %s WHERE id = %d",
-			CAL_TABLE_TIMEZONE, id);
+	snprintf(query, sizeof(query), "DELETE FROM %s WHERE id = %d", CAL_TABLE_TIMEZONE, id);
 	dbret = cal_db_util_query_exec(query);
-	if (CAL_DB_OK != dbret)
-	{
+	if (CAL_DB_OK != dbret) {
 		ERR("cal_db_util_query_exec() Fail(%d)", dbret);
 		switch (dbret)
 		{
@@ -431,8 +429,7 @@ static int _cal_db_timezone_get_all_records(int offset, int limit, calendar_list
 
 	stmt = cal_db_util_query_prepare(query);
 
-	if (NULL == stmt)
-	{
+	if (NULL == stmt) {
 		ERR("cal_db_util_query_prepare() Fail");
 		calendar_list_destroy(*out_list, true);
 		*out_list = NULL;
@@ -483,7 +480,7 @@ static int _cal_db_timezone_get_records_with_query(calendar_query_h query, int o
 	if (que->filter) {
 		ret = cal_db_query_create_condition(query, &condition, &bind_text);
 		if (CALENDAR_ERROR_NONE != ret) {
-			ERR("filter create Fail");
+			ERR("cal_db_query_create_condition() Fail(%d), ret");
 			return ret;
 		}
 	}
@@ -536,10 +533,8 @@ static int _cal_db_timezone_get_records_with_query(calendar_query_h query, int o
 
 	// query
 	stmt = cal_db_util_query_prepare(query_str);
-	if (NULL == stmt)
-	{
-		if (bind_text)
-		{
+	if (NULL == stmt) {
+		if (bind_text) {
 			g_slist_free_full(bind_text, free);
 			bind_text = NULL;
 		}
@@ -635,25 +630,25 @@ static int _cal_db_timezone_insert_records(const calendar_list_h list, int** ids
 	}
 
 	id = calloc(1, sizeof(int)*count);
-
 	RETVM_IF(NULL == id, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc() Fail");
 
 	ret = calendar_list_first(list);
 	if (CALENDAR_ERROR_NONE != ret) {
-		ERR("list first error");
+		ERR("calendar_list_first() Fail(%d)", ret);
 		CAL_FREE(id);
 		return ret;
 	}
 	do {
-		if (calendar_list_get_current_record_p(list, &record) == CALENDAR_ERROR_NONE) {
-			if (_cal_db_timezone_insert_record(record, &id[i]) != CALENDAR_ERROR_NONE) {
-				ERR("db insert error");
+		if (CALENDAR_ERROR_NONE == calendar_list_get_current_record_p(list, &record)) {
+			ret = _cal_db_timezone_insert_record(record, &id[i]);
+			if (CALENDAR_ERROR_NONE != ret) {
+				ERR("_cal_db_timezone_insert_record() Fail(%d)", ret);
 				CAL_FREE(id);
 				return CALENDAR_ERROR_DB_FAILED;
 			}
 		}
 		i++;
-	} while (calendar_list_next(list) != CALENDAR_ERROR_NO_DATA);
+	} while (CALENDAR_ERROR_NO_DATA != calendar_list_next(list));
 
 	if (ids) {
 		*ids = id;
@@ -671,28 +666,30 @@ static int _cal_db_timezone_update_records(const calendar_list_h list)
 
 	ret = calendar_list_first(list);
 	if (CALENDAR_ERROR_NONE != ret) {
-		ERR("list first error");
+		ERR("calendar_list_first() Fail(%d)", ret);
 		return ret;
 	}
 	do {
-		if (calendar_list_get_current_record_p(list, &record) == CALENDAR_ERROR_NONE) {
-			if (_cal_db_timezone_update_record(record) != CALENDAR_ERROR_NONE) {
-				ERR("db insert error");
+		if (CALENDAR_ERROR_NONE == calendar_list_get_current_record_p(list, &record)) {
+			ret = _cal_db_timezone_update_record(record);
+			if (CALENDAR_ERROR_NONE != ret) {
+				ERR("_cal_db_timezone_update_record() Fail(%d)", ret);
 				return CALENDAR_ERROR_DB_FAILED;
 			}
 		}
-	} while (calendar_list_next(list) != CALENDAR_ERROR_NO_DATA);
+	} while (CALENDAR_ERROR_NO_DATA != calendar_list_next(list));
 
 	return CALENDAR_ERROR_NONE;
 }
 
 static int _cal_db_timezone_delete_records(int ids[], int count)
 {
+	int ret = 0;
 	int i = 0;
-
 	for(i = 0; i < count; i++) {
-		if (_cal_db_timezone_delete_record(ids[i]) != CALENDAR_ERROR_NONE) {
-			ERR("delete Fail");
+		ret = _cal_db_timezone_delete_record(ids[i]);
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("_cal_db_timezone_delete_record() Fail(%d)", ret);
 			return CALENDAR_ERROR_DB_FAILED;
 		}
 	}
@@ -714,9 +711,10 @@ static int _cal_db_timezone_replace_records(const calendar_list_h list, int ids[
 	}
 
 	for (i = 0; i < count; i++) {
-		if (calendar_list_get_current_record_p(list, &record) == CALENDAR_ERROR_NONE) {
-			if (_cal_db_timezone_replace_record(record, ids[i]) != CALENDAR_ERROR_NONE) {
-				ERR("db insert error");
+		if (CALENDAR_ERROR_NONE == calendar_list_get_current_record_p(list, &record)) {
+			ret = _cal_db_timezone_replace_record(record, ids[i]);
+			if (CALENDAR_ERROR_NONE != ret) {
+				ERR("_cal_db_timezone_replace_record() Fail(%d)", ret);
 				return CALENDAR_ERROR_DB_FAILED;
 			}
 		}
@@ -777,7 +775,7 @@ static int _cal_db_timezone_get_count_with_query(calendar_query_h query, int *ou
 		ret = cal_db_query_create_condition(query, &condition, &bind_text);
 		if (CALENDAR_ERROR_NONE != ret) {
 			CAL_FREE(table_name);
-			ERR("filter create Fail");
+			ERR("cal_db_query_create_condition() Fail(%d), ret");
 			return ret;
 		}
 	}
@@ -943,10 +941,10 @@ static int _cal_db_timezone_update_projection(calendar_record_h record)
 
 	snprintf(query, sizeof(query), "UPDATE %s SET %s WHERE id = %d",
 			CAL_TABLE_TIMEZONE, set, timezone->index);
-	DBG("%s",query);
 	stmt = cal_db_util_query_prepare(query);
 	if (NULL == stmt) {
 		ERR("cal_db_util_query_prepare() Fail");
+		SECURE("query[%s]", query);
 		CAL_FREE(set);
 		if (bind_text) {
 			g_slist_free_full(bind_text, free);

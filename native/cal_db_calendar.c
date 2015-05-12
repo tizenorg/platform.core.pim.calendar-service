@@ -42,8 +42,7 @@ int calendar_db_delete_account(int account_id)
 			CAL_TABLE_CALENDAR, account_id);
 
 	stmt = cal_db_util_query_prepare(query);
-	if (NULL == stmt)
-	{
+	if (NULL == stmt) {
 		ERR("cal_db_util_query_prepare() Fail");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
@@ -60,8 +59,8 @@ int calendar_db_delete_account(int account_id)
 
 	ret = cal_db_util_begin_trans();
 	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_begin_trans() Fail(%d)", ret);
 		g_list_free(calendar_list);
-		ERR("db failed");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 
@@ -71,7 +70,8 @@ int calendar_db_delete_account(int account_id)
 
 		ret = calendar_db_delete_record(_calendar_book._uri, id);
 		if (CALENDAR_ERROR_NONE != ret) {
-			ERR("calendar_id(%d) delete Fail",id);
+			ERR("cal_db_delete_record() Fail(%d)", ret);
+			SECURE("book_id(%d)", id);
 		}
 		cursor = g_list_next(cursor);
 	}

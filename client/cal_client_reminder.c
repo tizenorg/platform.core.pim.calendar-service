@@ -111,7 +111,7 @@ API int calendar_reminder_add_cb(calendar_reminder_cb callback, void *user_data)
 	RETV_IF(NULL == callback, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	ret = cal_client_ipc_client_check_permission(CAL_PERMISSION_READ, &result);
-	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "ctsvc_ipc_client_check_permission fail (%d)", ret);
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "ctsvc_ipc_client_check_permission() Fail(%d)", ret);
 	RETVM_IF(result == false, CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied (calendar read)");
 
 	cal_mutex_lock(CAL_MUTEX_PIMS_IPC_PUBSUB);

@@ -199,17 +199,12 @@ static int _cal_db_event_get_record(int id, calendar_record_h* out_record)
 				_calendar_book.sync_event, (int *)&sync_event_type);
 		calendar_record_destroy(record_calendar, true);
 	}
-	if (event->is_deleted == 1
-			&& sync_event_type != CALENDAR_BOOK_SYNC_EVENT_FOR_EVERY_AND_REMAIN
-		)
-	{
+	if (event->is_deleted == 1 && CALENDAR_BOOK_SYNC_EVENT_FOR_EVERY_AND_REMAIN != sync_event_type) {
 		calendar_record_destroy(*out_record, true);
 		*out_record = NULL;
 		return CALENDAR_ERROR_DB_RECORD_NOT_FOUND;
 	}
-
-	if (cal_db_rrule_get_rrule(event->index, &rrule) == CALENDAR_ERROR_NONE)
-	{
+	if (CALENDAR_ERROR_NONE == cal_db_rrule_get_rrule(event->index, &rrule)) {
 		cal_db_rrule_set_rrule_to_event(rrule, *out_record);
 		CAL_FREE(rrule);
 	}
@@ -446,7 +441,7 @@ static int __update_exdate(cal_event_s *rec, time_t time_diff)
 	int ret;
 	calendar_record_h db_record = NULL;
 	ret = calendar_db_get_record(_calendar_event._uri, rec->index, &db_record);
-	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "calendar_db_get_record fail(%d)", ret);
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "calendar_db_get_record() Fail(%d)", ret);
 
 	// get time diff
 	char *db_tzid = NULL;
@@ -530,7 +525,7 @@ static int __update_record(calendar_record_h record, int is_dirty_in_time)
 		calendar_record_h old_record = NULL;
 		ret = calendar_db_get_record(_calendar_event._uri, event->index, &old_record);
 		if (CALENDAR_ERROR_NONE != ret) {
-			ERR("calendar_db_get_record fail(%d)", ret);
+			ERR("calendar_db_get_record() Fail(%d)", ret);
 			return ret;
 		}
 
@@ -1081,13 +1076,15 @@ static int _cal_db_event_get_all_records(int offset, int limit, calendar_list_h*
 		int record_id = 0;
 		cal_event_s* pevent = (cal_event_s*) record;
 		calendar_record_get_int(record, _calendar_event.id, &record_id);
-		if (calendar_record_get_int(record, _calendar_event.has_attendee,&has_attendee) == CALENDAR_ERROR_NONE) {
-			if (has_attendee == 1)
+		if (CALENDAR_ERROR_NONE == calendar_record_get_int(record, _calendar_event.has_attendee,&has_attendee)) {
+			if (has_attendee == 1) {
 				cal_db_attendee_get_records(record_id, pevent->attendee_list);
+			}
 		}
-		if (calendar_record_get_int(record, _calendar_event.has_alarm,&has_alarm) == CALENDAR_ERROR_NONE) {
-			if (has_alarm == 1)
+		if (CALENDAR_ERROR_NONE == calendar_record_get_int(record, _calendar_event.has_alarm,&has_alarm)) {
+			if (has_alarm == 1) {
 				cal_db_alarm_get_records(record_id, pevent->alarm_list);
+			}
 		}
 
 		if (exception == 1)
@@ -1150,7 +1147,7 @@ static int _cal_db_event_get_records_with_query(calendar_query_h query, int offs
 		ret = cal_db_query_create_condition(query, &condition, &bind_text);
 		if (CALENDAR_ERROR_NONE != ret) {
 			CAL_FREE(table_name);
-			ERR("filter create fail");
+			ERR("cal_db_query_create_condition() Fail(%d), ret");
 			return ret;
 		}
 	}
@@ -1267,19 +1264,19 @@ static int _cal_db_event_get_records_with_query(calendar_query_h query, int offs
 		}
 
 		// child
-		if (cal_db_query_find_projection_property(query,CAL_PROPERTY_EVENT_CALENDAR_ALARM) == true && alarm == 1) {
+		if (cal_db_query_find_projection_property(query, CAL_PROPERTY_EVENT_CALENDAR_ALARM) == true && alarm == 1) {
 			cal_event_s* pevent = (cal_event_s*) record;
 			cal_db_alarm_get_records(pevent->index, pevent->alarm_list);
 		}
-		if (cal_db_query_find_projection_property(query,CAL_PROPERTY_EVENT_CALENDAR_ATTENDEE) == true && attendee == 1) {
+		if (cal_db_query_find_projection_property(query, CAL_PROPERTY_EVENT_CALENDAR_ATTENDEE) == true && attendee == 1) {
 			cal_event_s* pevent = (cal_event_s*) record;
 			cal_db_attendee_get_records(pevent->index, pevent->attendee_list);
 		}
-		if (cal_db_query_find_projection_property(query,CAL_PROPERTY_EVENT_EXCEPTION) == true && exception ==1) {
+		if (cal_db_query_find_projection_property(query, CAL_PROPERTY_EVENT_EXCEPTION) == true && exception ==1) {
 			cal_event_s* pevent = (cal_event_s*) record;
 			_cal_db_event_exception_get_records(pevent->index, pevent->exception_list);
 		}
-		if (cal_db_query_find_projection_property(query,CAL_PROPERTY_EVENT_EXTENDED) == true && extended ==1) {
+		if (cal_db_query_find_projection_property(query, CAL_PROPERTY_EVENT_EXTENDED) == true && extended ==1) {
 			cal_event_s* pevent = (cal_event_s*) record;
 			cal_db_extended_get_records(pevent->index, CALENDAR_RECORD_TYPE_EVENT, pevent->extended_list);
 		}
@@ -1339,15 +1336,16 @@ static int _cal_db_event_insert_records(const calendar_list_h list, int** ids)
 		return ret;
 	}
 	do {
-		if (calendar_list_get_current_record_p(list, &record) == CALENDAR_ERROR_NONE) {
-			if (_cal_db_event_insert_record(record, &id[i]) != CALENDAR_ERROR_NONE) {
-				ERR("db insert error");
+		if (CALENDAR_ERROR_NONE == calendar_list_get_current_record_p(list, &record)) {
+			ret = _cal_db_event_insert_record(record, &id[i]);
+			if (CALENDAR_ERROR_NONE != ret) {
+				ERR("_cal_db_event_insert_record() Fail(%d)", ret);
 				CAL_FREE(id);
 				return CALENDAR_ERROR_DB_FAILED;
 			}
 		}
 		i++;
-	} while (calendar_list_next(list) != CALENDAR_ERROR_NO_DATA);
+	} while (CALENDAR_ERROR_NO_DATA != calendar_list_next(list));
 
 	if (ids) {
 		*ids = id;
@@ -1370,13 +1368,14 @@ static int _cal_db_event_update_records(const calendar_list_h list)
 		return ret;
 	}
 	do {
-		if (calendar_list_get_current_record_p(list, &record) == CALENDAR_ERROR_NONE) {
-			if (_cal_db_event_update_record(record) != CALENDAR_ERROR_NONE) {
-				ERR("db insert error");
+		if (CALENDAR_ERROR_NONE == calendar_list_get_current_record_p(list, &record)) {
+			ret = _cal_db_event_update_record(record);
+			if (CALENDAR_ERROR_NONE != ret) {
+				ERR("_cal_db_event_update_record() Fail(%d)", ret);
 				return CALENDAR_ERROR_DB_FAILED;
 			}
 		}
-	} while (calendar_list_next(list) != CALENDAR_ERROR_NO_DATA);
+	} while (CALENDAR_ERROR_NO_DATA != calendar_list_next(list));
 
 	return CALENDAR_ERROR_NONE;
 }
@@ -1389,7 +1388,7 @@ static int _cal_db_event_delete_records(int ids[], int count)
 	for(i = 0; i < count; i++) {
 		ret = _cal_db_event_delete_record(ids[i]);
 		if (CALENDAR_ERROR_NONE != ret) {
-			ERR("delete Fail");
+			ERR("_cal_db_event_delete_record() Fail(%d)", ret);
 			return ret;
 		}
 	}
@@ -1450,7 +1449,7 @@ static int _cal_db_event_get_count_with_query(calendar_query_h query, int *out_c
 		ret = cal_db_query_create_condition(query, &condition, &bind_text);
 		if (CALENDAR_ERROR_NONE != ret) {
 			CAL_FREE(table_name);
-			ERR("filter create fail");
+			ERR("cal_db_query_create_condition() Fail(%d), ret");
 			return ret;
 		}
 	}
@@ -1771,9 +1770,10 @@ static int _cal_db_event_replace_records(const calendar_list_h list, int ids[], 
 	}
 
 	for (i = 0; i < count; i++) {
-		if (calendar_list_get_current_record_p(list, &record) == CALENDAR_ERROR_NONE) {
-			if (_cal_db_event_replace_record(record, ids[i]) != CALENDAR_ERROR_NONE) {
-				ERR("db insert error");
+		if (CALENDAR_ERROR_NONE == calendar_list_get_current_record_p(list, &record)) {
+			ret = _cal_db_event_replace_record(record, ids[i]);
+			if (CALENDAR_ERROR_NONE != ret) {
+				ERR("_cal_db_event_replace_record() Fail(%d)", ret);
 				return CALENDAR_ERROR_DB_FAILED;
 			}
 		}
@@ -2360,7 +2360,7 @@ static int _cal_db_event_update_dirty(calendar_record_h record, int is_dirty_in_
 			if (CALENDAR_ERROR_NONE != ret)
 				continue;
 		}
-		else if (CAL_PROPERTY_CHECK_DATA_TYPE(property_info[i].property_id,CAL_PROPERTY_DATA_TYPE_INT) == true) {
+		else if (CAL_PROPERTY_CHECK_DATA_TYPE(property_info[i].property_id, CAL_PROPERTY_DATA_TYPE_INT) == true) {
 			int tmp=0;
 			ret = calendar_record_get_int(record,property_info[i].property_id,&tmp);
 			if (CALENDAR_ERROR_NONE != ret)
@@ -2369,7 +2369,7 @@ static int _cal_db_event_update_dirty(calendar_record_h record, int is_dirty_in_
 			if (CALENDAR_ERROR_NONE != ret)
 				continue;
 		}
-		else if (CAL_PROPERTY_CHECK_DATA_TYPE(property_info[i].property_id,CAL_PROPERTY_DATA_TYPE_STR) == true) {
+		else if (CAL_PROPERTY_CHECK_DATA_TYPE(property_info[i].property_id, CAL_PROPERTY_DATA_TYPE_STR) == true) {
 			char *tmp=NULL;
 			ret = calendar_record_get_str_p(record,property_info[i].property_id,&tmp);
 			if (CALENDAR_ERROR_NONE != ret)
@@ -2378,7 +2378,7 @@ static int _cal_db_event_update_dirty(calendar_record_h record, int is_dirty_in_
 			if (CALENDAR_ERROR_NONE != ret)
 				continue;
 		}
-		else if (CAL_PROPERTY_CHECK_DATA_TYPE(property_info[i].property_id,CAL_PROPERTY_DATA_TYPE_DOUBLE) == true) {
+		else if (CAL_PROPERTY_CHECK_DATA_TYPE(property_info[i].property_id, CAL_PROPERTY_DATA_TYPE_DOUBLE) == true) {
 			double tmp=0;
 			ret = calendar_record_get_double(record,property_info[i].property_id,&tmp);
 			if (CALENDAR_ERROR_NONE != ret)
@@ -2387,7 +2387,7 @@ static int _cal_db_event_update_dirty(calendar_record_h record, int is_dirty_in_
 			if (CALENDAR_ERROR_NONE != ret)
 				continue;
 		}
-		else if (CAL_PROPERTY_CHECK_DATA_TYPE(property_info[i].property_id,CAL_PROPERTY_DATA_TYPE_LLI) == true) {
+		else if (CAL_PROPERTY_CHECK_DATA_TYPE(property_info[i].property_id, CAL_PROPERTY_DATA_TYPE_LLI) == true) {
 			long long int tmp=0;
 			ret = calendar_record_get_lli(record,property_info[i].property_id,&tmp);
 			if (CALENDAR_ERROR_NONE != ret)
@@ -2396,7 +2396,7 @@ static int _cal_db_event_update_dirty(calendar_record_h record, int is_dirty_in_
 			if (CALENDAR_ERROR_NONE != ret)
 				continue;
 		}
-		else if (CAL_PROPERTY_CHECK_DATA_TYPE(property_info[i].property_id,CAL_PROPERTY_DATA_TYPE_CALTIME) == true) {
+		else if (CAL_PROPERTY_CHECK_DATA_TYPE(property_info[i].property_id, CAL_PROPERTY_DATA_TYPE_CALTIME) == true) {
 			calendar_time_s tmp = {0,};
 			ret = calendar_record_get_caltime(record,property_info[i].property_id,&tmp);
 			if (CALENDAR_ERROR_NONE != ret)
@@ -2466,7 +2466,7 @@ static int _cal_db_event_exception_get_records(int original_id, cal_list_s *list
 
 		cal_rrule_s *rrule = NULL;
 		cal_event_s *event = (cal_event_s *)record;
-		if (cal_db_rrule_get_rrule(event->index, &rrule) == CALENDAR_ERROR_NONE) {
+		if (CALENDAR_ERROR_NONE == cal_db_rrule_get_rrule(event->index, &rrule)) {
 			cal_db_rrule_set_rrule_to_event(rrule, record);
 			CAL_FREE(rrule);
 		}
@@ -2611,14 +2611,14 @@ static int _cal_db_event_exception_update(cal_list_s *exception_list_s, int orig
 			} else { // insert
 				ret = cal_record_set_int(exception,_calendar_event.calendar_book_id, calendar_id);
 				if (CALENDAR_ERROR_NONE != ret) {
-					ERR("set fail");
+					ERR("cal_record_set_int() Fail(%d)", ret);
 					if (id_list)
 						g_list_free(id_list);
 					return ret;
 				}
 				ret = cal_db_event_insert_record(exception, original_id, NULL);
 				if (CALENDAR_ERROR_NONE != ret) {
-					ERR("set fail");
+					ERR("cal_db_event_insert_record() Fail(%d)", ret);
 					if (id_list)
 						g_list_free(id_list);
 					return ret;

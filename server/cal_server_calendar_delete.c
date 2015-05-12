@@ -59,7 +59,7 @@ static gpointer  _cal_server_calendar_main(gpointer user_data);
 
 static bool _cal_server_calendar_delete_step(int ret, __calendar_delete_data_s* data)
 {
-	if (CALENDAR_ERROR_NONE != ret && ret != CALENDAR_ERROR_NO_DATA) {
+	if (CALENDAR_ERROR_NONE != ret && CALENDAR_ERROR_NO_DATA != ret) {
 		if (data->calendar_id_list)
 			g_list_free(data->calendar_id_list);
 

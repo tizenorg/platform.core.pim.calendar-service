@@ -210,7 +210,7 @@ static int _cal_db_calendar_get_record(int id, calendar_record_h* out_record)
 
 	ret = calendar_record_create(_calendar_book._uri ,out_record);
 	if (CALENDAR_ERROR_NONE != ret) {
-		ERR("record create fail");
+		ERR("calendar_record_create() Fail(%d)", ret);
 		return CALENDAR_ERROR_OUT_OF_MEMORY;
 	}
 
@@ -340,7 +340,7 @@ static int _cal_db_calendar_delete_record(int id)
 			CAL_TABLE_CALENDAR, id);
 	ret = cal_db_util_query_get_first_int_result(query, NULL, &calendar_book_id);
 	if (CALENDAR_ERROR_NONE != ret) {
-		ERR("cal_db_util_query_get_first_int_result(%d) failed", ret);
+		ERR("cal_db_util_query_get_first_int_result() Fail(%d)", ret);
 		return ret;
 	}
 
@@ -594,7 +594,7 @@ static int _cal_db_calendar_get_records_with_query(calendar_query_h query, int o
 	if (que->filter) {
 		ret = cal_db_query_create_condition(query, &condition, &bind_text);
 		if (CALENDAR_ERROR_NONE != ret) {
-			ERR("filter create fail");
+			ERR("cal_db_query_create_condition() Fail(%d), ret");
 			return ret;
 		}
 	}
@@ -758,15 +758,16 @@ static int _cal_db_calendar_insert_records(const calendar_list_h list, int** ids
 	}
 
 	do {
-		if (calendar_list_get_current_record_p(list, &record) == CALENDAR_ERROR_NONE) {
-			if (_cal_db_calendar_insert_record(record, &id[i]) != CALENDAR_ERROR_NONE) {
-				ERR("db insert error");
+		if (CALENDAR_ERROR_NONE == calendar_list_get_current_record_p(list, &record)) {
+			ret = _cal_db_calendar_insert_record(record, &id[i]);
+			if (CALENDAR_ERROR_NONE != ret) {
+				ERR("_cal_db_calendar_insert_record() Fail(%d)", ret);
 				CAL_FREE(id);
 				return CALENDAR_ERROR_DB_FAILED;
 			}
 		}
 		i++;
-	} while (calendar_list_next(list) != CALENDAR_ERROR_NO_DATA);
+	} while (CALENDAR_ERROR_NO_DATA != calendar_list_next(list));
 
 	if (ids) {
 		*ids = id;
@@ -790,28 +791,29 @@ static int _cal_db_calendar_update_records(const calendar_list_h list)
 	}
 
 	do {
-		if (calendar_list_get_current_record_p(list, &record) == CALENDAR_ERROR_NONE) {
-			if (_cal_db_calendar_update_record(record) != CALENDAR_ERROR_NONE) {
-				ERR("db insert error");
+		if (CALENDAR_ERROR_NONE == calendar_list_get_current_record_p(list, &record)) {
+			ret = _cal_db_calendar_update_record(record);
+			if (CALENDAR_ERROR_NONE != ret) {
+				ERR("_cal_db_calendar_update_record() Fail(%d)", ret);
 				return CALENDAR_ERROR_DB_FAILED;
 			}
 		}
-	} while (calendar_list_next(list) != CALENDAR_ERROR_NO_DATA);
+	} while (CALENDAR_ERROR_NO_DATA != calendar_list_next(list));
 
 	return CALENDAR_ERROR_NONE;
 }
 
 static int _cal_db_calendar_delete_records(int ids[], int count)
 {
-	int i=0;
-
-	for(i=0;i<count;i++) {
-		if (_cal_db_calendar_delete_record(ids[i]) != CALENDAR_ERROR_NONE) {
-			ERR("delete failed");
+	int ret = 0;
+	int i = 0;
+	for(i = 0; i < count; i++) {
+		ret = _cal_db_calendar_delete_record(ids[i]);
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("_cal_db_calendar_delete_record() Fail(%d)", ret);
 			return CALENDAR_ERROR_DB_FAILED;
 		}
 	}
-
 	return CALENDAR_ERROR_NONE;
 }
 
@@ -833,10 +835,11 @@ static int _cal_db_calendar_replace_records(const calendar_list_h list, int ids[
 	}
 
 	for (i = 0; i < count; i++) {
-		if (calendar_list_get_current_record_p(list, &record) == CALENDAR_ERROR_NONE) {
-			if (_cal_db_calendar_replace_record(record, ids[i]) != CALENDAR_ERROR_NONE) {
-				ERR("db insert error");
-				return CALENDAR_ERROR_DB_FAILED;
+		if (CALENDAR_ERROR_NONE == calendar_list_get_current_record_p(list, &record)) {
+			ret = _cal_db_calendar_replace_record(record, ids[i]);
+			if (CALENDAR_ERROR_NONE != ret) {
+				ERR("_cal_db_calendar_replace_record() Fail(%d)", ret);
+				return ret;
 			}
 		}
 		if (CALENDAR_ERROR_NO_DATA != calendar_list_next(list)) {
@@ -895,7 +898,7 @@ static int _cal_db_calendar_get_count_with_query(calendar_query_h query, int *ou
 		ret = cal_db_query_create_condition(query, &condition, &bind_text);
 		if (CALENDAR_ERROR_NONE != ret) {
 			CAL_FREE(table_name);
-			ERR("filter create fail");
+			ERR("cal_db_query_create_condition() Fail(%d), ret");
 			return ret;
 		}
 	}

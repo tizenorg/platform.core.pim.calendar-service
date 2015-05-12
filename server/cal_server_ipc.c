@@ -41,8 +41,8 @@ static void _cal_server_ipc_return(pims_ipc_data_h *outdata, int ret)
 	*outdata = pims_ipc_data_create(0);
 	RETM_IF(NULL == *outdata, "pims_ipc_data_create() Fail");
 
-	if (0 != pims_ipc_data_put(*outdata,(void *)&ret, sizeof(int))) {
-		ERR("pims_ipc_data_put Fail");
+	if (0 != pims_ipc_data_put(*outdata, (void *)&ret, sizeof(int))) {
+		ERR("pims_ipc_data_put() Fail");
 		pims_ipc_data_destroy(*outdata);
 		*outdata = NULL;
 	}
@@ -122,7 +122,7 @@ void cal_server_ipc_check_permission(pims_ipc_h ipc, pims_ipc_data_h indata,
 
 	ret = cal_ipc_unmarshal_int(indata, &permission);
 	if (CALENDAR_ERROR_NONE != ret) {
-		ERR("cal_ipc_unmarshal_int fail");
+		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
 		goto ERROR_RETURN;
 	}
 

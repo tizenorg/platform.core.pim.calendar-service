@@ -493,7 +493,7 @@ static int _cal_db_instance_get_duration(UCalendar *ucal, calendar_time_s *st, c
 
 		_duration = ucal_getFieldDifference(ucal, ud, UCAL_SECOND, &ec);
 		if (U_FAILURE(ec)) {
-			ERR("ucal_getFieldDifference Fail (%s)", u_errorName(ec));
+			ERR("ucal_getFieldDifference() Fail[%s]", u_errorName(ec));
 			return ec;
 		}
 		break;

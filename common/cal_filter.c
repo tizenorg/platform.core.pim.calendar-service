@@ -123,10 +123,10 @@ API int calendar_filter_add_str(calendar_filter_h filter, unsigned int property_
 	RETV_IF(NULL == match_value, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETVM_IF(CALENDAR_MATCH_STR_MAX <= match, CALENDAR_ERROR_INVALID_PARAMETER, "max(%d) <= match(%d)", CALENDAR_MATCH_STR_MAX, match);
 
-	bcheck = CAL_PROPERTY_CHECK_DATA_TYPE(property_id,CAL_PROPERTY_DATA_TYPE_STR);
+	bcheck = CAL_PROPERTY_CHECK_DATA_TYPE(property_id, CAL_PROPERTY_DATA_TYPE_STR);
 	RETVM_IF(false == bcheck, CALENDAR_ERROR_INVALID_PARAMETER, "property_id(%d)", property_id);
 
-	bcheck = CAL_PROPERTY_CHECK_FLAGS(property_id,CAL_PROPERTY_FLAGS_PROJECTION);
+	bcheck = CAL_PROPERTY_CHECK_FLAGS(property_id, CAL_PROPERTY_FLAGS_PROJECTION);
 	RETVM_IF(true == bcheck, CALENDAR_ERROR_INVALID_PARAMETER, "property_id(%d)", property_id);
 
 	com_filter = (cal_composite_filter_s*)filter;
@@ -147,10 +147,10 @@ API int calendar_filter_add_int(calendar_filter_h filter, unsigned int property_
 	RETV_IF(NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETVM_IF(CALENDAR_MATCH_INT_MAX <= match, CALENDAR_ERROR_INVALID_PARAMETER, "max(%d) <= match(%d)", CALENDAR_MATCH_INT_MAX, match);
 
-	bcheck = CAL_PROPERTY_CHECK_DATA_TYPE(property_id,CAL_PROPERTY_DATA_TYPE_INT);
+	bcheck = CAL_PROPERTY_CHECK_DATA_TYPE(property_id, CAL_PROPERTY_DATA_TYPE_INT);
 	RETVM_IF(false == bcheck, CALENDAR_ERROR_INVALID_PARAMETER, "property_id(%d)", property_id);
 
-	bcheck = CAL_PROPERTY_CHECK_FLAGS(property_id,CAL_PROPERTY_FLAGS_PROJECTION);
+	bcheck = CAL_PROPERTY_CHECK_FLAGS(property_id, CAL_PROPERTY_FLAGS_PROJECTION);
 	RETVM_IF(true == bcheck, CALENDAR_ERROR_INVALID_PARAMETER, "property_id(%d)", property_id);
 
 	com_filter = (cal_composite_filter_s*)filter;
@@ -172,10 +172,10 @@ API int calendar_filter_add_double(calendar_filter_h filter, unsigned int proper
 	RETV_IF(NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETVM_IF(CALENDAR_MATCH_INT_MAX <= match, CALENDAR_ERROR_INVALID_PARAMETER, "max(%d) <= match(%d)", CALENDAR_MATCH_INT_MAX, match);
 
-	bcheck = CAL_PROPERTY_CHECK_DATA_TYPE(property_id,CAL_PROPERTY_DATA_TYPE_DOUBLE);
+	bcheck = CAL_PROPERTY_CHECK_DATA_TYPE(property_id, CAL_PROPERTY_DATA_TYPE_DOUBLE);
 	RETVM_IF(false == bcheck, CALENDAR_ERROR_INVALID_PARAMETER, "property_id(%d)", property_id);
 
-	bcheck = CAL_PROPERTY_CHECK_FLAGS(property_id,CAL_PROPERTY_FLAGS_PROJECTION);
+	bcheck = CAL_PROPERTY_CHECK_FLAGS(property_id, CAL_PROPERTY_FLAGS_PROJECTION);
 	RETVM_IF(true == bcheck, CALENDAR_ERROR_INVALID_PARAMETER, "property_id(%d)", property_id);
 
 	com_filter = (cal_composite_filter_s*)filter;
@@ -197,10 +197,10 @@ API int calendar_filter_add_lli(calendar_filter_h filter, unsigned int property_
 	RETV_IF(NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETVM_IF(CALENDAR_MATCH_INT_MAX <= match, CALENDAR_ERROR_INVALID_PARAMETER, "max(%d) <= match(%d)", CALENDAR_MATCH_INT_MAX, match);
 
-	bcheck = CAL_PROPERTY_CHECK_DATA_TYPE(property_id,CAL_PROPERTY_DATA_TYPE_LLI);
+	bcheck = CAL_PROPERTY_CHECK_DATA_TYPE(property_id, CAL_PROPERTY_DATA_TYPE_LLI);
 	RETVM_IF(false == bcheck, CALENDAR_ERROR_INVALID_PARAMETER, "property_id(%d)", property_id);
 
-	bcheck = CAL_PROPERTY_CHECK_FLAGS(property_id,CAL_PROPERTY_FLAGS_PROJECTION);
+	bcheck = CAL_PROPERTY_CHECK_FLAGS(property_id, CAL_PROPERTY_FLAGS_PROJECTION);
 	RETVM_IF(true == bcheck, CALENDAR_ERROR_INVALID_PARAMETER, "property_id(%d)", property_id);
 
 	com_filter = (cal_composite_filter_s*)filter;
@@ -222,10 +222,10 @@ API int calendar_filter_add_caltime(calendar_filter_h filter, unsigned int prope
 	RETV_IF(NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETVM_IF(CALENDAR_MATCH_INT_MAX <= match, CALENDAR_ERROR_INVALID_PARAMETER, "max(%d) <= match(%d)", CALENDAR_MATCH_INT_MAX, match);
 
-	bcheck = CAL_PROPERTY_CHECK_DATA_TYPE(property_id,CAL_PROPERTY_DATA_TYPE_CALTIME);
+	bcheck = CAL_PROPERTY_CHECK_DATA_TYPE(property_id, CAL_PROPERTY_DATA_TYPE_CALTIME);
 	RETVM_IF(false == bcheck, CALENDAR_ERROR_INVALID_PARAMETER, "property_id(%d)", property_id);
 
-	bcheck = CAL_PROPERTY_CHECK_FLAGS(property_id,CAL_PROPERTY_FLAGS_PROJECTION);
+	bcheck = CAL_PROPERTY_CHECK_FLAGS(property_id, CAL_PROPERTY_FLAGS_PROJECTION);
 	RETVM_IF(true == bcheck, CALENDAR_ERROR_INVALID_PARAMETER, "property_id(%d)", property_id);
 
 	com_filter = (cal_composite_filter_s*)filter;

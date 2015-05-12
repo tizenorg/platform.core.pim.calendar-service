@@ -296,20 +296,20 @@ int cal_client_ipc_client_check_permission(int permission, bool *result)
 		*result = false;
 
 	indata = pims_ipc_data_create(0);
-	if (indata == NULL) {
-		ERR("ipc data created fail !");
+	if (NULL == indata) {
+		ERR("pims_ipc_data_create() Fail");
 		return CALENDAR_ERROR_OUT_OF_MEMORY;
 	}
 
 	ret = cal_ipc_marshal_int(permission, indata);
 	if (CALENDAR_ERROR_NONE != ret) {
-		ERR("marshal fail");
+		ERR("cal_ipc_marshal_int() Fail(%d)", ret);
 		pims_ipc_data_destroy(indata);
 		return ret;
 	}
 
 	if (cal_client_ipc_call(CAL_IPC_MODULE, CAL_IPC_SERVER_CHECK_PERMISSION, indata, &outdata) != 0) {
-		ERR("cal_client_ipc_call failed");
+		ERR("cal_client_ipc_call() Fail");
 		pims_ipc_data_destroy(indata);
 		return CALENDAR_ERROR_IPC;
 	}

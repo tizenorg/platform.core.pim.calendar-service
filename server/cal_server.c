@@ -59,7 +59,7 @@ static gboolean _cal_server_timeout_cb(gpointer argv)
 	DBG("called count(%d)", *try_count);
 	if (*try_count > 2)
 	{
-		ERR("Tried 3 times but failed to contacts connect");
+		ERR("Tried 3 times but Failed to contacts connect");
 		return false;
 	}
 
@@ -109,16 +109,14 @@ void cal_server_ipc_destroy(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_dat
 	if (outdata)
 	{
 		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
+		if (!*outdata) {
+			ERR("pims_ipc_data_create Fail");
 			goto DATA_FREE;
 		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
+		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0) {
 			pims_ipc_data_destroy(*outdata);
 			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
+			ERR("pims_ipc_data_put Fail");
 			goto DATA_FREE;
 		}
 
@@ -133,16 +131,14 @@ ERROR_RETURN:
 	if (outdata)
 	{
 		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
+		if (!*outdata) {
+			ERR("pims_ipc_data_create Fail");
 			goto DATA_FREE;
 		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
+		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0) {
 			pims_ipc_data_destroy(*outdata);
 			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
+			ERR("pims_ipc_data_put Fail");
 			goto DATA_FREE;
 		}
 	}
@@ -295,7 +291,7 @@ static int __server_main(void)
 	ret = contacts_connect();
 	if (CONTACTS_ERROR_NONE != ret)
 	{
-		ERR("contacts_connect() failed");
+		ERR("contacts_connect() Failed");
 		g_timeout_add_seconds(30, _cal_server_timeout_cb, (gpointer)&try_count);
 	}
 	else
@@ -307,7 +303,7 @@ static int __server_main(void)
 	ret = calendar_connect();
 	if (CALENDAR_ERROR_NONE != ret)
 	{
-		ERR("calendar_connect() failed");
+		ERR("calendar_connect() Failed");
 		return ret;
 	}
 
@@ -319,7 +315,7 @@ static int __server_main(void)
 		if (CALENDAR_ERROR_NONE != ret)
 		{
 			contacts_disconnect();
-			ERR("cal_server_contacts() failed");
+			ERR("cal_server_contacts() Failed");
 			return -1;
 		}
 
@@ -346,7 +342,7 @@ static int __server_main(void)
 		{
 //			contacts_disconnect();
 		}
-		ERR("cal_server_alarm() failed");
+		ERR("cal_server_alarm() Failed");
 //		return -1;
 	}
 
@@ -428,7 +424,7 @@ int main(int argc, char *argv[])
 		gid_t glist[] = {CAL_SECURITY_FILE_GROUP};
 		if (setgroups(1, glist) < 0)        // client and server should have same Groups
 		{
-			ERR("setgroups() failed");
+			ERR("setgroups() Failed");
 		}
 	}
 

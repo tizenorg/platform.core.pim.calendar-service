@@ -73,7 +73,7 @@ cal_record_plugin_cb_s cal_record_event_plugin_cb = {
 
 static void _cal_record_event_struct_init(cal_event_s *record)
 {
-	memset(record,0,sizeof(cal_event_s));
+	memset(record,0, sizeof(cal_event_s));
 
 	record->meeting_status = CALENDAR_MEETING_STATUS_NOTMEETING;
 	record->calendar_id = DEFAULT_EVENT_CALENDAR_BOOK_ID;
@@ -180,7 +180,7 @@ static int _cal_record_event_clone(calendar_record_h record, calendar_record_h* 
 	src_data = (cal_event_s*)(record);
 
 	out_data = calloc(1, sizeof(cal_event_s));
-	RETVM_IF(NULL == out_data, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc(cal_event_s) Fail(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
+	RETVM_IF(NULL == out_data, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc() Fail");
 
 	CAL_RECORD_COPY_COMMON(&(out_data->common), &(src_data->common));
 

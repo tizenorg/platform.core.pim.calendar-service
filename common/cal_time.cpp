@@ -342,7 +342,7 @@ UCalendar *cal_time_open_ucal(int calendar_system_type, const char *tzid, int wk
 	}
 
 	if (U_FAILURE(status)) {
-		ERR("ucal_open failed (%s)", u_errorName(status));
+		ERR("ucal_open() Fail(%s)", u_errorName(status));
 		return NULL;
 	}
 
@@ -363,7 +363,7 @@ UCalendar *cal_time_get_ucal(const char *tzid, int wkst)
 	UCalendar *ucal = NULL;
 	ucal = ucal_open(utf16_timezone, -1, uloc_getDefault(), UCAL_GREGORIAN, &status);
 	if (U_FAILURE(status)) {
-		ERR("ucal_open failed (%s)", u_errorName(status));
+		ERR("ucal_open() Fail(%s)", u_errorName(status));
 		return NULL;
 	}
 
@@ -629,7 +629,7 @@ int cal_time_get_next_date(calendar_time_s *today, calendar_time_s *next)
 	u_uastrcpy(utzid, tzid);
 	ucal = ucal_open(utzid, u_strlen(utzid), "en_US", UCAL_TRADITIONAL, &status);
 	if (U_FAILURE(status)) {
-		ERR("ucal_open failed (%s)", u_errorName(status));
+		ERR("ucal_open() Fail(%s)", u_errorName(status));
 		CAL_FREE(utzid);
 		return status;
 	}

@@ -233,7 +233,7 @@ int cal_db_query_create_projection_update_set(calendar_record_h record, char **s
 				continue;
 			}
 
-			if (CAL_PROPERTY_CHECK_DATA_TYPE(property_info[i].property_id,CAL_PROPERTY_DATA_TYPE_INT) == true) {
+			if (CAL_PROPERTY_CHECK_DATA_TYPE(property_info[i].property_id, CAL_PROPERTY_DATA_TYPE_INT) == true) {
 				int tmp=0;
 				ret = calendar_record_get_int(record,property_info[i].property_id,&tmp);
 				if (CALENDAR_ERROR_NONE != ret)
@@ -243,7 +243,7 @@ int cal_db_query_create_projection_update_set(calendar_record_h record, char **s
 				}
 				len += snprintf(out_set+len, sizeof(out_set)-len, "%s=%d",field_name,tmp);
 			}
-			else if (CAL_PROPERTY_CHECK_DATA_TYPE(property_info[i].property_id,CAL_PROPERTY_DATA_TYPE_STR) == true) {
+			else if (CAL_PROPERTY_CHECK_DATA_TYPE(property_info[i].property_id, CAL_PROPERTY_DATA_TYPE_STR) == true) {
 				char *tmp=NULL;
 				ret = calendar_record_get_str(record,property_info[i].property_id,&tmp);
 				if (CALENDAR_ERROR_NONE != ret)
@@ -254,7 +254,7 @@ int cal_db_query_create_projection_update_set(calendar_record_h record, char **s
 				len += snprintf(out_set+len, sizeof(out_set)-len, "%s=?",field_name);
 				*bind_text = g_slist_append(*bind_text, tmp);
 			}
-			else if (CAL_PROPERTY_CHECK_DATA_TYPE(property_info[i].property_id,CAL_PROPERTY_DATA_TYPE_DOUBLE) == true) {
+			else if (CAL_PROPERTY_CHECK_DATA_TYPE(property_info[i].property_id, CAL_PROPERTY_DATA_TYPE_DOUBLE) == true) {
 				double tmp=0;
 				ret = calendar_record_get_double(record,property_info[i].property_id,&tmp);
 				if (CALENDAR_ERROR_NONE != ret)
@@ -264,7 +264,7 @@ int cal_db_query_create_projection_update_set(calendar_record_h record, char **s
 				}
 				len += snprintf(out_set+len, sizeof(out_set)-len, "%s=%lf",field_name,tmp);
 			}
-			else if (CAL_PROPERTY_CHECK_DATA_TYPE(property_info[i].property_id,CAL_PROPERTY_DATA_TYPE_LLI) == true) {
+			else if (CAL_PROPERTY_CHECK_DATA_TYPE(property_info[i].property_id, CAL_PROPERTY_DATA_TYPE_LLI) == true) {
 				long long int tmp=0;
 				ret = calendar_record_get_lli(record,property_info[i].property_id,&tmp);
 				if (CALENDAR_ERROR_NONE != ret)
@@ -274,7 +274,7 @@ int cal_db_query_create_projection_update_set(calendar_record_h record, char **s
 				}
 				len += snprintf(out_set+len, sizeof(out_set)-len, "%s=%lld",field_name,tmp);
 			}
-			else if (CAL_PROPERTY_CHECK_DATA_TYPE(property_info[i].property_id,CAL_PROPERTY_DATA_TYPE_CALTIME) == true) {
+			else if (CAL_PROPERTY_CHECK_DATA_TYPE(property_info[i].property_id, CAL_PROPERTY_DATA_TYPE_CALTIME) == true) {
 				/*
 				 * field_name
 				 * dtstart_type, dtstart_utime, dtstart_datetime
@@ -372,7 +372,7 @@ int cal_db_query_create_projection_update_set_with_property(
 				continue;
 			}
 
-			if (CAL_PROPERTY_CHECK_DATA_TYPE(property_info[i].property_id,CAL_PROPERTY_DATA_TYPE_INT) == true) {
+			if (CAL_PROPERTY_CHECK_DATA_TYPE(property_info[i].property_id, CAL_PROPERTY_DATA_TYPE_INT) == true) {
 				int tmp=0;
 				ret = calendar_record_get_int(record,property_info[i].property_id,&tmp);
 				if (CALENDAR_ERROR_NONE != ret)
@@ -382,7 +382,7 @@ int cal_db_query_create_projection_update_set_with_property(
 				}
 				len += snprintf(out_set+len, sizeof(out_set)-len, "%s=%d",field_name,tmp);
 			}
-			else if (CAL_PROPERTY_CHECK_DATA_TYPE(property_info[i].property_id,CAL_PROPERTY_DATA_TYPE_STR) == true) {
+			else if (CAL_PROPERTY_CHECK_DATA_TYPE(property_info[i].property_id, CAL_PROPERTY_DATA_TYPE_STR) == true) {
 				char *tmp=NULL;
 				ret = calendar_record_get_str(record,property_info[i].property_id,&tmp);
 				if (CALENDAR_ERROR_NONE != ret)
@@ -393,7 +393,7 @@ int cal_db_query_create_projection_update_set_with_property(
 				len += snprintf(out_set+len, sizeof(out_set)-len, "%s=?",field_name);
 				*bind_text = g_slist_append(*bind_text, tmp);
 			}
-			else if (CAL_PROPERTY_CHECK_DATA_TYPE(property_info[i].property_id,CAL_PROPERTY_DATA_TYPE_DOUBLE) == true) {
+			else if (CAL_PROPERTY_CHECK_DATA_TYPE(property_info[i].property_id, CAL_PROPERTY_DATA_TYPE_DOUBLE) == true) {
 				double tmp=0;
 				ret = calendar_record_get_double(record,property_info[i].property_id,&tmp);
 				if (CALENDAR_ERROR_NONE != ret)
@@ -403,7 +403,7 @@ int cal_db_query_create_projection_update_set_with_property(
 				}
 				len += snprintf(out_set+len, sizeof(out_set)-len, "%s=%lf",field_name,tmp);
 			}
-			else if (CAL_PROPERTY_CHECK_DATA_TYPE(property_info[i].property_id,CAL_PROPERTY_DATA_TYPE_LLI) == true) {
+			else if (CAL_PROPERTY_CHECK_DATA_TYPE(property_info[i].property_id, CAL_PROPERTY_DATA_TYPE_LLI) == true) {
 				long long int tmp=0;
 				ret = calendar_record_get_lli(record,property_info[i].property_id,&tmp);
 				if (CALENDAR_ERROR_NONE != ret)
@@ -413,7 +413,7 @@ int cal_db_query_create_projection_update_set_with_property(
 				}
 				len += snprintf(out_set+len, sizeof(out_set)-len, "%s=%lld",field_name,tmp);
 			}
-			else if (CAL_PROPERTY_CHECK_DATA_TYPE(property_info[i].property_id,CAL_PROPERTY_DATA_TYPE_CALTIME) == true) {
+			else if (CAL_PROPERTY_CHECK_DATA_TYPE(property_info[i].property_id, CAL_PROPERTY_DATA_TYPE_CALTIME) == true) {
 				/*
 				 * field_name
 				 * dtstart_type, dtstart_utime, dtstart_datetime
@@ -438,7 +438,7 @@ int cal_db_query_create_projection_update_set_with_property(
 						len += snprintf(out_set+len, sizeof(out_set)-len, ", ");
 					}
 					len += snprintf(out_set+len, sizeof(out_set)-len, "%s=%d, %s=%lld",
-							timetype_field,CALENDAR_TIME_UTIME,utime_field,tmp.time.utime);
+							timetype_field, CALENDAR_TIME_UTIME,utime_field,tmp.time.utime);
 				}
 				else {
 					char *bind_tmp = NULL;
@@ -492,7 +492,7 @@ static int _cal_db_query_create_composite_condition(cal_composite_filter_s *com_
 	}
 
 	if (CALENDAR_ERROR_NONE != ret) {
-		ERR("_cal_db_query_create_attribute_condition Fail");
+		ERR("_cal_db_query_create_attribute_condition() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -513,7 +513,7 @@ static int _cal_db_query_create_composite_condition(cal_composite_filter_s *com_
 			ret = _cal_db_query_create_attribute_condition(com_filter, (cal_attribute_filter_s*)filter, &cond, &binds2);
 
 		if (CALENDAR_ERROR_NONE != ret) {
-			ERR("_cal_db_query_create_attribute_condition Fail");
+			ERR("_cal_db_query_create_attribute_condition() Fail(%d)", ret);
 			CAL_FREE(out_cond);
 			if (binds) {
 				g_slist_free_full(binds, free);

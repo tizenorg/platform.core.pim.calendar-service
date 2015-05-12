@@ -301,11 +301,10 @@ cal_db_util_error_e cal_db_util_stmt_step(sqlite3_stmt *stmt)
 	bool retry = false;
 
 	gettimeofday(&from, NULL);
-	do
-	{
+	do {
 		ret = sqlite3_step(stmt);
-		if (SQLITE_BUSY == ret || SQLITE_LOCKED == ret)
-		{
+		if (SQLITE_BUSY == ret || SQLITE_LOCKED == ret) {
+			ERR("sqlite3_step() Fail(%d)", ret);
 			gettimeofday(&now, NULL);
 			timersub(&now, &from, &diff);
 			retry = (diff.tv_sec < __CAL_QUERY_RETRY_TIME) ? true : false;
