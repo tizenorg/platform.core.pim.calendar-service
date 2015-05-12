@@ -1159,15 +1159,15 @@ static int _cal_db_event_get_records_with_query(calendar_query_h query, int offs
 
 	que = (cal_query_s *)query;
 
-	if (0 == strcmp(que->view_uri, CALENDAR_VIEW_EVENT))
+	if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_EVENT))
 	{
 		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_EVENT);
 	}
-	else if (0 == strcmp(que->view_uri, CALENDAR_VIEW_EVENT_CALENDAR))
+	else if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_EVENT_CALENDAR))
 	{
 		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_EVENT_CALENDAR);
 	}
-	else if (0 == strcmp(que->view_uri, CALENDAR_VIEW_EVENT_CALENDAR_ATTENDEE))
+	else if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_EVENT_CALENDAR_ATTENDEE))
 	{
 		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_EVENT_CALENDAR_ATTENDEE);
 	}
@@ -1496,15 +1496,15 @@ static int _cal_db_event_get_count_with_query(calendar_query_h query, int *out_c
 
 	que = (cal_query_s *)query;
 
-	if (0 == strcmp(que->view_uri, CALENDAR_VIEW_EVENT))
+	if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_EVENT))
 	{
 		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_EVENT);
 	}
-	else if (0 == strcmp(que->view_uri, CALENDAR_VIEW_EVENT_CALENDAR))
+	else if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_EVENT_CALENDAR))
 	{
 		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_EVENT_CALENDAR);
 	}
-	else if (0 == strcmp(que->view_uri, CALENDAR_VIEW_EVENT_CALENDAR_ATTENDEE))
+	else if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_EVENT_CALENDAR_ATTENDEE))
 	{
 		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_EVENT_CALENDAR_ATTENDEE);
 	}
@@ -2818,13 +2818,20 @@ static int _cal_db_event_exdate_insert_normal(int event_id, const char* original
 	RETVM_IF(NULL == ids, CALENDAR_ERROR_DB_FAILED, "calloc() Fail");
 
 	int exception_count = 0;
-	for(i = 0; i < len1; i++)
-	{
+	for(i = 0; i < len1; i++) {
+		if (NULL == patterns1[i]) {
+			ERR("exdate is NULL, so check next");
+			continue;
+		}
 		bool bFind = false;
 		cal_db_util_error_e dbret = CAL_DB_OK;
 		for(j = 0; j < len2; j++)
 		{
-			if (g_strcmp0(patterns1[i], patterns2[j]) == 0)
+			if (NULL == patterns2[j]) {
+				ERR("original exdate is NULL");
+				continue;
+			}
+			if (CAL_STRING_EQUAL == strcmp(patterns1[i], patterns2[j]))
 			{
 				bFind = true;
 				break;

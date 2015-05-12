@@ -303,7 +303,7 @@ int cal_is_owner(int calendarbook_id)
 	owner_label = (char*)sqlite3_column_text(stmt, 0);
 	saved_smack = cal_access_control_get_label();
 
-	if (owner_label && saved_smack && strcmp(owner_label, saved_smack) == 0)
+	if (owner_label && saved_smack && CAL_STRING_EQUAL == strcmp(owner_label, saved_smack))
 		ret = CALENDAR_ERROR_NONE;
 
 	sqlite3_finalize(stmt);

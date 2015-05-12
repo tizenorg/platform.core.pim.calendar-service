@@ -27,6 +27,8 @@
 #include "cal_record.h"
 #include <tzplatform_config.h>
 
+#define CAL_STR_SHORT_LEN 1024
+#define CAL_STRING_EQUAL 0
 #define CAL_TZID_GMT "Etc/GMT"
 #define CAL_SOCK_PATH "/run/user/%d"
 #define CAL_NOTI_EVENT_CHANGED tzplatform_mkpath(TZ_USER_DATA,"calendar-svc/.CALENDAR_SVC_EVENT_CHANGED")

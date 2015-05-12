@@ -83,7 +83,7 @@ static bool _cal_server_account_delete_cb(const char* event_type, int account_id
 {
 	CAL_FN_CALL();
 
-	if (strcmp(event_type, ACCOUNT_NOTI_NAME_DELETE) == 0)
+	if (CAL_STRING_EQUAL == strcmp(event_type, ACCOUNT_NOTI_NAME_DELETE))
 	{
 		calendar_db_delete_account(account_id);
 		cal_server_contacts_delete(account_id);

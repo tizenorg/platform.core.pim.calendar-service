@@ -396,11 +396,11 @@ API int calendar_db_get_changes_by_version(const char* view_uri, int calendar_bo
 
 	int schedule_type = 0;
 	int record_type = 0;
-	if (strcmp(view_uri,_calendar_event._uri) == 0) {
+	if (CAL_STRING_EQUAL == strcmp(view_uri,_calendar_event._uri)) {
 		schedule_type = CAL_SCH_TYPE_EVENT;
 		record_type = CAL_RECORD_TYPE_EVENT;
 
-	} else if (strcmp(view_uri,_calendar_todo._uri) == 0) {
+	} else if (CAL_STRING_EQUAL == strcmp(view_uri,_calendar_todo._uri)) {
 		schedule_type = CAL_SCH_TYPE_TODO;
 		record_type = CAL_RECORD_TYPE_TODO;
 
@@ -1128,11 +1128,11 @@ API int calendar_db_replace_vcalendars(const char* vcalendar_stream, int *record
 			return ret;
 		}
 
-		if (strcmp(view_uri, _calendar_event._uri) == 0)
+		if (CAL_STRING_EQUAL == strcmp(view_uri, _calendar_event._uri))
 		{
 			ret = cal_record_set_int(record, _calendar_event.id, record_id_array[i]);
 		}
-		else if (strcmp(view_uri, _calendar_todo._uri) == 0)
+		else if (CAL_STRING_EQUAL == strcmp(view_uri, _calendar_todo._uri))
 		{
 			ret = cal_record_set_int(record, _calendar_todo.id, record_id_array[i]);
 		}
@@ -1283,7 +1283,7 @@ API int calendar_db_get_changes_exception_by_version(const char* view_uri, int o
 
 	int schedule_type = 0;
 	int record_type = 0;
-	if (strcmp(view_uri,_calendar_event._uri) == 0) {
+	if (CAL_STRING_EQUAL == strcmp(view_uri,_calendar_event._uri)) {
 		schedule_type = CAL_SCH_TYPE_EVENT;
 		record_type = CAL_RECORD_TYPE_EVENT;
 

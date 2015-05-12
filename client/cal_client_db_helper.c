@@ -43,7 +43,7 @@
 #define CAL_LIMIT_ACCESS_FRONT(uri) \
 	int is_schedule = 0; \
 do { \
-	if (!strncmp(uri, CALENDAR_VIEW_EVENT, strlen(CALENDAR_VIEW_EVENT))) \
+	if (CAL_STRING_EQUAL == strncmp(uri, CALENDAR_VIEW_EVENT, strlen(CALENDAR_VIEW_EVENT))) \
 	{ \
 		is_schedule = 1; \
 		struct timeval hold = {0}; \

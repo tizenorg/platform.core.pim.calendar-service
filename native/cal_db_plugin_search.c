@@ -257,27 +257,27 @@ static int _cal_db_search_get_count_with_query(calendar_query_h query, int *out_
 
 	que = (cal_query_s *)query;
 
-	if (0 == strcmp(que->view_uri, CALENDAR_VIEW_EVENT_CALENDAR))
+	if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_EVENT_CALENDAR))
 	{
 		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_EVENT_CALENDAR);
 		projection = SAFE_STRDUP("id");
 	}
-	else if (0 == strcmp(que->view_uri, CALENDAR_VIEW_TODO_CALENDAR))
+	else if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_TODO_CALENDAR))
 	{
 		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_TODO_CALENDAR);
 		projection = SAFE_STRDUP("id");
 	}
-	else if (0 == strcmp(que->view_uri, CALENDAR_VIEW_EVENT_CALENDAR_ATTENDEE))
+	else if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_EVENT_CALENDAR_ATTENDEE))
 	{
 		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_EVENT_CALENDAR_ATTENDEE);
 		projection = SAFE_STRDUP("id");
 	}
-	else if (0 == strcmp(que->view_uri, CALENDAR_VIEW_INSTANCE_UTIME_CALENDAR))
+	else if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_INSTANCE_UTIME_CALENDAR))
 	{
 		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_NORMAL_INSTANCE);
 		projection = SAFE_STRDUP("event_id");
 	}
-	else if (0 == strcmp(que->view_uri, CALENDAR_VIEW_INSTANCE_LOCALTIME_CALENDAR))
+	else if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_INSTANCE_LOCALTIME_CALENDAR))
 	{
 		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_ALLDAY_INSTANCE);
 		projection = SAFE_STRDUP("event_id");

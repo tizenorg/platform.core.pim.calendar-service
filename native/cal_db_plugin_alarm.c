@@ -280,8 +280,8 @@ static int _cal_db_alarm_get_records_with_query(calendar_query_h query, int offs
 
 	que = (cal_query_s *)query;
 
-	if (0 == strcmp(que->view_uri, CALENDAR_VIEW_ALARM)) {
-		table_name = SAFE_STRDUP(CAL_TABLE_ALARM);
+	if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_ALARM)) {
+		table_name = CAL_SAFE_STRDUP(CAL_TABLE_ALARM);
 	}
 	else {
 		ERR("uri(%s) not support get records with query",que->view_uri);
@@ -459,8 +459,8 @@ static int _cal_db_alarm_get_count_with_query(calendar_query_h query, int *out_c
 
 	que = (cal_query_s *)query;
 
-	if (0 == strcmp(que->view_uri, CALENDAR_VIEW_ALARM))	{
-		table_name = SAFE_STRDUP(CAL_TABLE_ALARM);
+	if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_ALARM))	{
+		table_name = CAL_SAFE_STRDUP(CAL_TABLE_ALARM);
 	}
 	else {
 		ERR("uri(%s) not support get records with query",que->view_uri);

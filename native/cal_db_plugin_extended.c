@@ -643,7 +643,7 @@ static int _cal_db_extended_get_count_with_query(calendar_query_h query, int *ou
 
 	que = (cal_query_s *)query;
 
-	if (0 == strcmp(que->view_uri, CALENDAR_VIEW_EXTENDED))
+	if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_EXTENDED))
 	{
 		table_name = SAFE_STRDUP(CAL_TABLE_EXTENDED);
 	}

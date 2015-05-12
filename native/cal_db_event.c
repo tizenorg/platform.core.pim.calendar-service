@@ -223,14 +223,14 @@ static void __get_tzid_and_range(char *p, char **out_tzid, int *out_range)
 	for (i = 0; i < count; i++) {
 		if (NULL == s[i] || '\0' == *s[i]) continue;
 
-		if (!strncmp(s[i], "TZID=", strlen("TZID="))) {
+		if (CAL_STRING_EQUAL == strncmp(s[i], "TZID=", strlen("TZID="))) {
 			tzid = strdup(s[i] + strlen("TZID="));
 			DBG("tzid [%s]", tzid);
-		} else if (!strncmp(s[i], "RANGE=", strlen("RANGE="))) {
+		} else if (CAL_STRING_EQUAL == strncmp(s[i], "RANGE=", strlen("RANGE="))) {
 			char *param = s[i] + strlen("RANGE=");
-			if (!strncmp(param, "THISANDFUTURE", strlen("THISANDFUTURE")))
+			if (CAL_STRING_EQUAL == strncmp(param, "THISANDFUTURE", strlen("THISANDFUTURE")))
 				range = CAL_RECURRENCE_ID_RANGE_THISANDFUTURE;
-			else if (!strncmp(param, "THISANDPRIOR", strlen("THISANDPRIOR")))
+			else if (CAL_STRING_EQUAL == strncmp(param, "THISANDPRIOR", strlen("THISANDPRIOR")))
 				range = CAL_RECURRENCE_ID_RANGE_THISANDPRIOR;
 			else
 				ERR("Invalid param[%s]", s[i]);

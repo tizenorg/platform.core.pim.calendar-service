@@ -415,11 +415,11 @@ static void _cal_vcalendar_make_aalarm(cal_make_s *b, calendar_record_h record, 
 		RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_uri_p() failed(%d)", ret);
 
 		calendar_time_s st = {0};
-		if (!strncmp(uri, _calendar_event._uri, strlen(_calendar_event._uri))) {
+		if (CAL_STRING_EQUAL == strncmp(uri, _calendar_event._uri, strlen(_calendar_event._uri))) {
 			ret = calendar_record_get_caltime(record, _calendar_event.start_time, &st);
 			RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_caltime() Fail(%d)", ret);
 
-		} else if (!strncmp(uri, _calendar_todo._uri, strlen(_calendar_todo._uri))) {
+		} else if (CAL_STRING_EQUAL == strncmp(uri, _calendar_todo._uri, strlen(_calendar_todo._uri))) {
 			ret = calendar_record_get_caltime(record, _calendar_todo.due_time, &st);
 			RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_caltime() Fail(%d)", ret);
 		}
@@ -2002,8 +2002,8 @@ static void _cal_vcalendar_make_child_extended(cal_make_s *b, calendar_record_h 
 
 	// check lunar: will handle next
 	if (has_lunar) {
-		if ((!strncmp(key, "X-LUNAR", strlen("X-LUNAR")) && !strncmp(value, ":SET", strlen(":SET"))) ||
-				(!strncmp(key, "X-LUNAR:", strlen("X-LUNAR:")) && !strncmp(value, "SET", strlen("SET")))) {
+		if ((CAL_STRING_EQUAL == strncmp(key, "X-LUNAR", strlen("X-LUNAR")) && !strncmp(value, ":SET", strlen(":SET"))) ||
+				(CAL_STRING_EQUAL == strncmp(key, "X-LUNAR:", strlen("X-LUNAR:")) && !strncmp(value, "SET", strlen("SET")))) {
 			*has_lunar = true;
 			return;
 		}
@@ -2238,29 +2238,29 @@ static int __make_vcalendar(cal_make_s *b, calendar_list_h list)
 		ret = calendar_record_get_uri_p(record, &uri);
 		DBG("uri[%s]", uri);
 
-		if (!strcmp(uri, _calendar_event._uri)) {
+		if (CAL_STRING_EQUAL == strcmp(uri, _calendar_event._uri)) {
 			b->type = CALENDAR_BOOK_TYPE_EVENT;
 			__devide_vcalendar_with_header(b, record);
 			_cal_vcalendar_make_schedule(b, record);
 
-		} else if (!strcmp(uri, _calendar_todo._uri)) {
+		} else if (CAL_STRING_EQUAL == strcmp(uri, _calendar_todo._uri)) {
 			b->type = CALENDAR_BOOK_TYPE_TODO;
 			__devide_vcalendar_with_header(b, record);
 			_cal_vcalendar_make_schedule(b, record);
 
-		} else if (!strcmp(uri, _calendar_extended_property._uri)) {
+		} else if (CAL_STRING_EQUAL == strcmp(uri, _calendar_extended_property._uri)) {
 			cal_extended_s *extended = (cal_extended_s *)record;
-			if (!strncmp(extended->key, "VERSION", strlen("VERSION"))) continue;
+			if (CAL_STRING_EQUAL == strncmp(extended->key, "VERSION", strlen("VERSION"))) continue;
 
 			ret = _cal_vcalendar_make_printf(b, extended->key, extended->value);
 			if (CALENDAR_ERROR_NONE != ret) break;
 
 			DBG("extended key[%s] value[%s]", extended->key, extended->value);
 
-		} else if (!strcmp(uri, _calendar_timezone._uri)) {
+		} else if (CAL_STRING_EQUAL == strcmp(uri, _calendar_timezone._uri)) {
 			DBG("Not support timezone");
 
-		} else if (!strcmp(uri, _calendar_book._uri)) {
+		} else if (CAL_STRING_EQUAL == strcmp(uri, _calendar_book._uri)) {
 			DBG("Not support calendar");
 
 		} else {
@@ -2291,9 +2291,9 @@ int cal_vcalendar_make_vcalendar(cal_make_s *b, calendar_list_h list)
 		char *uri = NULL;
 		ret = calendar_record_get_uri_p(record, &uri);
 
-		if (!strcmp(uri, _calendar_extended_property._uri)) {
+		if (CAL_STRING_EQUAL == strcmp(uri, _calendar_extended_property._uri)) {
 			cal_extended_s *extended = (cal_extended_s *)record;
-			if (!strncmp(extended->key, "VERSION", strlen("VERSION"))) {
+			if (CAL_STRING_EQUAL == strncmp(extended->key, "VERSION", strlen("VERSION"))) {
 				version = strstr(extended->value, "1.0") ? 1 : 2;
 				break;
 			}

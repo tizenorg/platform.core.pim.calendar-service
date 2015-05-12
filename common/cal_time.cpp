@@ -67,7 +67,7 @@ int cal_time_is_registered_tzid(const char *tzid)
 		char buf[128] = {0};
 		const UnicodeString *unicode_tzid = s->snext(ec);
 		unicode_tzid->extract(buf, sizeof(buf), NULL, ec);
-		if (!strncmp(tzid, buf, strlen(buf)))
+		if (CAL_STRING_EQUAL == strncmp(tzid, buf, strlen(buf)))
 		{
 			is_found = true;
 			break;
@@ -528,7 +528,7 @@ char* cal_time_convert_ltos(const char *tzid, long long int lli, int is_allday)
 	min = ucal_get(ucal, UCAL_MINUTE, &status);
 	s = ucal_get(ucal, UCAL_SECOND, &status);
 
-	if (!strncmp(tzid, CAL_TZID_GMT, strlen(CAL_TZID_GMT)))
+	if (CAL_STRING_EQUAL == strncmp(tzid, CAL_TZID_GMT, strlen(CAL_TZID_GMT)))
 	{
 		snprintf(buf, sizeof(buf), "%04d%02d%02dT%02d%02d%02d%s", y, mon, d, h, min, s,
 				is_allday ? "" : "Z");
@@ -1005,7 +1005,7 @@ bool cal_time_is_available_tzid(char *tzid)
 			buf[j] = unicode_tzid->charAt(j);
 		}
 		buf[j] = '\0';
-		if (!strncmp(buf, tzid, len)) {
+		if (CAL_STRING_EQUAL == strncmp(buf, tzid, len)) {
 			return true;
 		}
 	}

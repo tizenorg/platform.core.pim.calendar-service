@@ -99,7 +99,7 @@ static const char* __calendar_vcalendar_get_vcalendar_object(const char *origina
 
 	while (*vcal_cursor) {
 		if (new_line) {
-			if (0 == strncmp(vcal_cursor, "END:VCALENDAR", strlen("END:VCALENDAR"))) {
+			if (CAL_STRING_EQUAL == strncmp(vcal_cursor, "END:VCALENDAR", strlen("END:VCALENDAR"))) {
 				vcal_cursor += strlen("END:VCALENDAR");
 				while ('\r' == *vcal_cursor || '\n' == *vcal_cursor) {
 					new_line = true;
@@ -243,7 +243,7 @@ API int calendar_vcalendar_parse_to_calendar_foreach(const char *vcalendar_file_
 			len += snprintf(stream + len, strlen(buf) +1, "%s", buf);
 		}
 
-		if (0 == strncmp(buf, "END:VCALENDAR", strlen("END:VCALENDAR"))) {
+		if (CAL_STRING_EQUAL == strncmp(buf, "END:VCALENDAR", strlen("END:VCALENDAR"))) {
 			DBG("end vcalendar");
 			int err;
 			char *vcalendar_object = NULL;

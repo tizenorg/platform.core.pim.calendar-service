@@ -172,11 +172,11 @@ static int _cal_db_instance_normal_get_records_with_query(calendar_query_h query
 
 	que = (cal_query_s *)query;
 
-	if (0 == strcmp(que->view_uri, CALENDAR_VIEW_INSTANCE_UTIME_CALENDAR))
+	if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_INSTANCE_UTIME_CALENDAR))
 	{
 		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_NORMAL_INSTANCE);
 	}
-	else if (0 == strcmp(que->view_uri, CALENDAR_VIEW_INSTANCE_UTIME_CALENDAR_EXTENDED))
+	else if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_INSTANCE_UTIME_CALENDAR_EXTENDED))
 	{
 		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_NORMAL_INSTANCE_EXTENDED);
 	}
@@ -385,11 +385,11 @@ static int _cal_db_instance_normal_get_count_with_query(calendar_query_h query, 
 
 	que = (cal_query_s *)query;
 
-	if (0 == strcmp(que->view_uri, CALENDAR_VIEW_INSTANCE_UTIME_CALENDAR))
+	if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_INSTANCE_UTIME_CALENDAR))
 	{
 		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_NORMAL_INSTANCE);
 	}
-	else if (0 == strcmp(que->view_uri, CALENDAR_VIEW_INSTANCE_UTIME_CALENDAR_EXTENDED))
+	else if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_INSTANCE_UTIME_CALENDAR_EXTENDED))
 	{
 		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_NORMAL_INSTANCE_EXTENDED);
 	}
