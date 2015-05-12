@@ -161,7 +161,7 @@ int cal_db_extended_insert_record(calendar_record_h record, int record_id, calen
 				CAL_TABLE_SCHEDULE,
 				record_id);
 		dbret = cal_db_util_query_exec(query);
-		if(CAL_DB_OK != dbret)
+		if (CAL_DB_OK != dbret)
 		{
 			ERR("cal_db_util_query_exec() Fail(%d)", dbret);
 			switch (dbret)

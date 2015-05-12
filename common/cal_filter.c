@@ -85,7 +85,7 @@ API int calendar_filter_add_filter(calendar_filter_h filter, calendar_filter_h a
 			"The filter view_uri is different (filter1:%s, filter2:%s)", com_filter->view_uri, com_filter2->view_uri);
 
 	ret = cal_filter_clone(add_filter, &f);
-	RETV_IF(ret != CALENDAR_ERROR_NONE, ret);
+	RETV_IF(CALENDAR_ERROR_NONE != ret, ret);
 
 	com_filter->filters = g_slist_append(com_filter->filters, f);
 
@@ -349,7 +349,7 @@ static int _cal_filter_clone_attribute(cal_attribute_filter_s* filter,
 	out->filter_type = filter->filter_type;
 	out->match = filter->match;
 	out->property_id = filter->property_id;
-	switch(filter->filter_type)
+	switch (filter->filter_type)
 	{
 	case CAL_FILTER_STR:
 		out->value.s = SAFE_STRDUP(filter->value.s);

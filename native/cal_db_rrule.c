@@ -427,7 +427,7 @@ static int _cal_db_rrule_delete_record(int id)
 			CAL_TABLE_RRULE, id);
 
 	dbret = cal_db_util_query_exec(query);
-	if(CAL_DB_DONE != dbret) {
+	if (CAL_DB_DONE != dbret) {
 		ERR("cal_db_util_query_exec() Fail");
 		switch (dbret)
 		{

@@ -1399,7 +1399,7 @@ static void __work_component_property_rrule_ver_1(char *value, calendar_record_h
 			bool exit_loop = false;
 			int sign = 1;
 			int j = 0;
-			switch(freq_mode)
+			switch (freq_mode)
 			{
 			case VCAL_RECURRENCE_MONTHLY_BYDAY:
 			case VCAL_RECURRENCE_WEEKLY:

@@ -134,8 +134,7 @@ static int _cal_db_instance_normal_get_all_records(int offset, int limit, calend
 		calendar_record_h record;
 		// stmt -> record
 		ret = calendar_record_create(_calendar_instance_utime_calendar_book._uri,&record);
-		if( ret != CALENDAR_ERROR_NONE )
-		{
+		if (CALENDAR_ERROR_NONE != ret) {
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
 			sqlite3_finalize(stmt);
@@ -145,8 +144,7 @@ static int _cal_db_instance_normal_get_all_records(int offset, int limit, calend
 		_cal_db_instance_normal_get_stmt(stmt, record);
 
 		ret = calendar_list_add(*out_list, record);
-		if( ret != CALENDAR_ERROR_NONE )
-		{
+		if (CALENDAR_ERROR_NONE != ret) {
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
 			calendar_record_destroy(record, true);
@@ -193,7 +191,7 @@ static int _cal_db_instance_normal_get_records_with_query(calendar_query_h query
 	if (que->filter)
 	{
 		ret = cal_db_query_create_condition(query, &condition, &bind_text);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			CAL_FREE(table_name);
 			ERR("filter create fail");
@@ -280,7 +278,7 @@ static int _cal_db_instance_normal_get_records_with_query(calendar_query_h query
 
 	//
 	ret = calendar_list_create(out_list);
-	if (ret != CALENDAR_ERROR_NONE)
+	if (CALENDAR_ERROR_NONE != ret)
 	{
 		if (bind_text)
 		{
@@ -298,8 +296,7 @@ static int _cal_db_instance_normal_get_records_with_query(calendar_query_h query
 		calendar_record_h record;
 		// stmt -> record
 		ret = calendar_record_create(que->view_uri,&record);
-		if( ret != CALENDAR_ERROR_NONE )
-		{
+		if (CALENDAR_ERROR_NONE != ret) {
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
 
@@ -326,8 +323,7 @@ static int _cal_db_instance_normal_get_records_with_query(calendar_query_h query
 		}
 
 		ret = calendar_list_add(*out_list,record);
-		if( ret != CALENDAR_ERROR_NONE )
-		{
+		if (CALENDAR_ERROR_NONE != ret) {
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
 			calendar_record_destroy(record, true);
@@ -408,7 +404,7 @@ static int _cal_db_instance_normal_get_count_with_query(calendar_query_h query, 
 	if (que->filter)
 	{
 		ret = cal_db_query_create_condition(query, &condition, &bind_text);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			CAL_FREE(table_name);
 			ERR("filter create fail");
@@ -514,7 +510,7 @@ static void _cal_db_instance_normal_get_property_stmt(sqlite3_stmt *stmt,
 	cal_instance_normal_s* instance =  (cal_instance_normal_s*)(record);
 	const unsigned char *temp;
 
-	switch(property)
+	switch (property)
 	{
 	case CAL_PROPERTY_INSTANCE_NORMAL_START:
 		instance->start.type = CALENDAR_TIME_UTIME;

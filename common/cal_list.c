@@ -233,7 +233,7 @@ API int calendar_list_destroy(calendar_list_h list, bool delete_record)
 			cursor = cursor->next;
 		}
 	}
-	if(l->record)
+	if (l->record)
 	{
 		g_list_free(l->record);
 	}

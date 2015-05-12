@@ -36,7 +36,7 @@ bool cal_db_query_find_projection_property(calendar_query_h query, unsigned int 
  *  bind_text is strdup copy
  *  please check bind_text free
  CAL_FREE(set);
- if(bind_text) {
+ if (bind_text) {
 	for (cursor=bind_text; cursor;cursor=cursor->next) {
 	 CAL_FREE(cursor->data);
 	}

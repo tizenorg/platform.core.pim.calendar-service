@@ -1087,9 +1087,9 @@ cal_record_type_e cal_view_get_type(const char *view_uri)
 	cal_view_uri_info_s* view_uri_info = NULL;
 	cal_record_type_e type = CAL_RECORD_TYPE_INVALID;
 
-	if(cal_uri_property_hash){
+	if (cal_uri_property_hash){
 		view_uri_info = g_hash_table_lookup(cal_uri_property_hash, view_uri);
-		if(view_uri_info) {
+		if (view_uri_info) {
 			type = view_uri_info->type;
 		}
 		else
@@ -1132,9 +1132,9 @@ const cal_property_info_s* cal_view_get_property_info(const char *view_uri, int 
 	cal_property_info_s* tmp = NULL;
 	cal_view_uri_info_s* view_uri_info = NULL;
 
-	if(cal_uri_property_hash){
+	if (cal_uri_property_hash){
 		view_uri_info = g_hash_table_lookup(cal_uri_property_hash, view_uri);
-		if(view_uri_info) {
+		if (view_uri_info) {
 			tmp = view_uri_info->properties;
 			*count = view_uri_info->property_count;
 		}
@@ -1147,9 +1147,9 @@ const char* cal_view_get_uri(const char *view_uri)
 {
 	cal_view_uri_info_s* view_uri_info = NULL;
 
-	if(cal_uri_property_hash){
+	if (cal_uri_property_hash){
 		view_uri_info = g_hash_table_lookup(cal_uri_property_hash, view_uri);
-		if(view_uri_info) {
+		if (view_uri_info) {
 			return view_uri_info->view_uri;
 		}
 	}

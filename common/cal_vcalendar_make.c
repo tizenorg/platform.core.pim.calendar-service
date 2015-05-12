@@ -2286,7 +2286,7 @@ int cal_vcalendar_make_vcalendar(cal_make_s *b, calendar_list_h list)
 	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "calendar_list_first() Fail");
 	do {
 		ret = calendar_list_get_current_record_p(list, &record);
-		if(CALENDAR_ERROR_NONE != ret) break;
+		if (CALENDAR_ERROR_NONE != ret) break;
 
 		char *uri = NULL;
 		ret = calendar_record_get_uri_p(record, &uri);

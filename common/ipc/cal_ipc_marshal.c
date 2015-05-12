@@ -297,7 +297,7 @@ static int _cal_ipc_unmarshal_attribute_filter(const pims_ipc_data_h ipc_data, c
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	switch(filter->filter_type) {
+	switch (filter->filter_type) {
 	case CAL_FILTER_STR:
 		if (cal_ipc_unmarshal_char(ipc_data,&filter->value.s) != CALENDAR_ERROR_NONE) {
 			ERR("cal_ipc_unmarshal fail");
@@ -351,7 +351,7 @@ static int _cal_ipc_marshal_attribute_filter(const cal_attribute_filter_s* filte
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	switch(filter->filter_type) {
+	switch (filter->filter_type) {
 	case CAL_FILTER_STR:
 		if (cal_ipc_marshal_char((filter->value.s),ipc_data) != CALENDAR_ERROR_NONE) {
 			ERR("cal_ipc_marshal fail");
@@ -413,7 +413,7 @@ int cal_ipc_unmarshal_record(const pims_ipc_data_h ipc_data, calendar_record_h* 
 	}
 
 	ret = calendar_record_create(common.view_uri, precord);
-	RETVM_IF(ret != CALENDAR_ERROR_NONE, ret, "record create fail");
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "record create fail");
 
 	pcommon = (cal_record_s*)(*precord);
 	pcommon->properties_max_count = common.properties_max_count;
@@ -421,7 +421,7 @@ int cal_ipc_unmarshal_record(const pims_ipc_data_h ipc_data, calendar_record_h* 
 
 	ret = plugin_cb->unmarshal_record(ipc_data, *precord);
 
-	if (ret != CALENDAR_ERROR_NONE) {
+	if (CALENDAR_ERROR_NONE != ret) {
 		calendar_record_destroy(*precord,true);
 		*precord = NULL;
 		ERR("cal_ipc_unmarshal fail");
@@ -494,7 +494,7 @@ int cal_ipc_unmarshal_char(const pims_ipc_data_h ipc_data, char** ppbufchar)
 	}
 	length = *(int*)tmp;
 
-	if(length == -1) {
+	if (length == -1) {
 		ret = CALENDAR_ERROR_NONE;
 		*ppbufchar = NULL;
 		return ret;
@@ -698,7 +698,7 @@ int cal_ipc_marshal_char(const char* bufchar, pims_ipc_data_h ipc_data)
 
 	RETV_IF(ipc_data==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
 
-	if(bufchar != NULL) {
+	if (bufchar != NULL) {
 		int length = strlen(bufchar);
 		if (pims_ipc_data_put(ipc_data,(void*)&length,sizeof(int)) != 0) {
 			ret = CALENDAR_ERROR_OUT_OF_MEMORY;
@@ -821,8 +821,8 @@ int cal_ipc_marshal_record_common(const cal_record_s* common, pims_ipc_data_h ip
 	}
 
 	if (0 < common->properties_max_count) {
-		if(pims_ipc_data_put(ipc_data,(void*)common->properties_flags,sizeof(char)*common->properties_max_count) < 0) {
-			ERR("cal_ipc_marshal fail");
+		if (pims_ipc_data_put(ipc_data,(void*)common->properties_flags,sizeof(char)*common->properties_max_count) < 0) {
+			ERR("cal_ipc_marshal Fail");
 			return CALENDAR_ERROR_NO_DATA;
 		}
 	}
@@ -850,7 +850,7 @@ int cal_ipc_unmarshal_query(const pims_ipc_data_h ipc_data, calendar_query_h *qu
 	str = (char*)pims_ipc_data_get(ipc_data,&size);
 
 	ret = calendar_query_create(str, query);
-	if (ret != CALENDAR_ERROR_NONE) {
+	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("calendar_query_create fail");
 		return ret;
 	}

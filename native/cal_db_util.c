@@ -351,7 +351,7 @@ cal_db_util_error_e cal_db_util_stmt_step(sqlite3_stmt *stmt)
 #define CAL_COMMIT_TRY_MAX 500000
 int cal_db_util_begin_trans(void)
 {
-	if(transaction_cnt <= 0)
+	if (transaction_cnt <= 0)
 	{
 		int ret, progress;
 

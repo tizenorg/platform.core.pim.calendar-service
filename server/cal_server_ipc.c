@@ -121,7 +121,7 @@ void cal_server_ipc_check_permission(pims_ipc_h ipc, pims_ipc_data_h indata,
 	}
 
 	ret = cal_ipc_unmarshal_int(indata, &permission);
-	if (ret != CALENDAR_ERROR_NONE) {
+	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_ipc_unmarshal_int fail");
 		goto ERROR_RETURN;
 	}
@@ -159,7 +159,7 @@ void cal_server_ipc_db_insert_record(pims_ipc_h ipc, pims_ipc_data_h indata, pim
 
 	if (indata) {
 		ret = cal_ipc_unmarshal_record(indata,&record);
-		if (ret != CALENDAR_ERROR_NONE) {
+		if (CALENDAR_ERROR_NONE != ret) {
 			ERR("_cal_ipc_unmarshal_record fail");
 			record = NULL;
 			goto ERROR_RETURN;
@@ -258,13 +258,13 @@ void cal_server_ipc_db_get_record(pims_ipc_h ipc, pims_ipc_data_h indata, pims_i
 	if (indata)
 	{
 		ret = cal_ipc_unmarshal_char(indata,&view_uri);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			ERR("cal_ipc_unmarshal_char fail");
 			goto ERROR_RETURN;
 		}
 		ret = cal_ipc_unmarshal_int(indata,&id);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			ERR("cal_ipc_unmarshal_int fail");
 			goto ERROR_RETURN;
@@ -330,7 +330,7 @@ void cal_server_ipc_db_update_record(pims_ipc_h ipc, pims_ipc_data_h indata, pim
 	if (indata)
 	{
 		ret = cal_ipc_unmarshal_record(indata,&record);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			ERR("cal_ipc_unmarshal_record fail");
 			goto ERROR_RETURN;
@@ -399,13 +399,13 @@ void cal_server_ipc_db_delete_record(pims_ipc_h ipc, pims_ipc_data_h indata, pim
 	if (indata)
 	{
 		ret = cal_ipc_unmarshal_char(indata,&view_uri);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			ERR("cal_ipc_unmarshal_record fail");
 			goto ERROR_RETURN;
 		}
 		ret = cal_ipc_unmarshal_int(indata,&id);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			ERR("cal_ipc_unmarshal_int fail");
 			goto ERROR_RETURN;
@@ -474,19 +474,19 @@ void cal_server_ipc_db_get_all_records(pims_ipc_h ipc, pims_ipc_data_h indata, p
 	if (indata)
 	{
 		ret = cal_ipc_unmarshal_char(indata,&view_uri);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			ERR("cal_ipc_unmarshal_record fail");
 			goto ERROR_RETURN;
 		}
 		ret = cal_ipc_unmarshal_int(indata,&offset);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			ERR("cal_ipc_unmarshal_int fail");
 			goto ERROR_RETURN;
 		}
 		ret = cal_ipc_unmarshal_int(indata,&limit);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			ERR("cal_ipc_unmarshal_int fail");
 			goto ERROR_RETURN;
@@ -521,13 +521,13 @@ void cal_server_ipc_db_get_all_records(pims_ipc_h ipc, pims_ipc_data_h indata, p
 			ERR("pims_ipc_data_put fail");
 			goto DATA_FREE;
 		}
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			ERR("cal_ipc_unmarshal_int fail");
 			goto DATA_FREE;
 		}
 		ret = cal_ipc_marshal_list(list,*outdata);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			ERR("cal_ipc_unmarshal_int fail");
 			goto ERROR_RETURN;
@@ -622,13 +622,13 @@ void cal_server_ipc_db_get_records_with_query(pims_ipc_h ipc, pims_ipc_data_h in
 			ERR("pims_ipc_data_put fail");
 			goto DATA_FREE;
 		}
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			ERR("cal_ipc_unmarshal_int fail");
 			goto DATA_FREE;
 		}
 		ret = cal_ipc_marshal_list(list,*outdata);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			ERR("cal_ipc_unmarshal_int fail");
 			goto DATA_FREE;
@@ -683,13 +683,13 @@ void cal_server_ipc_db_clean_after_sync(pims_ipc_h ipc, pims_ipc_data_h indata, 
 	if (indata)
 	{
 		ret = cal_ipc_unmarshal_int(indata,&calendar_book_id);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			ERR("cal_ipc_unmarshal_int fail");
 			goto ERROR_RETURN;
 		}
 		ret = cal_ipc_unmarshal_int(indata,&calendar_db_version);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			ERR("cal_ipc_unmarshal_int fail");
 			goto ERROR_RETURN;
@@ -743,7 +743,7 @@ void cal_server_ipc_db_get_count(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ip
 	if (indata)
 	{
 		ret = cal_ipc_unmarshal_char(indata,&view_uri);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			ERR("cal_ipc_unmarshal_record fail");
 			goto ERROR_RETURN;
@@ -778,12 +778,12 @@ void cal_server_ipc_db_get_count(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ip
 			ERR("pims_ipc_data_put fail");
 			goto DATA_FREE;
 		}
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			goto DATA_FREE;
 		}
 		ret = cal_ipc_marshal_int(count,*outdata);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			ERR("cal_ipc_unmarshal_int fail");
 			goto ERROR_RETURN;
@@ -830,7 +830,7 @@ void cal_server_ipc_db_get_count_with_query(pims_ipc_h ipc, pims_ipc_data_h inda
 	if (indata)
 	{
 		ret = cal_ipc_unmarshal_query(indata,&query);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			ERR("cal_ipc_unmarshal_record fail");
 			goto ERROR_RETURN;
@@ -869,7 +869,7 @@ void cal_server_ipc_db_get_count_with_query(pims_ipc_h ipc, pims_ipc_data_h inda
 			goto DATA_FREE;
 		}
 		ret = cal_ipc_marshal_int(count,*outdata);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			ERR("cal_ipc_unmarshal_int fail");
 			goto ERROR_RETURN;
@@ -917,7 +917,7 @@ void cal_server_ipc_db_insert_records(pims_ipc_h ipc, pims_ipc_data_h indata, pi
 	if (indata)
 	{
 		ret = cal_ipc_unmarshal_list(indata,&list);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			ERR("cal_ipc_unmarshal_list fail");
 			goto ERROR_RETURN;
@@ -952,7 +952,7 @@ void cal_server_ipc_db_insert_records(pims_ipc_h ipc, pims_ipc_data_h indata, pi
 			ERR("pims_ipc_data_put fail");
 			goto DATA_FREE;
 		}
-		if(CALENDAR_ERROR_NONE == ret)
+		if (CALENDAR_ERROR_NONE == ret)
 		{
 			int transaction_ver = cal_db_util_get_transaction_ver();
 			if (cal_ipc_marshal_int(transaction_ver,*outdata) != CALENDAR_ERROR_NONE)
@@ -1031,7 +1031,7 @@ void cal_server_ipc_db_update_records(pims_ipc_h ipc, pims_ipc_data_h indata, pi
 	if (indata)
 	{
 		ret = cal_ipc_unmarshal_list(indata,&list);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			ERR("cal_ipc_unmarshal_list fail");
 			goto ERROR_RETURN;
@@ -1251,19 +1251,19 @@ void cal_server_ipc_db_get_changes_by_version(pims_ipc_h ipc, pims_ipc_data_h in
 	if (indata)
 	{
 		ret = cal_ipc_unmarshal_char(indata,&view_uri);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			ERR("cal_ipc_unmarshal_char fail");
 			goto ERROR_RETURN;
 		}
 		ret = cal_ipc_unmarshal_int(indata,&calendar_book_id);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			ERR("cal_ipc_unmarshal_int fail");
 			goto ERROR_RETURN;
 		}
 		ret = cal_ipc_unmarshal_int(indata,&calendar_db_version);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			ERR("cal_ipc_unmarshal_int fail");
 			goto ERROR_RETURN;
@@ -1302,14 +1302,14 @@ void cal_server_ipc_db_get_changes_by_version(pims_ipc_h ipc, pims_ipc_data_h in
 			goto DATA_FREE;
 		}
 		ret = cal_ipc_marshal_list(record_list,*outdata);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			ERR("cal_ipc_marshal_list fail");
 			goto ERROR_RETURN;
 		}
 
 		ret = cal_ipc_marshal_int(current_calendar_db_version,*outdata);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			ERR("cal_ipc_unmarshal_int fail");
 			goto ERROR_RETURN;
@@ -1382,7 +1382,7 @@ ERROR_RETURN:
 		}
 		if (CALENDAR_ERROR_NONE == ret) {
 			ret = cal_ipc_marshal_int(calendar_db_version,*outdata);
-			if (ret != CALENDAR_ERROR_NONE) {
+			if (CALENDAR_ERROR_NONE != ret) {
 				ERR("cal_ipc_marshal_int fail");
 				return;
 			}
@@ -1406,7 +1406,7 @@ void cal_server_ipc_db_insert_vcalendars(pims_ipc_h ipc, pims_ipc_data_h indata,
 	if (indata)
 	{
 		ret = cal_ipc_unmarshal_char(indata, &stream);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			ERR("unmarshal fail");
 			goto ERROR_RETURN;
@@ -1426,7 +1426,7 @@ void cal_server_ipc_db_insert_vcalendars(pims_ipc_h ipc, pims_ipc_data_h indata,
 
 	ret = calendar_db_insert_vcalendars(stream, &ids, &count);
 
-	if (ret != CALENDAR_ERROR_NONE)
+	if (CALENDAR_ERROR_NONE != ret)
 	{
 		ERR("calendar_db_insert_vcalendars fail");
 		goto ERROR_RETURN;
@@ -1463,7 +1463,7 @@ void cal_server_ipc_db_insert_vcalendars(pims_ipc_h ipc, pims_ipc_data_h indata,
 
 		// count
 		ret = cal_ipc_marshal_int(count,*outdata);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			pims_ipc_data_destroy(*outdata);
 			*outdata = NULL;
@@ -1473,7 +1473,7 @@ void cal_server_ipc_db_insert_vcalendars(pims_ipc_h ipc, pims_ipc_data_h indata,
 		for(i=0;i<count;i++)
 		{
 			ret = cal_ipc_marshal_int(ids[i],*outdata);
-			if (ret != CALENDAR_ERROR_NONE)
+			if (CALENDAR_ERROR_NONE != ret)
 			{
 				pims_ipc_data_destroy(*outdata);
 				*outdata = NULL;
@@ -1572,7 +1572,7 @@ void cal_server_ipc_db_replace_vcalendars(pims_ipc_h ipc, pims_ipc_data_h indata
 
 	ret = calendar_db_replace_vcalendars(stream, ids, count);
 
-	if (ret != CALENDAR_ERROR_NONE)
+	if (CALENDAR_ERROR_NONE != ret)
 	{
 		ERR("calendar_db_insert_vcalendars fail");
 		goto ERROR_RETURN;
@@ -1649,13 +1649,13 @@ void cal_server_ipc_db_replace_record(pims_ipc_h ipc, pims_ipc_data_h indata, pi
 	if (indata)
 	{
 		ret = cal_ipc_unmarshal_record(indata,&record);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			ERR("cal_ipc_unmarshal_record fail");
 			goto ERROR_RETURN;
 		}
 		ret = cal_ipc_unmarshal_int(indata,&id);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			ERR("cal_ipc_unmarshal_record fail");
 			goto ERROR_RETURN;
@@ -1858,19 +1858,19 @@ void cal_server_ipc_db_changes_exception(pims_ipc_h ipc, pims_ipc_data_h indata,
 	if (indata)
 	{
 		ret = cal_ipc_unmarshal_char(indata,&view_uri);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			ERR("cal_ipc_unmarshal_char fail");
 			goto ERROR_RETURN;
 		}
 		ret = cal_ipc_unmarshal_int(indata,&original_event_id);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			ERR("cal_ipc_unmarshal_int fail");
 			goto ERROR_RETURN;
 		}
 		ret = cal_ipc_unmarshal_int(indata,&calendar_db_version);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			ERR("cal_ipc_unmarshal_int fail");
 			goto ERROR_RETURN;
@@ -1909,7 +1909,7 @@ void cal_server_ipc_db_changes_exception(pims_ipc_h ipc, pims_ipc_data_h indata,
 			goto DATA_FREE;
 		}
 		ret = cal_ipc_marshal_list(record_list,*outdata);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			ERR("cal_ipc_marshal_list fail");
 			goto ERROR_RETURN;

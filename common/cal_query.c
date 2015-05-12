@@ -113,7 +113,7 @@ API int calendar_query_set_filter(calendar_query_h query, calendar_filter_h filt
 
 	que = (cal_query_s *)query;
 
-	if(((cal_composite_filter_s*)filter)->filters == NULL)
+	if (((cal_composite_filter_s*)filter)->filters == NULL)
 	{
 		ERR("Empty filter");
 		return CALENDAR_ERROR_NO_DATA;

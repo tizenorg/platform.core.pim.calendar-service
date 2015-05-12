@@ -155,7 +155,7 @@ static int _cal_db_alarm_get_all_records(int offset, int limit, calendar_list_h*
 		calendar_record_h record = NULL;
 		// stmt -> record
 		ret = calendar_record_create(_calendar_alarm._uri,&record);
-		if(ret != CALENDAR_ERROR_NONE) {
+		if (CALENDAR_ERROR_NONE != ret) {
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
 			sqlite3_finalize(stmt);
@@ -164,7 +164,7 @@ static int _cal_db_alarm_get_all_records(int offset, int limit, calendar_list_h*
 		_cal_db_alarm_get_stmt(stmt,record);
 
 		ret = calendar_list_add(*out_list,record);
-		if(ret != CALENDAR_ERROR_NONE) {
+		if (CALENDAR_ERROR_NONE != ret) {
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
 			calendar_record_destroy(record, true);
@@ -185,7 +185,7 @@ static void _cal_db_alarm_get_property_stmt(sqlite3_stmt *stmt,
 
 	alarm = (cal_alarm_s*)(record);
 
-	switch(property) {
+	switch (property) {
 	case CAL_PROPERTY_ALARM_TICK:
 		alarm->remind_tick = sqlite3_column_int(stmt, *stmt_count);
 		break;
@@ -292,7 +292,7 @@ static int _cal_db_alarm_get_records_with_query(calendar_query_h query, int offs
 	// make filter
 	if (que->filter) {
 		ret = cal_db_query_create_condition(query, &condition, &bind_text);
-		if (ret != CALENDAR_ERROR_NONE) {
+		if (CALENDAR_ERROR_NONE != ret) {
 			CAL_FREE(table_name);
 			ERR("filter create fail");
 			return ret;
@@ -361,7 +361,7 @@ static int _cal_db_alarm_get_records_with_query(calendar_query_h query, int offs
 	}
 
 	ret = calendar_list_create(out_list);
-	if (ret != CALENDAR_ERROR_NONE) {
+	if (CALENDAR_ERROR_NONE != ret) {
 		if (bind_text) {
 			g_slist_free_full(bind_text, free);
 			bind_text = NULL;
@@ -376,7 +376,7 @@ static int _cal_db_alarm_get_records_with_query(calendar_query_h query, int offs
 		calendar_record_h record;
 		// stmt -> record
 		ret = calendar_record_create(_calendar_alarm._uri,&record);
-		if(ret != CALENDAR_ERROR_NONE) {
+		if (CALENDAR_ERROR_NONE != ret) {
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
 
@@ -401,7 +401,7 @@ static int _cal_db_alarm_get_records_with_query(calendar_query_h query, int offs
 		}
 
 		ret = calendar_list_add(*out_list,record);
-		if(ret != CALENDAR_ERROR_NONE) {
+		if (CALENDAR_ERROR_NONE != ret) {
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
 			calendar_record_destroy(record, true);
@@ -470,7 +470,7 @@ static int _cal_db_alarm_get_count_with_query(calendar_query_h query, int *out_c
 	// make filter
 	if (que->filter) {
 		ret = cal_db_query_create_condition(query, &condition, &bind_text);
-		if (ret != CALENDAR_ERROR_NONE) {
+		if (CALENDAR_ERROR_NONE != ret) {
 			CAL_FREE(table_name);
 			ERR("filter create fail");
 			return ret;

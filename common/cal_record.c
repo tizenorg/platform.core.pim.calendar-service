@@ -192,7 +192,7 @@ API int calendar_record_create(const char* view_uri, calendar_record_h* out_reco
 
 	ret = plugin_cb->create(out_record);
 
-	if(CALENDAR_ERROR_NONE == ret)
+	if (CALENDAR_ERROR_NONE == ret)
 	{
 		CAL_RECORD_INIT_COMMON((cal_record_s*)*out_record, type, plugin_cb, cal_view_get_uri(view_uri));
 	}

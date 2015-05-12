@@ -56,7 +56,7 @@ int calendar_db_delete_account(int account_id)
 	}
 
 	sqlite3_finalize(stmt);
-	if(calendar_list)
+	if (calendar_list)
 		DBG("calendar cnt=%d",g_list_length(calendar_list));
 
 	ret = cal_db_util_begin_trans();
@@ -73,7 +73,7 @@ int calendar_db_delete_account(int account_id)
 		int id = GPOINTER_TO_INT(cursor->data);
 
 		ret = calendar_db_delete_record(_calendar_book._uri, id);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 		{
 			ERR("calendar_id(%d) delete fail~ ",id);
 		}

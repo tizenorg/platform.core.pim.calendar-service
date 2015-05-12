@@ -853,7 +853,7 @@ int cal_client_db_insert_records(calendar_list_h record_list, int** record_id_ar
 
 	int *ids = NULL;
 	ids = calloc(1, sizeof(int)*(*count));
-	if(NULL == ids) {
+	if (NULL == ids) {
 		ERR("calloc() Fail");
 		*count = 0;
 		pims_ipc_data_destroy(outdata);
@@ -1235,8 +1235,7 @@ int cal_client_db_add_changed_cb(const char* view_uri, calendar_db_changed_cb ca
 	RETV_IF(NULL == callback, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	type = cal_view_get_type(view_uri);
-
-	switch(type) {
+	switch (type) {
 	case CAL_RECORD_TYPE_CALENDAR:
 		ret = cal_inotify_subscribe(CAL_NOTI_TYPE_CALENDAR, CAL_NOTI_CALENDAR_CHANGED, callback, user_data);
 		break;
@@ -1265,8 +1264,7 @@ int cal_client_db_remove_changed_cb(const char* view_uri, calendar_db_changed_cb
 	RETV_IF(NULL == callback, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	type = cal_view_get_type(view_uri);
-
-	switch(type) {
+	switch (type) {
 	case CAL_RECORD_TYPE_CALENDAR:
 		ret = cal_inotify_unsubscribe_with_data(CAL_NOTI_CALENDAR_CHANGED, callback, user_data);
 		break;
@@ -1358,7 +1356,7 @@ int cal_client_db_insert_vcalendars(const char* vcalendar_stream, int **record_i
 
 	int *ids = NULL;
 	ids = calloc(1, sizeof(int)*(*count));
-	if(NULL == ids) {
+	if (NULL == ids) {
 		ERR("calloc() Fail");
 		*count = 0;
 		pims_ipc_data_destroy(outdata);

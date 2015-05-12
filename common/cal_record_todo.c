@@ -239,7 +239,7 @@ static int _cal_record_todo_clone(calendar_record_h record, calendar_record_h* o
 static int _cal_record_todo_get_str(calendar_record_h record, unsigned int property_id, char** out_str)
 {
 	cal_todo_s *rec = (cal_todo_s*)(record);
-	switch(property_id) {
+	switch (property_id) {
 	case CAL_PROPERTY_TODO_SUMMARY:
 		*out_str = SAFE_STRDUP(rec->summary);
 		break;
@@ -317,7 +317,7 @@ static int _cal_record_todo_get_str(calendar_record_h record, unsigned int prope
 static int _cal_record_todo_get_str_p(calendar_record_h record, unsigned int property_id, char** out_str)
 {
 	cal_todo_s *rec = (cal_todo_s*)(record);
-	switch(property_id)
+	switch (property_id)
 	{
 	case CAL_PROPERTY_TODO_SUMMARY:
 		*out_str = (rec->summary);
@@ -396,7 +396,7 @@ static int _cal_record_todo_get_str_p(calendar_record_h record, unsigned int pro
 static int _cal_record_todo_get_int(calendar_record_h record, unsigned int property_id, int* out_value)
 {
 	cal_todo_s *rec = (cal_todo_s*)(record);
-	switch(property_id) {
+	switch (property_id) {
 	case CAL_PROPERTY_TODO_ID:
 		*out_value = (rec->index);
 		break;
@@ -453,7 +453,7 @@ static int _cal_record_todo_get_int(calendar_record_h record, unsigned int prope
 static int _cal_record_todo_get_double(calendar_record_h record, unsigned int property_id, double* out_value)
 {
 	cal_todo_s *rec = (cal_todo_s*)(record);
-	switch(property_id) {
+	switch (property_id) {
 	case CAL_PROPERTY_TODO_LATITUDE:
 		*out_value = (rec->latitude);
 		break;
@@ -471,7 +471,7 @@ static int _cal_record_todo_get_double(calendar_record_h record, unsigned int pr
 static int _cal_record_todo_get_lli(calendar_record_h record, unsigned int property_id, long long int* out_value)
 {
 	cal_todo_s *rec = (cal_todo_s*)(record);
-	switch(property_id) {
+	switch (property_id) {
 	case CAL_PROPERTY_TODO_CREATED_TIME:
 		*out_value = (rec->created_time);
 		break;
@@ -492,7 +492,7 @@ static int _cal_record_todo_get_lli(calendar_record_h record, unsigned int prope
 static int _cal_record_todo_get_caltime(calendar_record_h record, unsigned int property_id, calendar_time_s* out_value)
 {
 	cal_todo_s *rec = (cal_todo_s*)(record);
-	switch(property_id) {
+	switch (property_id) {
 	case CAL_PROPERTY_TODO_START:
 		*out_value = rec->start;
 		break;
@@ -513,7 +513,7 @@ static int _cal_record_todo_get_caltime(calendar_record_h record, unsigned int p
 static int _cal_record_todo_set_str(calendar_record_h record, unsigned int property_id, const char* value)
 {
 	cal_todo_s *rec = (cal_todo_s*)(record);
-	switch(property_id) {
+	switch (property_id) {
 	case CAL_PROPERTY_TODO_SUMMARY:
 		CAL_FREE(rec->summary);
 		rec->summary = SAFE_STRDUP(value);
@@ -612,7 +612,7 @@ static int _cal_record_todo_set_str(calendar_record_h record, unsigned int prope
 static int _cal_record_todo_set_int(calendar_record_h record, unsigned int property_id, int value)
 {
 	cal_todo_s *rec = (cal_todo_s*)(record);
-	switch(property_id) {
+	switch (property_id) {
 	case CAL_PROPERTY_TODO_ID:
 		(rec->index) = value;
 		break;
@@ -723,7 +723,7 @@ static int _cal_record_todo_set_int(calendar_record_h record, unsigned int prope
 static int _cal_record_todo_set_double(calendar_record_h record, unsigned int property_id, double value)
 {
 	cal_todo_s *rec = (cal_todo_s*)(record);
-	switch(property_id) {
+	switch (property_id) {
 	case CAL_PROPERTY_TODO_LATITUDE:
 		(rec->latitude) = value;
 		break;
@@ -741,7 +741,7 @@ static int _cal_record_todo_set_double(calendar_record_h record, unsigned int pr
 static int _cal_record_todo_set_lli(calendar_record_h record, unsigned int property_id, long long int value)
 {
 	cal_todo_s *rec = (cal_todo_s*)(record);
-	switch(property_id) {
+	switch (property_id) {
 	case CAL_PROPERTY_TODO_CREATED_TIME:
 		(rec->created_time) = value;
 		break;
@@ -762,7 +762,7 @@ static int _cal_record_todo_set_lli(calendar_record_h record, unsigned int prope
 static int _cal_record_todo_set_caltime(calendar_record_h record, unsigned int property_id, calendar_time_s value)
 {
 	cal_todo_s *rec = (cal_todo_s*)(record);
-	switch(property_id) {
+	switch (property_id) {
 	case CAL_PROPERTY_TODO_START:
 		(rec->start) = value;
 		break;
@@ -809,7 +809,7 @@ static int _cal_record_todo_add_child_record(calendar_record_h record, unsigned 
 	cal_todo_s *rec = (cal_todo_s*)(record);
 	_cal_record_todo_reset_child_record_id(child_record);
 
-	switch(property_id) {
+	switch (property_id) {
 	case CAL_PROPERTY_TODO_CALENDAR_ALARM:
 		ret = calendar_list_add((calendar_list_h)rec->alarm_list, child_record);
 		rec->has_alarm = 1;

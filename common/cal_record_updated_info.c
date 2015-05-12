@@ -104,7 +104,7 @@ static int _cal_record_updated_info_get_int(calendar_record_h record, unsigned i
 {
 	cal_updated_info_s *rec = (cal_updated_info_s*)(record);
 
-	switch(property_id)
+	switch (property_id)
 	{
 	case CAL_PROPERTY_UPDATED_INFO_ID:
 		*out_value = (rec->id);
@@ -129,7 +129,7 @@ static int _cal_record_updated_info_get_int(calendar_record_h record, unsigned i
 static int _cal_record_updated_info_set_int(calendar_record_h record, unsigned int property_id, int value)
 {
 	cal_updated_info_s *rec = (cal_updated_info_s*)(record);
-	switch(property_id)
+	switch (property_id)
 	{
 	case CAL_PROPERTY_UPDATED_INFO_ID:
 		(rec->id) = value;

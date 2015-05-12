@@ -59,12 +59,10 @@ static gpointer  _cal_server_calendar_main(gpointer user_data);
 
 static bool _cal_server_calendar_delete_step(int ret, __calendar_delete_data_s* data)
 {
-	if (ret != CALENDAR_ERROR_NONE && ret != CALENDAR_ERROR_NO_DATA)
-	{
-		if(data->calendar_id_list)
-		{
+	if (CALENDAR_ERROR_NONE != ret && ret != CALENDAR_ERROR_NO_DATA) {
+		if (data->calendar_id_list)
 			g_list_free(data->calendar_id_list);
-		}
+
 		CAL_FREE(data);
 		ERR("fail (%d)",ret);
 
@@ -73,12 +71,9 @@ static bool _cal_server_calendar_delete_step(int ret, __calendar_delete_data_s* 
 	switch (data->step)
 	{
 	case STEP_1:
-		if (ret == CALENDAR_ERROR_NO_DATA)
-		{
-			if(data->calendar_id_list)
-			{
+		if (ret == CALENDAR_ERROR_NO_DATA) {
+			if (data->calendar_id_list)
 				g_list_free(data->calendar_id_list);
-			}
 			CAL_FREE(data);
 			ERR("step_1 no_data");
 
@@ -287,7 +282,7 @@ static bool  _cal_server_calendar_run(__calendar_delete_data_s* data)
 
 	CAL_FN_CALL();
 
-	if(data == NULL)
+	if (data == NULL)
 	{
 		ERR("data is NULL");
 
@@ -307,10 +302,9 @@ static bool  _cal_server_calendar_run(__calendar_delete_data_s* data)
 		break;
 	default:
 		ERR("invalid step");
-		if(data->calendar_id_list)
-		{
+		if (data->calendar_id_list)
 			g_list_free(data->calendar_id_list);
-		}
+
 		CAL_FREE(data);
 
 		return false;

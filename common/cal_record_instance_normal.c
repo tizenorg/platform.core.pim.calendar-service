@@ -155,7 +155,7 @@ static int _cal_record_instance_normal_clone(calendar_record_h record, calendar_
 static int _cal_record_instance_normal_get_str(calendar_record_h record, unsigned int property_id, char** out_str)
 {
 	cal_instance_normal_s *rec = (cal_instance_normal_s*)(record);
-	switch(property_id) {
+	switch (property_id) {
 	case CAL_PROPERTY_INSTANCE_NORMAL_SUMMARY:
 		*out_str = SAFE_STRDUP(rec->summary);
 		break;
@@ -179,7 +179,7 @@ static int _cal_record_instance_normal_get_str(calendar_record_h record, unsigne
 static int _cal_record_instance_normal_get_str_p(calendar_record_h record, unsigned int property_id, char** out_str)
 {
 	cal_instance_normal_s *rec = (cal_instance_normal_s*)(record);
-	switch(property_id)
+	switch (property_id)
 	{
 	case CAL_PROPERTY_INSTANCE_NORMAL_SUMMARY:
 		*out_str = (rec->summary);
@@ -204,7 +204,7 @@ static int _cal_record_instance_normal_get_str_p(calendar_record_h record, unsig
 static int _cal_record_instance_normal_get_int(calendar_record_h record, unsigned int property_id, int* out_value)
 {
 	cal_instance_normal_s *rec = (cal_instance_normal_s*)(record);
-	switch(property_id) {
+	switch (property_id) {
 	case CAL_PROPERTY_INSTANCE_NORMAL_EVENT_ID:
 		*out_value = (rec->event_id);
 		break;
@@ -243,7 +243,7 @@ static int _cal_record_instance_normal_get_int(calendar_record_h record, unsigne
 static int _cal_record_instance_normal_get_double(calendar_record_h record, unsigned int property_id, double* out_value)
 {
 	cal_instance_normal_s *rec = (cal_instance_normal_s*)(record);
-	switch(property_id) {
+	switch (property_id) {
 	case CAL_PROPERTY_INSTANCE_NORMAL_LATITUDE:
 		*out_value = (rec->latitude);
 		break;
@@ -262,7 +262,7 @@ static int _cal_record_instance_normal_get_double(calendar_record_h record, unsi
 static int _cal_record_instance_normal_get_lli(calendar_record_h record, unsigned int property_id, long long int* out_value)
 {
 	cal_instance_normal_s *rec = (cal_instance_normal_s*)(record);
-	switch(property_id)
+	switch (property_id)
 	{
 	case CAL_PROPERTY_INSTANCE_NORMAL_LAST_MODIFIED_TIME:
 		*out_value = (rec->last_mod);
@@ -277,7 +277,7 @@ static int _cal_record_instance_normal_get_lli(calendar_record_h record, unsigne
 static int _cal_record_instance_normal_get_caltime(calendar_record_h record, unsigned int property_id, calendar_time_s* out_value)
 {
 	cal_instance_normal_s *rec = (cal_instance_normal_s*)(record);
-	switch(property_id) {
+	switch (property_id) {
 	case CAL_PROPERTY_INSTANCE_NORMAL_START:
 		*out_value = rec->start;
 		break;
@@ -295,7 +295,7 @@ static int _cal_record_instance_normal_get_caltime(calendar_record_h record, uns
 static int _cal_record_instance_normal_set_str(calendar_record_h record, unsigned int property_id, const char* value)
 {
 	cal_instance_normal_s *rec = (cal_instance_normal_s*)(record);
-	switch(property_id) {
+	switch (property_id) {
 	case CAL_PROPERTY_INSTANCE_NORMAL_SUMMARY:
 		CAL_FREE(rec->summary);
 		rec->summary = SAFE_STRDUP(value);
@@ -323,7 +323,7 @@ static int _cal_record_instance_normal_set_str(calendar_record_h record, unsigne
 static int _cal_record_instance_normal_set_int(calendar_record_h record, unsigned int property_id, int value)
 {
 	cal_instance_normal_s *rec = (cal_instance_normal_s*)(record);
-	switch(property_id) {
+	switch (property_id) {
 	case CAL_PROPERTY_INSTANCE_NORMAL_EVENT_ID:
 		(rec->event_id) = value;
 		break;
@@ -362,7 +362,7 @@ static int _cal_record_instance_normal_set_int(calendar_record_h record, unsigne
 static int _cal_record_instance_normal_set_double(calendar_record_h record, unsigned int property_id, double value)
 {
 	cal_instance_normal_s *rec = (cal_instance_normal_s*)(record);
-	switch(property_id) {
+	switch (property_id) {
 	case CAL_PROPERTY_INSTANCE_NORMAL_LATITUDE:
 		(rec->latitude) = value;
 		break;
@@ -381,7 +381,7 @@ static int _cal_record_instance_normal_set_double(calendar_record_h record, unsi
 static int _cal_record_instance_normal_set_lli(calendar_record_h record, unsigned int property_id, long long int value)
 {
 	cal_instance_normal_s *rec = (cal_instance_normal_s*)(record);
-	switch(property_id) {
+	switch (property_id) {
 	case CAL_PROPERTY_INSTANCE_NORMAL_LAST_MODIFIED_TIME:
 		(rec->last_mod) = value;
 		break;
@@ -396,7 +396,7 @@ static int _cal_record_instance_normal_set_lli(calendar_record_h record, unsigne
 static int _cal_record_instance_normal_set_caltime(calendar_record_h record, unsigned int property_id, calendar_time_s value)
 {
 	cal_instance_normal_s *rec = (cal_instance_normal_s*)(record);
-	switch(property_id) {
+	switch (property_id) {
 	case CAL_PROPERTY_INSTANCE_NORMAL_START:
 		rec->start = value;
 		break;

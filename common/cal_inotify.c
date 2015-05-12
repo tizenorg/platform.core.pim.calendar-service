@@ -103,10 +103,8 @@ static inline void _handle_callback(GSList *noti_list, int wd, uint32_t mask)
 			}
 #endif
 
-			if ((mask & IN_CLOSE_WRITE) && noti->callback)
-			{
-				switch(noti->noti_type)
-				{
+			if ((mask & IN_CLOSE_WRITE) && noti->callback) {
+				switch(noti->noti_type) {
 				case CAL_NOTI_TYPE_CALENDAR:
 					noti->callback(CALENDAR_VIEW_CALENDAR, noti->cb_data);
 					break;
@@ -342,7 +340,7 @@ int cal_inotify_subscribe(cal_noti_type_e type, const char *path, calendar_db_ch
 	}
 
 	ret = _cal_inotify_add_watch(inoti_fd, path);
-	if (ret != CALENDAR_ERROR_NONE)
+	if (CALENDAR_ERROR_NONE != ret)
 	{
 		ERR("Failed to add watch");
 		return CALENDAR_ERROR_SYSTEM;
@@ -479,7 +477,7 @@ int cal_inotify_unsubscribe_with_data(const char *path, calendar_db_changed_cb c
 	}
 
 	ret = _cal_inotify_delete_noti_with_data(&noti_list, wd, callback, user_data);
-	if (ret != CALENDAR_ERROR_NONE)
+	if (CALENDAR_ERROR_NONE != ret)
 	{
 		WARN("Failed to delete noti(err:%d)", ret);
 		return _cal_inotify_add_watch(inoti_fd, path);

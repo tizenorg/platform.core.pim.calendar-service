@@ -161,7 +161,7 @@ static void _cal_db_attendee_get_property_stmt(sqlite3_stmt *stmt,
 
 	attendee = (cal_attendee_s*)(record);
 
-	switch(property) {
+	switch (property) {
 	case CAL_PROPERTY_ATTENDEE_NUMBER:
 		temp = sqlite3_column_text(stmt, *stmt_count);
 		attendee->attendee_number = SAFE_STRDUP(temp);
@@ -257,7 +257,7 @@ static int _cal_db_attendee_get_records_with_query(calendar_query_h query, int o
 	// make filter
 	if (que->filter) {
 		ret = cal_db_query_create_condition(query, &condition, &bind_text);
-		if (ret != CALENDAR_ERROR_NONE) {
+		if (CALENDAR_ERROR_NONE != ret) {
 			CAL_FREE(table_name);
 			ERR("filter create fail");
 			return ret;
@@ -326,7 +326,7 @@ static int _cal_db_attendee_get_records_with_query(calendar_query_h query, int o
 
 	//
 	ret = calendar_list_create(out_list);
-	if (ret != CALENDAR_ERROR_NONE) {
+	if (CALENDAR_ERROR_NONE != ret) {
 		if (bind_text) {
 			g_slist_free_full(bind_text, free);
 			bind_text = NULL;
@@ -341,7 +341,7 @@ static int _cal_db_attendee_get_records_with_query(calendar_query_h query, int o
 		calendar_record_h record;
 		// stmt -> record
 		ret = calendar_record_create(_calendar_attendee._uri,&record);
-		if(ret != CALENDAR_ERROR_NONE) {
+		if (CALENDAR_ERROR_NONE != ret) {
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
 
@@ -366,7 +366,7 @@ static int _cal_db_attendee_get_records_with_query(calendar_query_h query, int o
 		}
 
 		ret = calendar_list_add(*out_list,record);
-		if(ret != CALENDAR_ERROR_NONE) {
+		if (CALENDAR_ERROR_NONE != ret) {
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
 			calendar_record_destroy(record, true);
@@ -435,7 +435,7 @@ static int _cal_db_attendee_get_count_with_query(calendar_query_h query, int *ou
 	// make filter
 	if (que->filter) {
 		ret = cal_db_query_create_condition(query, &condition, &bind_text);
-		if (ret != CALENDAR_ERROR_NONE) {
+		if (CALENDAR_ERROR_NONE != ret) {
 			CAL_FREE(table_name);
 			ERR("filter create fail");
 			return ret;

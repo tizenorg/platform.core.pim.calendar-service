@@ -177,7 +177,7 @@ int cal_client_ipc_connect_on_thread(void)
 
 		pims_ipc_data_destroy(outdata);
 
-		if (ret != CALENDAR_ERROR_NONE) {
+		if (CALENDAR_ERROR_NONE != ret) {
 			ERR("calendar_connect return (%d)",ret);
 			goto ERROR_RETURN;
 		}
@@ -302,7 +302,7 @@ int cal_client_ipc_client_check_permission(int permission, bool *result)
 	}
 
 	ret = cal_ipc_marshal_int(permission, indata);
-	if (ret != CALENDAR_ERROR_NONE) {
+	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("marshal fail");
 		pims_ipc_data_destroy(indata);
 		return ret;

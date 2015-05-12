@@ -265,7 +265,7 @@ static int _cal_server_contacts_sync(void)
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	snprintf(query, sizeof(query), "SELECT contacts_ver FROM %s", CAL_TABLE_VERSION);
 	ret = cal_db_util_query_get_first_int_result(query, NULL, &contacts_ver);
-	if(CALENDAR_ERROR_NONE != ret) {
+	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_db_util_query_get_first_int_result() Fail(%d)", ret);
 		return ret;
 	}
@@ -303,7 +303,7 @@ static int _cal_server_contacts_sync(void)
 
 	snprintf(query, sizeof(query), "UPDATE %s SET contacts_ver=%d", CAL_TABLE_VERSION, latest_ver);
 	ret = cal_db_util_query_exec(query);
-	if(CALENDAR_ERROR_NONE != ret) {
+	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_db_util_query_exec() Fail(%d)", ret);
 		contacts_list_destroy(contacts_list, true);
 		cal_db_util_end_trans(false);
@@ -457,7 +457,7 @@ void cal_server_contacts_delete(int account_id)
 
 		// delete
 		ret = calendar_db_delete_records(_calendar_event._uri, record_id_array, i);
-		if (ret != CALENDAR_ERROR_NONE)
+		if (CALENDAR_ERROR_NONE != ret)
 			DBG("calendar_db_delete_records fail");
 		free(record_id_array);
 	}

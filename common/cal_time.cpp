@@ -420,7 +420,7 @@ int cal_time_get_like_tzid(const char *tzid, calendar_record_h timezone, char **
 	u_uastrcpy(utzid, tzid);
 
 	ret = _cal_time_get_like_utzid(utzid, u_strlen(utzid), tzid, timezone, like_tzid);
-	if (ret != CALENDAR_ERROR_NONE)
+	if (CALENDAR_ERROR_NONE != ret)
 	{
 		DBG("Failed to find from timezone table, so set GMT");
 		*like_tzid = strdup(CAL_TZID_GMT);
