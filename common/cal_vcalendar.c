@@ -201,7 +201,7 @@ API int calendar_vcalendar_parse_to_calendar_foreach(const char *vcalendar_file_
 
 	len = 0;
 	buf_size = ICALENAR_BUFFER_MAX;
-	stream = malloc(ICALENAR_BUFFER_MAX);
+	stream = calloc(ICALENAR_BUFFER_MAX, sizeof(char));
 	if (NULL == stream) {
 		ERR("calloc() Fail");
 		fclose(file);

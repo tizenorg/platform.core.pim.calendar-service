@@ -60,7 +60,7 @@ static int _cal_record_updated_info_create(calendar_record_h* out_record)
 	int ret= CALENDAR_ERROR_NONE;
 
 	temp = calloc(1,sizeof(cal_updated_info_s));
-	RETVM_IF(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "malloc(cal_updated_info_s:sch) Fail(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
+	RETVM_IF(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc(cal_updated_info_s:sch) Fail(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
 
 	*out_record = (calendar_record_h)temp;
 

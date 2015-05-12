@@ -88,7 +88,7 @@ static int _cal_record_instance_allday_create(calendar_record_h* out_record)
 	int ret= CALENDAR_ERROR_NONE;
 
 	temp = calloc(1,sizeof(cal_instance_allday_s));
-	RETVM_IF(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "malloc(cal_instance_allday_s:sch) Fail(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
+	RETVM_IF(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc(cal_instance_allday_s:sch) Fail(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
 
 	_cal_record_instance_allday_struct_init(temp);
 

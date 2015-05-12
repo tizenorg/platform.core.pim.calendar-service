@@ -72,7 +72,7 @@ static int _cal_record_calendar_create(calendar_record_h* out_record)
 	int ret= CALENDAR_ERROR_NONE;
 
 	temp = calloc(1,sizeof(cal_calendar_s));
-	RETVM_IF(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "malloc(cal_calendar_s) Fail(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
+	RETVM_IF(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc(cal_calendar_s) Fail(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
 
 	_cal_record_calendar_struct_init(temp);
 

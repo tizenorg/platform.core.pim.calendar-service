@@ -144,7 +144,7 @@ static int _cal_ipc_unmarshal_composite_filter(const pims_ipc_data_h ipc_data, c
 			cal_composite_filter_s* com_filter = NULL;
 			com_filter = calloc(1,sizeof(cal_composite_filter_s));
 			if (com_filter == NULL) {
-				ERR("malloc fail");
+				ERR("calloc() Fail");
 				ret = CALENDAR_ERROR_OUT_OF_MEMORY;
 				goto ERROR_RETURN;
 			}
@@ -160,7 +160,7 @@ static int _cal_ipc_unmarshal_composite_filter(const pims_ipc_data_h ipc_data, c
 			cal_attribute_filter_s* attr_filter = NULL;
 			attr_filter = calloc(1,sizeof(cal_attribute_filter_s));
 			if (attr_filter == NULL) {
-				ERR("malloc fail");
+				ERR("calloc() Fail");
 				ret = CALENDAR_ERROR_OUT_OF_MEMORY;
 				goto ERROR_RETURN;
 			}
@@ -896,9 +896,9 @@ int cal_ipc_unmarshal_query(const pims_ipc_data_h ipc_data, calendar_query_h *qu
 	}
 
 	if (que->projection_count > 0) {
-		que->projection = (unsigned int*)malloc(sizeof(int)*que->projection_count);
+		que->projection = (unsigned int*)calloc(que->projection_count, sizeof(int));
 		if (que->projection == NULL) {
-			ERR("malloc fail");
+			ERR("calloc() Fail");
 			ret = CALENDAR_ERROR_OUT_OF_MEMORY;
 			goto ERROR_RETURN;
 		}

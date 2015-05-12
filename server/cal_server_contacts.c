@@ -432,7 +432,15 @@ void cal_server_contacts_delete(int account_id)
 	DBG("event count(%d)\n", count);
 
 	if (count > 0) {
-		record_id_array = (int *)malloc(count*sizeof(int));
+		record_id_array = (int *)calloc(count, sizeof(int));
+		if (NULL == record_id_array) {
+			ERR("calloc() Fail");
+			calendar_list_destroy(list, true);
+			calendar_filter_destroy(filter);
+			calendar_query_destroy(query);
+			return;
+		}
+
 		calendar_list_first(list);
 		do {
 			if (calendar_list_get_current_record_p(list, &event) == CALENDAR_ERROR_NONE) {
@@ -456,8 +464,6 @@ void cal_server_contacts_delete(int account_id)
 	calendar_list_destroy(list, true);
 	calendar_filter_destroy(filter);
 	calendar_query_destroy(query);
-
-	return;
 }
 
 static gpointer  _cal_server_contacts_sync_main(gpointer user_data)
