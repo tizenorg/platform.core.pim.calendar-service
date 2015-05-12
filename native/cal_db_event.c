@@ -253,8 +253,7 @@ static void cal_db_event_apply_recurrence_id_child(int child_id, cal_event_s *ev
 	if (true == is_prior) {
 		cal_record_set_caltime(record, _calendar_event.start_time, event->start);
 		cal_record_set_caltime(record, _calendar_event.end_time, event->end);
-		switch (event->start.type)
-		{
+		switch (event->start.type) {
 		case CALENDAR_TIME_UTIME:
 			DBG("dtstart(%lld) dtend(%lld)", event->start.time.utime, event->end.time.utime);
 			break;
@@ -302,8 +301,7 @@ static void __get_next_instance_caltime(int parent_id, calendar_time_s *caltime,
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	sqlite3_stmt *stmt = NULL;
 
-	switch (caltime->type)
-	{
+	switch (caltime->type) {
 	case CALENDAR_TIME_UTIME:
 		snprintf(query, sizeof(query), "SELECT dtstart_utime, dtend_utime FROM %s WHERE event_id=%d AND dtstart_utime>%lld "
 				"ORDER BY dtstart_utime ASC LIMIT 1",
@@ -355,8 +353,7 @@ static void __get_last_instance_caltime(int parent_id, int type, calendar_time_s
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	sqlite3_stmt *stmt = NULL;
 
-	switch (type)
-	{
+	switch (type) {
 	case CALENDAR_TIME_UTIME:
 		snprintf(query, sizeof(query), "SELECT dtstart_utime FROM %s WHERE event_id=%d "
 				"ORDER BY dtstart_utime DESC LIMIT 1",
@@ -395,8 +392,7 @@ static void __get_last_instance_caltime(int parent_id, int type, calendar_time_s
 static void __del_recurence_id_instance(calendar_time_s *rectime, int parent_id)
 {
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
-	switch (rectime->type)
-	{
+	switch (rectime->type) {
 	case CALENDAR_TIME_UTIME:
 		snprintf(query, sizeof(query), "DELETE FROM %s WHERE dtstart_utime=%lld AND event_id=%d",
 				CAL_TABLE_NORMAL_INSTANCE, rectime->time.utime, parent_id);
@@ -416,8 +412,7 @@ static void __del_recurence_id_instance(calendar_time_s *rectime, int parent_id)
 	// debug
 	int y = 0, m = 0, d = 0;
 	int h = 0, n = 0, s = 0;
-	switch (rectime->type)
-	{
+	switch (rectime->type) {
 	case CALENDAR_TIME_UTIME:
 		cal_time_get_datetime(rectime->time.utime, &y, &m, &d, &h, &n, &s);
 		DBG("[DELETED] %04d-%02d-%02dT%02d:%02d:%02d (utime)", y, m, d, h, n, s);
@@ -481,8 +476,7 @@ void cal_db_event_apply_recurrence_id(int parent_id, cal_event_s *event, char *r
 	char dtstart_datetime[32] = {0};
 	long long int dtstart_utime = 0;
 	calendar_time_s rectime = {0};
-	switch (len_datetime)
-	{
+	switch (len_datetime) {
 	case 8:
 		sscanf(datetime, "%04d%02d%02d", &y, &m, &d);
 		snprintf(dtstart_datetime, sizeof(dtstart_datetime), CAL_FORMAT_LOCAL_DATETIME, y, m, d, 0, 0, 0);
@@ -524,12 +518,10 @@ void cal_db_event_apply_recurrence_id(int parent_id, cal_event_s *event, char *r
 	calendar_time_s dtstart = {0};
 	calendar_time_s dtend = {0};
 	calendar_record_h record = (calendar_record_h)event;
-	switch (range)
-	{
+	switch (range) {
 	case CAL_RECURRENCE_ID_RANGE_THISANDFUTURE:
 		DBG("update child");
-		switch (event->range_type)
-		{
+		switch (event->range_type) {
 		case CALENDAR_RANGE_UNTIL:
 		case CALENDAR_RANGE_NONE:
 			until = event->start;
@@ -558,8 +550,7 @@ void cal_db_event_apply_recurrence_id(int parent_id, cal_event_s *event, char *r
 		__get_next_instance_caltime(parent_id, &until, &dtstart, &dtend);
 		cal_record_set_caltime(record, _calendar_event.start_time, dtstart);
 		cal_record_set_caltime(record, _calendar_event.end_time, dtend);
-		switch (event->range_type)
-		{
+		switch (event->range_type) {
 		case CALENDAR_RANGE_UNTIL:
 		case CALENDAR_RANGE_NONE:
 			break;

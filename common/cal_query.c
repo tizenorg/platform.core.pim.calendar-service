@@ -30,8 +30,7 @@ static bool _cal_query_property_check(const cal_property_info_s *properties,
 {
 	int i;
 
-	for (i=0;i<count;i++)
-	{
+	for (i=0;i<count;i++) {
 		cal_property_info_s *p = (cal_property_info_s*)&(properties[i]);
 		if (property_id == p->property_id) {
 			return true;
@@ -69,8 +68,7 @@ API int calendar_query_set_projection(calendar_query_h query, unsigned int prope
 
 	que = (cal_query_s *)query;
 
-	for (i=0;i<count;i++)
-	{
+	for (i=0;i<count;i++) {
 		find = _cal_query_property_check(que->properties, que->property_count, property_ids[i]);
 		RETVM_IF(false == find, CALENDAR_ERROR_INVALID_PARAMETER,
 				"Invalid parameter : property_id(%d) is not supported on view_uri(%s)", property_ids[i], que->view_uri);
@@ -113,8 +111,7 @@ API int calendar_query_set_filter(calendar_query_h query, calendar_filter_h filt
 
 	que = (cal_query_s *)query;
 
-	if (((cal_composite_filter_s*)filter)->filters == NULL)
-	{
+	if (NULL == ((cal_composite_filter_s*)filter)->filters) {
 		ERR("Empty filter");
 		return CALENDAR_ERROR_NO_DATA;
 	}
@@ -122,8 +119,7 @@ API int calendar_query_set_filter(calendar_query_h query, calendar_filter_h filt
 	ret = cal_filter_clone(filter,&new_filter);
 	RETV_IF(ret!=CALENDAR_ERROR_NONE, ret);
 
-	if (que->filter)
-	{
+	if (que->filter) {
 		calendar_filter_destroy((calendar_filter_h)que->filter);
 	}
 
@@ -158,8 +154,7 @@ API int calendar_query_destroy(calendar_query_h query)
 	RETV_IF(NULL == query, CALENDAR_ERROR_INVALID_PARAMETER);
 	que = (cal_query_s *)query;
 
-	if (que->filter)
-	{
+	if (que->filter) {
 		calendar_filter_destroy((calendar_filter_h)que->filter);
 	}
 
@@ -184,13 +179,11 @@ int cal_query_clone(calendar_query_h query, calendar_query_h* out_query)
 	RETV_IF(CALENDAR_ERROR_NONE != ret, CALENDAR_ERROR_OUT_OF_MEMORY);
 	out_que = (cal_query_s *)*out_query;
 
-	if (que->filter)
-	{
+	if (que->filter) {
 		cal_filter_clone((calendar_filter_h)que->filter,(calendar_filter_h*)&out_filter);
 	}
 
-	if (0 < que->projection_count)
-	{
+	if (0 < que->projection_count) {
 		out_que->projection = calloc(que->projection_count, sizeof(unsigned int));
 		RETVM_IF(NULL == out_que->projection, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc() Fail");
 		memcpy(out_que->projection, que->projection , sizeof(unsigned int) * que->projection_count);

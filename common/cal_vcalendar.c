@@ -42,8 +42,8 @@ API int calendar_vcalendar_make_from_records(calendar_list_h list, char **vcalen
 	cal_make_s *b;
 	char *ical = NULL;
 
-	RETV_IF(list == NULL, CALENDAR_ERROR_INVALID_PARAMETER);
-	RETV_IF(vcalendar_stream == NULL, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == vcalendar_stream, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	b = cal_vcalendar_make_new();
 	RETVM_IF(!b, CALENDAR_ERROR_OUT_OF_MEMORY,
@@ -193,7 +193,7 @@ API int calendar_vcalendar_parse_to_calendar_foreach(const char *vcalendar_file_
 	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "calendar_list_create() Fail(%d)", ret);
 
 	file = fopen(vcalendar_file_path, "r");
-	if (file == NULL) {
+	if (NULL == file) {
 		ERR("Invalid argument: no file");
 		calendar_list_destroy(list, true);
 		return CALENDAR_ERROR_INVALID_PARAMETER;

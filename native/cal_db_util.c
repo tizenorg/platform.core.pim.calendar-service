@@ -181,7 +181,7 @@ int cal_db_util_query_get_first_int_result(const char *query, GSList *bind_text,
 		{
 			retry = false;
 		}
-	} while(retry);
+	} while (retry);
 
 	if (SQLITE_OK != ret)
 	{
@@ -230,8 +230,9 @@ int cal_db_util_query_get_first_int_result(const char *query, GSList *bind_text,
 				retry = false;
 			}
 		}
-		else
+		else {
 			if (result) *result = sqlite3_column_int(stmt, 0);
+		}
 	} while(retry);
 
 	sqlite3_finalize(stmt);
@@ -288,7 +289,7 @@ sqlite3_stmt* cal_db_util_query_prepare(char *query)
 		{
 			retry = false;
 		}
-	} while(retry);
+	} while (retry);
 
 	return stmt;
 }
@@ -317,7 +318,7 @@ cal_db_util_error_e cal_db_util_stmt_step(sqlite3_stmt *stmt)
 		{
 			retry = false;
 		}
-	} while(retry);
+	} while (retry);
 
 	switch (ret)
 	{
@@ -351,8 +352,7 @@ cal_db_util_error_e cal_db_util_stmt_step(sqlite3_stmt *stmt)
 #define CAL_COMMIT_TRY_MAX 500000
 int cal_db_util_begin_trans(void)
 {
-	if (transaction_cnt <= 0)
-	{
+	if (transaction_cnt <= 0) {
 		int ret, progress;
 
 		progress = 100000;

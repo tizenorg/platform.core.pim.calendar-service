@@ -257,17 +257,14 @@ static int _cal_filter_destroy_composite(cal_composite_filter_s* filter)
 	GSList *cursor = NULL;
 
 	RETV_IF(NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
-	for(cursor=filter->filters;cursor;cursor=cursor->next)
-	{
+	for(cursor=filter->filters;cursor;cursor=cursor->next) {
 		cal_filter_s *src = (cal_filter_s *)cursor->data;
-		if (src == NULL)
+		if (NULL == src)
 			continue;
-		if (src->filter_type == CAL_FILTER_COMPOSITE)
-		{
+		if (src->filter_type == CAL_FILTER_COMPOSITE) {
 			_cal_filter_destroy_composite((cal_composite_filter_s*)src);
 		}
-		else
-		{
+		else {
 			_cal_filter_destroy_attribute((cal_attribute_filter_s*)src);
 		}
 
@@ -284,8 +281,7 @@ static int _cal_filter_destroy_attribute(cal_attribute_filter_s* filter)
 {
 	RETV_IF(NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
 
-	if (filter->filter_type == CAL_FILTER_STR)
-	{
+	if (filter->filter_type == CAL_FILTER_STR) {
 		CAL_FREE(filter->value.s);
 	}
 	CAL_FREE(filter);
@@ -304,30 +300,25 @@ static int _cal_filter_clone_composite(cal_composite_filter_s* filter,
 	ret = calendar_filter_create(filter->view_uri, (calendar_filter_h *)&out);
 	RETV_IF(CALENDAR_ERROR_NONE != ret, CALENDAR_ERROR_OUT_OF_MEMORY);
 
-	for(cursor=filter->filters; cursor ; cursor=cursor->next)
-	{
+	for(cursor=filter->filters; cursor ; cursor=cursor->next) {
 		cal_filter_s *src = (cal_filter_s *)cursor->data;
 		cal_filter_s *dest = NULL;
 
-		if (src == NULL)
+		if (NULL == src)
 			continue;
 
-		if (src->filter_type == CAL_FILTER_COMPOSITE)
-		{
+		if (src->filter_type == CAL_FILTER_COMPOSITE) {
 			ret = _cal_filter_clone_composite((cal_composite_filter_s *)src,
 					(cal_composite_filter_s **)&dest);
 		}
-		else
-		{
+		else {
 			ret = _cal_filter_clone_attribute((cal_attribute_filter_s *)src,
 					(cal_attribute_filter_s **)&dest);
 		}
-		if (CALENDAR_ERROR_NONE == ret)
-		{
+		if (CALENDAR_ERROR_NONE == ret) {
 			out->filters = g_slist_append(out->filters, dest);
 		}
-		else
-		{
+		else {
 			calendar_filter_destroy((calendar_filter_h)out);
 			return ret;
 		}
@@ -349,8 +340,7 @@ static int _cal_filter_clone_attribute(cal_attribute_filter_s* filter,
 	out->filter_type = filter->filter_type;
 	out->match = filter->match;
 	out->property_id = filter->property_id;
-	switch (filter->filter_type)
-	{
+	switch (filter->filter_type) {
 	case CAL_FILTER_STR:
 		out->value.s = SAFE_STRDUP(filter->value.s);
 		break;

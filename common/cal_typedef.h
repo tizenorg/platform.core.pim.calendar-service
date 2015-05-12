@@ -493,14 +493,14 @@ typedef struct  {
 #define CAL_CALTIME_SET_UTIME(dest, src_utime) do {\
 	(dest).type = CALENDAR_TIME_UTIME; \
 	(dest).time.utime = src_utime; \
-} while(0)
+} while (0)
 
 #define CAL_CALTIME_SET_DATE(dest, src_year, src_month, src_mday) do {\
 	(dest).type = CALENDAR_TIME_LOCALTIME; \
 	(dest).time.date.year = src_year; \
 	(dest).time.date.month = src_month; \
 	(dest).time.date.mday = src_mday; \
-} while(0)
+} while (0)
 
 typedef struct {
 	int property_id;

@@ -386,13 +386,12 @@ static inline void __adjust_tzid(char *p)
 
 static void __unfolding(char *p)
 {
-	RET_IF(p == NULL);
+	RET_IF(NULL == p);
 	RET_IF('\0' == *p);
 
 	char *q = p;
 	while ('\0' != *p) {
-		switch (*p)
-		{
+		switch (*p) {
 		case '=':
 			if (VCAL_LF == *(p +1) && ' ' == *(p +2)) // ver1.0:out of spec, but allowed exceptional case
 				p += 3;
@@ -433,8 +432,7 @@ static void __decode_escaped_char(char *p)
 	char *q = p;
 	while ('\0' != *p) {
 		if ('\\' == *p && *(p +1)) {
-			switch (*(p +1))
-			{
+			switch (*(p +1)) {
 			case '\\':
 				*q = '\\';
 				p++;
@@ -660,8 +658,7 @@ static void __decode_duration(char *cursor, int len, int *tick, int *unit)
 	int t = 0, u = 0;
 	int i;
 	for (i = 0; i < len; i++) {
-		switch (*(cursor + i))
-		{
+		switch (*(cursor + i)) {
 		case '0':
 		case '1':
 		case '2':
@@ -794,8 +791,7 @@ static void __get_caltime(char *p, calendar_time_s *caltime, struct user_data *u
 	RET_IF(NULL == caltime);
 	RET_IF(NULL == ud);
 
-	switch (strlen(p))
-	{
+	switch (strlen(p)) {
 	case VCAL_DATETIME_LENGTH_YYYYMMDD:
 		caltime->type = CALENDAR_TIME_LOCALTIME;
 		sscanf(p, VCAL_DATETIME_FORMAT_YYYYMMDD,
@@ -938,8 +934,7 @@ static void __work_component_property_uid(char *value, calendar_record_h record,
 
 	int ret = 0;
 	value = __decode_charset(value);
-	switch (ud->type)
-	{
+	switch (ud->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = cal_record_set_str(record, _calendar_event.uid, value);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
@@ -959,8 +954,7 @@ static void __work_component_property_recurrence_id(char *value, calendar_record
 	RET_IF(NULL == ud);
 
 	int ret = 0;
-	switch (ud->type)
-	{
+	switch (ud->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = cal_record_set_str(record, _calendar_event.recurrence_id, value +1);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
@@ -986,8 +980,7 @@ static void __work_component_property_dtstart(char *value, calendar_record_h rec
 	char *tzid = NULL;
 	tzid = ud->datetime_tzid ? ud->datetime_tzid : (ud->timezone_tzid ? ud->timezone_tzid : NULL);
 
-	switch (ud->type)
-	{
+	switch (ud->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		if (tzid && *tzid) {
 			ret = cal_record_set_str(record, _calendar_event.start_tzid, tzid);
@@ -1015,8 +1008,7 @@ static void __work_component_property_created(char *value, calendar_record_h rec
 	RET_IF(NULL == ud);
 
 	int ret = 0;
-	switch (ud->type)
-	{
+	switch (ud->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = cal_record_set_lli(record, _calendar_event.created_time, cal_time_convert_lli(value));
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_lli() Fail(%d)", ret);
@@ -1038,8 +1030,7 @@ static void __work_component_property_description(char *value, calendar_record_h
 
 	int ret = 0;
 	value = __decode_charset(value);
-	switch (ud->type)
-	{
+	switch (ud->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = cal_record_set_str(record, _calendar_event.description, value);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
@@ -1059,8 +1050,7 @@ static void __work_component_property_last_modified(char *value, calendar_record
 	RET_IF(NULL == ud);
 
 	int ret = 0;
-	switch (ud->type)
-	{
+	switch (ud->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = cal_record_set_lli(record, _calendar_event.last_modified_time, cal_time_convert_lli(value));
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_lli() Fail(%d)", ret);
@@ -1081,8 +1071,7 @@ static void __work_component_property_location(char *value, calendar_record_h re
 
 	int ret = 0;
 	value = __decode_charset(value);
-	switch (ud->type)
-	{
+	switch (ud->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = cal_record_set_str(record, _calendar_event.location, value);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
@@ -1099,11 +1088,9 @@ static int __decode_priority(char *value, struct user_data *ud)
 	int original_priority = atoi(value);
 	int modified_priority = 0;
 
-	switch (ud->version)
-	{
+	switch (ud->version) {
 	case VCAL_VER_1:
-		switch (original_priority)
-		{
+		switch (original_priority) {
 		case 0:
 			modified_priority = CALENDAR_TODO_PRIORITY_LOW;
 			break;
@@ -1122,8 +1109,7 @@ static int __decode_priority(char *value, struct user_data *ud)
 
 	case VCAL_VER_2:
 	default:
-		switch (original_priority)
-		{
+		switch (original_priority) {
 		case 1 ... 4:
 			modified_priority = CALENDAR_TODO_PRIORITY_HIGH;
 			break;
@@ -1154,8 +1140,7 @@ static void __work_component_property_priority(char *value, calendar_record_h re
 
 	int ret = 0;
 	int modified_priority = __decode_priority(value, ud);
-	switch (ud->type)
-	{
+	switch (ud->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = cal_record_set_int(record, _calendar_event.priority, modified_priority);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
@@ -1176,8 +1161,7 @@ static void __work_component_property_status(char *value, calendar_record_h reco
 
 	int ret = 0;
 	int status = 0;
-	switch (ud->type)
-	{
+	switch (ud->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		if (CAL_STRING_EQUAL == strncmp(value, ":TENTATIVE", strlen(":TENTATIVE"))) {
 			status = CALENDAR_EVENT_STATUS_TENTATIVE;
@@ -1220,8 +1204,7 @@ static void __work_component_property_summary(char *value, calendar_record_h rec
 
 	int ret = 0;
 	value = __decode_charset(value);
-	switch (ud->type)
-	{
+	switch (ud->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = cal_record_set_str(record, _calendar_event.summary, value);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
@@ -1285,8 +1268,7 @@ static void __set_bystr(int freq_mode, calendar_record_h record, char *bystr)
 	DBG("bystr[%s]", bystr);
 	bystr[strlen(bystr) -1] = '\0'; // to remove ','
 	int ret = 0;
-	switch (freq_mode)
-	{
+	switch (freq_mode) {
 	case VCAL_RECURRENCE_YEARLY_BYMONTH:
 		ret = cal_record_set_str(record, _calendar_event.bymonth, bystr);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
@@ -1399,16 +1381,14 @@ static void __work_component_property_rrule_ver_1(char *value, calendar_record_h
 			bool exit_loop = false;
 			int sign = 1;
 			int j = 0;
-			switch (freq_mode)
-			{
+			switch (freq_mode) {
 			case VCAL_RECURRENCE_MONTHLY_BYDAY:
 			case VCAL_RECURRENCE_WEEKLY:
 				if (true == has_by) {
 					week_index = 0;
 				}
 				while (*(t[i] +j)) {
-					switch (*(t[i] +j))
-					{
+					switch (*(t[i] +j)) {
 					case '+':
 						exit_loop = true;
 						sign = 1;
@@ -1430,8 +1410,7 @@ static void __work_component_property_rrule_ver_1(char *value, calendar_record_h
 			default:
 				has_by = true;
 				while (*(t[i] +j)) {
-					switch (*(t[i] +j))
-					{
+					switch (*(t[i] +j)) {
 					case '+':
 						exit_loop = true;
 						sign = 1;
@@ -1461,8 +1440,7 @@ static void __work_component_property_rrule_ver_1(char *value, calendar_record_h
 			if (VCAL_RECURRENCE_NONE != (freq_mode = __get_frequency(t[i]))) {
 				if (0 == frequency) {
 					int interval = 0;
-					switch (freq_mode)
-					{
+					switch (freq_mode) {
 					case VCAL_RECURRENCE_YEARLY_BYMONTH:
 						frequency = CALENDAR_RECURRENCE_YEARLY;
 						interval = ('\0' == *(t[i] +2)) ? 1 : atoi(t[i] +2);
@@ -1653,11 +1631,9 @@ static void __work_component_property_rrule(char *value, calendar_record_h recor
 	RET_IF(NULL == record);
 	RET_IF(NULL == ud);
 
-	switch (ud->type)
-	{
+	switch (ud->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
-		switch (ud->version)
-		{
+		switch (ud->version) {
 		case VCAL_VER_1:
 			__work_component_property_rrule_ver_1(value, record, ud);
 			break;
@@ -1687,8 +1663,7 @@ static void __work_component_property_dtend(char *value, calendar_record_h recor
 	char *tzid = NULL;
 	tzid = ud->datetime_tzid ? ud->datetime_tzid : (ud->timezone_tzid ? ud->timezone_tzid : NULL);
 
-	switch (ud->type)
-	{
+	switch (ud->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		if (tzid && *tzid) {
 			ret = cal_record_set_str(record, _calendar_event.end_tzid, tzid);
@@ -1919,8 +1894,7 @@ static void __work_component_property_attendee(char *value, calendar_record_h re
 	}
 	g_strfreev(t);
 
-	switch (ud->type)
-	{
+	switch (ud->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = calendar_record_add_child_record(record, _calendar_event.calendar_attendee, attendee);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_add_child_record() Fail(%d)", ret);
@@ -1941,8 +1915,7 @@ static void __work_component_property_categories(char *value, calendar_record_h 
 
 	int ret = 0;
 	value = __decode_charset(value);
-	switch (ud->type)
-	{
+	switch (ud->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = cal_record_set_str(record, _calendar_event.categories, value);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
@@ -2015,8 +1988,7 @@ static void __work_component_property_dalarm(char *value, calendar_record_h reco
 		return;
 	}
 
-	switch (ud->type)
-	{
+	switch (ud->type) {
 	case VCALENDAR_TYPE_VEVENT:
 		ret = calendar_record_add_child_record(record, _calendar_event.calendar_alarm, alarm);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_add_child_record() Fail(%d)", ret);
@@ -2094,8 +2066,7 @@ static void __work_component_property_malarm(char *value, calendar_record_h reco
 		return;
 	}
 
-	switch (ud->type)
-	{
+	switch (ud->type) {
 	case VCALENDAR_TYPE_VEVENT:
 		ret = calendar_record_add_child_record(record, _calendar_event.calendar_alarm, alarm);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_add_child_record() Fail(%d)", ret);
@@ -2167,8 +2138,7 @@ static void __work_component_property_aalarm(char *value, calendar_record_h reco
 		return;
 	}
 
-	switch (ud->type)
-	{
+	switch (ud->type) {
 	case VCALENDAR_TYPE_VEVENT:
 		ret = calendar_record_add_child_record(record, _calendar_event.calendar_alarm, alarm);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_add_child_record() Fail(%d)", ret);
@@ -2189,8 +2159,7 @@ static void __work_component_property_exdate(char *value, calendar_record_h reco
 	RET_IF(NULL == ud);
 
 	int ret = 0;
-	switch (ud->type)
-	{
+	switch (ud->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = cal_record_set_str(record, _calendar_event.exdate, value + 1);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
@@ -2214,8 +2183,7 @@ static void __work_component_property_x_allday(char *value, calendar_record_h re
 		ud->is_allday = true;
 
 		calendar_time_s caltime = {0};
-		switch (ud->type)
-		{
+		switch (ud->type) {
 		case CALENDAR_BOOK_TYPE_EVENT:
 			ret = calendar_record_get_caltime(record, _calendar_event.start_time, &caltime);
 			WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_caltime() Fail");
@@ -2279,8 +2247,7 @@ static void __work_component_property_x_lunar(char *value, calendar_record_h rec
 	int ret = 0;
 	if (CAL_STRING_EQUAL == strncmp(value, ":SET", strlen(":SET"))) {
 		DBG("x-lunar: set");
-		switch (ud->type)
-		{
+		switch (ud->type) {
 		case CALENDAR_BOOK_TYPE_EVENT:
 			ret = cal_record_set_int(record, _calendar_event.calendar_system_type, CALENDAR_SYSTEM_EAST_ASIAN_LUNISOLAR);
 			WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
@@ -2372,8 +2339,7 @@ static void __work_component_property_valarm_trigger(char *value, calendar_recor
 							break;
 						}
 					}
-					switch (related)
-					{
+					switch (related) {
 					case VCAL_RELATED_START:
 						ret = calendar_record_get_caltime(record, _calendar_event.start_time, &caltime);
 						WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_caltime() Fail(%d)", ret);
@@ -2472,8 +2438,7 @@ static char* __work_component_property_begin(char *cursor, calendar_record_h rec
 		cursor = __get_index(cursor, component_property_valarm, VCAL_COMPONENT_PROPERTY_VALARM_MAX, &index);
 
 		char *value = NULL;
-		switch (index)
-		{
+		switch (index) {
 		case VCAL_COMPONENT_PROPERTY_VALARM_ACTION:
 			cursor = __get_value(cursor, &value);
 			__work_component_property_valarm_action(value, alarm, ud);
@@ -2537,8 +2502,7 @@ static char* __work_component_property_begin(char *cursor, calendar_record_h rec
 		if (true == exit_loop) break;
 	}
 
-	switch (ud->type)
-	{
+	switch (ud->type) {
 	case VCALENDAR_TYPE_VEVENT:
 		ret = calendar_record_add_child_record(record, _calendar_event.calendar_alarm, alarm);
 		break;
@@ -2561,8 +2525,7 @@ static char* __work_component_vevent(char *cursor, calendar_record_h record, str
 		cursor = __get_index(cursor, component_property, VCAL_COMPONENT_PROPERTY_MAX, &index);
 
 		char *value = NULL;
-		switch (index)
-		{
+		switch (index) {
 		case VCAL_COMPONENT_PROPERTY_DTSTAMP:
 			cursor = __get_value(cursor, &value);
 			__work_component_property_dtstamp(value, record, ud);
@@ -2735,8 +2698,7 @@ static char* __work_component_vjournal(char *cursor, calendar_record_h record, s
 	while (cursor) {
 		int index = 0;
 		cursor = __get_index(cursor, component_property, VCAL_COMPONENT_PROPERTY_MAX, &index);
-		switch (index)
-		{
+		switch (index) {
 		case VCAL_COMPONENT_PROPERTY_END:
 			DBG("exit record");
 			cursor = __crlf(cursor);
@@ -2762,8 +2724,7 @@ static char* __work_component_vfreebusy(char *cursor, calendar_record_h record, 
 	while (cursor) {
 		int index = 0;
 		cursor = __get_index(cursor, component_property, VCAL_COMPONENT_PROPERTY_MAX, &index);
-		switch (index)
-		{
+		switch (index) {
 		case VCAL_COMPONENT_PROPERTY_END:
 			DBG("exit record");
 			cursor = __crlf(cursor);
@@ -2865,8 +2826,7 @@ static char* __work_component_vtimezone_standard(char *cursor, calendar_record_h
 		cursor = __get_index(cursor, component_property_vtimezone, VCAL_COMPONENT_PROPERTY_VTIMEZONE_MAX, &index);
 
 		char *value = NULL;
-		switch (index)
-		{
+		switch (index) {
 		case VCAL_COMPONENT_PROPERTY_VTIMEZONE_DTSTART:
 			cursor = __get_value(cursor, &value);
 			__work_component_property_vtimezone_standard_dtstart(value +1, record, ud);
@@ -2979,8 +2939,7 @@ static char* __work_component_vtimezone_daylight(char *cursor, calendar_record_h
 		cursor = __get_index(cursor, component_property_vtimezone, VCAL_COMPONENT_PROPERTY_VTIMEZONE_MAX, &index);
 
 		char *value = NULL;
-		switch (index)
-		{
+		switch (index) {
 		case VCAL_COMPONENT_PROPERTY_VTIMEZONE_DTSTART:
 			cursor = __get_value(cursor, &value);
 			__work_component_property_vtimezone_daylight_dtstart(value +1, record, ud);
@@ -3084,8 +3043,7 @@ static char* __work_property_begin(char *cursor, calendar_record_h *out_record, 
 	cursor = __get_index(cursor +1, vcal_component, VCAL_COMPONENT_MAX, &index);
 	cursor = __crlf(cursor);
 	calendar_record_h record = NULL;
-	switch (index)
-	{
+	switch (index) {
 	case VCAL_COMPONENT_VEVENT:
 		ret = calendar_record_create(_calendar_event._uri, &record);
 		RETVM_IF(CALENDAR_ERROR_NONE != ret, NULL, "calendar_record_create() Fail(%d)", ret);
@@ -3143,8 +3101,7 @@ int cal_vcalendar_parse_vcalendar_object(char *stream, calendar_list_h list, vca
 		int index = 0;
 		char *value = NULL;
 		cursor = __get_index(cursor, vcal_property, VCAL_PROPERTY_MAX, &index);
-		switch (index)
-		{
+		switch (index) {
 		case VCAL_PROPERTY_VERSION:
 			cursor = __get_value(cursor, &value);
 			__get_version(value, &ud->version);

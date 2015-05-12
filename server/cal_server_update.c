@@ -35,8 +35,7 @@ static int _cal_server_update_get_db_version(sqlite3 *db, int *version)
 
 	snprintf(query, sizeof(query), "PRAGMA user_version;");
 	ret = sqlite3_prepare_v2(db, query, strlen(query), &stmt, NULL);
-	if (SQLITE_OK != ret)
-	{
+	if (SQLITE_OK != ret) {
 		ERR("sqlite3_prepare_v2() failed[%s]", sqlite3_errmsg(db));
 		return CALENDAR_ERROR_DB_FAILED;
 	}
@@ -73,8 +72,7 @@ int cal_server_update(void)
 	_cal_server_update_get_db_version(__db, &old_version);
 	DBG("[%s] old version(%d)", db_file, old_version);
 
-	if (old_version < 100)
-	{
+	if (old_version < 100) {
 		/* ----------------------- start modified 2013/08/22
 		 * added attendee_table(cutype, delegatee_uri, member), alarm_table(summary, action, attach).
 		 */
@@ -126,8 +124,7 @@ int cal_server_update(void)
 		/* ----------------------- end modified 2013/08/22
 		 */
 	}
-	if (old_version == 100)
-	{
+	if (old_version == 100) {
 		/* ----------------------- start modified 2013/09/22
 		 * added schedule_table(freq) for view table parameter.
 		 */
@@ -141,8 +138,7 @@ int cal_server_update(void)
 		/* ----------------------- end modified 2013/09/22
 		 */
 	}
-	if (old_version == 101)
-	{
+	if (old_version == 101) {
 		/* ----------------------- start modified 2014/07/02
 		 * added trigger depeding on schedule_table
 		 * added original_event_id in deleted_table to check exception event.
@@ -227,8 +223,7 @@ int cal_server_update(void)
 		 */
 		old_version = 102;
 	}
-	if (old_version == 102)
-	{
+	if (old_version == 102) {
 		/* ----------------------- start modified 2014/10/24
 		 * added field is_alldy on schedule_table
 		 */
@@ -244,8 +239,7 @@ int cal_server_update(void)
 		old_version = 103;
 	}
 
-	if (old_version == 103)
-	{
+	if (old_version == 103) {
 		ret = sqlite3_exec(__db, "DROP TABLE reminder_table", NULL, 0, &errmsg);
 		if (SQLITE_OK != ret) {
 			ERR("DROP TABLE reminder_table failed(%d:%s)", ret, errmsg);
@@ -253,8 +247,7 @@ int cal_server_update(void)
 		}
 		old_version = 104;
 	}
-	if (old_version == 104)
-	{
+	if (old_version == 104) {
 		ret = sqlite3_exec(__db, "ALTER TABLE alarm_table ADD COLUMN alarm_utime INTEGER", NULL, 0, &errmsg);
 		if (SQLITE_OK != ret) {
 			ERR("ALTER TABLE schedule_table failed(%d:%s)", ret, errmsg);

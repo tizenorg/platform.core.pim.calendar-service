@@ -224,8 +224,7 @@ int cal_db_alarm_get_records(int parent, cal_list_s *list)
 			if (temp) {
 				int y = 0, m = 0, d = 0;
 				int h = 0, n = 0, s = 0;
-				switch (strlen((const char*)temp))
-				{
+				switch (strlen((const char*)temp)) {
 				case 8:
 					sscanf((const char *)temp, "%04d%02d%02d", &y, &m, &d);
 					alarm->alarm.time.date.year = y;

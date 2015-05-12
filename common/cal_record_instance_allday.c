@@ -364,8 +364,7 @@ static int _cal_record_instance_allday_set_int(calendar_record_h record, unsigne
 static int _cal_record_instance_allday_set_double(calendar_record_h record, unsigned int property_id, double value)
 {
 	cal_instance_allday_s *rec = (cal_instance_allday_s*)(record);
-	switch (property_id)
-	{
+	switch (property_id) {
 	case CAL_PROPERTY_INSTANCE_ALLDAY_LATITUDE:
 		(rec->latitude) = value;
 		break;

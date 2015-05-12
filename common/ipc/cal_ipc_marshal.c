@@ -52,8 +52,7 @@ static int _cal_ipc_marshal_attribute_filter(const cal_attribute_filter_s* filte
 
 static cal_ipc_marshal_record_plugin_cb_s* _cal_ipc_marshal_get_plugin_cb(cal_record_type_e type)
 {
-	switch (type)
-	{
+	switch (type) {
 	case CAL_RECORD_TYPE_CALENDAR:
 		return (&cal_ipc_record_calendar_plugin_cb);
 	case CAL_RECORD_TYPE_EVENT:
@@ -142,8 +141,8 @@ static int _cal_ipc_unmarshal_composite_filter(const pims_ipc_data_h ipc_data, c
 		}
 		if (filter_type == CAL_FILTER_COMPOSITE) {
 			cal_composite_filter_s* com_filter = NULL;
-			com_filter = calloc(1,sizeof(cal_composite_filter_s));
-			if (com_filter == NULL) {
+			com_filter = (cal_composite_filter_s*)calloc(1,sizeof(cal_composite_filter_s));
+			if (NULL == com_filter) {
 				ERR("calloc() Fail");
 				ret = CALENDAR_ERROR_OUT_OF_MEMORY;
 				goto ERROR_RETURN;
@@ -158,8 +157,8 @@ static int _cal_ipc_unmarshal_composite_filter(const pims_ipc_data_h ipc_data, c
 		}
 		else {
 			cal_attribute_filter_s* attr_filter = NULL;
-			attr_filter = calloc(1,sizeof(cal_attribute_filter_s));
-			if (attr_filter == NULL) {
+			attr_filter = (cal_attribute_filter_s*)calloc(1,sizeof(cal_attribute_filter_s));
+			if (NULL == attr_filter) {
 				ERR("calloc() Fail");
 				ret = CALENDAR_ERROR_OUT_OF_MEMORY;
 				goto ERROR_RETURN;
@@ -371,9 +370,8 @@ static int _cal_ipc_marshal_attribute_filter(const cal_attribute_filter_s* filte
 		}
 		break;
 	case CAL_FILTER_LLI:
-		if (cal_ipc_marshal_lli((filter->value.lli),ipc_data) != CALENDAR_ERROR_NONE)
-		{
-			ERR("cal_ipc_marshal fail");
+		if (cal_ipc_marshal_lli((filter->value.lli),ipc_data) != CALENDAR_ERROR_NONE) {
+			ERR("cal_ipc_marshal Fail");
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 		break;
@@ -517,7 +515,7 @@ int cal_ipc_unmarshal_int(const pims_ipc_data_h data, int *pout)
 	RETV_IF(pout==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
 
 	tmp = pims_ipc_data_get(data,&size);
-	if (tmp == NULL) {
+	if (NULL == tmp) {
 		ERR("pims_ipc_data_get Fail");
 		return CALENDAR_ERROR_NO_DATA;
 	}
@@ -536,7 +534,7 @@ int cal_ipc_unmarshal_uint(const pims_ipc_data_h data, unsigned int *pout)
 	RETV_IF(pout==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
 
 	tmp = pims_ipc_data_get(data,&size);
-	if (tmp == NULL) {
+	if (NULL == tmp) {
 		ERR("pims_ipc_data_get Fail");
 		return CALENDAR_ERROR_NO_DATA;
 	}
@@ -554,7 +552,7 @@ int cal_ipc_unmarshal_lli(const pims_ipc_data_h data, long long int *pout)
 	RETV_IF(data==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(pout==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
 	tmp = pims_ipc_data_get(data,&size);
-	if (tmp == NULL) {
+	if (NULL == tmp) {
 		ERR("pims_ipc_data_get Fail");
 		return CALENDAR_ERROR_NO_DATA;
 	}
@@ -572,7 +570,7 @@ int cal_ipc_unmarshal_long(const pims_ipc_data_h data, long *pout)
 	RETV_IF(data==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(pout==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
 	tmp = pims_ipc_data_get(data,&size);
-	if (tmp == NULL) {
+	if (NULL == tmp) {
 		ERR("pims_ipc_data_get Fail");
 		return CALENDAR_ERROR_NO_DATA;
 	}
@@ -590,7 +588,7 @@ int cal_ipc_unmarshal_double(const pims_ipc_data_h data, double *pout)
 	RETV_IF(data==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(pout==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
 	tmp = pims_ipc_data_get(data,&size);
-	if (tmp == NULL) {
+	if (NULL == tmp) {
 		ERR("pims_ipc_data_get Fail");
 		return CALENDAR_ERROR_NO_DATA;
 	}
@@ -609,7 +607,7 @@ int cal_ipc_unmarshal_caltime(const pims_ipc_data_h data, calendar_time_s *pout)
 	RETV_IF(data==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(pout==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
 	tmp = pims_ipc_data_get(data,&size);
-	if (tmp == NULL) {
+	if (NULL == tmp) {
 		ERR("pims_ipc_data_get Fail");
 		return CALENDAR_ERROR_NO_DATA;
 	}
@@ -675,7 +673,7 @@ int cal_ipc_unmarshal_record_common(const pims_ipc_data_h ipc_data, cal_record_s
 		}
 		tmp_properties_flags = (unsigned char*)ret_pims;
 		common->properties_flags = calloc(common->properties_max_count, sizeof(char));
-		if (common->properties_flags == NULL) {
+		if (NULL == common->properties_flags) {
 			ERR("calloc() Fail");
 			return CALENDAR_ERROR_OUT_OF_MEMORY;
 		}
@@ -698,7 +696,7 @@ int cal_ipc_marshal_char(const char* bufchar, pims_ipc_data_h ipc_data)
 
 	RETV_IF(ipc_data==NULL,CALENDAR_ERROR_INVALID_PARAMETER);
 
-	if (bufchar != NULL) {
+	if (bufchar) {
 		int length = strlen(bufchar);
 		if (pims_ipc_data_put(ipc_data,(void*)&length,sizeof(int)) != 0) {
 			ret = CALENDAR_ERROR_OUT_OF_MEMORY;
@@ -897,7 +895,7 @@ int cal_ipc_unmarshal_query(const pims_ipc_data_h ipc_data, calendar_query_h *qu
 
 	if (0 < que->projection_count) {
 		que->projection = (unsigned int*)calloc(que->projection_count, sizeof(int));
-		if (que->projection == NULL) {
+		if (NULL == que->projection) {
 			ERR("calloc() Fail");
 			ret = CALENDAR_ERROR_OUT_OF_MEMORY;
 			goto ERROR_RETURN;
@@ -972,8 +970,7 @@ int cal_ipc_marshal_query(const calendar_query_h query, pims_ipc_data_h ipc_data
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 	}
-	else
-	{
+	else {
 		if (cal_ipc_marshal_int(0,ipc_data) != CALENDAR_ERROR_NONE) {
 			ERR("cal_ipc_marshal fail");
 			return CALENDAR_ERROR_INVALID_PARAMETER;

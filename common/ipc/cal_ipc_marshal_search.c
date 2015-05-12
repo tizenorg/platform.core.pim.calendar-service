@@ -51,8 +51,8 @@ static int _cal_ipc_unmarshal_search(pims_ipc_data_h ipc_data, calendar_record_h
 	for(i=0;i<count;i++) {
 		cal_search_value_s* value_data = NULL;
 		value_data = calloc(1, sizeof(cal_search_value_s));
-		if (value_data == NULL) {
-			ERR("calloc fail");
+		if (NULL == value_data) {
+			ERR("calloc() Fail");
 			return CALENDAR_ERROR_OUT_OF_MEMORY;
 		}
 
@@ -85,7 +85,7 @@ static int _cal_ipc_marshal_search(const calendar_record_h record, pims_ipc_data
 
 		while (cursor) {
 			value_data = (cal_search_value_s *)cursor->data;
-			if (value_data == NULL) {
+			if (NULL == value_data) {
 				cursor = g_slist_next(cursor);
 				continue;
 			}

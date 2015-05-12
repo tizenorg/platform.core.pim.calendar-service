@@ -138,7 +138,7 @@
 		if (ptr) \
 		free(ptr); \
 		ptr = NULL; \
-	} while(0)
+	} while (0)
 
 
 // Thread-local storage

@@ -64,12 +64,10 @@ static bool _cal_server_calendar_delete_step(int ret, __calendar_delete_data_s* 
 			g_list_free(data->calendar_id_list);
 
 		CAL_FREE(data);
-		ERR("fail (%d)",ret);
-
+		ERR("_cal_server_calendar_delete_step Fail(%d)",ret);
 		return false;
 	}
-	switch (data->step)
-	{
+	switch (data->step) {
 	case STEP_1:
 		if (ret == CALENDAR_ERROR_NO_DATA) {
 			if (data->calendar_id_list)
@@ -107,8 +105,7 @@ static int _cal_server_calendar_delete_step1(__calendar_delete_data_s* data)
 
 	CAL_FN_CALL();
 
-	if (data->calendar_id_list == NULL)
-	{
+	if (NULL == data->calendar_id_list) {
 		// get event_list
 		snprintf(query, sizeof(query), "SELECT id FROM %s "
 				"WHERE deleted = 1",
@@ -120,8 +117,7 @@ static int _cal_server_calendar_delete_step1(__calendar_delete_data_s* data)
 			ERR("cal_db_util_query_prepare() Fail");
 			return CALENDAR_ERROR_DB_FAILED;
 		}
-		while(CAL_DB_ROW == cal_db_util_stmt_step(stmt))
-		{
+		while(CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
 			int id = 0;
 			id = sqlite3_column_int(stmt, 0);
 			data->calendar_id_list = g_list_append(data->calendar_id_list, GINT_TO_POINTER(id));
@@ -168,18 +164,17 @@ static int _cal_server_calendar_delete_step2(__calendar_delete_data_s* data)
 	}
 
 	// get event_list
-	snprintf(query, sizeof(query), "SELECT id FROM %s "
-			"WHERE calendar_id = %d LIMIT %d",
+	snprintf(query, sizeof(query), "SELECT id FROM %s WHERE calendar_id = %d LIMIT %d",
 			CAL_TABLE_SCHEDULE,
 			data->current_calendar_id, CAL_SERVER_CALENDAR_DELETE_COUNT);
 
 	stmt = cal_db_util_query_prepare(query);
-	if (NULL == stmt)
-	{
+	if (NULL == stmt) {
 		ERR("cal_db_util_query_prepare() Fail");
 		cal_db_util_end_trans(false);
 		return CALENDAR_ERROR_DB_FAILED;
 	}
+
 	while(CAL_DB_ROW == cal_db_util_stmt_step(stmt))
 	{
 		int id = 0;
@@ -198,8 +193,7 @@ static int _cal_server_calendar_delete_step2(__calendar_delete_data_s* data)
 	}
 
 	GList *cursor = g_list_first(list);
-	while(cursor)
-	{
+	while(cursor) {
 		int id = GPOINTER_TO_INT(cursor->data);
 		/* delete event table */
 		snprintf(query, sizeof(query), "DELETE FROM %s "
@@ -282,15 +276,12 @@ static bool  _cal_server_calendar_run(__calendar_delete_data_s* data)
 
 	CAL_FN_CALL();
 
-	if (data == NULL)
-	{
+	if (data == NULL) {
 		ERR("data is NULL");
-
 		return false;
 	}
 
-	switch (data->step)
-	{
+	switch (data->step) {
 	case STEP_1:
 		ret = _cal_server_calendar_delete_step1(data);
 		break;
@@ -314,31 +305,26 @@ static bool  _cal_server_calendar_run(__calendar_delete_data_s* data)
 
 }
 
-static gpointer  _cal_server_calendar_main(gpointer user_data)
+static gpointer _cal_server_calendar_main(gpointer user_data)
 {
 	__calendar_delete_data_s *callback_data = NULL;
 	int ret = CALENDAR_ERROR_NONE;
 	CAL_FN_CALL();
 
-	while(1)
-	{
+	while(1) {
 		callback_data = calloc(1,sizeof(__calendar_delete_data_s));
 
-		if (callback_data != NULL)
-		{
+		if (callback_data != NULL) {
 			callback_data->step = STEP_1;
 
 			// delete
-			while(1)
-			{
+			while(1) {
 				ret = calendar_connect();
-				if (CALENDAR_ERROR_NONE != ret)
-				{
+				if (CALENDAR_ERROR_NONE != ret) {
 					break;
 				}
 				sleep(CAL_SERVER_CALENDAR_DELETE_STEP_TIME); // sleep 1 sec.
-				if (_cal_server_calendar_run(callback_data) == false)
-				{
+				if (_cal_server_calendar_run(callback_data) == false) {
 					callback_data = NULL;
 					DBG("end");
 					break;
@@ -347,10 +333,11 @@ static gpointer  _cal_server_calendar_main(gpointer user_data)
 			calendar_disconnect();
 			CAL_FREE(callback_data);
 		}
-		else
-		{
+		else {
 			ERR("calloc fail");
 		}
+		calendar_disconnect();
+		CAL_FREE(callback_data);
 
 		g_mutex_lock(&_cal_server_calendar_delete_mutex);
 		DBG("wait");
@@ -365,11 +352,11 @@ void cal_server_calendar_delete_start(void)
 {
 	CAL_FN_CALL();
 
-	if (_cal_server_calendar_delete_thread == NULL)
-	{
+	if (NULL == _cal_server_calendar_delete_thread) {
 		g_mutex_init(&_cal_server_calendar_delete_mutex);
 		g_cond_init(&_cal_server_calendar_delete_cond);
-		_cal_server_calendar_delete_thread = g_thread_new(CAL_SERVER_CALENDAR_DELETE_THREAD_NAME,_cal_server_calendar_main,NULL);
+		_cal_server_calendar_delete_thread = g_thread_new(CAL_SERVER_CALENDAR_DELETE_THREAD_NAME,
+				_cal_server_calendar_main, NULL);
 	}
 
 	// don't use mutex.

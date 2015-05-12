@@ -25,18 +25,11 @@
 
 API int calendar_list_create(calendar_list_h* out_list)
 {
-	if (NULL == out_list)
-	{
-		ERR("Invalid parameter: list is NULL");
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
-	cal_list_s *l;
+	cal_list_s *l = NULL;
+	RETV_IF(NULL == out_list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	l = calloc(1, sizeof(cal_list_s));
-	if (l == NULL) {
-		ERR("calloc() Fail");
-		return CALENDAR_ERROR_OUT_OF_MEMORY;
-	}
+	RETVM_IF(NULL == l, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc() Fail");
 
 	l->count = 0;
 	l->record = NULL;
@@ -48,62 +41,40 @@ API int calendar_list_create(calendar_list_h* out_list)
 
 API int calendar_list_get_count(calendar_list_h list, int *count)
 {
-	cal_list_s *l;
+	cal_list_s *l = NULL;
 
-	if (list == NULL) {
-		ERR("Invalid argument: calendar_list_h is NULL");
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
-	if (count == NULL) {
-		ERR("Invalid argument: count is NULL");
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
+	RETV_IF(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == count, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	l = (cal_list_s *)list;
-
 	*count = l->count;
 	return CALENDAR_ERROR_NONE;
 }
 
 API int calendar_list_add(calendar_list_h list, calendar_record_h record)
 {
-	cal_list_s *l;
+	cal_list_s *l = NULL;
 
-	if (list == NULL) {
-		ERR("Invalid argument: calendar_list_h is NULL");
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
-	if (record == NULL) {
-		ERR("Invalid argument: calendar_record_h is NULL");
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
+	RETV_IF(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	l = (cal_list_s *)list;
 
 	l->count++;
 	l->record = g_list_append(l->record, record);
-	//l->cursor = g_list_nth(l->record, (l->count) -1);
-
 	return CALENDAR_ERROR_NONE;
 }
 
 API int calendar_list_remove(calendar_list_h list, calendar_record_h record)
 {
-	GList *cursor;
-	cal_list_s *l;
+	cal_list_s *l = NULL;
 
-	if (list == NULL) {
-		ERR("Invalid argument: calendar_list_h is NULL");
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
-	if (record == NULL) {
-		ERR("Invalid argument: calendar_record_h is NULL");
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
+	RETV_IF(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	l = (cal_list_s *)list;
 
-	cursor = l->record;
+	GList *cursor = l->record;
 	while (cursor) {
 		if (cursor->data == record) {
 			l->cursor = cursor->next;
@@ -118,74 +89,54 @@ API int calendar_list_remove(calendar_list_h list, calendar_record_h record)
 
 API int calendar_list_get_current_record_p(calendar_list_h list, calendar_record_h* record)
 {
-	cal_list_s *l;
+	cal_list_s *l = NULL;
 
-	if (list == NULL) {
-		ERR("Invalid argument: calendar_list_h is NULL");
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
-	if (record == NULL) {
-		ERR("Invalid argument: calendar_record_h is NULL");
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
+	RETV_IF(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	l = (cal_list_s *)list;
-	if (l->cursor == NULL) {
+	if (NULL == l->cursor) {
 		*record = NULL;
 		return CALENDAR_ERROR_NO_DATA;
 	}
 
 	*record = l->cursor->data;
-
 	return CALENDAR_ERROR_NONE;
 }
 
 API int calendar_list_prev(calendar_list_h list)
 {
-	cal_list_s *l;
+	cal_list_s *l = NULL;
 
-	if (list == NULL) {
-		ERR("Invalid argument: calendar_list_h is NULL");
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
+	RETV_IF(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	l = (cal_list_s *)list;
 	l->cursor = g_list_previous(l->cursor);
-	if (l->cursor == NULL) {
-		DBG("No prev list");
+	if (NULL == l->cursor)
 		return CALENDAR_ERROR_NO_DATA;
-	}
 
 	return CALENDAR_ERROR_NONE;
 }
 
 API int calendar_list_next(calendar_list_h list)
 {
-	cal_list_s *l;
+	cal_list_s *l = NULL;
 
-	if (list == NULL) {
-		ERR("Invalid argument: calendar_list_h is NULL");
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
+	RETV_IF(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	l = (cal_list_s *)list;
 	l->cursor = g_list_next(l->cursor);
-	if (l->cursor == NULL) {
-		//DBG("No next list");
+	if (NULL == l->cursor)
 		return CALENDAR_ERROR_NO_DATA;
-	}
 
 	return CALENDAR_ERROR_NONE;
 }
 
 API int calendar_list_first(calendar_list_h list)
 {
-	cal_list_s *l;
+	cal_list_s *l = NULL;
 
-	if (list == NULL) {
-		ERR("Invalid argument: calendar_list_h is NULL");
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
+	RETV_IF(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	l = (cal_list_s *)list;
 	l->cursor = g_list_first(l->record);
@@ -195,12 +146,9 @@ API int calendar_list_first(calendar_list_h list)
 
 API int calendar_list_last(calendar_list_h list)
 {
-	cal_list_s *l;
+	cal_list_s *l = NULL;
 
-	if (list == NULL) {
-		ERR("Invalid argument: calendar_list_h is NULL");
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
+	RETV_IF(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	l = (cal_list_s *)list;
 	l->cursor = g_list_last(l->record);
@@ -213,31 +161,23 @@ API int calendar_list_destroy(calendar_list_h list, bool delete_record)
 	GList *cursor;
 	cal_list_s *l = NULL;
 
-	if (list == NULL) {
-		ERR("Invalid argument: calendar_list_h is NULL");
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
+	RETV_IF(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	l = (cal_list_s *)list;
 
-	if (delete_record == true)
-	{
+	if (delete_record == true) {
 		cursor = l->record;
 
-		while (cursor)
-		{
+		while (cursor) {
 			if (cursor->data)
-			{
 				calendar_record_destroy((calendar_record_h)(cursor->data), true);
-			}
 			cursor = cursor->next;
 		}
 	}
 	if (l->record)
-	{
 		g_list_free(l->record);
-	}
-	CAL_FREE(l);
+
+	g_free(l);
 
 	return CALENDAR_ERROR_NONE;
 }
@@ -248,68 +188,56 @@ int cal_list_clone(calendar_list_h list, calendar_list_h *out_list)
 	int count = 0, i = 0;
 	calendar_list_h l = NULL;
 
-	if (NULL == list || NULL == out_list)
-	{
-		ERR("Invalid parameter");
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
+	RETV_IF(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == out_list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	ret = calendar_list_get_count(list, &count);
-	if (CALENDAR_ERROR_NONE != ret)
-	{
+	if (CALENDAR_ERROR_NONE != ret) {
 		return ret;
 	}
 
 	ret = calendar_list_first(list);
-	if (CALENDAR_ERROR_NONE != ret)
-	{
+	if (CALENDAR_ERROR_NONE != ret) {
 		return ret;
 	}
 
 	ret = calendar_list_create(&l);
-	if (CALENDAR_ERROR_NONE != ret)
-	{
+	if (CALENDAR_ERROR_NONE != ret) {
 		return ret;
 	}
 
-	for(i = 0; i < count; i++)
-	{
+	for(i = 0; i < count; i++) {
 		calendar_record_h record = NULL;
 		calendar_record_h clone_record = NULL;
-		if (calendar_list_get_current_record_p(list,&record) != CALENDAR_ERROR_NONE)
-		{
+		if (calendar_list_get_current_record_p(list,&record) != CALENDAR_ERROR_NONE) {
 			ERR("calendar_list_get_count fail");
 			calendar_list_destroy(l, true);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 
-		if (calendar_record_clone(record, &clone_record) != CALENDAR_ERROR_NONE)
-		{
-			ERR("calendar_list_get_count fail");
+		if (calendar_record_clone(record, &clone_record) != CALENDAR_ERROR_NONE) {
+			ERR("calendar_list_get_count Fail");
 			calendar_list_destroy(l, true);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 
-		if (calendar_list_add(l, clone_record) != CALENDAR_ERROR_NONE)
-		{
-			ERR("calendar_list_get_count fail");
+		if (calendar_list_add(l, clone_record) != CALENDAR_ERROR_NONE) {
+			ERR("calendar_list_get_count Fail");
 			calendar_list_destroy(l, true);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
-
 		calendar_list_next(list);
 	}
 
 	*out_list = l;
-
 	return CALENDAR_ERROR_NONE;
 }
 
 int cal_list_get_nth_record_p(cal_list_s *list_s, int index, calendar_record_h *record)
 {
 	RETV_IF(index < 0, CALENDAR_ERROR_INVALID_PARAMETER);
-
 	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
+
 	*record = NULL;
 
 	RETV_IF(NULL == list_s, CALENDAR_ERROR_INVALID_PARAMETER);
@@ -340,4 +268,3 @@ int cal_list_clear(cal_list_s *list_s)
 	}
 	return ret;
 }
-

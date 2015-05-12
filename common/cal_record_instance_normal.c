@@ -179,8 +179,7 @@ static int _cal_record_instance_normal_get_str(calendar_record_h record, unsigne
 static int _cal_record_instance_normal_get_str_p(calendar_record_h record, unsigned int property_id, char** out_str)
 {
 	cal_instance_normal_s *rec = (cal_instance_normal_s*)(record);
-	switch (property_id)
-	{
+	switch (property_id) {
 	case CAL_PROPERTY_INSTANCE_NORMAL_SUMMARY:
 		*out_str = (rec->summary);
 		break;
@@ -262,8 +261,7 @@ static int _cal_record_instance_normal_get_double(calendar_record_h record, unsi
 static int _cal_record_instance_normal_get_lli(calendar_record_h record, unsigned int property_id, long long int* out_value)
 {
 	cal_instance_normal_s *rec = (cal_instance_normal_s*)(record);
-	switch (property_id)
-	{
+	switch (property_id) {
 	case CAL_PROPERTY_INSTANCE_NORMAL_LAST_MODIFIED_TIME:
 		*out_value = (rec->last_mod);
 		break;

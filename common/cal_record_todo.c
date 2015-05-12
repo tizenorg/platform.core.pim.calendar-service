@@ -317,8 +317,7 @@ static int _cal_record_todo_get_str(calendar_record_h record, unsigned int prope
 static int _cal_record_todo_get_str_p(calendar_record_h record, unsigned int property_id, char** out_str)
 {
 	cal_todo_s *rec = (cal_todo_s*)(record);
-	switch (property_id)
-	{
+	switch (property_id) {
 	case CAL_PROPERTY_TODO_SUMMARY:
 		*out_str = (rec->summary);
 		break;

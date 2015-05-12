@@ -70,8 +70,7 @@ static void __print_ucal(int calendar_system_type, UCalendar *ucal, const char *
 
 	UCalendar *s_ucal = NULL;
 
-	switch (calendar_system_type)
-	{
+	switch (calendar_system_type) {
 	case CALENDAR_SYSTEM_EAST_ASIAN_LUNISOLAR:
 		s_ucal = cal_time_get_ucal(tzid, wkst);
 		ucal_setMillis(s_ucal, ucal_getMillis(ucal, &ec), &ec);
@@ -101,8 +100,7 @@ static void __get_allday_date(cal_event_s *event, UCalendar *ucal, int *y, int *
 
 	UCalendar *s_ucal = NULL;
 
-	switch (event->system_type)
-	{
+	switch (event->system_type) {
 	case CALENDAR_SYSTEM_EAST_ASIAN_LUNISOLAR:
 		s_ucal = cal_time_get_ucal(event->start_tzid, event->wkst);
 		if (NULL == s_ucal) {
@@ -146,8 +144,7 @@ static int _cal_db_instance_parse_byint(char *byint, int *by, int *len)
 	int length = g_strv_length(t);
 	int i;
 	int index = 0;
-	for (i = 0 ; i < length; i++)
-	{
+	for (i = 0 ; i < length; i++) {
 		if (NULL == t[i] || 0 == strlen(t[i])) continue;
 		by[index] = atoi(t[i]);
 		index++;
@@ -167,16 +164,13 @@ static void __set_time_to_ucal(int calendar_system_type, UCalendar *ucal, calend
 	int y = 0, m = 0, d = 0;
 	int h = 0, n = 0, s = 0;
 	struct tm tm = {0};
-	time_t tt = 0;
-	switch (t->type)
-	{
+	switch (t->type) {
 	case CALENDAR_TIME_UTIME:
 		ucal_setMillis(ucal, sec2ms(t->time.utime), &ec);
 		break;
 
 	case CALENDAR_TIME_LOCALTIME:
-		switch (calendar_system_type)
-		{
+		switch (calendar_system_type) {
 		case CALENDAR_SYSTEM_EAST_ASIAN_LUNISOLAR:
 			tm.tm_year = t->time.date.year - 1900;
 			tm.tm_mon = t->time.date.month -1;
@@ -214,7 +208,7 @@ static int __get_exdate_list(UCalendar *ucal, cal_event_s *event, GList **l, int
 	RETV_IF(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER);
 
-	if (event->exdate == NULL || '\0' == *(event->exdate)) {
+	if (NULL == event->exdate || '\0' == *(event->exdate)) {
 		return CALENDAR_ERROR_NONE;
 	}
 
@@ -238,8 +232,7 @@ static int __get_exdate_list(UCalendar *ucal, cal_event_s *event, GList **l, int
 		long long int lli = 0;
 		UCalendar *ucal2 = NULL;
 		UErrorCode ec = U_ZERO_ERROR;
-		switch (strlen(p))
-		{
+		switch (strlen(p)) {
 		case 8:
 			DBG("ALLDAY instance");
 			sscanf(p, "%04d%02d%02d", &y, &m, &d);
@@ -284,8 +277,7 @@ static int _cal_db_instance_update_exdate_mod(int original_event_id, char *recur
 	char *p = NULL;
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 
-	if (original_event_id < 1 || recurrence_id == NULL)
-	{
+	if (original_event_id < 1 || NULL == recurrence_id) {
 		DBG("Nothing to update exdate mod");
 		return CALENDAR_ERROR_NONE;
 	}
@@ -307,8 +299,7 @@ static int _cal_db_instance_update_exdate_mod(int original_event_id, char *recur
 		int y = 0, m = 0, d = 0;
 		int h = 0, n = 0, s = 0;
 		char buf[32] = {0};
-		switch (strlen(p))
-		{
+		switch (strlen(p)) {
 		case 8:
 			DBG("ALLDAY instance");
 			sscanf(p, "%04d%02d%02d", &y, &m, &d);
@@ -502,7 +493,7 @@ static int _cal_db_instance_get_duration(UCalendar *ucal, calendar_time_s *st, c
 
 		_duration = ucal_getFieldDifference(ucal, ud, UCAL_SECOND, &ec);
 		if (U_FAILURE(ec)) {
-			ERR("ucal_getFieldDifference failed (%s)", u_errorName(ec));
+			ERR("ucal_getFieldDifference Fail (%s)", u_errorName(ec));
 			return ec;
 		}
 		break;
@@ -692,8 +683,7 @@ static bool __check_out_of_range(long long int current_utime, cal_event_s *event
 	RETV_IF(NULL == event, true);
 
 	// check range
-	switch (event->range_type)
-	{
+	switch (event->range_type) {
 	case CALENDAR_RANGE_UNTIL:
 	case CALENDAR_RANGE_NONE:
 		if (until_utime < current_utime) {
@@ -805,16 +795,14 @@ static int _cal_db_instance_publish_yearly_yday(UCalendar *ucal, cal_event_s *ev
 	bool is_exit = false;
 	long long int last_utime = 0;
 	long long int current_utime = 0;
-	while (false == is_exit)
-	{
+	while (false == is_exit) {
 		calendar_time_s *st = &event->start;
 		__set_time_to_ucal(event->system_type, ucal, st);
 		long long int dtstart_utime = ms2sec(ucal_getMillis(ucal, &ec));
 		ucal_add(ucal, UCAL_YEAR, event->interval * loop, &ec);
 
 		int i;
-		for (i = 0; i < byyearday_len; i++)
-		{
+		for (i = 0; i < byyearday_len; i++) {
 			ucal_set(ucal, UCAL_DAY_OF_YEAR, byyearday[i]);
 			if (true == __check_bysetpos_to_skip(i, bysetpos, bysetpos_len, byyearday_len)) {
 				continue;
@@ -892,8 +880,7 @@ static int _cal_db_instance_publish_yearly_weekno(UCalendar *ucal, cal_event_s *
 	bool is_exit = false;
 	long long int last_utime = 0;
 	long long int current_utime = 0;
-	while (false == is_exit)
-	{
+	while (false == is_exit) {
 		calendar_time_s *st = &event->start;
 		__set_time_to_ucal(event->system_type, ucal, st);
 		long long int dtstart_utime = ms2sec(ucal_getMillis(ucal, &ec));
@@ -1020,8 +1007,7 @@ static int _cal_db_instance_publish_yearly_wday(UCalendar *ucal, cal_event_s *ev
 	bool is_exit = false;
 	long long int last_utime = 0;
 	long long int current_utime = 0;
-	while (false == is_exit)
-	{
+	while (false == is_exit) {
 		calendar_time_s *st = &event->start;
 		__set_time_to_ucal(event->system_type, ucal, st);
 		long long int dtstart_utime = ms2sec(ucal_getMillis(ucal, &ec));
@@ -1226,8 +1212,7 @@ static int _cal_db_instance_publish_yearly_mday(UCalendar *ucal, cal_event_s *ev
 	bool is_exit = false;
 	long long int last_utime = 0;
 	long long int current_utime = 0;
-	while (false == is_exit)
-	{
+	while (false == is_exit) {
 		calendar_time_s *st = &event->start;
 		__set_time_to_ucal(event->system_type, ucal, st);
 		long long int dtstart_utime = ms2sec(ucal_getMillis(ucal, &ec));
@@ -1358,8 +1343,7 @@ static int _cal_db_instance_publish_monthly_wday(UCalendar *ucal, cal_event_s *e
 	bool is_exit = false;
 	long long int last_utime = 0;
 	long long int current_utime = 0;
-	while (false == is_exit)
-	{
+	while (false == is_exit) {
 		calendar_time_s *st = &event->start;
 		__set_time_to_ucal(event->system_type, ucal, st);
 		long long int dtstart_utime = ms2sec(ucal_getMillis(ucal, &ec));
@@ -1551,8 +1535,7 @@ static int _cal_db_instance_publish_monthly_mday(UCalendar *ucal, cal_event_s *e
 	bool is_exit = false;
 	long long int last_utime = 0;
 	long long int current_utime = 0;
-	while (false == is_exit)
-	{
+	while (false == is_exit) {
 		calendar_time_s *st = &event->start;
 		__set_time_to_ucal(event->system_type, ucal, st);
 		long long int dtstart_utime = ms2sec(ucal_getMillis(ucal, &ec));
@@ -1657,8 +1640,7 @@ static int _cal_db_instance_publish_weekly_wday(UCalendar *ucal, cal_event_s *ev
 	bool is_exit = false;
 	long long int last_utime = 0;
 	long long int current_utime = 0;
-	while (false == is_exit)
-	{
+	while (false == is_exit) {
 		calendar_time_s *st = &event->start;
 		__set_time_to_ucal(event->system_type, ucal, st);
 		long long int dtstart_utime = ms2sec(ucal_getMillis(ucal, &ec));
@@ -1738,8 +1720,7 @@ static int _cal_db_instance_publish_daily_mday(UCalendar *ucal, cal_event_s *eve
 	long long int last_utime = 0;
 	long long int current_utime = 0;
 	int log_value = 0;
-	while (false == is_exit)
-	{
+	while (false == is_exit) {
 		if (loop) ucal_add(ucal, UCAL_DAY_OF_YEAR, event->interval, &ec);
 
 		if (true == __check_daily_bymonth_to_skip(ucal, bymonth, bymonth_len, &log_value)) {
@@ -1799,22 +1780,19 @@ static int _cal_db_instance_publish_record_details(UCalendar *ucal, cal_event_s 
 	_cal_db_instance_get_duration(ucal, &event->start, &event->end, &duration);
 	WARN_IF(duration < 0, "Invalid duration (%lld)", duration);
 
-	if (0 < event->original_event_id)
-	{
+	if (0 < event->original_event_id) {
 		DBG("this is exception event so publish only one instance");
 		exception_freq = event->freq;
 		event->freq = CALENDAR_RECURRENCE_NONE;
 	}
 
 	DBG("event interval(%d)", event->interval);
-	if (event->interval < 1)
-	{
+	if (event->interval < 1) {
 		DBG("Invalid interval, so set 1");
 		event->interval = 1;
 	}
 
-	switch (event->freq)
-	{
+	switch (event->freq) {
 	case CALENDAR_RECURRENCE_YEARLY:
 		_cal_db_instance_publish_record_yearly(ucal, event, duration);
 		break;
@@ -1837,8 +1815,7 @@ static int _cal_db_instance_publish_record_details(UCalendar *ucal, cal_event_s 
 		break;
 	}
 
-	if (0 < event->original_event_id)
-	{
+	if (0 < event->original_event_id) {
 		DBG("return freq for exception event");
 		event->freq = exception_freq;
 	}
@@ -1853,17 +1830,15 @@ int cal_db_instance_update_exdate_del(int id, char *exdate)
 	char **t = NULL;
 	char *p = NULL;
 
-	if (exdate == NULL || strlen(exdate) == 0)
-	{
+	if (NULL == exdate || '\0' == *exdate) {
 		DBG("Nothing to update exdate del");
 		return CALENDAR_ERROR_NONE;
 	}
 
 	DBG("exdate[%s]", exdate);
 	t = g_strsplit_set(exdate, " ,", -1);
-	if (!t)
-	{
-		ERR("g_strsplit_set failed");
+	if (NULL == t) {
+		ERR("g_strsplit_set() Fail");
 		return CALENDAR_ERROR_OUT_OF_MEMORY;
 	}
 
@@ -1877,8 +1852,7 @@ int cal_db_instance_update_exdate_del(int id, char *exdate)
 		p = t[i];
 		DBG("exdate[%s]", p);
 		int len = strlen(p);
-		switch (len)
-		{
+		switch (len) {
 		case 8: // 20141212
 			DBG("ALLDAY instance");
 			sscanf(p, "%04d%02d%02d", &y, &m, &d);

@@ -50,8 +50,7 @@ extern cal_record_plugin_cb_s cal_record_extended_plugin_cb;
 
 cal_record_plugin_cb_s* cal_record_get_plugin_cb(cal_record_type_e type)
 {
-	switch (type)
-	{
+	switch (type) {
 	case CAL_RECORD_TYPE_CALENDAR:
 		return (&cal_record_calendar_plugin_cb);
 	case CAL_RECORD_TYPE_EVENT:
@@ -91,24 +90,20 @@ static inline void _cal_record_set_property_flag(calendar_record_h record, unsig
 	_record = (cal_record_s *)record;
 	index = property_id & 0x00000FFF;
 
-	if (_record->properties_flags == NULL)
-	{
+	if (NULL == _record->properties_flags) {
 		int count = 0;
 		cal_view_get_property_info(_record->view_uri,&count);
 
-		if (0 < count)
-		{
+		if (0 < count) {
 			_record->properties_flags = calloc(count, sizeof(char));
 			_record->properties_max_count = count;
-			if (_record->properties_flags == NULL)
-			{
-				ERR("calloc fail");
+			if (NULL == _record->properties_flags) {
+				ERR("calloc() Fail");
 				return ;
 			}
 		}
-		else
-		{
-			ERR("get property_info_fail");
+		else {
+			ERR("get property_info_Fail");
 			return ;
 		}
 	}
@@ -125,18 +120,15 @@ bool cal_record_check_property_flag(calendar_record_h record, unsigned int prope
 	_record = (cal_record_s *)record;
 	index = property_id & 0x00000FFF;
 
-	if (_record->properties_flags == NULL)
-	{
+	if (NULL == _record->properties_flags) {
 		if (flag == CAL_PROPERTY_FLAG_PROJECTION)
 			return true;
 		else
 			return false;
 	}
 
-	if (flag == CAL_PROPERTY_FLAG_PROJECTION)
-	{
-		if (_record->property_flag & CAL_PROPERTY_FLAG_PROJECTION)
-		{
+	if (flag == CAL_PROPERTY_FLAG_PROJECTION) {
+		if (_record->property_flag & CAL_PROPERTY_FLAG_PROJECTION) {
 			if (_record->properties_flags[index] & CAL_PROPERTY_FLAG_PROJECTION)
 				return true;
 			else
@@ -156,19 +148,18 @@ int cal_record_set_projection(calendar_record_h record, const unsigned int *proj
 
 	cal_record_s *_record = NULL;
 
-	RETV_IF(record == NULL, -1);
+	RETV_IF(NULL == record, -1);
 
 	_record = (cal_record_s *)record;
 
 	CAL_FREE(_record->properties_flags);
 	_record->properties_flags  = calloc(properties_max_count, sizeof(char));
 
-	RETVM_IF(NULL == _record->properties_flags, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc fail");
+	RETVM_IF(NULL == _record->properties_flags, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc() Fail");
 
 	_record->properties_max_count = properties_max_count;
 
-	for (i = 0; i < projection_count; i++)
-	{
+	for (i = 0; i < projection_count; i++) {
 		_cal_record_set_property_flag(record, projection[i], CAL_PROPERTY_FLAG_PROJECTION);
 	}
 
@@ -192,8 +183,7 @@ API int calendar_record_create(const char* view_uri, calendar_record_h* out_reco
 
 	ret = plugin_cb->create(out_record);
 
-	if (CALENDAR_ERROR_NONE == ret)
-	{
+	if (CALENDAR_ERROR_NONE == ret) {
 		CAL_RECORD_INIT_COMMON((cal_record_s*)*out_record, type, plugin_cb, cal_view_get_uri(view_uri));
 	}
 
@@ -495,8 +485,7 @@ int cal_record_set_str(calendar_record_h record, unsigned int property_id, const
 	RETVM_IF(false == cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->set_str(record, property_id, value);
-	if (CALENDAR_ERROR_NONE == ret)
-	{
+	if (CALENDAR_ERROR_NONE == ret) {
 		_cal_record_set_property_flag(record,property_id,CAL_PROPERTY_FLAG_DIRTY);
 	}
 	return ret;
@@ -514,8 +503,7 @@ int cal_record_set_int(calendar_record_h record, unsigned int property_id, int v
 	RETVM_IF(false == cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->set_int(record, property_id, value);
-	if (CALENDAR_ERROR_NONE == ret)
-	{
+	if (CALENDAR_ERROR_NONE == ret) {
 		_cal_record_set_property_flag(record,property_id,CAL_PROPERTY_FLAG_DIRTY);
 	}
 	return ret;
@@ -533,8 +521,7 @@ int cal_record_set_double(calendar_record_h record, unsigned int property_id, do
 	RETVM_IF(false == cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->set_double(record, property_id, value);
-	if (CALENDAR_ERROR_NONE == ret)
-	{
+	if (CALENDAR_ERROR_NONE == ret) {
 		_cal_record_set_property_flag(record,property_id,CAL_PROPERTY_FLAG_DIRTY);
 	}
 	return ret;
@@ -552,8 +539,7 @@ int cal_record_set_lli(calendar_record_h record, unsigned int property_id, long 
 	RETVM_IF(false == cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->set_lli(record, property_id, value);
-	if (CALENDAR_ERROR_NONE == ret)
-	{
+	if (CALENDAR_ERROR_NONE == ret) {
 		_cal_record_set_property_flag(record,property_id,CAL_PROPERTY_FLAG_DIRTY);
 	}
 	return ret;
@@ -571,8 +557,7 @@ int cal_record_set_caltime(calendar_record_h record, unsigned int property_id, c
 	RETVM_IF(false == cal_record_check_property_flag(record, property_id,CAL_PROPERTY_FLAG_PROJECTION), CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
 	ret = temp->plugin_cb->set_caltime(record, property_id, value);
-	if (CALENDAR_ERROR_NONE == ret)
-	{
+	if (CALENDAR_ERROR_NONE == ret) {
 		_cal_record_set_property_flag(record,property_id,CAL_PROPERTY_FLAG_DIRTY);
 	}
 	return ret;

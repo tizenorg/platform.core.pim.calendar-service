@@ -1044,17 +1044,14 @@ void cal_view_initialize(void)
 	cal_mutex_unlock(CAL_MUTEX_PROPERTY_HASH);
 #endif
 
-	if (cal_uri_property_flag == false)
-	{
+	if (cal_uri_property_flag == false) {
 		cal_mutex_lock(CAL_MUTEX_PROPERTY_HASH);
 		bmutex = true;
 	}
 
-	if (cal_uri_property_hash == NULL)
-	{
+	if (NULL == cal_uri_property_hash) {
 		cal_uri_property_hash = g_hash_table_new(g_str_hash, g_str_equal);
-		if (cal_uri_property_hash)
-		{
+		if (cal_uri_property_hash) {
 			g_hash_table_insert(cal_uri_property_hash, CALENDAR_VIEW_CALENDAR, GINT_TO_POINTER(&(__tables[0])));
 			g_hash_table_insert(cal_uri_property_hash, CALENDAR_VIEW_EVENT, GINT_TO_POINTER(&(__tables[1])));
 			g_hash_table_insert(cal_uri_property_hash, CALENDAR_VIEW_TODO, GINT_TO_POINTER(&(__tables[2])));
@@ -1073,8 +1070,7 @@ void cal_view_initialize(void)
 		}
 	}
 
-	if (bmutex == true)
-	{
+	if (bmutex == true) {
 		cal_uri_property_flag = true;
 		cal_mutex_unlock(CAL_MUTEX_PROPERTY_HASH);
 	}
@@ -1092,13 +1088,11 @@ cal_record_type_e cal_view_get_type(const char *view_uri)
 		if (view_uri_info) {
 			type = view_uri_info->type;
 		}
-		else
-		{
-			ERR("g_hash_table_lookup() failed");
+		else {
+			ERR("g_hash_table_lookup() Fail");
 		}
 	}
-	else
-	{
+	else {
 		ERR("Unable to get cal_uri_property_hash[%s]", view_uri);
 	}
 
@@ -1109,16 +1103,14 @@ void cal_view_finalize(void)
 {
 #ifdef CAL_IPC_CLIENT
 	cal_mutex_lock(CAL_MUTEX_PROPERTY_HASH);
-	if (calendar_view_count <= 0)
-	{
+	if (calendar_view_count <= 0) {
 		cal_mutex_unlock(CAL_MUTEX_PROPERTY_HASH);
 		return ;
 	}
 	calendar_view_count--;
 
-	if (calendar_view_count == 0)
-	{
-		if (cal_uri_property_hash != NULL) {
+	if (calendar_view_count == 0) {
+		if (cal_uri_property_hash) {
 			g_hash_table_destroy(cal_uri_property_hash);
 			cal_uri_property_hash = NULL;
 		}

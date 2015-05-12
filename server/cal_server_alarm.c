@@ -61,7 +61,7 @@ static int _cal_server_alarm_unset_alerted_alarmmgr_id(int alarm_id)
 	ret = cal_db_util_begin_trans();
 	if (CALENDAR_ERROR_NONE != ret)
 	{
-		ERR("cal_db_util_begin_trans() failed");
+		ERR("cal_db_util_begin_trans() Fail");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 
@@ -97,7 +97,7 @@ static int _cal_server_alarm_clear_all_cb(alarm_id_t alarm_id, void *data)
 	ret = alarmmgr_remove_alarm(alarm_id);
 	if (ret != ALARMMGR_RESULT_SUCCESS)
 	{
-		ERR("alarmmgr_remove_alarm() failed(ret:%d)", ret);
+		ERR("alarmmgr_remove_alarm() Fail(ret:%d)", ret);
 		return ret;
 	}
 	return CALENDAR_ERROR_NONE;
@@ -112,7 +112,7 @@ static int _cal_server_alarm_update_alarm_id(int alarm_id, int event_id, int tic
 	ret = cal_db_util_begin_trans();
 	if (CALENDAR_ERROR_NONE != ret)
 	{
-		ERR("cal_db_util_begin_trans() failed");
+		ERR("cal_db_util_begin_trans() Fail");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 
@@ -279,11 +279,9 @@ static int _cal_server_alarm_get_alert_time(int alarm_id, time_t *tt_alert)
 	current += (tick * unit);
 	current -= 2; // in case time passed
 
-	switch (record_type)
-	{
+	switch (record_type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
-		switch (dtstart_type)
-		{
+		switch (dtstart_type) {
 		case CALENDAR_TIME_UTIME:
 			utime = _cal_server_alarm_get_alert_utime("dtstart_utime", event_id, current);
 			break;
@@ -295,8 +293,7 @@ static int _cal_server_alarm_get_alert_time(int alarm_id, time_t *tt_alert)
 		break;
 
 	case CALENDAR_BOOK_TYPE_TODO:
-		switch (dtend_type)
-		{
+		switch (dtend_type) {
 		case CALENDAR_TIME_UTIME:
 			utime = _cal_server_alarm_get_alert_utime("dtend_utime", event_id, current);
 			break;
@@ -689,7 +686,7 @@ static int _cal_server_alarm_register(GList *alarm_list)
 	ret = alarmmgr_enum_alarm_ids(_cal_server_alarm_clear_all_cb, NULL);
 	if (ret != ALARMMGR_RESULT_SUCCESS)
 	{
-		ERR("alarmmgr_enum_alarm_ids() failed");
+		ERR("alarmmgr_enum_alarm_ids() Fail");
 		return ret;
 	}
 
@@ -704,8 +701,7 @@ static int _cal_server_alarm_register(GList *alarm_list)
 	tzset();
 	struct tm st_alarm = {0};
 
-	switch (ad->system_type)
-	{
+	switch (ad->system_type) {
 	case CALENDAR_SYSTEM_EAST_ASIAN_LUNISOLAR:
 		gmtime_r(&mod_time, &st_alarm);
 		break;
@@ -730,9 +726,8 @@ static int _cal_server_alarm_register(GList *alarm_list)
 
 	int alarm_id = 0;
 	ret = alarmmgr_add_alarm_with_localtime(alarm_info, NULL, &alarm_id);
-	if (ret < 0)
-	{
-		ERR("alarmmgr_add_alarm_with_localtime failed (%d)", ret);
+	if (ret < 0) {
+		ERR("alarmmgr_add_alarm_with_localtime Fail (%d)", ret);
 		alarmmgr_free_alarm(alarm_info);
 		return ret;
 	}
@@ -916,7 +911,7 @@ static int _cal_server_alarm_register_with_alarmmgr(time_t utime)
 
 	// free list
 	l = g_list_first(l);
-	while(l) {
+	while (l) {
 		struct _alarm_data_s *ad = (struct _alarm_data_s *)l->data;
 		free(ad);
 		l = g_list_next(l);
@@ -1002,10 +997,10 @@ int cal_server_alarm(void)
 	_cal_server_alarm_set_inotify(__changed_cb);
 
 	ret = alarmmgr_init("calendar-service");
-	RETVM_IF(ret < 0, ret, "alarmmgr_init() failed");
+	RETVM_IF(ret < 0, ret, "alarmmgr_init() Fail");
 
 	ret = alarmmgr_set_cb(_alert_cb, NULL);
-	RETVM_IF(ret < 0, ret, "alarmmgr_set_cb() failed");
+	RETVM_IF(ret < 0, ret, "alarmmgr_set_cb() Fail");
 
 	_cal_server_alarm_register_with_alarmmgr(time(NULL));
 

@@ -194,9 +194,7 @@ static int _cal_db_calendar_insert_record(calendar_record_h record, int* id)
 
 	//cal_record_set_int(record, _calendar_book.id,index);
 	if (id)
-	{
 		*id = index;
-	}
 
 	cal_db_util_notify(CAL_NOTI_TYPE_CALENDAR);
 
@@ -350,36 +348,28 @@ static int _cal_db_calendar_delete_record(int id)
 	int count = 0;
 	int count2 = 0;
 	// get instance count
-	snprintf(query, sizeof(query), "select count(*) from %s",
-			CAL_TABLE_NORMAL_INSTANCE);
+	snprintf(query, sizeof(query), "select count(*) from %s", CAL_TABLE_NORMAL_INSTANCE);
 	ret = cal_db_util_query_get_first_int_result(query, NULL, &count);
-	if (CALENDAR_ERROR_NONE != ret)
-	{
-		ERR("cal_db_util_query_get_first_int_result() failed");
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_get_first_int_result() Fail");
 		return ret;
 	}
 
-	snprintf(query, sizeof(query), "select count(*) from %s",
-			CAL_TABLE_ALLDAY_INSTANCE);
+	snprintf(query, sizeof(query), "select count(*) from %s", CAL_TABLE_ALLDAY_INSTANCE);
 	ret = cal_db_util_query_get_first_int_result(query,NULL, &count2);
-	if (CALENDAR_ERROR_NONE != ret)
-	{
-		ERR("cal_db_util_query_get_first_int_result() failed");
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_get_first_int_result() Fail");
 		return ret;
 	}
 
 	count += count2;
 
-	if (1000 < count)
-	{
-		snprintf(query, sizeof(query), "UPDATE %s SET deleted = 1 WHERE id = %d",
-				CAL_TABLE_CALENDAR, id);
+	if (1000 < count) {
+		snprintf(query, sizeof(query), "UPDATE %s SET deleted = 1 WHERE id = %d", CAL_TABLE_CALENDAR, id);
 		dbret = cal_db_util_query_exec(query);
-		if (CAL_DB_OK != dbret)
-		{
+		if (CAL_DB_OK != dbret) {
 			ERR("cal_db_util_query_exec() Fail(%d)", dbret);
-			switch (dbret)
-			{
+			switch (dbret) {
 			case CAL_DB_ERROR_NO_SPACE:
 				return CALENDAR_ERROR_FILE_NO_SPACE;
 			default:
@@ -388,14 +378,11 @@ static int _cal_db_calendar_delete_record(int id)
 		}
 		cal_server_calendar_delete_start();
 	}
-	else
-	{
+	else {
 #endif
-		snprintf(query, sizeof(query), "DELETE FROM %s WHERE id = %d",
-				CAL_TABLE_CALENDAR, id);
+		snprintf(query, sizeof(query), "DELETE FROM %s WHERE id = %d", CAL_TABLE_CALENDAR, id);
 		dbret = cal_db_util_query_exec(query);
-		if (CAL_DB_OK != dbret)
-		{
+		if (CAL_DB_OK != dbret) {
 			ERR("cal_db_util_query_exec() Fail(%d)", dbret);
 			switch (dbret)
 			{
@@ -406,8 +393,7 @@ static int _cal_db_calendar_delete_record(int id)
 			}
 		}
 
-		snprintf(query, sizeof(query), "DELETE FROM %s WHERE calendar_id = %d",
-				CAL_TABLE_SCHEDULE, id);
+		snprintf(query, sizeof(query), "DELETE FROM %s WHERE calendar_id = %d", CAL_TABLE_SCHEDULE, id);
 		dbret = cal_db_util_query_exec(query);
 		if (CAL_DB_OK != dbret) {
 			ERR("cal_db_util_query_exec() Fail(%d)", dbret);
@@ -459,7 +445,7 @@ static int _cal_db_calendar_replace_record(calendar_record_h record, int id)
 	}
 
 	calendar->index = id;
-	if (calendar->common.properties_flags != NULL) {
+	if (calendar->common.properties_flags) {
 		return _cal_db_calendar_update_projection(record);
 	}
 
@@ -762,7 +748,7 @@ static int _cal_db_calendar_insert_records(const calendar_list_h list, int** ids
 
 	id = calloc(1, sizeof(int)*count);
 
-	RETVM_IF(NULL == id, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc fail");
+	RETVM_IF(NULL == id, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc() Fail");
 
 	ret = calendar_list_first(list);
 	if (CALENDAR_ERROR_NONE != ret) {
@@ -780,7 +766,7 @@ static int _cal_db_calendar_insert_records(const calendar_list_h list, int** ids
 			}
 		}
 		i++;
-	} while(calendar_list_next(list) != CALENDAR_ERROR_NO_DATA);
+	} while (calendar_list_next(list) != CALENDAR_ERROR_NO_DATA);
 
 	if (ids) {
 		*ids = id;
@@ -810,7 +796,7 @@ static int _cal_db_calendar_update_records(const calendar_list_h list)
 				return CALENDAR_ERROR_DB_FAILED;
 			}
 		}
-	} while(calendar_list_next(list) != CALENDAR_ERROR_NO_DATA);
+	} while (calendar_list_next(list) != CALENDAR_ERROR_NO_DATA);
 
 	return CALENDAR_ERROR_NONE;
 }
@@ -897,7 +883,7 @@ static int _cal_db_calendar_get_count_with_query(calendar_query_h query, int *ou
 	que = (cal_query_s *)query;
 
 	if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_CALENDAR)) {
-		table_name = CAL_SAFE_STRDUP(CAL_TABLE_CALENDAR);
+		table_name = SAFE_STRDUP(CAL_TABLE_CALENDAR);
 	}
 	else {
 		ERR("uri(%s) not support get records with query",que->view_uri);

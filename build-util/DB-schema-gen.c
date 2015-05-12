@@ -25,13 +25,12 @@ int main(int argc, char **argv)
 	int c;
 
 	fp = fopen(argv[1], "r");
-	if (fp == NULL)
+	if (NULL == fp)
 		exit(EXIT_FAILURE);
 
 	do{
 		c = fgetc(fp);
-		switch (c)
-		{
+		switch (c) {
 		case '\n':
 			printf("\\\n");
 			break;
@@ -49,7 +48,7 @@ int main(int argc, char **argv)
 			printf("%c",c);
 			break;
 		}
-	}while(EOF != c);
+	}while (EOF != c);
 
 	exit(EXIT_SUCCESS);
 }

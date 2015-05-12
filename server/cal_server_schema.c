@@ -54,13 +54,13 @@ static inline int __remake_db_file(char* db_path)
 
 	fd = open(db_file, O_CREAT | O_RDWR, 0660);
 	if (-1 == fd) {
-		ERR("open Failed ");
+		ERR("open Fail ");
 		return -1;
 	}
 
 	ret = fchown(fd, getuid(), CAL_SECURITY_FILE_GROUP);
 	if (-1 == ret) {
-		ERR("Failed to fchown ");
+		ERR("Fail to fchown ");
 		close(fd);
 		return -1;
 	}
@@ -72,13 +72,13 @@ static inline int __remake_db_file(char* db_path)
 
 	fd = open(jn_file, O_CREAT | O_RDWR, 0660);
 	if (-1 == fd) {
-		ERR("open Failed ");
+		ERR("open Fail ");
 		return -1;
 	}
 
 	ret = fchown(fd, getuid(), CAL_SECURITY_FILE_GROUP);
 	if (-1 == ret) {
-		ERR("Failed to fchown ");
+		ERR("Fail to fchown ");
 		close(fd);
 		return -1;
 	}

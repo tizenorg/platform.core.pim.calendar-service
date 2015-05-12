@@ -73,7 +73,7 @@ do { \
 			timerclear(&__g_release_time); \
 		} \
 	} \
-} while(0)
+} while (0)
 
 #define CAL_LIMIT_ACCESS_BACK \
 	do { \
@@ -81,7 +81,7 @@ do { \
 		{ \
 			gettimeofday(&__g_release_time, NULL); \
 		} \
-	} while(0)
+	} while (0)
 
 
 static int __g_access_count;
@@ -103,7 +103,7 @@ int cal_client_db_insert_record(calendar_record_h record, int* id)
 	// make indata
 	indata = pims_ipc_data_create(0);
 	if (indata == NULL) {
-		ERR("ipc data created fail !");
+		ERR("pims_ipc_data_create() Fail");
 		return CALENDAR_ERROR_OUT_OF_MEMORY;
 	}
 
@@ -330,7 +330,7 @@ int cal_client_db_replace_record(calendar_record_h record, int record_id)
 
 	// make indata
 	indata = pims_ipc_data_create(0);
-    RETVM_IF(indata == NULL, CALENDAR_ERROR_OUT_OF_MEMORY, "pims_ipc_data_create() Fail");
+    RETVM_IF(NULL == indata, CALENDAR_ERROR_OUT_OF_MEMORY, "pims_ipc_data_create() Fail");
 
 	ret = cal_ipc_marshal_record(record,indata);
 	if (CALENDAR_ERROR_NONE != ret) {
@@ -1033,7 +1033,7 @@ int cal_client_db_replace_records(calendar_list_h record_list, int *record_id_ar
 
 	// make indata
 	indata = pims_ipc_data_create(0);
-    RETVM_IF(indata == NULL, CALENDAR_ERROR_OUT_OF_MEMORY, "pims_ipc_data_create() Fail");
+    RETVM_IF(NULL == indata, CALENDAR_ERROR_OUT_OF_MEMORY, "pims_ipc_data_create() Fail");
 
 	ret = cal_ipc_marshal_list(record_list,indata);
 	if (CALENDAR_ERROR_NONE != ret) {
@@ -1293,7 +1293,7 @@ int cal_client_db_insert_vcalendars(const char* vcalendar_stream, int **record_i
 
 	// make indata
 	indata = pims_ipc_data_create(0);
-    RETVM_IF(indata == NULL, CALENDAR_ERROR_OUT_OF_MEMORY, "pims_ipc_data_create() Fail");
+    RETVM_IF(NULL == indata, CALENDAR_ERROR_OUT_OF_MEMORY, "pims_ipc_data_create() Fail");
 
 	ret = cal_ipc_marshal_char(vcalendar_stream,indata);
 	if (CALENDAR_ERROR_NONE != ret) {
@@ -1393,7 +1393,7 @@ int cal_client_db_replace_vcalendars(const char* vcalendar_stream, int *record_i
 
 	// make indata
 	indata = pims_ipc_data_create(0);
-    RETVM_IF(indata == NULL, CALENDAR_ERROR_OUT_OF_MEMORY, "pims_ipc_data_create() Fail");
+    RETVM_IF(NULL == indata, CALENDAR_ERROR_OUT_OF_MEMORY, "pims_ipc_data_create() Fail");
 
 	ret = cal_ipc_marshal_char(vcalendar_stream,indata);
 	if (CALENDAR_ERROR_NONE != ret) {
@@ -1487,7 +1487,7 @@ int cal_client_db_get_changes_exception_by_version(const char* view_uri, int ori
 
 	// make indata
 	indata = pims_ipc_data_create(0);
-    RETVM_IF(indata == NULL, CALENDAR_ERROR_OUT_OF_MEMORY, "pims_ipc_data_create() Fail");
+    RETVM_IF(NULL == indata, CALENDAR_ERROR_OUT_OF_MEMORY, "pims_ipc_data_create() Fail");
 
 	ret = cal_ipc_marshal_char(view_uri,indata);
 	if (CALENDAR_ERROR_NONE != ret) {
@@ -1558,9 +1558,8 @@ int cal_client_destroy(void)
 
 	// make indata
 	indata = pims_ipc_data_create(0);
-	if (indata == NULL)
-	{
-		ERR("ipc data created fail !");
+	if (NULL == indata) {
+		ERR("pims_ipc_data_create() Fail");
 		ret = CALENDAR_ERROR_OUT_OF_MEMORY;
 		return ret;
 	}

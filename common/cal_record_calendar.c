@@ -145,8 +145,7 @@ static int _cal_record_calendar_clone(calendar_record_h record, calendar_record_
 static int _cal_record_calendar_get_str(calendar_record_h record, unsigned int property_id, char** out_str)
 {
 	cal_calendar_s *cal_rec = (cal_calendar_s*)(record);
-	switch (property_id)
-	{
+	switch (property_id) {
 	case CAL_PROPERTY_CALENDAR_UID:
 		*out_str = SAFE_STRDUP(cal_rec->uid);
 		break;
@@ -185,8 +184,7 @@ static int _cal_record_calendar_get_str(calendar_record_h record, unsigned int p
 static int _cal_record_calendar_get_str_p(calendar_record_h record, unsigned int property_id, char** out_str)
 {
 	cal_calendar_s *cal_rec = (cal_calendar_s*)(record);
-	switch (property_id)
-	{
+	switch (property_id) {
 	case CAL_PROPERTY_CALENDAR_UID:
 		*out_str = (cal_rec->uid);
 		break;
@@ -225,8 +223,7 @@ static int _cal_record_calendar_get_str_p(calendar_record_h record, unsigned int
 static int _cal_record_calendar_get_int(calendar_record_h record, unsigned int property_id, int* out_value)
 {
 	cal_calendar_s *cal_rec = (cal_calendar_s*)(record);
-	switch (property_id)
-	{
+	switch (property_id) {
 	case CAL_PROPERTY_CALENDAR_ID:
 		*out_value = (cal_rec->index);
 		break;
@@ -256,8 +253,7 @@ static int _cal_record_calendar_get_int(calendar_record_h record, unsigned int p
 static int _cal_record_calendar_set_str(calendar_record_h record, unsigned int property_id, const char* value)
 {
 	cal_calendar_s *cal_rec = (cal_calendar_s*)(record);
-	switch (property_id)
-	{
+	switch (property_id) {
 	case CAL_PROPERTY_CALENDAR_UID:
 		CAL_FREE(cal_rec->uid);
 		cal_rec->uid = SAFE_STRDUP(value);

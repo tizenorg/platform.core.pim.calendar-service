@@ -214,11 +214,9 @@ static int  _cal_vcalendar_make_time(cal_make_s *b, char *tzid, calendar_time_s 
 	char buf[256] = {0};
 	int y = 0, m = 0, d = 0;
 	int h = 0, n = 0, s = 0;
-	switch (b->version)
-	{
+	switch (b->version) {
 	case VCAL_VER_1:
-		switch (t->type)
-		{
+		switch (t->type) {
 		case CALENDAR_TIME_UTIME:
 			cal_time_get_local_datetime(NULL, t->time.utime, &y, &m, &d, &h, &n, &s);
 			snprintf(buf, sizeof(buf), ":"VCAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ, y, m, d, h, n, s);
@@ -231,8 +229,7 @@ static int  _cal_vcalendar_make_time(cal_make_s *b, char *tzid, calendar_time_s 
 		}
 		break;
 	case VCAL_VER_2:
-		switch (t->type)
-		{
+		switch (t->type) {
 		case CALENDAR_TIME_UTIME:
 			if (NULL == tzid || '\0' == *tzid) {
 				cal_time_get_local_datetime(NULL, t->time.utime, &y, &m, &d, &h, &n, &s);
@@ -267,8 +264,7 @@ static void __encode_escaped_char(char *p, char **r)
 	DBG("Before [%s]", p);
 	while ('\0' != *p) {
 		if ('\r' == *p && '\n' == *(p + 1)) break;
-		switch (*p)
-		{
+		switch (*p) {
 		case '\n':
 			*q = '\\';
 			*(q +1) = 'n';
@@ -379,7 +375,7 @@ static void _cal_vcalendar_make_aalarm(cal_make_s *b, calendar_record_h record, 
 {
 	RETM_IF(NULL == b, "b is NULL");
 	RETM_IF(NULL == record, "record is NULL");
-	RETM_IF(alarm == NULL, "alarm is NULL");
+	RETM_IF(NULL == alarm, "alarm is NULL");
 
 	int ret = CALENDAR_ERROR_NONE;
 
@@ -470,8 +466,7 @@ static void _cal_vcalendar_make_alarm(cal_make_s *b, calendar_record_h alarm)
 	int action = 0;
 	ret = calendar_record_get_int(alarm, _calendar_alarm.action, &action);
 	RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_int() Fail(%d)", ret);
-	switch (action)
-	{
+	switch (action) {
 	default:
 	case CALENDAR_ALARM_ACTION_AUDIO:
 		ret = _cal_vcalendar_make_printf(b, "ACTION:", "AUDIO");
@@ -521,8 +516,7 @@ int _cal_vcalendar_make_rrule_append_mday(char *buf, int buf_len, char *mday)
 	}
 	int len = strlen(buf);
 	length = g_strv_length(t);
-	for (i = 0; i < length; i++)
-	{
+	for (i = 0; i < length; i++) {
 		if (*t[i] == '\0')
 			continue;
 
@@ -571,9 +565,8 @@ static void _cal_vcalendar_make_rrule_append_setpos(calendar_record_h record, ch
 		// in ver2.0, 3TH should be changed to setpos:3, byday:TH
 		char *byday = NULL;
 		ret = calendar_record_get_str_p(record, _calendar_event.byday, &byday);
-		RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_int() failed(%d)", ret);
-		if (NULL == byday || '\0' == byday[0])
-		{
+		RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_int() Fail(%d)", ret);
+		if (NULL == byday || '\0' == byday[0]) {
 			blen += snprintf(buf +blen, buf_len -blen, "%s", "1+ ");
 			return;
 		}
@@ -635,8 +628,7 @@ void _cal_vcalendar_make_rrule_append_text_wday(int rrule_type, char *buf, int b
 		return;
 	}
 	length = g_strv_length(t);
-	for (i = 0; i < length; i++)
-	{
+	for (i = 0; i < length; i++) {
 		if (*t[i] == '\0')
 			continue;
 
@@ -695,8 +687,7 @@ int _cal_vcalendar_make_rrule_append_wday(int rrule_type, char *buf, int buf_len
 	length = g_strv_length(t);
 	DBG("len(%d)", length);
 
-	for (i = 0; i < length; i++)
-	{
+	for (i = 0; i < length; i++) {
 		if (*t[i] == '\0') continue;
 
 		p = t[i];
@@ -704,30 +695,23 @@ int _cal_vcalendar_make_rrule_append_wday(int rrule_type, char *buf, int buf_len
 		while (p[j] == '+' || p[j] == '-' || ('1' <= p[j] && p[j] <= '9'))
 			j++;
 
-		if (0 < j)
-		{
-			if (CALENDAR_RECURRENCE_WEEKLY == rrule_type)
-			{
+		if (0 < j) {
+			if (CALENDAR_RECURRENCE_WEEKLY == rrule_type) {
 				num_past = num;
 			}
-			else
-			{
-				if (*p == '-')
-				{
+			else {
+				if (*p == '-') {
 					snprintf(buf_temp, j + 1, "%s", p + 1);
 					num = atoi(buf_temp);
-					if (0 == i)
-					{
+					if (0 == i) {
 						num_past = num;
 						len += snprintf(buf +len, buf_len -len, "%s- ", buf_temp);
 					}
 				}
-				else
-				{
+				else {
 					snprintf(buf_temp, j + 1, "%s", p);
 					num = atoi(buf_temp);
-					if (0 == i)
-					{
+					if (0 == i) {
 						num_past = num;
 						len += snprintf(buf +len, buf_len -len, "%s+ ", buf_temp);
 					}
@@ -755,8 +739,7 @@ static void __make_begin(cal_make_s *b, calendar_record_h record)
 	RET_IF(NULL == record);
 
 	int ret = 0;
-	switch (b->type)
-	{
+	switch (b->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = _cal_vcalendar_make_printf(b, "BEGIN:VEVENT", NULL);
 		RETM_IF(CALENDAR_ERROR_NONE != ret, "_cal_vcalendar_make_printf() Fail(%d)", ret);
@@ -776,8 +759,7 @@ static void __make_dtstart(cal_make_s *b, calendar_record_h record)
 	int ret = 0;
 	char *tzid = NULL;
 	calendar_time_s ct = {0};
-	switch (b->type)
-	{
+	switch (b->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = calendar_record_get_str_p(record, _calendar_event.start_tzid, &tzid);
 		RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_str_p() Fail(%d)", ret);
@@ -804,8 +786,7 @@ static void __make_dtend(cal_make_s *b, calendar_record_h record)
 	int ret = 0;
 	char *tzid = NULL;
 	calendar_time_s ct = {0};
-	switch (b->type)
-	{
+	switch (b->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = calendar_record_get_str_p(record, _calendar_event.end_tzid, &tzid);
 		RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_str_p() Fail(%d)", ret);
@@ -834,8 +815,7 @@ static void __make_sensitivity(cal_make_s *b, calendar_record_h record)
 
 	int ret = 0;
 	int value = 0;
-	switch (b->type)
-	{
+	switch (b->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = calendar_record_get_int(record, _calendar_event.sensitivity, &value);
 		RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_int() Fail(%d)", ret);
@@ -846,8 +826,7 @@ static void __make_sensitivity(cal_make_s *b, calendar_record_h record)
 		break;
 	}
 	char *sensitivity = NULL;
-	switch (value)
-	{
+	switch (value) {
 	case CALENDAR_SENSITIVITY_PUBLIC:
 		sensitivity = "PUBLIC";
 		break;
@@ -873,20 +852,17 @@ int _cal_vcalendar_make_rrule_append_until(char *buf, int buf_len, calendar_reco
 	calendar_time_s caltime;
 
 	ret = calendar_record_get_int(record, _calendar_event.range_type, &range_type);
-	if (CALENDAR_ERROR_NONE != ret)
-	{
-		ERR("calendar_record_get_int() failed");
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("calendar_record_get_int() Fail");
 		return ret;
 	}
 
 	int len = strlen(buf);
-	switch (range_type)
-	{
+	switch (range_type) {
 	case CALENDAR_RANGE_COUNT:
 		ret = calendar_record_get_int(record, _calendar_event.count, &count);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("calendar_record_get_int() failed");
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("calendar_record_get_int() Fail");
 			return ret;
 		}
 		snprintf(buf +len, buf_len -len, "#%d", count);
@@ -896,13 +872,11 @@ int _cal_vcalendar_make_rrule_append_until(char *buf, int buf_len, calendar_reco
 		memset(&caltime, 0x0, sizeof(calendar_time_s));
 
 		ret = calendar_record_get_caltime(record, _calendar_event.until_time, &caltime);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("calendar_record_get_caltime() failed");
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("calendar_record_get_caltime() Fail");
 			return ret;
 		}
-		switch (caltime.type)
-		{
+		switch (caltime.type) {
 		case CALENDAR_TIME_UTIME:
 			until_str = cal_time_convert_ltos(NULL, caltime.time.utime, 0);
 			snprintf(buf +len, buf_len -len, "%s", until_str);
@@ -932,8 +906,7 @@ static void __make_rrule_ver1_default(calendar_record_h record, int freq, int in
 	ret = calendar_record_get_caltime(record, _calendar_event.start_time, &caltime);
 	WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_caltime() Fail(%d)", ret);
 
-	switch (freq)
-	{
+	switch (freq) {
 	case CALENDAR_RECURRENCE_YEARLY:
 		snprintf(buf, buf_size, "YD%d ", interval);
 		break;
@@ -944,8 +917,7 @@ static void __make_rrule_ver1_default(calendar_record_h record, int freq, int in
 
 	char *tzid = NULL;
 	int d = 0;
-	switch (caltime.type)
-	{
+	switch (caltime.type) {
 	case CALENDAR_TIME_UTIME:
 		calendar_record_get_str_p(record, _calendar_event.start_tzid, &tzid);
 		cal_time_get_local_datetime(tzid, caltime.time.utime, NULL, NULL, &d, NULL, NULL, NULL);
@@ -993,8 +965,7 @@ static void __make_rrule_ver1(cal_make_s *b, calendar_record_h record)
 	RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_str_p() Fail(%d)", ret);
 
 	int len = 0;
-	switch (freq)
-	{
+	switch (freq) {
 	case CALENDAR_RECURRENCE_YEARLY:
 		if (bymonth && *bymonth) {
 			DBG("bymonth");
@@ -1261,11 +1232,9 @@ static void __make_rrule(cal_make_s *b, calendar_record_h record)
 	RET_IF(NULL == b);
 	RET_IF(NULL == record);
 
-	switch (b->type)
-	{
+	switch (b->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
-		switch (b->version)
-		{
+		switch (b->version) {
 		case VCAL_VER_1:
 			__make_rrule_ver1(b, record);
 			break;
@@ -1284,7 +1253,7 @@ int _cal_vcalendar_make_attendee(cal_make_s *b, calendar_record_h attendee)
 {
 	int ret;
 
-	RETV_IF(attendee == NULL, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == attendee, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	ret = _cal_vcalendar_make_set_str(b, "ATTENDEE");
 	RETV_IF(CALENDAR_ERROR_NONE != ret, ret);
@@ -1292,8 +1261,7 @@ int _cal_vcalendar_make_attendee(cal_make_s *b, calendar_record_h attendee)
 	int cutype = 0;
 	ret = calendar_record_get_int(attendee, _calendar_attendee.cutype, &cutype);
 	ret = _cal_vcalendar_make_set_str(b, ";CUTYPE=");
-	switch (cutype)
-	{
+	switch (cutype) {
 	case CALENDAR_ATTENDEE_CUTYPE_INDIVIDUAL:
 		ret = _cal_vcalendar_make_set_str(b, "INDIVIDUAL");
 		break;
@@ -1346,8 +1314,7 @@ int _cal_vcalendar_make_attendee(cal_make_s *b, calendar_record_h attendee)
 
 	char *delegatee_uri = NULL;
 	ret = calendar_record_get_str_p(attendee, _calendar_attendee.delegatee_uri, &delegatee_uri);
-	if (delegatee_uri && *delegatee_uri)
-	{
+	if (delegatee_uri && *delegatee_uri) {
 		ret = _cal_vcalendar_make_set_str(b, ";DELEGATED-TO=");
 		ret = _cal_vcalendar_make_set_str(b, delegatee_uri);
 		RETV_IF(CALENDAR_ERROR_NONE != ret, ret);
@@ -1355,8 +1322,7 @@ int _cal_vcalendar_make_attendee(cal_make_s *b, calendar_record_h attendee)
 
 	char *delegator_uri = NULL;
 	ret = calendar_record_get_str_p(attendee, _calendar_attendee.delegator_uri, &delegator_uri);
-	if (delegator_uri && *delegator_uri)
-	{
+	if (delegator_uri && *delegator_uri) {
 		ret = _cal_vcalendar_make_set_str(b, ";DELEGATED-FROM=");
 		ret = _cal_vcalendar_make_set_str(b, delegator_uri);
 		RETV_IF(CALENDAR_ERROR_NONE != ret, ret);
@@ -1374,8 +1340,7 @@ int _cal_vcalendar_make_attendee(cal_make_s *b, calendar_record_h attendee)
 
 	char *email = NULL;
 	ret = calendar_record_get_str_p(attendee, _calendar_attendee.email, &email);
-	if (email && *email)
-	{
+	if (email && *email) {
 		ret = _cal_vcalendar_make_set_str(b, ":mailto:");
 		ret = _cal_vcalendar_make_set_str(b, email);
 		RETV_IF(CALENDAR_ERROR_NONE != ret, ret);
@@ -1393,8 +1358,7 @@ static void __make_attendee(cal_make_s *b, calendar_record_h record)
 	int ret = 0;
 	unsigned int count = 0;
 	int i;
-	switch (b->type)
-	{
+	switch (b->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = calendar_record_get_child_record_count(record, _calendar_event.calendar_attendee, &count);
 		RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_child_record_count() Fail(%d)", ret);
@@ -1425,8 +1389,7 @@ static void __make_alarm_ver1(cal_make_s *b, calendar_record_h record)
 	int ret = 0;
 	unsigned int count = 0;
 	int i;
-	switch (b->type)
-	{
+	switch (b->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = calendar_record_get_child_record_count(record, _calendar_event.calendar_alarm, &count);
 		RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_child_record_count() Fail(%d)", ret);
@@ -1460,8 +1423,7 @@ static void __make_alarm_ver2(cal_make_s *b, calendar_record_h record)
 	int ret = 0;
 	unsigned int count = 0;
 	int i;
-	switch (b->type)
-	{
+	switch (b->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = calendar_record_get_child_record_count(record, _calendar_event.calendar_alarm, &count);
 		RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_child_record_count() Fail(%d)", ret);
@@ -1492,11 +1454,9 @@ static void __make_alarm(cal_make_s *b, calendar_record_h record)
 	RET_IF(NULL == b);
 	RET_IF(NULL == record);
 
-	switch (b->type)
-	{
+	switch (b->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
-		switch (b->version)
-		{
+		switch (b->version) {
 		case VCAL_VER_1:
 			__make_alarm_ver1(b, record);
 			break;
@@ -1518,8 +1478,7 @@ static void __make_created_time(cal_make_s *b, calendar_record_h record)
 
 	int ret = 0;
 	long long int value = 0;
-	switch (b->type)
-	{
+	switch (b->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = calendar_record_get_lli(record, _calendar_event.created_time, &value);
 		RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_lli() Fail(%d)", ret);
@@ -1535,8 +1494,7 @@ static void __make_created_time(cal_make_s *b, calendar_record_h record)
 	char buf[128] = {0};
 	snprintf(buf, sizeof(buf), VCAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ, y, m, d, h, n, s);
 
-	switch (b->version)
-	{
+	switch (b->version) {
 	case VCAL_VER_1:
 		_cal_vcalendar_make_printf(b, "DCREATED:", buf);
 		break;
@@ -1553,8 +1511,7 @@ static void __make_summary(cal_make_s *b, calendar_record_h record)
 
 	int ret = 0;
 	char *value = NULL;
-	switch (b->type)
-	{
+	switch (b->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = calendar_record_get_str_p(record, _calendar_event.summary, &value);
 		RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_str_p() Fail(%d)", ret);
@@ -1579,8 +1536,7 @@ static void __make_description(cal_make_s *b, calendar_record_h record)
 
 	int ret = 0;
 	char *value = NULL;
-	switch (b->type)
-	{
+	switch (b->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = calendar_record_get_str_p(record, _calendar_event.description, &value);
 		RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_str_p() Fail(%d)", ret);
@@ -1605,8 +1561,7 @@ static void __make_location(cal_make_s *b, calendar_record_h record)
 
 	int ret = 0;
 	char *value = NULL;
-	switch (b->type)
-	{
+	switch (b->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = calendar_record_get_str_p(record, _calendar_event.location, &value);
 		RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_str_p() Fail(%d)", ret);
@@ -1635,8 +1590,7 @@ static void __make_organizer(cal_make_s *b, calendar_record_h record)
 	int ret = 0;
 	char *name = NULL;
 	char *email = NULL;
-	switch (b->type)
-	{
+	switch (b->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = calendar_record_get_str_p(record, _calendar_event.organizer_name, &name);
 		RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_str_p() Fail(%d)", ret);
@@ -1675,8 +1629,7 @@ static void __make_last_modified(cal_make_s *b, calendar_record_h record)
 
 	int ret = 0;
 	long long int value = 0;
-	switch (b->type)
-	{
+	switch (b->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = calendar_record_get_lli(record, _calendar_event.last_modified_time, &value);
 		RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_lli() Fail(%d)", ret);
@@ -1704,13 +1657,11 @@ static void __make_status(cal_make_s *b, calendar_record_h record)
 	int ret = 0;
 	int value = 0;
 	char *status = NULL;
-	switch (b->type)
-	{
+	switch (b->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = calendar_record_get_int(record, _calendar_event.event_status, &value);
 		RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_int() Fail(%d)", ret);
-		switch (value)
-		{
+		switch (value) {
 		case CALENDAR_EVENT_STATUS_NONE:
 			DBG("None status");
 			break;
@@ -1728,8 +1679,7 @@ static void __make_status(cal_make_s *b, calendar_record_h record)
 	case CALENDAR_BOOK_TYPE_TODO:
 		ret = calendar_record_get_int(record, _calendar_todo.todo_status, &value);
 		RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_int() Fail(%d)", ret);
-		switch (value)
-		{
+		switch (value) {
 		case CALENDAR_TODO_STATUS_NONE:
 			DBG("None status");
 			break;
@@ -1780,8 +1730,7 @@ static void __make_priority(cal_make_s *b, calendar_record_h record)
 
 	int ret = 0;
 	int value = 0;
-	switch (b->type)
-	{
+	switch (b->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = calendar_record_get_int(record, _calendar_event.priority, &value);
 		RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_int() Fail(%d)", ret);
@@ -1792,11 +1741,9 @@ static void __make_priority(cal_make_s *b, calendar_record_h record)
 		break;
 	}
 	int priority = 0;
-	switch (b->version)
-	{
+	switch (b->version) {
 	case VCAL_VER_1:
-		switch (value)
-		{
+		switch (value) {
 		case CALENDAR_EVENT_PRIORITY_HIGH:
 			priority = 2;
 			break;
@@ -1812,8 +1759,7 @@ static void __make_priority(cal_make_s *b, calendar_record_h record)
 		}
 		break;
 	case VCAL_VER_2:
-		switch (value)
-		{
+		switch (value) {
 		case CALENDAR_EVENT_PRIORITY_HIGH: // in version 2.0, one out of 1 ~ 4.
 			priority = 3;
 			break;
@@ -1858,8 +1804,7 @@ static void __make_categories(cal_make_s *b, calendar_record_h record)
 
 	int ret = 0;
 	char *value = NULL;
-	switch (b->type)
-	{
+	switch (b->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = calendar_record_get_str_p(record, _calendar_event.categories, &value);
 		RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_str_p() Fail(%d)", ret);
@@ -1967,8 +1912,7 @@ static void __make_exdate(cal_make_s *b, calendar_record_h record)
 
 	int ret = 0;
 	char *value = NULL;
-	switch (b->type)
-	{
+	switch (b->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = calendar_record_get_str_p(record, _calendar_event.exdate, &value);
 		RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_str_p() Fail(%d)", ret);
@@ -2023,8 +1967,7 @@ static void __make_extended(cal_make_s *b, calendar_record_h record)
 	int i;
 	bool has_lunar = false;
 	int calendar_system_type = 0;
-	switch (b->type)
-	{
+	switch (b->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = calendar_record_get_child_record_count(record, _calendar_event.extended, &count);
 		RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_child_record_count() Fail(%d)", ret);
@@ -2063,8 +2006,7 @@ static void __make_end(cal_make_s *b, calendar_record_h record)
 	RET_IF(NULL == record);
 
 	int ret = 0;
-	switch (b->type)
-	{
+	switch (b->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = _cal_vcalendar_make_printf(b, "END:VEVENT", NULL);
 		RETM_IF(CALENDAR_ERROR_NONE != ret, "_cal_vcalendar_make_printf() Fail(%d)", ret);
@@ -2179,8 +2121,7 @@ static void __devide_vcalendar_with_header(cal_make_s *b, calendar_record_h reco
 	char *tzid = NULL;
 	long long int created = 0;
 
-	switch (b->type)
-	{
+	switch (b->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = calendar_record_get_str_p(record, _calendar_event.start_tzid, &tzid);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_str_p() Fail(%d)", ret);
@@ -2267,7 +2208,7 @@ static int __make_vcalendar(cal_make_s *b, calendar_list_h list)
 			DBG("Unable to understand uri[%s]", uri);
 		}
 
-	} while(calendar_list_next(list) != CALENDAR_ERROR_NO_DATA);
+	} while (calendar_list_next(list) != CALENDAR_ERROR_NO_DATA);
 	__make_footer(b);
 
 	return CALENDAR_ERROR_NONE;
@@ -2298,7 +2239,7 @@ int cal_vcalendar_make_vcalendar(cal_make_s *b, calendar_list_h list)
 				break;
 			}
 		}
-	} while(calendar_list_next(list) != CALENDAR_ERROR_NO_DATA);
+	} while (calendar_list_next(list) != CALENDAR_ERROR_NO_DATA);
 	b->version = version;
 	DBG("make as version(%d)", version);
 

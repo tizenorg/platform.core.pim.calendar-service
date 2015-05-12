@@ -444,7 +444,7 @@ void cal_server_contacts_delete(int account_id)
 		calendar_list_first(list);
 		do {
 			if (calendar_list_get_current_record_p(list, &event) == CALENDAR_ERROR_NONE) {
-				if (event == NULL) {
+				if (NULL == event) {
 					DBG("No event\n");
 					break;
 				}
@@ -500,7 +500,7 @@ void cal_server_contacts_sync_start(void)
 {
 	CAL_FN_CALL();
 
-	if (_cal_server_contacts_sync_thread == NULL) {
+	if (NULL == _cal_server_contacts_sync_thread) {
 		g_mutex_init(&_cal_server_contacts_sync_mutex);
 		g_cond_init(&_cal_server_contacts_sync_cond);
 		_cal_server_contacts_sync_thread = g_thread_new(CAL_SERVER_CONTACTS_SYNC_THREAD_NAME,
@@ -509,6 +509,5 @@ void cal_server_contacts_sync_start(void)
 
 	// don't use mutex.
 	g_cond_signal(&_cal_server_contacts_sync_cond);
-
-	return;
 }
+

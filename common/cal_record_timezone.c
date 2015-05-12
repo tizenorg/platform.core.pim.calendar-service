@@ -133,8 +133,7 @@ static int _cal_record_timezone_clone(calendar_record_h record, calendar_record_
 static int _cal_record_timezone_get_str(calendar_record_h record, unsigned int property_id, char** out_str)
 {
 	cal_timezone_s *rec = (cal_timezone_s*)(record);
-	switch (property_id)
-	{
+	switch (property_id) {
 	case CAL_PROPERTY_TIMEZONE_STANDARD_NAME:
 		*out_str = SAFE_STRDUP(rec->standard_name);
 		break;
@@ -152,8 +151,7 @@ static int _cal_record_timezone_get_str(calendar_record_h record, unsigned int p
 static int _cal_record_timezone_get_str_p(calendar_record_h record, unsigned int property_id, char** out_str)
 {
 	cal_timezone_s *rec = (cal_timezone_s*)(record);
-	switch (property_id)
-	{
+	switch (property_id) {
 	case CAL_PROPERTY_TIMEZONE_STANDARD_NAME:
 		*out_str = (rec->standard_name);
 		break;
@@ -171,8 +169,7 @@ static int _cal_record_timezone_get_str_p(calendar_record_h record, unsigned int
 static int _cal_record_timezone_get_int(calendar_record_h record, unsigned int property_id, int* out_value)
 {
 	cal_timezone_s *rec = (cal_timezone_s*)(record);
-	switch (property_id)
-	{
+	switch (property_id) {
 	case CAL_PROPERTY_TIMEZONE_ID:
 		*out_value = (rec->index);
 		break;
@@ -223,8 +220,7 @@ static int _cal_record_timezone_get_int(calendar_record_h record, unsigned int p
 static int _cal_record_timezone_set_str(calendar_record_h record, unsigned int property_id, const char* value)
 {
 	cal_timezone_s *rec = (cal_timezone_s*)(record);
-	switch (property_id)
-	{
+	switch (property_id) {
 	case CAL_PROPERTY_TIMEZONE_STANDARD_NAME:
 		CAL_FREE(rec->standard_name);
 		rec->standard_name = SAFE_STRDUP(value);
@@ -244,8 +240,7 @@ static int _cal_record_timezone_set_str(calendar_record_h record, unsigned int p
 static int _cal_record_timezone_set_int(calendar_record_h record, unsigned int property_id, int value)
 {
 	cal_timezone_s *rec = (cal_timezone_s*)(record);
-	switch (property_id)
-	{
+	switch (property_id) {
 	case CAL_PROPERTY_TIMEZONE_ID:
 		(rec->index) = value;
 		break;

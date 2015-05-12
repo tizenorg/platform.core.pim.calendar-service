@@ -153,8 +153,7 @@ int cal_db_extended_insert_record(calendar_record_h record, int record_id, calen
 		*id = index;
 	}
 
-	if (record_type == CALENDAR_RECORD_TYPE_EVENT || record_type == CALENDAR_RECORD_TYPE_TODO)
-	{
+	if (record_type == CALENDAR_RECORD_TYPE_EVENT || record_type == CALENDAR_RECORD_TYPE_TODO) {
 		snprintf(query, sizeof(query), "UPDATE %s SET "
 				"has_extended = 1 "
 				"WHERE id = %d;",

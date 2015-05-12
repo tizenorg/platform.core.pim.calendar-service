@@ -246,7 +246,7 @@ static int _cal_db_attendee_get_records_with_query(calendar_query_h query, int o
 	que = (cal_query_s *)query;
 
 	if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_ATTENDEE)) {
-		table_name = CAL_SAFE_STRDUP(CAL_TABLE_ATTENDEE);
+		table_name = SAFE_STRDUP(CAL_TABLE_ATTENDEE);
 	}
 	else {
 		ERR("uri(%s) not support get records with query",que->view_uri);
@@ -425,7 +425,7 @@ static int _cal_db_attendee_get_count_with_query(calendar_query_h query, int *ou
 	que = (cal_query_s *)query;
 
 	if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_ATTENDEE)) {
-		table_name = CAL_SAFE_STRDUP(CAL_TABLE_ATTENDEE);
+		table_name = SAFE_STRDUP(CAL_TABLE_ATTENDEE);
 	}
 	else {
 		ERR("uri(%s) not support get records with query",que->view_uri);
@@ -437,7 +437,7 @@ static int _cal_db_attendee_get_count_with_query(calendar_query_h query, int *ou
 		ret = cal_db_query_create_condition(query, &condition, &bind_text);
 		if (CALENDAR_ERROR_NONE != ret) {
 			CAL_FREE(table_name);
-			ERR("filter create fail");
+			ERR("filter create Fail");
 			return ret;
 		}
 	}

@@ -48,8 +48,7 @@ int calendar_db_delete_account(int account_id)
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 
-	while(CAL_DB_ROW == cal_db_util_stmt_step(stmt))
-	{
+	while(CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
 		int id = 0;
 		id = sqlite3_column_int(stmt, 0);
 		calendar_list = g_list_append(calendar_list, GINT_TO_POINTER(id));
@@ -60,22 +59,19 @@ int calendar_db_delete_account(int account_id)
 		DBG("calendar cnt=%d",g_list_length(calendar_list));
 
 	ret = cal_db_util_begin_trans();
-	if (CALENDAR_ERROR_NONE != ret)
-	{
+	if (CALENDAR_ERROR_NONE != ret) {
 		g_list_free(calendar_list);
 		ERR("db failed");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 
 	GList* cursor = calendar_list;
-	while(cursor)
-	{
+	while (cursor) {
 		int id = GPOINTER_TO_INT(cursor->data);
 
 		ret = calendar_db_delete_record(_calendar_book._uri, id);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("calendar_id(%d) delete fail~ ",id);
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("calendar_id(%d) delete Fail",id);
 		}
 		cursor = g_list_next(cursor);
 	}

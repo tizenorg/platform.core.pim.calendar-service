@@ -239,7 +239,7 @@ bool cal_access_control_have_write_permission(int calendarbook_id)
 		return false;
 	}
 
-	while(1) {
+	while (1) {
 		if (find->write_list[i] == -1)
 			break;
 		if (calendarbook_id == find->write_list[i]) {

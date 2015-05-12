@@ -184,16 +184,14 @@ static inline int _inotify_attach_handler(int fd)
 	guint ret;
 	GIOChannel *channel;
 
-	if (fd < 0)
-	{
+	if (fd < 0) {
 		ERR("Invalid argument: fd is NULL");
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
 	channel = g_io_channel_unix_new(fd);
-	if (channel == NULL)
-	{
-		ERR("Failed to new channel");
+	if (NULL == channel) {
+		ERR("g_io_channel_unix_new() Fail");
 		return -1; // CALENDAR_ERROR_FAILED_INOTIFY
 	}
 
@@ -213,8 +211,7 @@ int cal_inotify_initialize(void)
 	cal_mutex_lock(CAL_MUTEX_INOTIFY);
 	calendar_inoti_count++;
 
-	if (1 < calendar_inoti_count)
-	{
+	if (1 < calendar_inoti_count) {
 		DBG("inotify count =%d",calendar_inoti_count);
 		cal_mutex_unlock(CAL_MUTEX_INOTIFY);
 		return CALENDAR_ERROR_NONE;
@@ -223,10 +220,8 @@ int cal_inotify_initialize(void)
 	cal_mutex_unlock(CAL_MUTEX_INOTIFY);
 #endif
 	inoti_fd = inotify_init();
-
-	if (inoti_fd == -1)
-	{
-		ERR("Failed to init inotify(err:%d)", errno);
+	if (inoti_fd == -1) {
+		ERR("inotify_init() Fail(%d)", errno);
 #ifdef CAL_IPC_CLIENT
 		cal_mutex_lock(CAL_MUTEX_INOTIFY);
 		calendar_inoti_count = 0;
@@ -241,8 +236,7 @@ int cal_inotify_initialize(void)
 	WARN_IF(ret < 0, "fcntl failed(%d)", ret);
 
 	inoti_handler = _inotify_attach_handler(inoti_fd);
-	if (inoti_handler <= 0)
-	{
+	if (inoti_handler <= 0) {
 		ERR("_inotify_attach_handler() Fail");
 		close(inoti_fd);
 		inoti_fd = -1;
@@ -503,8 +497,7 @@ void cal_inotify_finalize(void)
 	cal_mutex_lock(CAL_MUTEX_INOTIFY);
 	calendar_inoti_count--;
 
-	if (0 < calendar_inoti_count)
-	{
+	if (0 < calendar_inoti_count) {
 		DBG("inotify count =%d",calendar_inoti_count);
 		cal_mutex_unlock(CAL_MUTEX_INOTIFY);
 		return ;
@@ -512,8 +505,7 @@ void cal_inotify_finalize(void)
 	DBG("inotify count =%d",calendar_inoti_count);
 	cal_mutex_unlock(CAL_MUTEX_INOTIFY);
 #endif
-	if (inoti_handler)
-	{
+	if (inoti_handler) {
 		_cal_inotify_detach_handler(inoti_handler);
 		inoti_handler = 0;
 	}
@@ -525,8 +517,7 @@ void cal_inotify_finalize(void)
 		noti_list = NULL;
 	}
 
-	if (0 <= inoti_fd)
-	{
+	if (0 <= inoti_fd) {
 		close(inoti_fd);
 		inoti_fd = -1;
 	}

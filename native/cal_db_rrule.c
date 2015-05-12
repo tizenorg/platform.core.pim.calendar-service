@@ -28,7 +28,7 @@
 void cal_db_rrule_set_default(calendar_record_h record)
 {
 	cal_event_s *event = NULL;
-	RET_IF(record == NULL);
+	RET_IF(NULL == record);
 
 	event = (cal_event_s *)record;
 
@@ -39,9 +39,7 @@ void cal_db_rrule_set_default(calendar_record_h record)
 		break;
 	case CALENDAR_RECURRENCE_WEEKLY:
 		if (event->byday && 0 < strlen(event->byday))
-		{
 			break;
-		}
 
 		event->byday = cal_time_extract_by(event->system_type, event->start_tzid, event->wkst,
 				&event->start, CAL_DAY_OF_WEEK);
@@ -90,14 +88,14 @@ void cal_db_rrule_get_rrule_from_event(calendar_record_h event, cal_rrule_s **rr
 	cal_rrule_s *_rrule;
 	cal_event_s *_event;
 
-	RET_IF(event == NULL);
+	RET_IF(NULL == event);
 	_event = (cal_event_s *)event;
 	if (_event->freq == CALENDAR_RECURRENCE_NONE) {
 		return;
 	}
 
 	_rrule = calloc(1, sizeof(cal_rrule_s));
-	RETM_IF(_rrule == NULL, "calloc() Fail");
+	RETM_IF(NULL == _rrule, "calloc() Fail");
 
 	_rrule->freq = _event->freq;
 
@@ -132,8 +130,8 @@ void cal_db_rrule_set_rrule_to_event(cal_rrule_s *rrule, calendar_record_h event
 {
 	cal_event_s *_event;
 
-	RET_IF(rrule == NULL);
-	RET_IF(event == NULL);
+	RET_IF(NULL == rrule);
+	RET_IF(NULL == event);
 
 	_event = (cal_event_s *)event;
 
@@ -158,8 +156,8 @@ void cal_db_rrule_set_rrule_to_todo(cal_rrule_s *rrule, calendar_record_h todo)
 {
 	cal_todo_s *_todo;
 
-	RET_IF(rrule == NULL);
-	RET_IF(todo == NULL);
+	RET_IF(NULL == rrule);
+	RET_IF(NULL == todo);
 
 	_todo = (cal_todo_s *)todo;
 
@@ -185,12 +183,12 @@ void cal_db_rrule_get_rrule_from_todo(calendar_record_h todo, cal_rrule_s **rrul
 	cal_rrule_s *_rrule;
 	cal_todo_s *_todo;
 
-	RET_IF(todo == NULL);
+	RET_IF(NULL == todo);
 
 	_todo = (cal_todo_s *)todo;
 
 	_rrule = calloc(1, sizeof(cal_rrule_s));
-	RETM_IF(_rrule == NULL,	"calloc() Fail");
+	RETM_IF(NULL == _rrule, "calloc() Fail");
 
 	_rrule->freq = _todo->freq;
 	_rrule->range_type = _todo->range_type;
@@ -213,6 +211,8 @@ void cal_db_rrule_get_rrule_from_todo(calendar_record_h todo, cal_rrule_s **rrul
 
 int _cal_db_rrule_insert_record(int id, cal_rrule_s *rrule)
 {
+	RETV_IF(NULL == rrule, CALENDAR_ERROR_INVALID_PARAMETER);
+
 	int rrule_id;
 	int index;
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
@@ -355,8 +355,7 @@ int cal_db_rrule_get_rrule(int id, cal_rrule_s **rrule)
 	}
 
 	_rrule = calloc(1, sizeof(cal_rrule_s));
-	RETVM_IF(_rrule == NULL, CALENDAR_ERROR_OUT_OF_MEMORY,
-			"calloc() Fail");
+	RETVM_IF(NULL == _rrule, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc() Fail");
 
 	index = 0;
 	sqlite3_column_int(stmt, index++); // id
@@ -569,7 +568,7 @@ static int _cal_db_rrule_update_record(int id, cal_rrule_s *rrule)
 
 int cal_db_rrule_insert_record(int id, cal_rrule_s *rrule)
 {
-	RETVM_IF(rrule == NULL, CALENDAR_ERROR_INVALID_PARAMETER,
+	RETVM_IF(NULL == rrule, CALENDAR_ERROR_INVALID_PARAMETER,
 			"Invalid argument: rrule is NULL");
 
 	if (rrule->freq == CALENDAR_RECURRENCE_NONE) {

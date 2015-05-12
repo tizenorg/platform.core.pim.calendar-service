@@ -85,20 +85,17 @@ static void _cal_db_alarm_get_stmt(sqlite3_stmt *stmt,calendar_record_h record)
 	temp = sqlite3_column_text(stmt, index++);
 	alarm->alarm_attach = SAFE_STRDUP(temp);
 
-	if (alarm->alarm.type == CALENDAR_TIME_UTIME)
-	{
+	if (alarm->alarm.type == CALENDAR_TIME_UTIME) {
 		alarm->alarm.time.utime = sqlite3_column_int64(stmt,index++);
 		index++; // datetime
 	}
-	else
-	{
+	else {
 		index++; // utime
 		temp = sqlite3_column_text(stmt, index++);
 		if (temp) {
 			int y = 0, m = 0, d = 0;
 			int h = 0, n = 0, s = 0;
-			switch (strlen((const char *)temp))
-			{
+			switch (strlen((const char *)temp)) {
 			case 8:
 				sscanf((const char *)temp, "%04d%02d%02d", &y, &m, &d);
 				alarm->alarm.time.date.year = y;
@@ -224,8 +221,7 @@ static void _cal_db_alarm_get_property_stmt(sqlite3_stmt *stmt,
 			if (temp) {
 				int y = 0, m = 0, d = 0;
 				int h = 0, n = 0, s = 0;
-				switch (strlen((const char *)temp))
-				{
+				switch (strlen((const char *)temp)) {
 				case 8:
 					sscanf((const char *)temp, "%04d%02d%02d", &y, &m, &d);
 					alarm->alarm.time.date.year = y;
@@ -281,7 +277,7 @@ static int _cal_db_alarm_get_records_with_query(calendar_query_h query, int offs
 	que = (cal_query_s *)query;
 
 	if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_ALARM)) {
-		table_name = CAL_SAFE_STRDUP(CAL_TABLE_ALARM);
+		table_name = SAFE_STRDUP(CAL_TABLE_ALARM);
 	}
 	else {
 		ERR("uri(%s) not support get records with query",que->view_uri);
@@ -460,7 +456,7 @@ static int _cal_db_alarm_get_count_with_query(calendar_query_h query, int *out_c
 	que = (cal_query_s *)query;
 
 	if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_ALARM))	{
-		table_name = CAL_SAFE_STRDUP(CAL_TABLE_ALARM);
+		table_name = SAFE_STRDUP(CAL_TABLE_ALARM);
 	}
 	else {
 		ERR("uri(%s) not support get records with query",que->view_uri);
