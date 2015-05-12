@@ -134,10 +134,10 @@ static int _cal_db_alarm_get_all_records(int offset, int limit, calendar_list_h*
 	ret = calendar_list_create(out_list);
 	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "calendar_list_create() Fail(%d)", ret);
 
-	if (offset > 0) {
+	if (0 < offset) {
 		snprintf(offsetquery, sizeof(offsetquery), "OFFSET %d", offset);
 	}
-	if (limit > 0) {
+	if (0 < limit) {
 		snprintf(limitquery, sizeof(limitquery), "LIMIT %d", limit);
 	}
 	snprintf(query, sizeof(query), "SELECT *, rowid FROM %s %s %s",
@@ -388,7 +388,7 @@ static int _cal_db_alarm_get_records_with_query(calendar_query_h query, int offs
 			sqlite3_finalize(stmt);
 			return ret;
 		}
-		if (que->projection_count > 0) {
+		if (0 < que->projection_count) {
 			cal_record_set_projection(record,
 					que->projection, que->projection_count, que->property_count);
 

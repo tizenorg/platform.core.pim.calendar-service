@@ -319,7 +319,7 @@ int cal_list_get_nth_record_p(cal_list_s *list_s, int index, calendar_record_h *
 		return CALENDAR_ERROR_NONE;
 	}
 
-	ERR("Check index(%d) > count(%d)", index, list_s->count);
+	ERR("Check count(%d) < index(%d)", list_s->count, index);
 	return CALENDAR_ERROR_NO_DATA;
 }
 

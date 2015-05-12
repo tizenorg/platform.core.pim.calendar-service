@@ -96,7 +96,7 @@ static inline void _cal_record_set_property_flag(calendar_record_h record, unsig
 		int count = 0;
 		cal_view_get_property_info(_record->view_uri,&count);
 
-		if (count > 0)
+		if (0 < count)
 		{
 			_record->properties_flags = calloc(count, sizeof(char));
 			_record->properties_max_count = count;

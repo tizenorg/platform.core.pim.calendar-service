@@ -150,7 +150,7 @@ static gboolean _inotify_gio_cb(GIOChannel *src, GIOCondition cond, gpointer dat
 					else
 						return TRUE;
 				}
-				if (ret > ie.len)
+				if (ie.len < ret)
 				{
 					ie.len = 0;
 				}
@@ -215,7 +215,7 @@ int cal_inotify_initialize(void)
 	cal_mutex_lock(CAL_MUTEX_INOTIFY);
 	calendar_inoti_count++;
 
-	if (calendar_inoti_count > 1)
+	if (1 < calendar_inoti_count)
 	{
 		DBG("inotify count =%d",calendar_inoti_count);
 		cal_mutex_unlock(CAL_MUTEX_INOTIFY);
@@ -505,7 +505,7 @@ void cal_inotify_finalize(void)
 	cal_mutex_lock(CAL_MUTEX_INOTIFY);
 	calendar_inoti_count--;
 
-	if (calendar_inoti_count > 0)
+	if (0 < calendar_inoti_count)
 	{
 		DBG("inotify count =%d",calendar_inoti_count);
 		cal_mutex_unlock(CAL_MUTEX_INOTIFY);
@@ -527,7 +527,7 @@ void cal_inotify_finalize(void)
 		noti_list = NULL;
 	}
 
-	if (inoti_fd >= 0)
+	if (0 <= inoti_fd)
 	{
 		close(inoti_fd);
 		inoti_fd = -1;

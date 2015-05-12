@@ -364,7 +364,7 @@ UCalendar *cal_time_open_ucal(int calendar_system_type, const char *tzid, int wk
 		return NULL;
 	}
 
-	if (wkst >= CALENDAR_SUNDAY && wkst <= CALENDAR_SATURDAY)
+	if (CALENDAR_SUNDAY <= wkst && wkst <= CALENDAR_SATURDAY)
 	{
 		DBG("set wkst(%d)", wkst);
 		ucal_setAttribute(ucal, UCAL_FIRST_DAY_OF_WEEK, wkst);
@@ -386,7 +386,7 @@ UCalendar *cal_time_get_ucal(const char *tzid, int wkst)
 		return NULL;
 	}
 
-	if (wkst >= CALENDAR_SUNDAY && wkst <= CALENDAR_SATURDAY)
+	if (CALENDAR_SUNDAY <= wkst && wkst <= CALENDAR_SATURDAY)
 	{
 		ucal_setAttribute(ucal, UCAL_FIRST_DAY_OF_WEEK, wkst);
 	}

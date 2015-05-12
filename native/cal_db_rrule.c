@@ -38,7 +38,7 @@ void cal_db_rrule_set_default(calendar_record_h record)
 	case CALENDAR_RECURRENCE_DAILY:
 		break;
 	case CALENDAR_RECURRENCE_WEEKLY:
-		if (event->byday && strlen(event->byday) > 0)
+		if (event->byday && 0 < strlen(event->byday))
 		{
 			break;
 		}
@@ -49,10 +49,10 @@ void cal_db_rrule_set_default(calendar_record_h record)
 		break;
 
 	case CALENDAR_RECURRENCE_MONTHLY:
-		if (event->bymonthday && strlen(event->bymonthday) > 0) {
+		if (event->bymonthday && 0 < strlen(event->bymonthday)) {
 			break;
 		}
-		else if (event->byday && strlen(event->byday) > 0) {
+		else if (event->byday && 0 < strlen(event->byday)) {
 			break;
 		}
 
@@ -62,13 +62,13 @@ void cal_db_rrule_set_default(calendar_record_h record)
 		break;
 
 	case CALENDAR_RECURRENCE_YEARLY:
-		if (event->bymonth && strlen(event->bymonth) > 0) {
+		if (event->bymonth && 0 < strlen(event->bymonth)) {
 			break;
 		}
-		else if (event->byyearday && strlen(event->byyearday) > 0) {
+		else if (event->byyearday && 0 < strlen(event->byyearday)) {
 			break;
 		}
-		else if (event->byweekno && strlen(event->byweekno) > 0) {
+		else if (event->byweekno && 0 < strlen(event->byweekno)) {
 			break;
 		}
 
@@ -456,7 +456,7 @@ static int _cal_db_rrule_has_record(int id, int *has_record)
 		return ret;
 	}
 
-	*has_record = count > 0 ? 1 : 0;
+	*has_record = 0 < count ? 1 : 0;
 	return CALENDAR_ERROR_NONE;
 }
 

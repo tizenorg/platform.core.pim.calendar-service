@@ -90,7 +90,7 @@ static int _cal_db_search_get_records_with_query(calendar_query_h query, int off
 	}
 
 	// make projection
-	if (que->projection_count > 0)
+	if (0 < que->projection_count)
 	{
 		ret = cal_db_query_create_projection(query, &projection);
 	}
@@ -137,12 +137,12 @@ static int _cal_db_search_get_records_with_query(calendar_query_h query, int off
 
 	// limit, offset
 	char buf[32] = {0};
-	if (limit > 0)
+	if (0 < limit)
 	{
 		snprintf(buf, sizeof(buf), "LIMIT %d", limit);
 		cal_db_append_string(&query_str, buf);
 
-		if (offset > 0)
+		if (0 < offset)
 		{
 			snprintf(buf, sizeof(buf), "OFFSET %d", offset);
 			cal_db_append_string(&query_str, buf);
@@ -208,7 +208,7 @@ static int _cal_db_search_get_records_with_query(calendar_query_h query, int off
 			CAL_FREE(query_str);
 			return ret;
 		}
-		if (que->projection_count > 0)
+		if (0 < que->projection_count)
 		{
 			_cal_db_search_get_projection_stmt(stmt,que->projection,que->projection_count,
 					record);
@@ -474,7 +474,7 @@ static int _cal_db_search_make_projection(calendar_query_h query, char **project
 	if (field_name)
 		len += snprintf(out_projection+len, sizeof(out_projection)-len, "%s", field_name);
 
-	if (len >= sizeof(out_projection))
+	if (sizeof(out_projection) <= len)
 	{
 		ERR("buf len max");
 		return CALENDAR_ERROR_SYSTEM;
@@ -493,7 +493,7 @@ static int _cal_db_search_make_projection(calendar_query_h query, char **project
 		if (field_name)
 		{
 			len += snprintf(out_projection+len, sizeof(out_projection)-len, ", %s", field_name);
-			if (len >= sizeof(out_projection))
+			if (sizeof(out_projection) <= len)
 			{
 				ERR("buf len max");
 				return CALENDAR_ERROR_SYSTEM;

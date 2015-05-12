@@ -303,7 +303,7 @@ static const char* vl_tick(calendar_alarm_time_unit_type_e unit, int tick)
 	static char buf[32] = {0};
 
 	int i = 0;
-	if (tick > 0) {
+	if (0 < tick) {
 		*buf = '-';
 		i++;
 
@@ -528,7 +528,7 @@ int _cal_vcalendar_make_rrule_append_mday(char *buf, int buf_len, char *mday)
 
 		p = t[i];
 		num = atoi(p);
-		len += snprintf(buf +len, buf_len -len, "%d%s ", num, num > 0 ? "" : "-");
+		len += snprintf(buf +len, buf_len -len, "%d%s ", num, 0 < num? "": "-");
 	}
 	g_strfreev(t);
 
@@ -587,7 +587,7 @@ static void _cal_vcalendar_make_rrule_append_setpos(calendar_record_h record, ch
 		int sign = 0;
 		while (i <= len) {
 			// extract -1, 1 from 1SU,-1SU
-			if ((byday[i] >= '1' && byday[i] <= '9')) {
+			if ('1' <= byday[i] && byday[i] <= '9') {
 				is_working = false;
 				digit++;
 			} else if ('+' == byday[i]) {
@@ -645,7 +645,7 @@ void _cal_vcalendar_make_rrule_append_text_wday(int rrule_type, char *buf, int b
 			p++;
 
 		j = 0;
-		while (p[j] == '+' || p[j] == '-' || (p[j] >= '1' && p[j] <= '9')) // get number length
+		while (p[j] == '+' || p[j] == '-' || ('1' <= p[j] && p[j] <= '9')) // get number length
 			j++;
 		if (strstr(buf, p +j)) // already appended
 			continue;
@@ -661,7 +661,7 @@ void _cal_vcalendar_make_rrule_append_wkst(char *buf, int buf_len, calendar_reco
 	const char wday[7][3] = {"SU", "MO", "TU", "WE", "TH", "FR", "SA"};
 	int wkst = 0;
 	calendar_record_get_int(record, _calendar_event.wkst, &wkst);
-	if (wkst < CALENDAR_SUNDAY || wkst > CALENDAR_SATURDAY)
+	if (wkst < CALENDAR_SUNDAY || CALENDAR_SATURDAY < wkst)
 		return;
 
 	DBG("wkst(%d) [%s]", wkst, wday[wkst - 1]);
@@ -701,10 +701,10 @@ int _cal_vcalendar_make_rrule_append_wday(int rrule_type, char *buf, int buf_len
 
 		p = t[i];
 		j = 0; // get number
-		while (p[j] == '+' || p[j] == '-' || (p[j] >= '1' && p[j] <= '9'))
+		while (p[j] == '+' || p[j] == '-' || ('1' <= p[j] && p[j] <= '9'))
 			j++;
 
-		if (j > 0)
+		if (0 < j)
 		{
 			if (CALENDAR_RECURRENCE_WEEKLY == rrule_type)
 			{
@@ -974,7 +974,7 @@ static void __make_rrule_ver1(cal_make_s *b, calendar_record_h record)
 	int interval = 1;
 	ret = calendar_record_get_int(record, _calendar_event.interval, &interval);
 	RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_int() Fail(%d)", ret);
-	interval = interval > 0 ? interval : 1;
+	interval = 0 < interval ? interval : 1;
 
 	char *byyearday = NULL;
 	ret = calendar_record_get_str_p(record, _calendar_event.byyearday, &byyearday);
@@ -1097,7 +1097,7 @@ static void __make_rrule_ver2(cal_make_s *b, calendar_record_h record)
 	int interval = 1;
 	ret = calendar_record_get_int(record, _calendar_event.interval, &interval);
 	WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_int() Fail(%d)", ret);
-	interval = interval > 0 ? interval : 1;
+	interval = 0 < interval ? interval : 1;
 	snprintf(tmp, sizeof(tmp), ";INTERVAL=%d", interval);
 	_cal_vcalendar_make_set_str(b, tmp);
 
@@ -1185,7 +1185,7 @@ static void __make_rrule_ver2(cal_make_s *b, calendar_record_h record)
 	int wkst = 0;
 	ret = calendar_record_get_int(record, _calendar_event.wkst, &wkst);
 	WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_int() Fail(%d)", ret);
-	if (wkst >= CALENDAR_SUNDAY && wkst <= CALENDAR_SATURDAY) {
+	if (CALENDAR_SUNDAY <= wkst && wkst <= CALENDAR_SATURDAY) {
 		_cal_vcalendar_make_set_str(b, ";WKST=");
 		switch (wkst) {
 		case CALENDAR_SUNDAY:

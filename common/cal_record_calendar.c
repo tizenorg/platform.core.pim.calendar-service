@@ -313,7 +313,7 @@ static int _cal_record_calendar_set_int(calendar_record_h record, unsigned int p
 		(cal_rec->visibility) = value;
 		break;
 	case CAL_PROPERTY_CALENDAR_ACCOUNT_ID:
-		RETVM_IF(cal_rec->index > 0, CALENDAR_ERROR_INVALID_PARAMETER, "property_id(%d) is a write-once value (calendar)", property_id);
+		RETVM_IF(0 < cal_rec->index, CALENDAR_ERROR_INVALID_PARAMETER, "property_id(%d) is a write-once value (calendar)", property_id);
 		(cal_rec->account_id) = value;
 		break;
 	case CAL_PROPERTY_CALENDAR_STORE_TYPE:

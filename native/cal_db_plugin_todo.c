@@ -174,7 +174,7 @@ static int _cal_db_todo_insert_record(calendar_record_h record, int* id)
 		todo->completed_time, todo->progress,
 		todo->start.type, todo->start.type == CALENDAR_TIME_UTIME ? todo->start.time.utime : 0,
 		todo->due.type, todo->due.type == CALENDAR_TIME_UTIME ? todo->due.time.utime : 0,
-		todo->freq > 0 ? 1 : 0,
+		0 < todo->freq ? 1 : 0,
 		has_alarm,
 		todo->system_type,
 		todo->updated,
@@ -968,11 +968,11 @@ static int _cal_db_todo_get_all_records(int offset, int limit, calendar_list_h* 
 	ret = calendar_list_create(out_list);
 	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "calendar_list_create() Fail(%d)", ret);
 
-	if (offset > 0)
+	if (0 < offset)
 	{
 		snprintf(offsetquery, sizeof(offsetquery), "OFFSET %d", offset);
 	}
-	if (limit > 0)
+	if (0 < limit)
 	{
 		snprintf(limitquery, sizeof(limitquery), "LIMIT %d", limit);
 	}
@@ -1130,12 +1130,12 @@ static int _cal_db_todo_get_records_with_query(calendar_query_h query, int offse
 
 	// limit, offset
 	char buf[32] = {0};
-	if (limit > 0)
+	if (0 < limit)
 	{
 		snprintf(buf, sizeof(buf), "LIMIT %d", limit);
 		cal_db_append_string(&query_str, buf);
 
-		if (offset > 0)
+		if (0 < offset)
 		{
 			snprintf(buf, sizeof(buf), "OFFSET %d", offset);
 			cal_db_append_string(&query_str, buf);
@@ -1203,7 +1203,7 @@ static int _cal_db_todo_get_records_with_query(calendar_query_h query, int offse
 			CAL_FREE(query_str);
 			return ret;
 		}
-		if (que->projection_count > 0)
+		if (0 < que->projection_count)
 		{
 			cal_record_set_projection(record,
 					que->projection, que->projection_count, que->property_count);

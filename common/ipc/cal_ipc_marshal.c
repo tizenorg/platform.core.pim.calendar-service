@@ -666,7 +666,7 @@ int cal_ipc_unmarshal_record_common(const pims_ipc_data_h ipc_data, cal_record_s
 		return CALENDAR_ERROR_NO_DATA;
 	}
 	common->properties_max_count = *(unsigned int*)ret_pims;
-	if (common->properties_max_count > 0) {
+	if (0 < common->properties_max_count) {
 		unsigned char *tmp_properties_flags;
 		ret_pims = pims_ipc_data_get(ipc_data,&size);
 		if (NULL == ret_pims) {
@@ -820,7 +820,7 @@ int cal_ipc_marshal_record_common(const cal_record_s* common, pims_ipc_data_h ip
 		return CALENDAR_ERROR_NO_DATA;
 	}
 
-	if (common->properties_max_count > 0) {
+	if (0 < common->properties_max_count) {
 		if(pims_ipc_data_put(ipc_data,(void*)common->properties_flags,sizeof(char)*common->properties_max_count) < 0) {
 			ERR("cal_ipc_marshal fail");
 			return CALENDAR_ERROR_NO_DATA;
@@ -895,7 +895,7 @@ int cal_ipc_unmarshal_query(const pims_ipc_data_h ipc_data, calendar_query_h *qu
 		goto ERROR_RETURN;
 	}
 
-	if (que->projection_count > 0) {
+	if (0 < que->projection_count) {
 		que->projection = (unsigned int*)calloc(que->projection_count, sizeof(int));
 		if (que->projection == NULL) {
 			ERR("calloc() Fail");

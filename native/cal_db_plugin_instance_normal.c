@@ -107,9 +107,9 @@ static int _cal_db_instance_normal_get_all_records(int offset, int limit, calend
 	ret = calendar_list_create(out_list);
 	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "calendar_list_create() Fail(%d)", ret);
 
-	if (offset > 0)
+	if (0 < offset)
 		snprintf(offsetquery, sizeof(offsetquery), "OFFSET %d", offset);
-	if (limit > 0)
+	if (0 < limit)
 		snprintf(limitquery, sizeof(limitquery), "LIMIT %d", limit);
 
 	char *query_str = NULL;
@@ -241,12 +241,12 @@ static int _cal_db_instance_normal_get_records_with_query(calendar_query_h query
 
 	// limit, offset
 	char buf[32] = {0};
-	if (limit > 0)
+	if (0 < limit)
 	{
 		snprintf(buf, sizeof(buf), "LIMIT %d", limit);
 		cal_db_append_string(&query_str, buf);
 
-		if (offset > 0)
+		if (0 < offset)
 		{
 			snprintf(buf, sizeof(buf), "OFFSET %d", offset);
 			cal_db_append_string(&query_str, buf);
@@ -311,7 +311,7 @@ static int _cal_db_instance_normal_get_records_with_query(calendar_query_h query
 			sqlite3_finalize(stmt);
 			return ret;
 		}
-		if (que->projection_count > 0)
+		if (0 < que->projection_count)
 		{
 			cal_record_set_projection(record,
 					que->projection, que->projection_count, que->property_count);
@@ -490,7 +490,7 @@ static void _cal_db_instance_normal_get_stmt(sqlite3_stmt *stmt, calendar_record
 	instance->sensitivity = sqlite3_column_int(stmt, count++);
 
 	instance->has_rrule = sqlite3_column_int(stmt, count++);
-	if (instance->has_rrule > 0)
+	if (0 < instance->has_rrule)
 	{
 		instance->has_rrule = 1;
 	}
@@ -558,7 +558,7 @@ static void _cal_db_instance_normal_get_property_stmt(sqlite3_stmt *stmt,
 		break;
 	case CAL_PROPERTY_INSTANCE_NORMAL_HAS_RRULE:
 		instance->has_rrule = sqlite3_column_int(stmt, *stmt_count);
-		if (instance->has_rrule > 0)
+		if (0 < instance->has_rrule)
 		{
 			instance->has_rrule = 1;
 		}

@@ -373,7 +373,7 @@ static inline void __adjust_tzid(char *p)
 	int i = 0;
 	while (*(p +i)) {
 		if ('-' == *(p +i)) {
-			if ('1' <= *(p +i +1) && '9' >= *(p +i +1)) {
+			if ('1' <= *(p +i +1) && *(p +i +1) <= '9') {
 				i++;
 			} else {
 				*(p +i) = '/';
@@ -1150,7 +1150,7 @@ static void __work_component_property_priority(char *value, calendar_record_h re
 	RET_IF('\0' == *value);
 	RET_IF(NULL == record);
 	RET_IF(NULL == ud);
-	RETM_IF(*value < '0' || *value > '9', "out of range[%s]", value);
+	RETM_IF(*value < '0' || '9' < *value, "out of range[%s]", value);
 
 	int ret = 0;
 	int modified_priority = __decode_priority(value, ud);
@@ -1989,7 +1989,7 @@ static void __work_component_property_dalarm(char *value, calendar_record_h reco
 		if (index) index++;
 		if (NULL == t[i] || '\0' == *t[i]) continue;
 
-		if ('0' <= *t[i] && *t[i] <= '9' && strlen(t[i]) > strlen("PTM")) { // runTime
+		if ('0' <= *t[i] && *t[i] <= '9' && strlen("PTM") < strlen(t[i])) { // runTime
 			index = 1;
 			calendar_time_s caltime = {0};
 			__get_caltime(t[i], &caltime, ud);
@@ -2063,7 +2063,7 @@ static void __work_component_property_malarm(char *value, calendar_record_h reco
 		if (index) index++;
 		if (NULL == t[i] || '\0' == *t[i]) continue;
 
-		if ('0' <= *t[i] && *t[i] <= '9' && strlen(t[i]) > strlen("PTM")) { // runTime
+		if ('0' <= *t[i] && *t[i] <= '9' && strlen("PTM") < strlen(t[i])) { // runTime
 			index = 1;
 			calendar_time_s caltime = {0};
 			__get_caltime(t[i], &caltime, ud);
@@ -2144,7 +2144,7 @@ static void __work_component_property_aalarm(char *value, calendar_record_h reco
 		if (index) index++;
 		if (NULL == t[i] || '\0' == *t[i]) continue;
 
-		if ('0' <= *t[i] && *t[i] <= '9' && strlen(t[i]) > strlen("PTM")) { // runTime
+		if ('0' <= *t[i] && *t[i] <= '9' && strlen("PTM") < strlen(t[i])) { // runTime
 			index = 1;
 			calendar_time_s caltime = {0};
 			__get_caltime(t[i], &caltime, ud);
@@ -2343,7 +2343,7 @@ static void __work_component_property_valarm_trigger(char *value, calendar_recor
 		} else if (!strncmp(t[i], "VALUE", strlen("VALUE"))) {
 			// do nothing
 		} else {
-			if ('0' <= *t[i] && *t[i] <= '9' && strlen(t[i]) >= strlen("YYYYDDMM")) {
+			if ('0' <= *t[i] && *t[i] <= '9' && strlen("YYYYDDMM") <= strlen(t[i])) {
 				calendar_time_s caltime = {0};
 				__get_caltime(t[i], &caltime, ud);
 				ret = cal_record_set_caltime(alarm, _calendar_alarm.alarm_time, caltime);
@@ -2354,9 +2354,11 @@ static void __work_component_property_valarm_trigger(char *value, calendar_recor
 				int unit = 0;
 				int tick = 0;
 				__decode_duration(t[i], strlen(t[i]), &tick, &unit);
-				if (CALENDAR_ALARM_TIME_UNIT_SPECIFIC == unit || tick > 0) {
-					if (CALENDAR_ALARM_TIME_UNIT_SPECIFIC == unit) DBG("alarm tick is second, changed as specific.");
-					if (tick > 0) DBG("alarm is set after start/end time(%d).", tick);
+				if (CALENDAR_ALARM_TIME_UNIT_SPECIFIC == unit || 0 < tick) {
+					if (CALENDAR_ALARM_TIME_UNIT_SPECIFIC == unit)
+						DBG("alarm tick is second, changed as specific.");
+					if (0 < tick)
+						DBG("alarm is set after start/end time(%d).", tick);
 
 					calendar_time_s caltime = {0};
 					if (VCAL_RELATED_NONE == related) {

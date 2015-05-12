@@ -189,7 +189,7 @@ int cal_query_clone(calendar_query_h query, calendar_query_h* out_query)
 		cal_filter_clone((calendar_filter_h)que->filter,(calendar_filter_h*)&out_filter);
 	}
 
-	if (que->projection_count > 0)
+	if (0 < que->projection_count)
 	{
 		out_que->projection = calloc(que->projection_count, sizeof(unsigned int));
 		RETVM_IF(NULL == out_que->projection, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc() Fail");

@@ -635,7 +635,7 @@ static int __update_record(calendar_record_h record, int is_dirty_in_time)
 		event->start.type == CALENDAR_TIME_UTIME ? event->start.time.utime : 0,
 		event->end.type,
 		event->end.type == CALENDAR_TIME_UTIME ? event->end.time.utime : 0,
-		event->freq > 0 ? 1 : 0,
+		0 < event->freq ? 1 : 0,
 		(event->attendee_list && 0 < event->attendee_list->count)? 1: 0,
 		has_alarm,
 		event->system_type,
@@ -964,7 +964,7 @@ int cal_db_event_delete_record(int id)
 		return CALENDAR_ERROR_PERMISSION_DENIED;
 	}
 
-	if (original_event_id > 0)
+	if (0 < original_event_id)
 	{
 		// start:add record to exdate if this record is exception mod.
 		_cal_db_event_add_exdate(original_event_id, recurrence_id);
@@ -1058,11 +1058,11 @@ static int _cal_db_event_get_all_records(int offset, int limit, calendar_list_h*
 	ret = calendar_list_create(out_list);
 	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "calendar_list_create() Fail(%d)", ret);
 
-	if (offset > 0)
+	if (0 < offset)
 	{
 		snprintf(offsetquery, sizeof(offsetquery), "OFFSET %d", offset);
 	}
-	if (limit > 0)
+	if (0 < limit)
 	{
 		snprintf(limitquery, sizeof(limitquery), "LIMIT %d", limit);
 	}
@@ -1232,12 +1232,12 @@ static int _cal_db_event_get_records_with_query(calendar_query_h query, int offs
 
 	// limit, offset
 	char buf[32] = {0};
-	if (limit > 0)
+	if (0 < limit)
 	{
 		snprintf(buf, sizeof(buf), "LIMIT %d", limit);
 		cal_db_append_string(&query_str, buf);
 
-		if (offset > 0)
+		if (0 < offset)
 		{
 			snprintf(buf, sizeof(buf), "OFFSET %d", offset);
 			cal_db_append_string(&query_str, buf);
@@ -1303,17 +1303,10 @@ static int _cal_db_event_get_records_with_query(calendar_query_h query, int offs
 			CAL_FREE(query_str);
 			return ret;
 		}
-		if (que->projection_count > 0)
-		{
-			cal_record_set_projection(record,
-					que->projection, que->projection_count, que->property_count);
-
-			_cal_db_event_get_projection_stmt(stmt,
-					que->projection, que->projection_count,
-					record);
-		}
-		else
-		{
+		if (0 < que->projection_count) {
+			cal_record_set_projection(record, que->projection, que->projection_count, que->property_count);
+			_cal_db_event_get_projection_stmt(stmt, que->projection, que->projection_count, record);
+		} else {
 			cal_event_s *event = NULL;
 			_cal_db_event_get_stmt(stmt,true,record, &exception, &extended);
 			event = (cal_event_s*)(record);
@@ -1691,7 +1684,7 @@ static int _cal_db_event_replace_record(calendar_record_h record, int id)
 		event->start.type == CALENDAR_TIME_UTIME ? event->start.time.utime : 0,
 		event->end.type,
 		event->end.type == CALENDAR_TIME_UTIME ? event->end.time.utime : 0,
-		event->freq > 0 ? 1 : 0,
+		0 < event->freq ? 1 : 0,
 		(event->attendee_list && 0 < event->attendee_list->count) ? 1 : 0,
 		has_alarm,
 		event->system_type,
@@ -2692,7 +2685,7 @@ static int _cal_db_event_exception_update(cal_list_s *exception_list_s, int orig
 			int exception_id = 0;
 			ret = calendar_record_get_int(exception,_calendar_event.id, &exception_id);
 			DBG("exception(%d)", exception_id);
-			if (exception_id > 0 && exception_id != original_id) { // update
+			if (0 < exception_id && exception_id != original_id) { // update
 				bool bchanged = false;
 				cal_record_s *_record = NULL;
 				const cal_property_info_s* property_info = NULL;
@@ -2816,12 +2809,12 @@ static int _cal_db_event_exdate_insert_normal(int event_id, const char* original
 	int len1 = 0, len2 = 0, i = 0, j = 0;
 
 	int input_ver = cal_db_util_get_next_ver();
-	if (exdate != NULL && strlen(exdate) > 0)
+	if (exdate != NULL && 0 < strlen(exdate))
 	{
 		patterns1 = g_strsplit_set(exdate, " ,", -1);
 		len1 = g_strv_length(patterns1);
 	}
-	if (original_exdate != NULL && strlen(original_exdate) > 0)
+	if (original_exdate != NULL && 0 < strlen(original_exdate))
 	{
 		patterns2 = g_strsplit_set(original_exdate, " ,", -1);
 		len2 = g_strv_length(patterns2);
@@ -2848,7 +2841,7 @@ static int _cal_db_event_exdate_insert_normal(int event_id, const char* original
 			char query[CAL_DB_SQL_MAX_LEN] = {0};
 			long long int start_utime = 0;
 			char datetime[16] = {0};
-			if (strlen(patterns1[i]) > strlen("YYYYMMDD"))
+			if (strlen("YYYYMMDD") < strlen(patterns1[i]))
 			{
 				//DBG("NORMAL instance");
 				int y, mon, d, h, min, s;

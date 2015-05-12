@@ -59,9 +59,8 @@ int cal_db_event_update_original_event_version(int original_event_id, int versio
 	cal_db_util_error_e dbret = CAL_DB_OK;
 
 	DBG("original_event(%d) changed_ver updated", original_event_id);
-	if (original_event_id > 0) {
-		snprintf(query, sizeof(query), "UPDATE %s SET "
-				"changed_ver = %d, has_exception = 1 WHERE id = %d ",
+	if (0 < original_event_id) {
+		snprintf(query, sizeof(query), "UPDATE %s SET changed_ver=%d, has_exception = 1 WHERE id=%d ",
 				CAL_TABLE_SCHEDULE, version, original_event_id);
 
 		dbret = cal_db_util_query_exec(query);
@@ -92,40 +91,46 @@ int cal_db_event_check_value_validation(cal_event_s *event)
 
 	switch (event->start.type) {
 	case CALENDAR_TIME_UTIME:
-		if (event->start.time.utime > event->end.time.utime) {
-			ERR("normal start(%lld) > end(%lld)",
-					event->start.time.utime, event->end.time.utime);
+		if (event->end.time.utime < event->start.time.utime) {
+			ERR("normal end(%lld) < start(%lld)",
+					event->end.time.utime, event->start.time.utime);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 		break;
 
 	case CALENDAR_TIME_LOCALTIME:
 		// check invalid value
-		if (event->start.time.date.month < 1 || event->start.time.date.month > 12) {
+		if (event->start.time.date.month < 1 || 12 < event->start.time.date.month) {
 			ERR("check start month(input:%d)", event->start.time.date.month);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
-		else if (event->start.time.date.mday < 1 || event->start.time.date.mday > 31) {
+		else if (event->start.time.date.mday < 1 || 31 < event->start.time.date.mday) {
 			ERR("check start mday(input:%d)", event->start.time.date.mday);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
-		else if (event->end.time.date.month < 1 || event->end.time.date.month > 12) {
+		else if (event->end.time.date.month < 1 || 12 < event->end.time.date.month) {
 			ERR("check end month(input:%d)", event->end.time.date.month);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
-		else if (event->end.time.date.mday < 1 || event->end.time.date.mday > 31) {
+		else if (event->end.time.date.mday < 1 || 31 < event->end.time.date.mday) {
 			ERR("check end mday(input:%d)", event->end.time.date.mday);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		} else { // handle hour, minute, second
-			if (event->start.time.date.hour < 0 || event->start.time.date.hour > 24) event->start.time.date.hour = 0;
-			if (event->start.time.date.minute < 0 || event->start.time.date.minute > 60) event->start.time.date.minute = 0;
-			if (event->start.time.date.second < 0 || event->start.time.date.second > 60) event->start.time.date.second = 0;
-			if (event->end.time.date.hour < 0 || event->end.time.date.hour > 24) event->end.time.date.hour = 0;
-			if (event->end.time.date.minute < 0 || event->end.time.date.minute > 60) event->end.time.date.minute = 0;
-			if (event->end.time.date.second < 0 || event->end.time.date.second > 60) event->end.time.date.second = 0;
+			if (event->start.time.date.hour < 0 || 24 < event->start.time.date.hour)
+				event->start.time.date.hour = 0;
+			if (event->start.time.date.minute < 0 || 60 < event->start.time.date.minute)
+				event->start.time.date.minute = 0;
+			if (event->start.time.date.second < 0 || 60 < event->start.time.date.second)
+				event->start.time.date.second = 0;
+			if (event->end.time.date.hour < 0 || 24 < event->end.time.date.hour)
+				event->end.time.date.hour = 0;
+			if (event->end.time.date.minute < 0 || 60 < event->end.time.date.minute)
+				event->end.time.date.minute = 0;
+			if (event->end.time.date.second < 0 || 60 < event->end.time.date.second)
+				event->end.time.date.second = 0;
 		}
 
-		// check start > end; convert long long int.
+		// check end < start; convert long long int.
 		slli = cal_time_convert_itol(NULL,
 				event->start.time.date.year, event->start.time.date.month, event->start.time.date.mday,
 				event->start.time.date.hour, event->start.time.date.minute, event->start.time.date.second);
@@ -133,8 +138,8 @@ int cal_db_event_check_value_validation(cal_event_s *event)
 				event->end.time.date.year, event->end.time.date.month, event->end.time.date.mday,
 				event->end.time.date.hour, event->end.time.date.minute, event->end.time.date.second);
 
-		if (slli - elli > 1) { // 1 is to ignore milliseconds
-			ERR("allday start(%lld) > end(%lld)", slli, elli);
+		if (1 < slli - elli) { // 1 is to ignore milliseconds
+			ERR("allday end(%lld) < start(%lld)", elli, slli);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 		break;
@@ -698,7 +703,7 @@ int cal_db_event_insert_record(calendar_record_h record, int original_event_id, 
 		(long long int)0, 0, //event->completed_time, event->progress,
 		event->start.type, event->start.type == CALENDAR_TIME_UTIME ? event->start.time.utime : 0,
 		event->end.type, event->end.type == CALENDAR_TIME_UTIME ? event->end.time.utime : 0,
-		event->freq > 0 ? 1 : 0,
+		0 < event->freq ? 1 : 0,
 		(0 < event->attendee_list->count) ? 1 : 0,
 		has_alarm,
 		event->system_type,
@@ -834,7 +839,7 @@ int cal_db_event_insert_record(calendar_record_h record, int original_event_id, 
 		cal_db_rrule_insert_record(event_id, rrule);
 		CAL_FREE(rrule);
 	}
-	if (original_event_id > 0) {
+	if (0 < original_event_id) {
 		cal_record_set_int(record, _calendar_event.original_event_id, original_event_id);
 	}
 	cal_db_instance_publish_record(record);

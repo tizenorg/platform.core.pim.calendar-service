@@ -209,7 +209,7 @@ static int _cal_record_extended_set_int(calendar_record_h record, unsigned int p
 		(rec->id) = value;
 		break;
 	case CAL_PROPERTY_EXTENDED_RECORD_ID:
-		RETVM_IF(rec->id > 0, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter : property_id(%d) is a write-once value (calendar)", property_id);
+		RETVM_IF(0 < rec->id, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter : property_id(%d) is a write-once value (calendar)", property_id);
 		(rec->record_id) = value;
 		break;
 	case CAL_PROPERTY_EXTENDED_RECORD_TYPE:

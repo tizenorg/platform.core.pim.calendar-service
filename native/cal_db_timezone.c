@@ -22,14 +22,13 @@
 #include "cal_db.h"
 #include "cal_db_util.h"
 
-void cal_db_timezone_search_with_tzid(const char *zone_name, char *tzid, int *timezone_id)
+void cal_db_timezone_search_with_tzid(char *tzid, int *timezone_id)
 {
-	RET_IF(NULL == zone_name);
 	RET_IF(NULL == tzid);
 	RET_IF('\0' == *tzid);
 	RET_IF(NULL == timezone_id);
 
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	snprintf(query, sizeof(query), "SELECT id FROM %s WHERE standard_name='%s'", CAL_TABLE_TIMEZONE, tzid);
-	cal_db_util_query_get_first_int_result(zone_name, query, NULL, timezone_id);
+	cal_db_util_query_get_first_int_result(query, NULL, timezone_id);
 }

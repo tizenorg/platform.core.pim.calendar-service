@@ -370,7 +370,7 @@ static int _cal_db_calendar_delete_record(int id)
 
 	count += count2;
 
-	if(count > 1000)
+	if(1000 < count)
 	{
 		snprintf(query, sizeof(query), "UPDATE %s SET deleted = 1 WHERE id = %d",
 				CAL_TABLE_CALENDAR, id);
@@ -543,9 +543,9 @@ static int _cal_db_calendar_get_all_records(int offset, int limit, calendar_list
 	ret = calendar_list_create(out_list);
 	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "calendar_list_create() Fail(%d)", ret);
 
-	if (offset > 0)
+	if (0 < offset)
 		snprintf(offsetquery, sizeof(offsetquery), "OFFSET %d", offset);
-	if (limit > 0)
+	if (0 < limit)
 		snprintf(limitquery, sizeof(limitquery), "LIMIT %d", limit);
 
 	char *query_str = NULL;
@@ -649,11 +649,11 @@ static int _cal_db_calendar_get_records_with_query(calendar_query_h query, int o
 
 	// limit, offset
 	char buf[32] = {0};
-	if (limit > 0) {
+	if (0 < limit) {
 		snprintf(buf, sizeof(buf), "LIMIT %d", limit);
 		cal_db_append_string(&query_str, buf);
 
-		if (offset > 0) {
+		if (0 < offset) {
 			snprintf(buf, sizeof(buf), "OFFSET %d", offset);
 			cal_db_append_string(&query_str, buf);
 		}
@@ -708,7 +708,7 @@ static int _cal_db_calendar_get_records_with_query(calendar_query_h query, int o
 			return ret;
 		}
 
-		if (que->projection_count > 0) {
+		if (0 < que->projection_count) {
 			cal_record_set_projection(record,
 					que->projection, que->projection_count, que->property_count);
 

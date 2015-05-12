@@ -20,8 +20,8 @@
 #ifndef __CALENDAR_SVC_CALENDAR_H__
 #define __CALENDAR_SVC_CALENDAR_H__
 
-void cal_calendar_internal_disconnect(const char *zone_name);
-int cal_connect(const char *zone_name);
-int cal_disconnect(const char *zone_name);
+void cal_calendar_internal_disconnect(void);
+int cal_connect(void);
+int cal_disconnect(void);
 
 #endif // __CALENDAR_SVC_CALENDAR_H__

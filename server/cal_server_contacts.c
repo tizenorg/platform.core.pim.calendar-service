@@ -125,7 +125,7 @@ static int _cal_server_contacts_set_new_event(int id, char *label, int date, cha
 		return ret;
 	}
 
-	if (account_id > 0) {
+	if (0 < account_id) {
 		snprintf(buf, sizeof(buf), "%d", account_id);
 		ret = calendar_record_set_str(event, _calendar_event.sync_data4, buf);
 		if (CALENDAR_ERROR_NONE != ret) {
@@ -172,7 +172,7 @@ static int cal_server_contacts_insert_event(int id)
 		contacts_record_destroy(contact, true);
 		return CALENDAR_ERROR_SYSTEM;
 	}
-	if (address_book_id > 0) { // default phone addressbook is 0
+	if (0 < address_book_id) { // default phone addressbook is 0
 		DBG("address_book_id(%d)", address_book_id);
 		contacts_record_h address_book = NULL;
 		ret = contacts_db_get_record(_contacts_address_book._uri, address_book_id, &address_book);
@@ -431,7 +431,7 @@ void cal_server_contacts_delete(int account_id)
 	}
 	DBG("event count(%d)\n", count);
 
-	if (count > 0) {
+	if (0 < count) {
 		record_id_array = (int *)calloc(count, sizeof(int));
 		if (NULL == record_id_array) {
 			ERR("calloc() Fail");

@@ -711,14 +711,10 @@ API int calendar_db_clean_after_sync(int calendar_book_id,  int calendar_db_vers
 	}
 
 	/* delete event table */
-	len = snprintf(query, sizeof(query), "DELETE FROM %s "
-			"WHERE is_deleted = 1 AND calendar_id = %d",
-			CAL_TABLE_SCHEDULE,
-			calendar_book_id);
-	if (calendar_db_version > 0)
-	{
+	len = snprintf(query, sizeof(query), "DELETE FROM %s WHERE is_deleted = 1 AND calendar_id = %d",
+			CAL_TABLE_SCHEDULE, calendar_book_id);
+	if (0 < calendar_db_version)
 		len = snprintf(query+len, sizeof(query)-len, " AND changed_ver <= %d", calendar_db_version);
-	}
 
 	dbret = cal_db_util_query_exec(query);
 	DBG("%s",query);
@@ -855,7 +851,7 @@ API int calendar_db_insert_records(calendar_list_h list, int** ids, int* count)
 		DBG("insert with id(%d)", _ids[i]);
 		calendar_list_next(list);
 
-		if (i > bulk)
+		if (bulk < i)
 		{
 			bulk += (_count / div + 1);
 			cal_db_util_end_trans(true);
@@ -938,7 +934,7 @@ API int calendar_db_update_records(calendar_list_h list)
 		DBG("update record");
 		calendar_list_next(list);
 
-		if (i > bulk)
+		if (bulk < i)
 		{
 			bulk += (count / div + 1);
 			cal_db_util_end_trans(true);
@@ -1169,7 +1165,7 @@ API int calendar_db_replace_vcalendars(const char* vcalendar_stream, int *record
 		}
 		calendar_list_next(list);
 
-		if (i > bulk)
+		if (bulk < i)
 		{
 			bulk += (count / div + 1);
 			cal_db_util_end_trans(true);
@@ -1211,13 +1207,9 @@ API int calendar_db_replace_record(calendar_record_h record, int record_id)
 	ret = plugin_cb->replace_record(record, record_id);
 
 	if (CALENDAR_ERROR_NONE == ret)
-	{
 		ret = cal_db_util_end_trans(true);
-	}
 	else
-	{
 		cal_db_util_end_trans(false);
-	}
 
 	return ret;
 }

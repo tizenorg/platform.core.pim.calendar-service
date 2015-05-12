@@ -664,7 +664,7 @@ static gint _cal_server_alarm_sort_cb(gconstpointer a, gconstpointer b)
 	struct _alarm_data_s *p2 = (struct _alarm_data_s *)b;
 	DBG("%lld) > (%lld)",p1->alert_utime, p2->alert_utime);
 
-	return p1->alert_utime > p2->alert_utime ? 1 : -1;
+	return p1->alert_utime < p2->alert_utime ? -1 : 1;
 }
 
 static GFunc _cal_server_alarm_print_cb(gpointer data, gpointer user_data)
