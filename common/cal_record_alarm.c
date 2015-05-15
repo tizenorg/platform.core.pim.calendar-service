@@ -17,8 +17,8 @@
  *
  */
 
-#include <stdlib.h>	// calloc
-#include <stdbool.h> // bool
+#include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 
 #include "cal_internal.h"

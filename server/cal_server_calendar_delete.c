@@ -17,9 +17,9 @@
  *
  */
 
-#include <stdlib.h> //calloc
+#include <stdlib.h>
 #include <glib.h>
-#include <unistd.h> //sleep
+#include <unistd.h>
 
 #include "calendar.h"
 #include "cal_typedef.h"
@@ -34,10 +34,9 @@
 
 typedef enum
 {
-	STEP_1, // create calendar_id_list
-	STEP_2, // delete schedule_table <-- CAL_SERVER_CALENDAR_DELETE_COUNT
-	// loop STEP_2
-	STEP_3, // delete calendar_table
+	STEP_1, /* create calendar_id_list */
+	STEP_2, /* delete schedule_table <-- CAL_SERVER_CALENDAR_DELETE_COUNT */
+	STEP_3, /* delete calendar_table*/
 } __calendar_delete_step_e;
 
 typedef struct {
@@ -93,7 +92,6 @@ static bool _cal_server_calendar_delete_step(int ret, __calendar_delete_data_s* 
 		break;
 	}
 
-	// go next step
 	return true;
 }
 
@@ -106,15 +104,13 @@ static int _cal_server_calendar_delete_step1(__calendar_delete_data_s* data)
 	CAL_FN_CALL();
 
 	if (NULL == data->calendar_id_list) {
-		// get event_list
-		snprintf(query, sizeof(query), "SELECT id FROM %s "
-				"WHERE deleted = 1",
-				CAL_TABLE_CALENDAR);
+		/* get event_list */
+		snprintf(query, sizeof(query), "SELECT id FROM %s WHERE deleted = 1", CAL_TABLE_CALENDAR);
 
 		stmt = cal_db_util_query_prepare(query);
-		if (NULL == stmt)
-		{
+		if (NULL == stmt) {
 			ERR("cal_db_util_query_prepare() Fail");
+			SECURE("query[%s]", query);
 			return CALENDAR_ERROR_DB_FAILED;
 		}
 		while(CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
@@ -163,14 +159,14 @@ static int _cal_server_calendar_delete_step2(__calendar_delete_data_s* data)
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 
-	// get event_list
+	/* get event_list */
 	snprintf(query, sizeof(query), "SELECT id FROM %s WHERE calendar_id = %d LIMIT %d",
-			CAL_TABLE_SCHEDULE,
-			data->current_calendar_id, CAL_SERVER_CALENDAR_DELETE_COUNT);
+			CAL_TABLE_SCHEDULE, data->current_calendar_id, CAL_SERVER_CALENDAR_DELETE_COUNT);
 
 	stmt = cal_db_util_query_prepare(query);
 	if (NULL == stmt) {
 		ERR("cal_db_util_query_prepare() Fail");
+		SECURE("query[%s]", query);
 		cal_db_util_end_trans(false);
 		return CALENDAR_ERROR_DB_FAILED;
 	}
@@ -196,16 +192,12 @@ static int _cal_server_calendar_delete_step2(__calendar_delete_data_s* data)
 	while(cursor) {
 		int id = GPOINTER_TO_INT(cursor->data);
 		/* delete event table */
-		snprintf(query, sizeof(query), "DELETE FROM %s "
-				"WHERE id = %d",
-				CAL_TABLE_SCHEDULE,
-				id);
+		snprintf(query, sizeof(query), "DELETE FROM %s WHERE id=%d", CAL_TABLE_SCHEDULE, id);
 
 		dbret = cal_db_util_query_exec(query);
-		DBG("%s",query);
-		if (CAL_DB_OK != dbret)
-		{
+		if (CAL_DB_OK != dbret) {
 			ERR("cal_db_util_query_exec() failed (%d)", dbret);
+			SECURE("[%s]", query);
 			cal_db_util_end_trans(false);
 			g_list_free(list);
 			switch (dbret)
@@ -244,18 +236,14 @@ static int _cal_server_calendar_delete_step3(__calendar_delete_data_s* data)
 	CAL_FN_CALL();
 
 	/* delete event table */
-	snprintf(query, sizeof(query), "DELETE FROM %s "
-			"WHERE id = %d",
-			CAL_TABLE_CALENDAR,
-			data->current_calendar_id);
+	snprintf(query, sizeof(query), "DELETE FROM %s WHERE id=%d", CAL_TABLE_CALENDAR, data->current_calendar_id);
 
 	dbret = cal_db_util_query_exec(query);
-	if (CAL_DB_OK != dbret)
-	{
+	if (CAL_DB_OK != dbret) {
 		ERR("cal_db_util_query_exec() failed (%d)", dbret);
+		SECURE("[%s]", query);
 		cal_db_util_end_trans(false);
-		switch (dbret)
-		{
+		switch (dbret) {
 		case CAL_DB_ERROR_NO_SPACE:
 			cal_db_util_end_trans(false);
 			return CALENDAR_ERROR_FILE_NO_SPACE;
@@ -317,7 +305,7 @@ static gpointer _cal_server_calendar_main(gpointer user_data)
 		if (callback_data != NULL) {
 			callback_data->step = STEP_1;
 
-			// delete
+			/* delete */
 			while(1) {
 				ret = calendar_connect();
 				if (CALENDAR_ERROR_NONE != ret) {
@@ -358,8 +346,7 @@ void cal_server_calendar_delete_start(void)
 		_cal_server_calendar_delete_thread = g_thread_new(CAL_SERVER_CALENDAR_DELETE_THREAD_NAME,
 				_cal_server_calendar_main, NULL);
 	}
-
-	// don't use mutex.
+	/* don't use mutex. */
 	g_cond_signal(&_cal_server_calendar_delete_cond);
 
 	return ;

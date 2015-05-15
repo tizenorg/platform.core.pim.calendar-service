@@ -144,7 +144,7 @@ int cal_server_update(void)
 		 * added original_event_id in deleted_table to check exception event.
 		 */
 
-		// rename trig -> trg
+		/* rename trig -> trg */
 		ret = sqlite3_exec(__db, "DROP TRIGGER trig_original_mod", NULL, 0, &errmsg);
 		if (SQLITE_OK != ret) {
 			ERR("DROP TRIGGER trig_original_mod failed(%d:%s)", ret, errmsg);
@@ -163,7 +163,7 @@ int cal_server_update(void)
 			sqlite3_free(errmsg);
 		}
 
-		// rename trg_sch_del -> trg_schedule_del
+		/* rename trg_sch_del -> trg_schedule_del */
 		ret = sqlite3_exec(__db, "DROP TRIGGER trg_sch_del", NULL, 0, &errmsg);
 		if (SQLITE_OK != ret) {
 			ERR("DROP TRIGGER trg_sch_del failed(%d:%s)", ret, errmsg);
@@ -187,7 +187,7 @@ int cal_server_update(void)
 			sqlite3_free(errmsg);
 		}
 
-		// add trigger
+		/* add trigger */
 		ret = sqlite3_exec(__db,
 				"CREATE TRIGGER trg_schedule_del2 AFTER DELETE ON schedule_table "
 				" WHEN old.is_deleted = 0 AND old.calendar_id = (SELECT id FROM calendar_table WHERE id = old.calendar_id) "
@@ -200,7 +200,7 @@ int cal_server_update(void)
 			sqlite3_free(errmsg);
 		}
 
-		// add trigger
+		/* add trigger */
 		ret = sqlite3_exec(__db,
 				"CREATE TRIGGER trg_schedule_del3 AFTER DELETE ON schedule_table "
 				" WHEN old.is_deleted = 1 AND old.calendar_id = (SELECT id FROM calendar_table WHERE id = old.calendar_id) "
@@ -213,7 +213,7 @@ int cal_server_update(void)
 			sqlite3_free(errmsg);
 		}
 
-		// add field: original_event_id in deleted_table
+		/* add field: original_event_id in deleted_table */
 		ret = sqlite3_exec(__db, "ALTER TABLE deleted_table ADD COLUMN original_event_id INTEGER", NULL, 0, &errmsg);
 		if (SQLITE_OK != ret) {
 			ERR("ALTER TABLE deleted_table failed(%d:%s)", ret, errmsg);
@@ -228,7 +228,7 @@ int cal_server_update(void)
 		 * added field is_alldy on schedule_table
 		 */
 
-		// add field: is_allday in deleted_table
+		/* add field: is_allday in deleted_table */
 		ret = sqlite3_exec(__db, "ALTER TABLE schedule_table ADD COLUMN is_allday INTEGER DEFAULT 0", NULL, 0, &errmsg);
 		if (SQLITE_OK != ret) {
 			ERR("ALTER TABLE schedule_table failed(%d:%s)", ret, errmsg);
@@ -273,7 +273,7 @@ int cal_server_update(void)
 		old_version = 105;
 	}
 
-	// update DB user_version
+	/* update DB user_version */
 	snprintf(query, sizeof(query), "PRAGMA user_version = %d", __USER_VERSION);
 	ret = sqlite3_exec(__db, query, NULL, 0, &errmsg);
 	if (SQLITE_OK != ret)

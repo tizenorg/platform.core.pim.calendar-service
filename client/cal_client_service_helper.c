@@ -26,7 +26,7 @@
 #include "cal_client_reminder.h"
 #include "cal_client_ipc.h"
 
-static int cal_connection = 0;
+static int cal_connection = 0; /* total connection count: each count from zone */
 static TLS int cal_connection_on_thread = 0;
 
 int cal_client_connect(void)

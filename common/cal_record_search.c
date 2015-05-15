@@ -17,8 +17,8 @@
  *
  */
 
-#include <stdlib.h> // calloc
-#include <stdbool.h> // bool
+#include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 
 #include "cal_internal.h"
@@ -134,7 +134,6 @@ static int _cal_record_search_clone(calendar_record_h record, calendar_record_h*
 			dest->value.caltime = src->value.caltime;
 		}
 		else {
-//			ERR("invalid parameter (property:%d)",src->property_id);
 			CAL_FREE(dest);
 			continue;
 		}

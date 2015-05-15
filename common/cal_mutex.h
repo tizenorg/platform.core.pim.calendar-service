@@ -32,4 +32,4 @@ enum {
 void cal_mutex_lock(int type);
 void cal_mutex_unlock(int type);
 
-#endif  //__CALENDAR_SVC_MUTEX_H__
+#endif  /*__CALENDAR_SVC_MUTEX_H__ */

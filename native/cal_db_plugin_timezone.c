@@ -127,12 +127,9 @@ static int _cal_db_timezone_insert_record(calendar_record_h record, int* id)
 			*id = timezone_id;
 			return CALENDAR_ERROR_NONE;
 		}
-		// end <<<<< check if we already have
-
 		DBG("Not registered timezone in the table, so insert timezone.");
 	}
 
-	// if we don't have
 	snprintf(query, sizeof(query), "INSERT INTO %s(tz_offset_from_gmt ,standard_name, "
 			"std_start_month ,std_start_position_of_week ,std_start_day, "
 			"std_start_hour ,standard_bias ,day_light_name ,day_light_start_month, "
@@ -178,7 +175,6 @@ static int _cal_db_timezone_insert_record(calendar_record_h record, int* id)
 	index = cal_db_util_last_insert_id();
 	sqlite3_finalize(stmt);
 
-	//cal_record_set_int(record, _calendar_timezone.id,index);
 	if (id) {
 		*id = index;
 	}
@@ -438,7 +434,6 @@ static int _cal_db_timezone_get_all_records(int offset, int limit, calendar_list
 
 	while(CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
 		calendar_record_h record;
-		// stmt -> record
 		ret = calendar_record_create(_calendar_timezone._uri,&record);
 		if (CALENDAR_ERROR_NONE != ret) {
 			calendar_list_destroy(*out_list, true);
@@ -476,7 +471,7 @@ static int _cal_db_timezone_get_records_with_query(calendar_query_h query, int o
 
 	que = (cal_query_s *)query;
 
-	// make filter
+	/* make filter */
 	if (que->filter) {
 		ret = cal_db_query_create_condition(query, &condition, &bind_text);
 		if (CALENDAR_ERROR_NONE != ret) {
@@ -485,22 +480,23 @@ static int _cal_db_timezone_get_records_with_query(calendar_query_h query, int o
 		}
 	}
 
-	// make projection
+	/* make: projection */
 	ret = cal_db_query_create_projection(query, &projection);
 
-	// query - projection
+	/* query: projection */
 	if (projection) {
 		cal_db_append_string(&query_str, "SELECT");
 		cal_db_append_string(&query_str, projection);
 		cal_db_append_string(&query_str, "FROM");
 		cal_db_append_string(&query_str, CAL_TABLE_TIMEZONE);
 		CAL_FREE(projection);
-	} else {
+	}
+	else {
 		cal_db_append_string(&query_str, "SELECT * FROM");
 		cal_db_append_string(&query_str, CAL_TABLE_TIMEZONE);
 	}
 
-	// query - condition
+	/* query: condition */
 	if (condition) {
 		cal_db_append_string(&query_str, "WHERE");
 		cal_db_append_string(&query_str, condition);
@@ -508,13 +504,14 @@ static int _cal_db_timezone_get_records_with_query(calendar_query_h query, int o
 		cal_db_append_string(&query_str, "AND calendar_id IN (select id from");
 		cal_db_append_string(&query_str, CAL_TABLE_CALENDAR);
 		cal_db_append_string(&query_str, "where deleted = 0)");
-	} else {
+	}
+	else {
 		cal_db_append_string(&query_str, "WHERE calendar_id IN (select id from");
 		cal_db_append_string(&query_str, CAL_TABLE_CALENDAR);
 		cal_db_append_string(&query_str, "where deleted = 0)");
 	}
 
-	// ORDER
+	/* order */
 	ret = cal_db_query_create_order(query, condition, &order);
 	if (order) {
 		cal_db_append_string(&query_str, order);
@@ -531,9 +528,10 @@ static int _cal_db_timezone_get_records_with_query(calendar_query_h query, int o
 		}
 	}
 
-	// query
+	/* query */
 	stmt = cal_db_util_query_prepare(query_str);
 	if (NULL == stmt) {
+		SECURE("query[%s]", query_str);
 		if (bind_text) {
 			g_slist_free_full(bind_text, free);
 			bind_text = NULL;
@@ -543,14 +541,13 @@ static int _cal_db_timezone_get_records_with_query(calendar_query_h query, int o
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 
-	// bind text
+	/* bind text */
 	if (bind_text) {
 		for (cursor=bind_text, i=1; cursor;cursor=cursor->next, i++) {
 			cal_db_util_stmt_bind_text(stmt, i, cursor->data);
 		}
 	}
 
-	//
 	ret = calendar_list_create(out_list);
 	if (CALENDAR_ERROR_NONE != ret) {
 		if (bind_text) {
@@ -565,7 +562,6 @@ static int _cal_db_timezone_get_records_with_query(calendar_query_h query, int o
 
 	while(CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
 		calendar_record_h record;
-		// stmt -> record
 		ret = calendar_record_create(_calendar_timezone._uri,&record);
 		if (CALENDAR_ERROR_NONE != ret) {
 			calendar_list_destroy(*out_list, true);
@@ -586,7 +582,8 @@ static int _cal_db_timezone_get_records_with_query(calendar_query_h query, int o
 			_cal_db_timezone_get_projection_stmt(stmt,
 					que->projection, que->projection_count,
 					record);
-		} else {
+		}
+		else {
 			_cal_db_timezone_get_stmt(stmt,record);
 		}
 
@@ -652,7 +649,8 @@ static int _cal_db_timezone_insert_records(const calendar_list_h list, int** ids
 
 	if (ids) {
 		*ids = id;
-	} else {
+	}
+	else {
 		CAL_FREE(id);
 	}
 
@@ -770,7 +768,7 @@ static int _cal_db_timezone_get_count_with_query(calendar_query_h query, int *ou
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	// make filter
+	/* make filter */
 	if (que->filter) {
 		ret = cal_db_query_create_condition(query, &condition, &bind_text);
 		if (CALENDAR_ERROR_NONE != ret) {
@@ -780,12 +778,12 @@ static int _cal_db_timezone_get_count_with_query(calendar_query_h query, int *ou
 		}
 	}
 
-	// query - select from
+	/* query: select */
 	cal_db_append_string(&query_str, "SELECT count(*) FROM");
 	cal_db_append_string(&query_str, table_name);
 	CAL_FREE(table_name);
 
-	// query - condition
+	/* query: condition */
 	if (condition) {
 		cal_db_append_string(&query_str, "WHERE");
 		cal_db_append_string(&query_str, condition);
@@ -793,13 +791,14 @@ static int _cal_db_timezone_get_count_with_query(calendar_query_h query, int *ou
 		cal_db_append_string(&query_str, CAL_TABLE_CALENDAR);
 		cal_db_append_string(&query_str, "where deleted = 0)");
 		CAL_FREE(condition);
-	} else {
+	}
+	else {
 		cal_db_append_string(&query_str, "WHERE calendar_id IN (select id from");
 		cal_db_append_string(&query_str, CAL_TABLE_CALENDAR);
 		cal_db_append_string(&query_str, "where deleted = 0)");
 	}
 
-	// query
+	/* query */
 	ret = cal_db_util_query_get_first_int_result(query_str, bind_text, &count);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_db_util_query_get_first_int_result() Fail");
@@ -953,9 +952,7 @@ static int _cal_db_timezone_update_projection(calendar_record_h record)
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 
-	// bind
-	if (bind_text)
-	{
+	if (bind_text) {
 		int i = 0;
 		for (cursor=bind_text, i=1; cursor;cursor=cursor->next, i++) {
 			cal_db_util_stmt_bind_text(stmt, i, cursor->data);

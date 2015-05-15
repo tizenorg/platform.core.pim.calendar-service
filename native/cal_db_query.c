@@ -169,14 +169,18 @@ int cal_db_query_create_order(calendar_query_h query, char *condition, char **or
 				snprintf(out_order, sizeof(out_order), "ORDER BY %s %s, %s %s ", p_utime, query_s->asc==false ? "DESC":"ASC", p_datetime, query_s->asc==false ? "DESC":"ASC");
 				break;
 			}
-		} else if (p_utime && !p_datetime) {
+		}
+		else if (p_utime && !p_datetime) {
 			snprintf(out_order, sizeof(out_order), "ORDER BY %s %s ", p_utime, query_s->asc==false ? "DESC":"ASC");
-		} else if (!p_utime && p_datetime) {
+		}
+		else if (!p_utime && p_datetime) {
 			snprintf(out_order, sizeof(out_order), "ORDER BY %s %s ", p_datetime, query_s->asc==false ? "DESC":"ASC");
-		} else {
+		}
+		else {
 			DBG("No utime, datetime");
 		}
-	} else {
+	}
+	else {
 		snprintf(out_order, sizeof(out_order), "ORDER BY %s %s ", field_name, query_s->asc==false ? "DESC":"ASC");
 	}
 	*order = strdup(out_order);
@@ -222,7 +226,7 @@ int cal_db_query_create_projection_update_set(calendar_record_h record, char **s
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	// uri를 통해, property_info_s 가져옴
+	/* get propety_info_s from uri */
 	property_info = cal_view_get_property_info(_record->view_uri, &property_info_count);
 
 	for(i=0;i<property_info_count;i++) {
@@ -352,7 +356,7 @@ int cal_db_query_create_projection_update_set_with_property(
 		return CALENDAR_ERROR_NONE;
 	}
 
-	// uri를 통해, property_info_s 가져옴
+	/* get propety_info_s from uri */
 	property_info = cal_view_get_property_info(_record->view_uri, &property_info_count);
 
 	for(i=0;i<property_info_count;i++) {
@@ -487,7 +491,8 @@ static int _cal_db_query_create_composite_condition(cal_composite_filter_s *com_
 	filter = (cal_filter_s *)com_filter->filters->data;
 	if (filter->filter_type == CAL_FILTER_COMPOSITE) {
 		ret = _cal_db_query_create_composite_condition((cal_composite_filter_s*)filter, &cond, &binds);
-	} else {
+	}
+	else {
 		ret = _cal_db_query_create_attribute_condition(com_filter, (cal_attribute_filter_s*)filter, &cond, &binds);
 	}
 
@@ -751,7 +756,8 @@ static int _cal_db_query_create_caltime_condition(cal_composite_filter_s *com_fi
 			ERR("Invalid parameter : int match rule(%d) is not supported", filter->match);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
-	} else if (filter->value.caltime.type == CALENDAR_TIME_LOCALTIME) {
+	}
+	else if (filter->value.caltime.type == CALENDAR_TIME_LOCALTIME) {
 		char sdate[32] = {0};
 		snprintf(sdate, sizeof(sdate), CAL_FORMAT_LOCAL_DATETIME,
 				filter->value.caltime.time.date.year, filter->value.caltime.time.date.month, filter->value.caltime.time.date.mday,
@@ -784,7 +790,8 @@ static int _cal_db_query_create_caltime_condition(cal_composite_filter_s *com_fi
 			ERR("Invalid parameter : int match rule(%d) is not supported", filter->match);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
-	} else {
+	}
+	else {
 		ERR("Invalid parameter : property id(%d)", filter->property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
@@ -877,7 +884,7 @@ static const char * _cal_db_query_get_property_field_name(const cal_property_inf
 			if (p->fields)
 				return p->fields;
 			else
-				return NULL; //ctsvc_get_display_column();
+				return NULL;
 		}
 	}
 	return NULL;

@@ -23,4 +23,4 @@
 int calendar_db_delete_account(int account_id);
 #endif
 
-#endif // __CALENDAR_SVC_DB_CALENDAR_H__
+#endif /* __CALENDAR_SVC_DB_CALENDAR_H__ */

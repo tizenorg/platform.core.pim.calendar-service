@@ -53,7 +53,7 @@ extern "C" {
  * </table>
  */
 _CALENDAR_BEGIN_VIEW()
-	_CALENDAR_PROPERTY_INT(id)            // read_only
+	_CALENDAR_PROPERTY_INT(id) /* read only */
 	_CALENDAR_PROPERTY_STR(uid)
 	_CALENDAR_PROPERTY_STR(name)
 	_CALENDAR_PROPERTY_STR(description)
@@ -142,7 +142,7 @@ _CALENDAR_END_VIEW(_calendar_book)
  * </table>
  */
 _CALENDAR_BEGIN_VIEW()
-	_CALENDAR_PROPERTY_INT(id)                // read_only
+	_CALENDAR_PROPERTY_INT(id) /* read only */
 	_CALENDAR_PROPERTY_INT(calendar_book_id)
 	_CALENDAR_PROPERTY_STR(summary)
 	_CALENDAR_PROPERTY_STR(description)
@@ -164,8 +164,8 @@ _CALENDAR_BEGIN_VIEW()
 	_CALENDAR_PROPERTY_DOUBLE(longitude)
 	_CALENDAR_PROPERTY_INT(email_id)
 	_CALENDAR_PROPERTY_LLI(created_time)
-	_CALENDAR_PROPERTY_LLI(last_modified_time) // read_only
-	_CALENDAR_PROPERTY_INT(is_deleted)        // read_only
+	_CALENDAR_PROPERTY_LLI(last_modified_time) /* read only */
+	_CALENDAR_PROPERTY_INT(is_deleted) /* read only */
 	_CALENDAR_PROPERTY_INT(freq)
 	_CALENDAR_PROPERTY_INT(range_type)
 	_CALENDAR_PROPERTY_CALTIME(until_time)
@@ -183,8 +183,8 @@ _CALENDAR_BEGIN_VIEW()
 	_CALENDAR_PROPERTY_INT(wkst)
 	_CALENDAR_PROPERTY_STR(recurrence_id)
 	_CALENDAR_PROPERTY_STR(rdate)
-	_CALENDAR_PROPERTY_INT(has_attendee)      // read_only
-	_CALENDAR_PROPERTY_INT(has_alarm)         // read_only
+	_CALENDAR_PROPERTY_INT(has_attendee) /* read only */
+	_CALENDAR_PROPERTY_INT(has_alarm) /* read only */
 	_CALENDAR_PROPERTY_INT(calendar_system_type)
 	_CALENDAR_PROPERTY_STR(sync_data1)
 	_CALENDAR_PROPERTY_STR(sync_data2)
@@ -198,7 +198,7 @@ _CALENDAR_BEGIN_VIEW()
 	_CALENDAR_PROPERTY_CHILD_MULTIPLE(calendar_attendee)
 	_CALENDAR_PROPERTY_CHILD_MULTIPLE(exception)
 	_CALENDAR_PROPERTY_CHILD_MULTIPLE(extended)
-	_CALENDAR_PROPERTY_INT(is_allday)         // read only
+	_CALENDAR_PROPERTY_INT(is_allday) /* read only */
 _CALENDAR_END_VIEW(_calendar_event)
 
 /**
@@ -264,7 +264,7 @@ _CALENDAR_END_VIEW(_calendar_event)
  * </table>
  */
 _CALENDAR_BEGIN_VIEW()
-	_CALENDAR_PROPERTY_INT(id)            // read_only
+	_CALENDAR_PROPERTY_INT(id) /* read only */
 	_CALENDAR_PROPERTY_INT(calendar_book_id)
 	_CALENDAR_PROPERTY_STR(summary)
 	_CALENDAR_PROPERTY_STR(description)
@@ -277,10 +277,10 @@ _CALENDAR_BEGIN_VIEW()
 	_CALENDAR_PROPERTY_DOUBLE(latitude)
 	_CALENDAR_PROPERTY_DOUBLE(longitude)
 	_CALENDAR_PROPERTY_LLI(created_time)
-	_CALENDAR_PROPERTY_LLI(last_modified_time) // read_only
+	_CALENDAR_PROPERTY_LLI(last_modified_time) /* read only */
 	_CALENDAR_PROPERTY_LLI(completed_time)
 	_CALENDAR_PROPERTY_INT(progress)
-	_CALENDAR_PROPERTY_INT(is_deleted)    // read_only
+	_CALENDAR_PROPERTY_INT(is_deleted) /* read only */
 	_CALENDAR_PROPERTY_INT(freq)
 	_CALENDAR_PROPERTY_INT(range_type)
 	_CALENDAR_PROPERTY_CALTIME(until_time)
@@ -296,7 +296,7 @@ _CALENDAR_BEGIN_VIEW()
 	_CALENDAR_PROPERTY_STR(bymonth)
 	_CALENDAR_PROPERTY_STR(bysetpos)
 	_CALENDAR_PROPERTY_INT(wkst)
-	_CALENDAR_PROPERTY_INT(has_alarm)     // read_only
+	_CALENDAR_PROPERTY_INT(has_alarm) /* read only */
 	_CALENDAR_PROPERTY_STR(sync_data1)
 	_CALENDAR_PROPERTY_STR(sync_data2)
 	_CALENDAR_PROPERTY_STR(sync_data3)
@@ -308,10 +308,10 @@ _CALENDAR_BEGIN_VIEW()
 	_CALENDAR_PROPERTY_CHILD_MULTIPLE(calendar_alarm)
     _CALENDAR_PROPERTY_STR(organizer_name)
     _CALENDAR_PROPERTY_STR(organizer_email)
-    _CALENDAR_PROPERTY_INT(has_attendee)     // read_only
+    _CALENDAR_PROPERTY_INT(has_attendee) /* read only */
     _CALENDAR_PROPERTY_CHILD_MULTIPLE(calendar_attendee)
     _CALENDAR_PROPERTY_CHILD_MULTIPLE(extended)
-    _CALENDAR_PROPERTY_INT(is_allday)         // read only
+    _CALENDAR_PROPERTY_INT(is_allday) /* read only */
 _CALENDAR_END_VIEW(_calendar_todo)
 
 /**
@@ -344,13 +344,13 @@ _CALENDAR_END_VIEW(_calendar_todo)
  * </table>
  */
 _CALENDAR_BEGIN_VIEW()
-	_CALENDAR_PROPERTY_INT(id)                    // read_only
+	_CALENDAR_PROPERTY_INT(id) /* read only */
 	_CALENDAR_PROPERTY_INT(calendar_book_id)
-	_CALENDAR_PROPERTY_INT(tz_offset_from_gmt) // offset(minute)
+	_CALENDAR_PROPERTY_INT(tz_offset_from_gmt) /* offset(minute) */
 	_CALENDAR_PROPERTY_STR(standard_name)
 	_CALENDAR_PROPERTY_INT(standard_start_month)
-	_CALENDAR_PROPERTY_INT(standard_start_position_of_week) // nth wday
-	_CALENDAR_PROPERTY_INT(standard_start_day) // wday
+	_CALENDAR_PROPERTY_INT(standard_start_position_of_week) /* nth wday */
+	_CALENDAR_PROPERTY_INT(standard_start_day) /* wday */
 	_CALENDAR_PROPERTY_INT(standard_start_hour)
 	_CALENDAR_PROPERTY_INT(standard_bias)
 	_CALENDAR_PROPERTY_STR(day_light_name)
@@ -358,7 +358,7 @@ _CALENDAR_BEGIN_VIEW()
 	_CALENDAR_PROPERTY_INT(day_light_start_position_of_week)
 	_CALENDAR_PROPERTY_INT(day_light_start_day)
 	_CALENDAR_PROPERTY_INT(day_light_start_hour)
-	_CALENDAR_PROPERTY_INT(day_light_bias) // diff between standard and daylight(minute)
+	_CALENDAR_PROPERTY_INT(day_light_bias) /* diff between standard and daylight(minute) */
 _CALENDAR_END_VIEW(_calendar_timezone)
 
 /**
@@ -389,9 +389,9 @@ _CALENDAR_END_VIEW(_calendar_timezone)
  * </table>
  */
 _CALENDAR_BEGIN_VIEW()
-    _CALENDAR_PROPERTY_INT(parent_id) // read_only
+    _CALENDAR_PROPERTY_INT(parent_id) /* read only */
 	_CALENDAR_PROPERTY_STR(number)
-	_CALENDAR_PROPERTY_INT(cutype) // calendar user type: INDIVIDUAL, GROUP, RESOURCE, ROOM, UNKNOWN
+	_CALENDAR_PROPERTY_INT(cutype) /* calendar user type: INDIVIDUAL, GROUP, RESOURCE, ROOM, UNKNOWN */
 	_CALENDAR_PROPERTY_INT(person_id)
 	_CALENDAR_PROPERTY_STR(uid)
 	_CALENDAR_PROPERTY_STR(group)
@@ -430,12 +430,12 @@ _CALENDAR_END_VIEW(_calendar_attendee)
  * </table>
  */
 _CALENDAR_BEGIN_VIEW()
-    _CALENDAR_PROPERTY_INT(parent_id) // read_only
+    _CALENDAR_PROPERTY_INT(parent_id) /* read only */
 	_CALENDAR_PROPERTY_INT(tick)
 	_CALENDAR_PROPERTY_INT(tick_unit)
 	_CALENDAR_PROPERTY_STR(description)
-	_CALENDAR_PROPERTY_STR(summary) // emailprop: summary
-	_CALENDAR_PROPERTY_INT(action) // AUDIO, DISPLAY, EMAIL
+	_CALENDAR_PROPERTY_STR(summary) /* emailprop: summary */
+	_CALENDAR_PROPERTY_INT(action) /* AUDIO, DISPLAY, EMAIL */
 	_CALENDAR_PROPERTY_STR(attach)
     _CALENDAR_PROPERTY_CALTIME(alarm_time)
 _CALENDAR_END_VIEW(_calendar_alarm)
@@ -458,7 +458,7 @@ _CALENDAR_END_VIEW(_calendar_alarm)
  * </table>
  */
 _CALENDAR_BEGIN_READ_ONLY_VIEW()
-	_CALENDAR_PROPERTY_INT(id) // read_only
+	_CALENDAR_PROPERTY_INT(id) /* read only */
 	_CALENDAR_PROPERTY_INT(calendar_book_id)
 	_CALENDAR_PROPERTY_INT(modified_status)
 	_CALENDAR_PROPERTY_INT(version)
@@ -581,7 +581,7 @@ _CALENDAR_BEGIN_READ_ONLY_VIEW()
     _CALENDAR_PROPERTY_STR(start_tzid)
     _CALENDAR_PROPERTY_CALTIME(end_time)
     _CALENDAR_PROPERTY_STR(end_tzid)
-    _CALENDAR_PROPERTY_INT(is_allday)         // read only
+    _CALENDAR_PROPERTY_INT(is_allday) /* read only */
     _CALENDAR_PROPERTY_FILTER_INT(calendar_book_visibility)
     _CALENDAR_PROPERTY_FILTER_INT(calendar_book_account_id)
 _CALENDAR_END_READ_ONLY_VIEW(_calendar_event_calendar_book)
@@ -684,7 +684,7 @@ _CALENDAR_BEGIN_READ_ONLY_VIEW()
     _CALENDAR_PROPERTY_STR(organizer_name)
     _CALENDAR_PROPERTY_STR(organizer_email)
     _CALENDAR_PROPERTY_INT(has_attendee)
-    _CALENDAR_PROPERTY_INT(is_allday)         // read only
+    _CALENDAR_PROPERTY_INT(is_allday) /* read only */
     _CALENDAR_PROPERTY_FILTER_INT(calendar_book_visibility)
     _CALENDAR_PROPERTY_FILTER_INT(calendar_book_account_id)
 _CALENDAR_END_READ_ONLY_VIEW(_calendar_todo_calendar_book)
@@ -809,7 +809,7 @@ _CALENDAR_BEGIN_READ_ONLY_VIEW()
     _CALENDAR_PROPERTY_STR(start_tzid)
     _CALENDAR_PROPERTY_CALTIME(end_time)
     _CALENDAR_PROPERTY_STR(end_tzid)
-    _CALENDAR_PROPERTY_INT(is_allday)         // read only
+    _CALENDAR_PROPERTY_INT(is_allday) /* read only */
     _CALENDAR_PROPERTY_FILTER_INT(calendar_book_visibility)
     _CALENDAR_PROPERTY_FILTER_INT(calendar_book_account_id)
     _CALENDAR_PROPERTY_FILTER_STR(attendee_email)
@@ -1082,7 +1082,7 @@ _CALENDAR_END_READ_ONLY_VIEW(_calendar_instance_localtime_calendar_book_extended
  * </table>
  */
 _CALENDAR_BEGIN_VIEW()
-    _CALENDAR_PROPERTY_INT(id) // read_only
+    _CALENDAR_PROPERTY_INT(id) /* read only */
     _CALENDAR_PROPERTY_INT(record_id)
     _CALENDAR_PROPERTY_INT(record_type)
     _CALENDAR_PROPERTY_STR(key)

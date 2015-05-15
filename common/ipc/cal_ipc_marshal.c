@@ -17,13 +17,10 @@
  *
  */
 
-#include <stdlib.h> //calloc
+#include <stdlib.h>
 #include <string.h>
 
-#include "calendar_query.h"
-#include "calendar_filter.h"
-#include "calendar_list.h"
-
+#include "calendar.h"
 #include "cal_ipc_marshal.h"
 #include "cal_record.h"
 #include "cal_internal.h"
@@ -123,12 +120,10 @@ static int _cal_ipc_unmarshal_composite_filter(const pims_ipc_data_h ipc_data, c
 
 	filter->filter_type = CAL_FILTER_COMPOSITE;
 
-	// view_uri
 	str = (char*)pims_ipc_data_get(ipc_data,&size);
 	CAL_FREE(filter->view_uri);
 	filter->view_uri = strdup(str);
 
-	// filters
 	ret = cal_ipc_unmarshal_int(ipc_data, &count);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
@@ -178,7 +173,6 @@ static int _cal_ipc_unmarshal_composite_filter(const pims_ipc_data_h ipc_data, c
 		}
 	}
 
-	// filters
 	ret = cal_ipc_unmarshal_int(ipc_data, &count);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_ipc_unmarshal_int() Fail(%d)");
@@ -196,7 +190,6 @@ static int _cal_ipc_unmarshal_composite_filter(const pims_ipc_data_h ipc_data, c
 		filter->filter_ops = g_slist_append(filter->filter_ops, (void*)op);
 	}
 
-	// properties //property_count
 	filter->properties = (cal_property_info_s *)cal_view_get_property_info(filter->view_uri, &filter->property_count);
 
 	return CALENDAR_ERROR_NONE;
@@ -217,13 +210,12 @@ static int _cal_ipc_marshal_composite_filter(const cal_composite_filter_s* filte
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	// view_uri
 	int length = strlen(filter->view_uri);
 	if (pims_ipc_data_put(ipc_data, (void*)filter->view_uri,length+1) < 0) {
 		ERR("pims_ipc_data_put() Fail");
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	// filter->filters
+
 	if (filter->filters) {
 		int count = g_slist_length(filter->filters);
 		GSList *cursor = filter->filters;
@@ -292,8 +284,6 @@ static int _cal_ipc_marshal_composite_filter(const cal_composite_filter_s* filte
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 	}
-
-	// properties //property_count
 
 	return CALENDAR_ERROR_NONE;
 }
@@ -877,7 +867,6 @@ int cal_ipc_unmarshal_query(const pims_ipc_data_h ipc_data, calendar_query_h *qu
 	RETV_IF(NULL == query, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == ipc_data, CALENDAR_ERROR_INVALID_PARAMETER);
 
-	// view_uri
 	str = (char*)pims_ipc_data_get(ipc_data,&size);
 
 	ret = calendar_query_create(str, query);
@@ -908,7 +897,6 @@ int cal_ipc_unmarshal_query(const pims_ipc_data_h ipc_data, calendar_query_h *qu
 		}
 		que->filter = (cal_composite_filter_s*)filter;
 
-		// for filter_type
 		ret = cal_ipc_unmarshal_int(ipc_data, &count);
 		if (CALENDAR_ERROR_NONE != ret) {
 			ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
@@ -996,7 +984,6 @@ int cal_ipc_marshal_query(const calendar_query_h query, pims_ipc_data_h ipc_data
 	RETV_IF(NULL == ipc_data, CALENDAR_ERROR_INVALID_PARAMETER);
 	que = (cal_query_s *)query;
 
-	//view_uri
 	length = strlen(que->view_uri);
 	if (pims_ipc_data_put(ipc_data, (void*)que->view_uri,length+1) < 0) {
 		ERR("pims_ipc_data_put() Fail");
@@ -1054,8 +1041,6 @@ int cal_ipc_marshal_query(const calendar_query_h query, pims_ipc_data_h ipc_data
 		ERR("cal_ipc_marshal_int() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-
-	//properties // property_count
 
 	return CALENDAR_ERROR_NONE;
 }
@@ -1119,7 +1104,6 @@ int cal_ipc_marshal_list(const calendar_list_h list, pims_ipc_data_h ipc_data)
 	RETV_IF(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == ipc_data, CALENDAR_ERROR_INVALID_PARAMETER);
 
-	// count
 	ret = calendar_list_get_count(list, &count);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("calendar_list_get_count() Fail(%d)", ret);

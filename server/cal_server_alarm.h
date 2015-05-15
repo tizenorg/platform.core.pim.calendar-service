@@ -22,4 +22,4 @@
 
 int cal_server_alarm(void);
 
-#endif  //__CAL_SERVER_ALARM_H__
+#endif  /* __CAL_SERVER_ALARM_H__ */

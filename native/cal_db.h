@@ -32,7 +32,7 @@
 #define CAL_JN_FILE tzplatform_mkpath(TZ_USER_DB, ".calendar-svc.db-journal")
 #define CAL_DATA_PATH tzplatform_mkpath(TZ_USER_DATA,"calendar-svc")
 
-// For Security
+/* For Security */
 #define CAL_SECURITY_FILE_GROUP 5000
 #define CAL_SECURITY_DEFAULT_PERMISSION 0660
 #define CAL_SECURITY_DIR_DEFAULT_PERMISSION 0770
@@ -41,7 +41,7 @@
 #define CAL_DB_SQL_MIN_LEN 1024
 #define _BUFFER_ORDER 128
 
-// DB table
+/* DB table */
 #define CAL_TABLE_SCHEDULE "schedule_table"
 #define CAL_TABLE_ALARM "alarm_table"
 #define CAL_TABLE_CALENDAR "calendar_table"
@@ -54,10 +54,9 @@
 #define CAL_TABLE_ALLDAY_INSTANCE "allday_instance_table"
 #define CAL_TABLE_EXTENDED "extended_table"
 
-// for event or todo..
+/* for event or todo.. */
 #define CAL_VIEW_TABLE_EVENT "event_view"
 #define CAL_VIEW_TABLE_TODO "todo_view"
-// search ?
 #define CAL_VIEW_TABLE_EVENT_CALENDAR "event_calendar_view"
 #define CAL_VIEW_TABLE_TODO_CALENDAR "todo_calendar_view"
 #define CAL_VIEW_TABLE_EVENT_CALENDAR_ATTENDEE "event_calendar_attendee_view"
@@ -113,4 +112,4 @@ int cal_db_get_record(const char* view_uri, int record_id, calendar_record_h* re
 int cal_db_append_string(char **dst, char *src);
 void cal_db_initialize_view_table(void);
 
-#endif // __CALENDAR_SVC_DB_H__
+#endif /* __CALENDAR_SVC_DB_H__ */

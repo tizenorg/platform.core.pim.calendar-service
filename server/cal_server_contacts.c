@@ -18,13 +18,13 @@
  */
 
 #include <stdlib.h>
-#include <sys/time.h> // check time
+#include <sys/time.h>
 #include <contacts.h>
 #include <unistd.h>	// usleep
 
 #include "calendar.h"
 #include "cal_typedef.h"
-#include "cal_internal.h" // DBG
+#include "cal_internal.h"
 #include "cal_db.h"
 #include "cal_db_util.h"
 #include "cal_time.h"
@@ -172,7 +172,7 @@ static int cal_server_contacts_insert_event(int id)
 		contacts_record_destroy(contact, true);
 		return CALENDAR_ERROR_SYSTEM;
 	}
-	if (0 < address_book_id) { // default phone addressbook is 0
+	if (0 < address_book_id) { /* default phone addressbook is 0 */
 		DBG("address_book_id(%d)", address_book_id);
 		contacts_record_h address_book = NULL;
 		ret = contacts_db_get_record(_contacts_address_book._uri, address_book_id, &address_book);
@@ -338,7 +338,7 @@ static int _cal_server_contacts_sync(void)
 	cal_db_util_end_trans(true);
 
 	CAL_PRINT_TIMESTAMP
-	return CALENDAR_ERROR_NONE;
+		return CALENDAR_ERROR_NONE;
 }
 
 int cal_server_contacts(void)
@@ -455,7 +455,7 @@ void cal_server_contacts_delete(int account_id)
 			}
 		} while (CALENDAR_ERROR_NO_DATA != calendar_list_next(list));
 
-		// delete
+		/* delete */
 		ret = calendar_db_delete_records(_calendar_event._uri, record_id_array, i);
 		if (CALENDAR_ERROR_NONE != ret)
 			DBG("calendar_db_delete_records() Fail(%d)", ret);
@@ -507,7 +507,7 @@ void cal_server_contacts_sync_start(void)
 				_cal_server_contacts_sync_main, NULL);
 	}
 
-	// don't use mutex.
+	/* don't use mutex. */
 	g_cond_signal(&_cal_server_contacts_sync_cond);
 }
 

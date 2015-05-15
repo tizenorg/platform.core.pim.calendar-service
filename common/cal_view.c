@@ -25,7 +25,6 @@
 #include "cal_view.h"
 #include "cal_mutex.h"
 
-// !! TODO : please check ids number
 API const _calendar_book_property_ids   _calendar_book =
 {
 	._uri = CALENDAR_VIEW_CALENDAR,
@@ -517,9 +516,6 @@ API const _calendar_extended_property_property_ids   _calendar_extended_property
 	.key = CAL_PROPERTY_EXTENDED_KEY,
 	.value = CAL_PROPERTY_EXTENDED_VALUE
 };
-
-//////////////////////
-// cal_property_info_s
 
 const cal_property_info_s  __property_calendar_book[] = {
 	{CAL_PROPERTY_CALENDAR_ID           ,       "id"},
@@ -1025,8 +1021,6 @@ static const cal_view_uri_info_s __tables[] = {
 	{CALENDAR_VIEW_INSTANCE_LOCALTIME_CALENDAR_EXTENDED, CAL_RECORD_TYPE_INSTANCE_ALLDAY_EXTENDED, PTR_COUNT(__property_search_instance_localtime_calendar_extended) },
 	{CALENDAR_VIEW_EXTENDED, CAL_RECORD_TYPE_EXTENDED, PTR_COUNT(__property_extended) },
 };
-
-//////////////////////
 
 static bool cal_uri_property_flag = false;
 static GHashTable *cal_uri_property_hash = NULL;

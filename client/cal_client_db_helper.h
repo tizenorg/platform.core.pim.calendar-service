@@ -44,4 +44,4 @@ int cal_client_db_get_last_change_version(int* last_version);
 int cal_client_db_get_changes_exception_by_version(const char* view_uri, int original_event_id, int calendar_db_version, calendar_list_h* record_list);
 
 
-#endif // __CAL_CLIENT_DB_HELPER_H__
+#endif /* __CAL_CLIENT_DB_HELPER_H__ */

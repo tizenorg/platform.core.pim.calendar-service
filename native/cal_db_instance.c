@@ -60,7 +60,7 @@ struct day {
 #define CAL_ENDLESS_LIMIT_YEAR 2036
 #define CAL_ENDLESS_LIMIT_MONTH 12
 #define CAL_ENDLESS_LIMIT_MDAY 31
-#define CAL_ENDLESS_LIMIT_UTIME 2114380800 // 2037/01/01 00:00:00 GMT
+#define CAL_ENDLESS_LIMIT_UTIME 2114380800 /* 2037/01/01 00:00:00 GMT */
 #define CAL_ENDLESS_LIMIT_FULL_DAY (365 * 50)
 
 static void __print_ucal(int calendar_system_type, UCalendar *ucal, const char *tzid, int wkst)
@@ -76,7 +76,7 @@ static void __print_ucal(int calendar_system_type, UCalendar *ucal, const char *
 		ucal_setMillis(s_ucal, ucal_getMillis(ucal, &ec), &ec);
 		break;
 
-	default: // CALENDAR_SYSTEM_NONE: CALENDAR_SYSTEM_GREGORIAN:
+	default: /* CALENDAR_SYSTEM_NONE: CALENDAR_SYSTEM_GREGORIAN: */
 		s_ucal = ucal;
 		break;
 	}
@@ -289,9 +289,11 @@ static int _cal_db_instance_update_exdate_mod(int original_event_id, char *recur
 	for (i = 0; t[i]; i++)
 	{
 		p = t[i];
-		// remove space
+
+		/* remove space */
 		j = 0;
-		while (p[j] == ' ') j++;
+		while (p[j] == ' ')
+			j++;
 
 		p = t[i] + j;
 		DBG("%d[%s]", i + 1, p);
@@ -341,11 +343,10 @@ static int _cal_db_instance_update_exdate_mod(int original_event_id, char *recur
 		}
 		dbret = cal_db_util_query_exec(query);
 		if (dbret != CAL_DB_OK) {
-			ERR("[%s]", query);
 			ERR("cal_db_util_query_exec() failed (%d)", dbret);
+			SECURE("[%s]", query);
 			g_strfreev(t);
-			switch (dbret)
-			{
+			switch (dbret) {
 			case CAL_DB_ERROR_NO_SPACE:
 				return CALENDAR_ERROR_FILE_NO_SPACE;
 			default:
@@ -412,9 +413,9 @@ static int _cal_db_instance_del_inundant(int event_id, calendar_time_s *st, cal_
 				CAL_TABLE_NORMAL_INSTANCE,
 				event_id, cnt -1);
 
-	} else if (st->type == CALENDAR_TIME_LOCALTIME) {
-		snprintf(query, sizeof(query), "DELETE FROM %s "
-				"WHERE event_id = %d "
+	}
+	else if (st->type == CALENDAR_TIME_LOCALTIME) {
+		snprintf(query, sizeof(query), "DELETE FROM %s WHERE event_id = %d "
 				"AND dtstart_datetime > (SELECT dtstart_datetime FROM %s "
 				"WHERE event_id = %d ORDER BY dtstart_datetime LIMIT %d, 1) ",
 				CAL_TABLE_ALLDAY_INSTANCE,
@@ -424,11 +425,10 @@ static int _cal_db_instance_del_inundant(int event_id, calendar_time_s *st, cal_
 	}
 
 	dbret = cal_db_util_query_exec(query);
-	if (dbret != CAL_DB_OK)
-	{
-		DBG("query(%s)", query);
-		switch (dbret)
-		{
+	if (dbret != CAL_DB_OK) {
+		ERR("cal_db_util_query_exec() Fail(%d)", dbret);
+		SECURE("[%s]", query);
+		switch (dbret) {
 		case CAL_DB_ERROR_NO_SPACE:
 			return CALENDAR_ERROR_FILE_NO_SPACE;
 		default:
@@ -503,7 +503,7 @@ static int _cal_db_instance_get_duration(UCalendar *ucal, calendar_time_s *st, c
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_db_instance_insert_record(UCalendar *ucal, long long int duration, cal_event_s *event)//int type, int event_id)
+static int _cal_db_instance_insert_record(UCalendar *ucal, long long int duration, cal_event_s *event)
 {
 	int ret;
 	UErrorCode ec = U_ZERO_ERROR;
@@ -579,7 +579,8 @@ static int __get_until_from_range(cal_event_s *event, calendar_time_s *until)
 			if (range < event->until.time.utime) {
 				DBG("range max < until time(%lld), so set max(%lld)", event->until.time.utime, range);
 				until->time.utime = range;
-			} else {
+			}
+			else {
 				until->time.utime = event->until.time.utime;
 			}
 			break;
@@ -636,7 +637,8 @@ static bool __check_bysetpos_to_skip(int index, int *bysetpos, int bysetpos_len,
 			if (bysetpos[i] == (index + 1)) {
 				return false;
 			}
-		} else {
+		}
+		else {
 			if ((index - dates_len) == bysetpos[i]) {
 				return false;
 			}
@@ -682,7 +684,7 @@ static bool __check_out_of_range(long long int current_utime, cal_event_s *event
 {
 	RETV_IF(NULL == event, true);
 
-	// check range
+	/* check range */
 	switch (event->range_type) {
 	case CALENDAR_RANGE_UNTIL:
 	case CALENDAR_RANGE_NONE:
@@ -699,7 +701,8 @@ static bool __check_out_of_range(long long int current_utime, cal_event_s *event
 			return true;
 		}
 
-		if (CAL_ENDLESS_LIMIT_UTIME < current_utime) { // event count is remained, it should not go over LIMIT
+		if (CAL_ENDLESS_LIMIT_UTIME < current_utime) {
+			/* event count is remained, it should not go over LIMIT */
 			DBG("stopped because LIMIT UTIME(%lld) < dtstart(%lld)", (long long int)CAL_ENDLESS_LIMIT_UTIME, current_utime);
 			return true;
 		}
@@ -773,7 +776,8 @@ static int _cal_db_instance_publish_yearly_yday(UCalendar *ucal, cal_event_s *ev
 	UErrorCode ec = U_ZERO_ERROR;
 	calendar_time_s until = {0};
 	__get_until_from_range(event, &until);
-	__set_time_to_ucal(event->system_type, ucal, &until); // set until before dtstart_utime
+	__set_time_to_ucal(event->system_type, ucal, &until);
+	/* set until before dtstart_utime */
 	long long int until_utime = ms2sec(ucal_getMillis(ucal, &ec));
 
 	int byyearday[1024] = {0};
@@ -842,13 +846,13 @@ static int _cal_db_instance_publish_yearly_weekno(UCalendar *ucal, cal_event_s *
 	UErrorCode ec = U_ZERO_ERROR;
 	calendar_time_s until = {0};
 	__get_until_from_range(event, &until);
-	__set_time_to_ucal(event->system_type, ucal, &until); // set until before dtstart_utime
+	__set_time_to_ucal(event->system_type, ucal, &until);
+	/* set until before dtstart_utime */
 	long long int until_utime = ms2sec(ucal_getMillis(ucal, &ec));
 
-	// get byday
+	/* get byday */
 	int week_bits = 0;
 	int byday_len = 0;
-	// if nowday in weekly
 	if (NULL == event->byday || '\0' == event->byday[0]) {
 		calendar_time_s *st = &event->start;
 		__set_time_to_ucal(event->system_type, ucal, st);
@@ -856,7 +860,8 @@ static int _cal_db_instance_publish_yearly_weekno(UCalendar *ucal, cal_event_s *
 		week_bits |= (0x01 << (dtstart_wday - 1));
 		byday_len = 1;
 
-	} else {
+	}
+	else {
 		week_bits = __convert_week_to_bits(event->byday, &byday_len);
 	}
 	DBG("byday_len (%d) week integer(0x%x)", byday_len, week_bits);
@@ -899,7 +904,7 @@ static int _cal_db_instance_publish_yearly_weekno(UCalendar *ucal, cal_event_s *
 		int first_wday = ucal_get(ucal, UCAL_DAY_OF_WEEK, &ec);
 		extra_weekno = 3 < ((first_wday+7-wkst)%7) ? 1 : 0;
 
-		ucal_setMillis(ucal, ms2sec(start_point), &ec); // set start point
+		ucal_setMillis(ucal, ms2sec(start_point), &ec); /* set start point */
 
 		int i;
 		for (i = 0 ; i < byweekno_len; i++) {
@@ -945,10 +950,11 @@ static int _cal_db_instance_publish_yearly_wday(UCalendar *ucal, cal_event_s *ev
 	UErrorCode ec = U_ZERO_ERROR;
 	calendar_time_s until = {0};
 	__get_until_from_range(event, &until);
-	__set_time_to_ucal(event->system_type, ucal, &until); // set until before dtstart_utime
+	__set_time_to_ucal(event->system_type, ucal, &until);
+	/* set until before dtstart_utime */
 	long long int until_utime = ms2sec(ucal_getMillis(ucal, &ec));
 
-	// get bymonth into array
+	/* get bymonth into array */
 	int bymonth[12] = {0};
 	int bymonth_len = 0;
 	bool has_bymonth = true;
@@ -962,7 +968,7 @@ static int _cal_db_instance_publish_yearly_wday(UCalendar *ucal, cal_event_s *ev
 		bymonth_len = 1;
 	}
 
-	// get bymonthday into array
+	/* get bymonthday into array */
 	int bymonthday[1024] = {0};
 	int bymonthday_len = 0;
 	_cal_db_instance_parse_byint(event->bymonthday, bymonthday, &bymonthday_len);
@@ -971,7 +977,7 @@ static int _cal_db_instance_publish_yearly_wday(UCalendar *ucal, cal_event_s *ev
 	char **t = NULL;
 	int byday_len = 0;
 
-	// if nowday in weekly
+	/* if nowday in weekly */
 	if (NULL == event->byday || '\0' == event->byday[0]) {
 		const char *week_text[7] = {"SU", "MO", "TU", "WE", "TH", "FR", "SA"};
 
@@ -986,7 +992,8 @@ static int _cal_db_instance_publish_yearly_wday(UCalendar *ucal, cal_event_s *ev
 		t = g_strsplit_set(buf, " ,", -1);
 		byday_len = 1;
 
-	} else {
+	}
+	else {
 		t = g_strsplit_set(event->byday, " ,", -1);
 		byday_len = g_strv_length(t);
 	}
@@ -1012,30 +1019,31 @@ static int _cal_db_instance_publish_yearly_wday(UCalendar *ucal, cal_event_s *ev
 		__set_time_to_ucal(event->system_type, ucal, st);
 		long long int dtstart_utime = ms2sec(ucal_getMillis(ucal, &ec));
 		ucal_add(ucal, UCAL_YEAR, event->interval * loop, &ec);
-		ucal_setMillis(ucal, ucal_getMillis(ucal, &ec), &ec); // set start point
+		ucal_setMillis(ucal, ucal_getMillis(ucal, &ec), &ec); /* set start point */
 
 		int i, j, k;
 		for (i = 0; i < bymonth_len; i++) {
 
-			if (2 < strlen(t[0])) { // -3SU, +2SA
+			if (2 < strlen(t[0])) { /* -3SU, +2SA */
 				for (j = 0; j < byday_len; j++) {
 					if (0 == strlen(t[j])) continue;
-					// get nth, wday
+					/* get nth, wday */
 					int nth = 0;
 					char wday[32] = {0};
 
-					sscanf(t[j], "%d%s", &nth, wday); // -3SU, +2SA
+					sscanf(t[j], "%d%s", &nth, wday); /* -3SU, +2SA */
 					DBG("nth(%d) wday[%s]", nth, wday);
 					int wday_int = __convert_wday_to_int(wday);
 
-					// set nth, wday
+					/* set nth, wday */
 					if (0 < nth) {
 						ucal_set(ucal, UCAL_DAY_OF_WEEK, wday_int);
 						ucal_set(ucal, UCAL_DAY_OF_WEEK_IN_MONTH, 1);
 						ucal_set(ucal, UCAL_MONTH, false == has_bymonth ? 0 : (bymonth[i] - 1));
 						ucal_add(ucal, UCAL_WEEK_OF_YEAR, nth - 1, &ec);
 
-					} else {
+					}
+					else {
 						ucal_set(ucal, UCAL_DAY_OF_WEEK, wday_int);
 						ucal_set(ucal, UCAL_MONTH, false == has_bymonth ? 0 : bymonth[i] - 1);
 						ucal_set(ucal, UCAL_DAY_OF_WEEK_IN_MONTH, nth);
@@ -1056,27 +1064,30 @@ static int _cal_db_instance_publish_yearly_wday(UCalendar *ucal, cal_event_s *ev
 					_cal_db_instance_insert_record(ucal, duration, event);
 				}
 
-			} else { // SU, SA: no week num: means all week:1TH,2TH,3TH.., so needs another byevent->system_typex
+			}
+			else {
+				/* SU, SA: no week num: means all week:1TH,2TH,3TH.., so needs another byevent->system_typex */
 				int week_bits = 0;
-				// if nowday in weekly
+				/* if nowday in weekly */
 				if (NULL == event->byday || '\0' == event->byday[0]) {
 					calendar_time_s *st = &event->start;
 					__set_time_to_ucal(event->system_type, ucal, st);
 					int dtstart_wday = ucal_get(ucal, UCAL_DAY_OF_WEEK, &ec);
 					week_bits |= (0x01 << (dtstart_wday - 1));
 
-				} else {
+				}
+				else {
 					week_bits = __convert_week_to_bits(event->byday, NULL);
 				}
 				DBG("week integer(0x%x)", week_bits);
 
-				if (bymonthday_len) { // bymonthday
+				if (bymonthday_len) { /* bymonthday */
 					for (j = 0; j < bymonthday_len; j++) {
 						ucal_set(ucal, UCAL_MONTH, bymonth[i] - 1);
 						ucal_set(ucal, UCAL_DAY_OF_MONTH, bymonthday[j]);
 						bool is_match_wday = false;
 						int w = ucal_get(ucal, UCAL_DAY_OF_WEEK, &ec);
-						for (k = 0; k < 7; k++) { // check if this is one of wday
+						for (k = 0; k < 7; k++) { /* check if this is one of wday */
 							if (week_bits & (0x01 << k)) {
 								if ((k + 1) == w) {
 									is_match_wday = true;
@@ -1104,7 +1115,8 @@ static int _cal_db_instance_publish_yearly_wday(UCalendar *ucal, cal_event_s *ev
 						_cal_db_instance_insert_record(ucal, duration, event);
 					}
 
-				} else {
+				}
+				else {
 					int year = ucal_get(ucal, UCAL_YEAR, &ec);
 
 					ucal_set(ucal, UCAL_MONTH, bymonth[i] - 1);
@@ -1116,14 +1128,15 @@ static int _cal_db_instance_publish_yearly_wday(UCalendar *ucal, cal_event_s *ev
 					DBG("dates_len (%d)", dates_len);
 
 					int index = -1;
-					for (j = 0; j < 6; j++) { // check weekno in month: max 6
+					for (j = 0; j < 6; j++) { /* check weekno in month: max 6 */
 						for (k = 0; k < 7; k++) {
 							if (0 == (week_bits & (0x01 << ((byday_start -1 +k)%7)))) continue;
 							index++;
 
 							int wday_int = (byday_start -1 +k) %7 + 1;
 							ucal_set(ucal, UCAL_WEEK_OF_MONTH, (j + 1) + (byday_start -1 +k) / 7);
-							if (year != ucal_get(ucal, UCAL_YEAR, &ec)) ucal_set(ucal, UCAL_YEAR, year); // year is changed from 12/30
+							if (year != ucal_get(ucal, UCAL_YEAR, &ec))
+								ucal_set(ucal, UCAL_YEAR, year); /* year is changed from 12/30 */
 							ucal_set(ucal, UCAL_MONTH, bymonth[i] - 1);
 							ucal_set(ucal, UCAL_DAY_OF_WEEK, wday_int);
 
@@ -1169,10 +1182,10 @@ static int _cal_db_instance_publish_yearly_mday(UCalendar *ucal, cal_event_s *ev
 	UErrorCode ec = U_ZERO_ERROR;
 	calendar_time_s until = {0};
 	__get_until_from_range(event, &until);
-	__set_time_to_ucal(event->system_type, ucal, &until); // set until before dtstart_utime
+	__set_time_to_ucal(event->system_type, ucal, &until); /* set until before dtstart_utime */
 	long long int until_utime = ms2sec(ucal_getMillis(ucal, &ec));
 
-	// get bymonth into array
+	/* get bymonth into array */
 	int bymonth[12] = {0};
 	int bymonth_len = 0;
 	_cal_db_instance_parse_byint(event->bymonth, bymonth, &bymonth_len);
@@ -1185,7 +1198,7 @@ static int _cal_db_instance_publish_yearly_mday(UCalendar *ucal, cal_event_s *ev
 	}
 	DBG("bymonth_len(%d)", bymonth_len);
 
-	// get bymonthday into array
+	/* get bymonthday into array */
 	int bymonthday[1024] = {0};
 	int bymonthday_len = 0;
 	_cal_db_instance_parse_byint(event->bymonthday, bymonthday, &bymonthday_len);
@@ -1217,7 +1230,7 @@ static int _cal_db_instance_publish_yearly_mday(UCalendar *ucal, cal_event_s *ev
 		__set_time_to_ucal(event->system_type, ucal, st);
 		long long int dtstart_utime = ms2sec(ucal_getMillis(ucal, &ec));
 		ucal_add(ucal, UCAL_YEAR, event->interval *loop, &ec);
-		ucal_setMillis(ucal, ucal_getMillis(ucal, &ec), &ec); // set start point
+		ucal_setMillis(ucal, ucal_getMillis(ucal, &ec), &ec); /* set start point */
 
 		int i, j;
 		for (j = 0; j < bymonth_len; j++) {
@@ -1230,13 +1243,15 @@ static int _cal_db_instance_publish_yearly_mday(UCalendar *ucal, cal_event_s *ev
 						DBG("bymonthday(%d) but get (%d) from icu", bymonthday[i], get_mday);
 						continue;
 					}
-				} else if (bymonthday[i] < 0) {
+				}
+				else if (bymonthday[i] < 0) {
 					ucal_set(ucal, UCAL_MONTH, bymonth[j] - 1);
 					ucal_set(ucal, UCAL_DATE, 1);
 					ucal_add(ucal, UCAL_MONTH, 1, &ec);
 					ucal_add(ucal, UCAL_DAY_OF_YEAR, bymonthday[i], &ec);
 
-				} else { // 0 is invalid
+				}
+				else { /* 0 is invalid */
 					DBG("Invalid bymonthday(%d)", bymonthday[i]);
 					continue;
 				}
@@ -1273,15 +1288,15 @@ static int _cal_db_instance_publish_record_yearly(UCalendar *ucal, cal_event_s *
 
 	if (event->byyearday && 0 < strlen(event->byyearday)) {
 		_cal_db_instance_publish_yearly_yday(ucal, event, duration);
-
-	} else if (event->byweekno && 0 < strlen(event->byweekno)) {
+	}
+	else if (event->byweekno && 0 < strlen(event->byweekno)) {
 		_cal_db_instance_publish_yearly_weekno(ucal, event, duration);
-
-	} else {
+	}
+	else {
 		if (event->byday && *event->byday) {
 			_cal_db_instance_publish_yearly_wday(ucal, event, duration);
-
-		} else {
+		}
+		else {
 			_cal_db_instance_publish_yearly_mday(ucal, event, duration);
 		}
 	}
@@ -1296,10 +1311,10 @@ static int _cal_db_instance_publish_monthly_wday(UCalendar *ucal, cal_event_s *e
 	UErrorCode ec = U_ZERO_ERROR;
 	calendar_time_s until = {0};
 	__get_until_from_range(event, &until);
-	__set_time_to_ucal(event->system_type, ucal, &until); // set until before dtstart_utime
+	__set_time_to_ucal(event->system_type, ucal, &until); /* set until before dtstart_utime */
 	long long int until_utime = ms2sec(ucal_getMillis(ucal, &ec));
 
-	// get bymonthday into array
+	/* get bymonthday into array */
 	int bymonthday[1024] = {0};
 	int bymonthday_len = 0;
 	_cal_db_instance_parse_byint(event->bymonthday, bymonthday, &bymonthday_len);
@@ -1307,7 +1322,7 @@ static int _cal_db_instance_publish_monthly_wday(UCalendar *ucal, cal_event_s *e
 	char **t = NULL;
 	int byday_len = 0;
 
-	// if nowday in weekly
+	/* if nowday in weekly */
 	if (NULL == event->byday || '\0' == event->byday[0]) {
 		const char *week_text[7] = {"SU", "MO", "TU", "WE", "TH", "FR", "SA"};
 
@@ -1322,7 +1337,8 @@ static int _cal_db_instance_publish_monthly_wday(UCalendar *ucal, cal_event_s *e
 		t = g_strsplit_set(buf, " ,", -1);
 		byday_len = 1;
 
-	} else {
+	}
+	else {
 		t = g_strsplit_set(event->byday, " ,", -1);
 		byday_len = g_strv_length(t);
 	}
@@ -1348,32 +1364,35 @@ static int _cal_db_instance_publish_monthly_wday(UCalendar *ucal, cal_event_s *e
 		__set_time_to_ucal(event->system_type, ucal, st);
 		long long int dtstart_utime = ms2sec(ucal_getMillis(ucal, &ec));
 		ucal_add(ucal, UCAL_MONTH, event->interval * loop, &ec);
-		ucal_setMillis(ucal, ucal_getMillis(ucal, &ec), &ec); // set start point
+		ucal_setMillis(ucal, ucal_getMillis(ucal, &ec), &ec); /* set start point */
 
 		int i, j, k;
-		if (2 < strlen(t[0])) { // -3SU, +2SA
+		if (2 < strlen(t[0])) { /* -3SU, +2SA */
 			for (i = 0; i < byday_len; i++) {
-				if (0 == strlen(t[i])) continue;
-				// get nth, wday
+				if (0 == strlen(t[i]))
+					continue;
+				/* get nth, wday */
 				int nth = 0;
 				char wday[32] = {0};
 
-				sscanf(t[i], "%d%s", &nth, wday); // -3SU, +2SA
+				sscanf(t[i], "%d%s", &nth, wday); /* -3SU, +2SA */
 				DBG("nth(%d) wday[%s]", nth, wday);
 				int wday_int = __convert_wday_to_int(wday);
 
-				// set nth, wday
+				/* set nth, wday */
 				if (0 < nth) {
 					if (4 < nth) {
 						ucal_set(ucal, UCAL_DAY_OF_WEEK, wday_int);
 						ucal_set(ucal, UCAL_DAY_OF_WEEK_IN_MONTH, -1);
 
-					} else {
+					}
+					else {
 						ucal_set(ucal, UCAL_DAY_OF_WEEK, wday_int);
 						ucal_set(ucal, UCAL_DAY_OF_WEEK_IN_MONTH, 1);
 						ucal_add(ucal, UCAL_WEEK_OF_YEAR, nth - 1, &ec);
 					}
-				} else {
+				}
+				else {
 					ucal_set(ucal, UCAL_DAY_OF_WEEK, wday_int);
 					ucal_set(ucal, UCAL_DAY_OF_WEEK_IN_MONTH, nth);
 				}
@@ -1393,26 +1412,28 @@ static int _cal_db_instance_publish_monthly_wday(UCalendar *ucal, cal_event_s *e
 				_cal_db_instance_insert_record(ucal, duration, event);
 			}
 
-		} else { // SU, SA: no week num: means all week:1TH,2TH,3TH.., so needs another byevent->system_typex
+		}
+		else { /* SU, SA: no week num: means all week:1TH,2TH,3TH.., so needs another byevent->system_type */
 			int week_bits = 0;
-			// if nowday in weekly
+			/* if nowday in weekly */
 			if (NULL == event->byday || '\0' == event->byday[0]) {
 				calendar_time_s *st = &event->start;
 				__set_time_to_ucal(event->system_type, ucal, st);
 				int dtstart_wday = ucal_get(ucal, UCAL_DAY_OF_WEEK, &ec);
 				week_bits |= (0x01 << (dtstart_wday - 1));
 
-			} else {
+			}
+			else {
 				week_bits = __convert_week_to_bits(event->byday, NULL);
 			}
 			DBG("week integer(0x%x)", week_bits);
 
-			if (bymonthday_len) { // bymonthday
+			if (bymonthday_len) { /* bymonthday */
 				for (j = 0; j < bymonthday_len; j++) {
 					ucal_set(ucal, UCAL_DATE, bymonthday[j]);
 					bool is_match_wday = false;
 					int w = ucal_get(ucal, UCAL_DAY_OF_WEEK, &ec);
-					for (k = 0; k < 7; k++) { // check if this is one of wday
+					for (k = 0; k < 7; k++) { /* check if this is one of wday */
 						if (week_bits & (0x01 << k)) {
 							if ((k + 1) == w) {
 								is_match_wday = true;
@@ -1440,7 +1461,8 @@ static int _cal_db_instance_publish_monthly_wday(UCalendar *ucal, cal_event_s *e
 					_cal_db_instance_insert_record(ucal, duration, event);
 				}
 
-			} else {
+			}
+			else {
 				int year = ucal_get(ucal, UCAL_YEAR, &ec);
 				int month = ucal_get(ucal, UCAL_MONTH, &ec) + 1;
 
@@ -1453,7 +1475,7 @@ static int _cal_db_instance_publish_monthly_wday(UCalendar *ucal, cal_event_s *e
 				DBG("month(%d) dates_len (%d)", month, dates_len);
 
 				int index = -1;
-				for (j = 0; j < 6; j++) { // check weekno in month: max 6
+				for (j = 0; j < 6; j++) { /* check weekno in month: max 6 */
 					for (k = 0; k < 7; k++) {
 						if (0 == (week_bits & (0x01 << ((byday_start -1 +k)%7)))) continue;
 						index++;
@@ -1504,10 +1526,10 @@ static int _cal_db_instance_publish_monthly_mday(UCalendar *ucal, cal_event_s *e
 	UErrorCode ec = U_ZERO_ERROR;
 	calendar_time_s until = {0};
 	__get_until_from_range(event, &until);
-	__set_time_to_ucal(event->system_type, ucal, &until); // set until before dtstart_utime
+	__set_time_to_ucal(event->system_type, ucal, &until); /* set until before dtstart_utime */
 	long long int until_utime = ms2sec(ucal_getMillis(ucal, &ec));
 
-	// get bymonthday into array
+	/* get bymonthday into array */
 	int bymonthday[1024] = {0};
 	int bymonthday_len = 0;
 	_cal_db_instance_parse_byint(event->bymonthday, bymonthday, &bymonthday_len);
@@ -1540,7 +1562,7 @@ static int _cal_db_instance_publish_monthly_mday(UCalendar *ucal, cal_event_s *e
 		__set_time_to_ucal(event->system_type, ucal, st);
 		long long int dtstart_utime = ms2sec(ucal_getMillis(ucal, &ec));
 		ucal_add(ucal, UCAL_MONTH, event->interval * loop, &ec);
-		ucal_setMillis(ucal, ucal_getMillis(ucal, &ec), &ec); // set start point
+		ucal_setMillis(ucal, ucal_getMillis(ucal, &ec), &ec); /* set start point */
 
 		int i;
 		for (i = 0 ; i < bymonthday_len; i++) {
@@ -1552,12 +1574,14 @@ static int _cal_db_instance_publish_monthly_mday(UCalendar *ucal, cal_event_s *e
 					DBG("bymonthday(%d) but get (%d) from icu", bymonthday[i], get_mday);
 					continue;
 				}
-			} else if (bymonthday[i] < 0) {
+			}
+			else if (bymonthday[i] < 0) {
 				ucal_set(ucal, UCAL_DATE, 1);
 				ucal_add(ucal, UCAL_MONTH, 1, &ec);
 				ucal_add(ucal, UCAL_DAY_OF_YEAR, bymonthday[i], &ec);
 
-			} else { // 0 is invalid
+			}
+			else { /* 0 is invalid */
 				DBG("Invalid bymonthday(%d)", bymonthday[i]);
 				continue;
 			}
@@ -1606,19 +1630,20 @@ static int _cal_db_instance_publish_weekly_wday(UCalendar *ucal, cal_event_s *ev
 	UErrorCode ec = U_ZERO_ERROR;
 	calendar_time_s until = {0};
 	__get_until_from_range(event, &until);
-	__set_time_to_ucal(event->system_type, ucal, &until); // set until before dtstart_utime
+	__set_time_to_ucal(event->system_type, ucal, &until); /* set until before dtstart_utime */
 	long long int until_utime = ms2sec(ucal_getMillis(ucal, &ec));
 
 	int week_bits = 0;
 	int byday_len = 0;
-	// if nowday in weekly
+	/* if nowday in weekly */
 	if (NULL == event->byday || '\0' == event->byday[0]) {
 		calendar_time_s *st = &event->start;
 		__set_time_to_ucal(event->system_type, ucal, st);
 		int dtstart_wday = ucal_get(ucal, UCAL_DAY_OF_WEEK, &ec);
 		week_bits |= (0x01 << (dtstart_wday - 1));
 
-	} else {
+	}
+	else {
 		week_bits = __convert_week_to_bits(event->byday, &byday_len);
 	}
 	DBG("week integer(0x%x)", week_bits);
@@ -1645,7 +1670,7 @@ static int _cal_db_instance_publish_weekly_wday(UCalendar *ucal, cal_event_s *ev
 		__set_time_to_ucal(event->system_type, ucal, st);
 		long long int dtstart_utime = ms2sec(ucal_getMillis(ucal, &ec));
 		ucal_add(ucal, UCAL_WEEK_OF_YEAR, event->interval *loop, &ec);
-		ucal_setMillis(ucal, ucal_getMillis(ucal, &ec), &ec); // set start point
+		ucal_setMillis(ucal, ucal_getMillis(ucal, &ec), &ec); /* set start point */
 
 		int i;
 		int index = -1;
@@ -1697,10 +1722,10 @@ static int _cal_db_instance_publish_daily_mday(UCalendar *ucal, cal_event_s *eve
 	UErrorCode ec = U_ZERO_ERROR;
 	calendar_time_s until = {0};
 	__get_until_from_range(event, &until);
-	__set_time_to_ucal(event->system_type, ucal, &until); // set until before dtstart_utime
+	__set_time_to_ucal(event->system_type, ucal, &until); /* set until before dtstart_utime */
 	long long int until_utime = ms2sec(ucal_getMillis(ucal, &ec));
 
-	// get bymonth into array
+	/* get bymonth into array */
 	int bymonth[12] = {0};
 	int bymonth_len = 0;
 	_cal_db_instance_parse_byint(event->bymonth, bymonth, &bymonth_len);
@@ -1765,7 +1790,7 @@ static int _cal_db_instance_publish_record_once(UCalendar *ucal, cal_event_s *ev
 
 	calendar_time_s *st = &event->start;
 	__set_time_to_ucal(event->system_type, ucal, st);
-	_cal_db_instance_insert_record(ucal, duration, event);//event->start.type, event->index);
+	_cal_db_instance_insert_record(ucal, duration, event);
 	return CALENDAR_ERROR_NONE;
 }
 
@@ -1775,7 +1800,7 @@ static int _cal_db_instance_publish_record_details(UCalendar *ucal, cal_event_s 
 	RETV_IF(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	long long int duration = -1;
-	int exception_freq = 0; // for exception
+	int exception_freq = 0; /* for exception */
 
 	_cal_db_instance_get_duration(ucal, &event->start, &event->end, &duration);
 	WARN_IF(duration < 0, "Invalid duration (%lld)", duration);
@@ -1853,7 +1878,7 @@ int cal_db_instance_update_exdate_del(int id, char *exdate)
 		DBG("exdate[%s]", p);
 		int len = strlen(p);
 		switch (len) {
-		case 8: // 20141212
+		case 8: /* 20141212 */
 			DBG("ALLDAY instance");
 			sscanf(p, "%04d%02d%02d", &y, &m, &d);
 			snprintf(query, sizeof(query), "DELETE FROM %s "
@@ -1861,7 +1886,7 @@ int cal_db_instance_update_exdate_del(int id, char *exdate)
 					CAL_TABLE_ALLDAY_INSTANCE, id, y, m, d, h, n, s);
 			break;
 
-		case 15: // 20141212T000000
+		case 15: /* 20141212T000000 */
 			sscanf(p, "%04d%02d%02dT%02d%02d%02d", &y, &m, &d, &h, &n, &s);
 			snprintf(query, sizeof(query), "DELETE FROM %s "
 					"WHERE event_id = %d AND dtstart_datetime = '%04d-%02d-%02dT%02d:%02d:%02d' ",
@@ -1869,7 +1894,7 @@ int cal_db_instance_update_exdate_del(int id, char *exdate)
 			DBG("localtime instance");
 			break;
 
-		case 16: // 20141212T000000Z
+		case 16: /* 20141212T000000Z */
 			sscanf(p, "%04d%02d%02dT%02d%02d%02dZ", &y, &m, &d, &h, &n, &s);
 			snprintf(query, sizeof(query), "DELETE FROM %s "
 					"WHERE event_id = %d AND dtstart_utime = %lld ",
@@ -1880,8 +1905,8 @@ int cal_db_instance_update_exdate_del(int id, char *exdate)
 
 		dbret = cal_db_util_query_exec(query);
 		if (dbret != CAL_DB_OK) {
-			ERR("[%s]", query);
 			ERR("cal_db_util_query_exec() failed (%d)", dbret);
+			SECURE("[%s]", query);
 			g_strfreev(t);
 			switch (dbret)
 			{
@@ -1932,12 +1957,10 @@ int cal_db_instance_discard_record(int index)
 			CAL_TABLE_NORMAL_INSTANCE, index);
 
 	dbret = cal_db_util_query_exec(query);
-	if (CAL_DB_OK != dbret)
-	{
-		DBG("query[%s]", query);
+	if (CAL_DB_OK != dbret) {
 		ERR("cal_db_util_query_exec() failed (%d)", dbret);
-		switch (dbret)
-		{
+		SECURE("[%s]", query);
+		switch (dbret) {
 		case CAL_DB_ERROR_NO_SPACE:
 			return CALENDAR_ERROR_FILE_NO_SPACE;
 		default:
@@ -1950,11 +1973,10 @@ int cal_db_instance_discard_record(int index)
 			CAL_TABLE_ALLDAY_INSTANCE, index);
 
 	dbret = cal_db_util_query_exec(query);
-	if (CAL_DB_OK != dbret)
-	{
+	if (CAL_DB_OK != dbret) {
 		ERR("cal_db_util_query_exec() failed (%d)", dbret);
-		switch (dbret)
-		{
+		SECURE("[%s]", query);
+		switch (dbret) {
 		case CAL_DB_ERROR_NO_SPACE:
 			return CALENDAR_ERROR_FILE_NO_SPACE;
 		default:

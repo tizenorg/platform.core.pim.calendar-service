@@ -31,4 +31,4 @@ int cal_db_alarm_insert_records(cal_list_s *list_s, int event_id);
  */
 int cal_db_alarm_has_alarm(cal_list_s *list_s);
 
-#endif  //__CALENDAR_SVC_DB_ALARM_H__
+#endif  /* __CALENDAR_SVC_DB_ALARM_H__ */

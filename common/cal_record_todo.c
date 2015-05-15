@@ -17,8 +17,8 @@
  *
  */
 
-#include <stdlib.h> // calloc
-#include <stdbool.h> // bool
+#include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 
 #include "calendar_list.h"
@@ -84,8 +84,8 @@ static void _cal_record_todo_struct_init(cal_todo_s *record)
 	record->categories = NULL;
 	record->uid= NULL;
 	record->is_deleted = 0;
-	record->latitude = CALENDAR_RECORD_NO_COORDINATE; // set default 1000 out of range(-180 ~ 180)
-	record->longitude = CALENDAR_RECORD_NO_COORDINATE; // set default 1000 out of range(-180 ~ 180)
+	record->latitude = CALENDAR_RECORD_NO_COORDINATE; /* set default 1000 out of range(-180 ~ 180) */
+	record->longitude = CALENDAR_RECORD_NO_COORDINATE; /* set default 1000 out of range(-180 ~ 180) */
 	record->priority = CALENDAR_TODO_PRIORITY_NONE;
 	record->freq = CALENDAR_RECURRENCE_NONE;
 	record->start.time.utime = CALENDAR_TODO_NO_START_DATE;

@@ -26,4 +26,4 @@ int cal_client_connect_on_thread(void);
 int cal_client_disconnect_on_thread(void);
 int cal_client_connect_with_flags(unsigned int flags);
 
-#endif // __CAL_CLIENT_SERVER_HELPER_H__
+#endif /* __CAL_CLIENT_SERVICE_HELPER_H__ */

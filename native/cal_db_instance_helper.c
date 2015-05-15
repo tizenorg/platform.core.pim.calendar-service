@@ -101,6 +101,7 @@ int cal_db_instance_helper_insert_utime_instance(int event_id, long long int s, 
 	dbret = cal_db_util_query_exec(query);
 	if (dbret != CAL_DB_OK) {
 		ERR("cal_db_util_query_exec() failed (%d)", dbret);
+		SECURE("[%s]", query);
 		switch (dbret) {
 		case CAL_DB_ERROR_NO_SPACE:
 			return CALENDAR_ERROR_FILE_NO_SPACE;
@@ -121,6 +122,7 @@ int cal_db_instance_helper_insert_localtime_instance(int event_id, const char *s
 	dbret = cal_db_util_query_exec(query);
 	if (dbret != CAL_DB_OK) {
 		ERR("cal_db_util_query_exec() failed (%d)", dbret);
+		SECURE("[%s]", query);
 		switch (dbret) {
 		case CAL_DB_ERROR_NO_SPACE:
 			return CALENDAR_ERROR_FILE_NO_SPACE;

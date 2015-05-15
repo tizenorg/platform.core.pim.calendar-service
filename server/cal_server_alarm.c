@@ -41,17 +41,17 @@
 struct _alarm_data_s
 {
 	int event_id;
-	long long int alert_utime; // to compare
+	long long int alert_utime; /* to compare */
 	int unit;
 	int tick;
-	int type; // utime, local
+	int type; /* utime, localtime */
 	long long int time;
-	int record; // todo, event
+	int record; /* todo, event */
 	char datetime[32];
 	int system_type;
 };
 
-// this api is necessary for repeat instance.
+/* this api is necessary for repeat instance. */
 static int _cal_server_alarm_unset_alerted_alarmmgr_id(int alarm_id)
 {
 	int ret = CALENDAR_ERROR_NONE;
@@ -71,11 +71,10 @@ static int _cal_server_alarm_unset_alerted_alarmmgr_id(int alarm_id)
 			CAL_TABLE_ALARM, alarm_id);
 
 	dbret = cal_db_util_query_exec(query);
-	if (CAL_DB_OK != dbret)
-	{
+	if (CAL_DB_OK != dbret) {
 		ERR("cal_db_util_query_exec() Fail(%d)", dbret);
-		switch (dbret)
-		{
+		SECURE("[%s]", query);
+		switch (dbret) {
 		case CAL_DB_ERROR_NO_SPACE:
 			cal_db_util_end_trans(false);
 			return CALENDAR_ERROR_FILE_NO_SPACE;
@@ -117,19 +116,15 @@ static int _cal_server_alarm_update_alarm_id(int alarm_id, int event_id, int tic
 	}
 
 	DBG("Update alarm_id(%d) in alarm table", alarm_id);
-	snprintf(query, sizeof(query), "UPDATE %s SET "
-			"alarm_id =%d "
+	snprintf(query, sizeof(query), "UPDATE %s SET alarm_id =%d "
 			"WHERE event_id =%d AND remind_tick =%d AND remind_tick_unit =%d",
-			CAL_TABLE_ALARM,
-			alarm_id,
-			event_id, tick, unit);
+			CAL_TABLE_ALARM, alarm_id, event_id, tick, unit);
 
 	dbret = cal_db_util_query_exec(query);
-	if (CAL_DB_OK != dbret)
-	{
+	if (CAL_DB_OK != dbret) {
 		ERR("cal_db_util_query_exec() Fail(%d)", dbret);
-		switch (dbret)
-		{
+		SECURE("[%s]", query);
+		switch (dbret) {
 		case CAL_DB_ERROR_NO_SPACE:
 			cal_db_util_end_trans(false);
 			return CALENDAR_ERROR_FILE_NO_SPACE;
@@ -253,8 +248,8 @@ static int _cal_server_alarm_get_alert_time(int alarm_id, time_t *tt_alert)
 	if (CALENDAR_ALARM_TIME_UNIT_SPECIFIC == unit) {
 		if (CALENDAR_TIME_UTIME == type) {
 			*tt_alert = utime;
-
-		} else {
+		}
+		else {
 			int y = 0, m = 0, d = 0;
 			int h = 0, n = 0, s = 0;
 			sscanf(datetime, CAL_FORMAT_LOCAL_DATETIME, &y, &m, &d, &h, &n, &s);
@@ -273,11 +268,9 @@ static int _cal_server_alarm_get_alert_time(int alarm_id, time_t *tt_alert)
 	}
 	sqlite3_finalize(stmt);
 
-	// not specific
-
 	time_t current = time(NULL);
 	current += (tick * unit);
-	current -= 2; // in case time passed
+	current -= 2; /* in case time passed */
 
 	switch (record_type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
@@ -310,7 +303,7 @@ static int _cal_server_alarm_get_alert_time(int alarm_id, time_t *tt_alert)
 	return CALENDAR_ERROR_NONE;
 }
 
-static void _cal_server_alarm_get_upcoming_specific_utime(time_t utime, bool get_all, GList **l) // case 1
+static void _cal_server_alarm_get_upcoming_specific_utime(time_t utime, bool get_all, GList **l)
 {
 	char query_specific_utime[CAL_DB_SQL_MAX_LEN] = {0};
 	snprintf(query_specific_utime, sizeof(query_specific_utime),
@@ -328,7 +321,7 @@ static void _cal_server_alarm_get_upcoming_specific_utime(time_t utime, bool get
 	stmt = cal_db_util_query_prepare(query_specific_utime);
 	if (NULL == stmt) {
 		ERR("cal_db_util_query_prepare() Fail");
-		ERR("[%s]", query_specific_utime);
+		SECURE("query[%s]", query_specific_utime);
 		return;
 	}
 
@@ -417,8 +410,11 @@ static void _cal_server_alarm_get_upcoming_specific_localtime(const char *dateti
 static void _cal_server_alarm_get_upcoming_nonspecific_event_utime(time_t utime, bool get_all, GList **l)
 {
 	char query_nonspecific_event_utime[CAL_DB_SQL_MAX_LEN] = {0};
+	/*
+	 * A:alarm
+	 * B:normal instance
+	 */
 	snprintf(query_nonspecific_event_utime, sizeof(query_nonspecific_event_utime),
-			// A:alarm B:normal instance
 			"SELECT A.event_id, A.remind_tick_unit, A.remind_tick, A.alarm_type, B.dtstart_utime, A.alarm_datetime "
 			"FROM %s as A, %s as B ON A.event_id = B.event_id "
 			"WHERE A.remind_tick_unit >%d AND (B.dtstart_utime - (A.remind_tick_unit * A.remind_tick)) %s %ld %s",
@@ -464,8 +460,11 @@ static void _cal_server_alarm_get_upcoming_nonspecific_event_utime(time_t utime,
 static void _cal_server_alarm_get_upcoming_nonspecific_event_localtime(const char *datetime, bool get_all, GList **l)
 {
 	char query_nonspecific_event_localtime[CAL_DB_SQL_MAX_LEN] = {0};
+	/*
+	 * A:alarm
+	 * B:allday
+	 */
 	snprintf(query_nonspecific_event_localtime, sizeof(query_nonspecific_event_localtime),
-			// A:alarm B:allday
 			"SELECT A.event_id, A.remind_tick_unit, A.remind_tick, A.alarm_type, A.alarm_utime, B.dtstart_datetime "
 			"FROM %s as A, %s as B ON A.event_id = B.event_id "
 			"WHERE A.remind_tick_unit >%d AND "
@@ -522,8 +521,11 @@ static void _cal_server_alarm_get_upcoming_nonspecific_event_localtime(const cha
 static void _cal_server_alarm_get_upcoming_nonspecific_todo_utime(time_t utime, bool get_all, GList **l)
 {
 	char query_nonspecific_todo_utime[CAL_DB_SQL_MAX_LEN] = {0};
+	/*
+	 * A:alarm
+	 * B:todo(normal)
+	 */
 	snprintf(query_nonspecific_todo_utime, sizeof(query_nonspecific_todo_utime),
-			// A:alarm B:todo(normal)
 			"SELECT A.event_id, A.remind_tick_unit, A.remind_tick, A.alarm_type, B.dtend_utime, A.alarm_datetime "
 			"FROM %s as A, %s as B ON A.event_id = B.id "
 			"WHERE A.remind_tick_unit >%d AND B.type =%d "
@@ -570,8 +572,11 @@ static void _cal_server_alarm_get_upcoming_nonspecific_todo_utime(time_t utime, 
 static void _cal_server_alarm_get_upcoming_nonspecific_todo_localtime(const char *datetime, bool get_all, GList **l)
 {
 	char query_nonspecific_todo_localtime[CAL_DB_SQL_MAX_LEN] = {0};
+	/*
+	 * A:alarm
+	 * B:todo(allday)
+	 */
 	snprintf(query_nonspecific_todo_localtime, sizeof(query_nonspecific_todo_localtime),
-			// A:alarm B:todo(allday)
 			"SELECT A.event_id, A.remind_tick_unit, A.remind_tick, A.alarm_type, A.alarm_utime, B.dtend_datetime "
 			"FROM %s as A, %s as B ON A.event_id = B.id "
 			"WHERE A.remind_tick_unit >%d AND B.type =%d "
@@ -682,10 +687,9 @@ static int _cal_server_alarm_register(GList *alarm_list)
 	struct _alarm_data_s *ad = (struct _alarm_data_s *)l->data;
 	RETVM_IF(NULL == ad, CALENDAR_ERROR_DB_FAILED, "No data");
 
-	// clear all alarm which set by mine.
+	/* clear all alarm which set by mine. */
 	ret = alarmmgr_enum_alarm_ids(_cal_server_alarm_clear_all_cb, NULL);
-	if (ret != ALARMMGR_RESULT_SUCCESS)
-	{
+	if (ret != ALARMMGR_RESULT_SUCCESS) {
 		ERR("alarmmgr_enum_alarm_ids() Fail");
 		return ret;
 	}
@@ -739,15 +743,17 @@ static int _cal_server_alarm_register(GList *alarm_list)
 
 static bool __app_matched_cb(app_control_h app_control, const char *package, void *user_data)
 {
+	int ret = 0;
+	struct alarm_ud *au = (struct alarm_ud *)user_data;
+
 	RETV_IF(NULL == user_data, true);
 
-	int ret = 0;
 	char *mime = NULL;
 	ret = app_control_get_mime(app_control, &mime);
 	RETVM_IF(APP_CONTROL_ERROR_NONE != ret, true, "app_control_get_mime() Fail(%d)", ret);
 
 	const char *reminder_mime = "application/x-tizen.calendar.reminder";
-	if (strncmp(mime, reminder_mime, strlen(reminder_mime))) { // not same
+	if (strncmp(mime, reminder_mime, strlen(reminder_mime))) { /* not same */
 		DBG("get mime[%s] is not [%s]", mime, reminder_mime);
 		free(mime);
 		return true;
@@ -767,7 +773,6 @@ static bool __app_matched_cb(app_control_h app_control, const char *package, voi
 	app_control_set_operation(b,  APP_CONTROL_OPERATION_DEFAULT);
 	app_control_set_app_id(b, package);
 
-	// data
 	char **ids = NULL;
 	ids = calloc(len, sizeof(char *));
 	if (NULL == ids) {
@@ -818,7 +823,6 @@ static bool __app_matched_cb(app_control_h app_control, const char *package, voi
 	app_control_send_launch_request (b, NULL, NULL);
 	app_control_destroy(b);
 
-	// free ids
 	for (i = 0; i < len; i++) {
 		free(ids[i]);
 		ids[i] = NULL;
@@ -909,7 +913,6 @@ static int _cal_server_alarm_register_with_alarmmgr(time_t utime)
 	g_list_foreach(l, (GFunc)_cal_server_alarm_print_cb, NULL);
 	_cal_server_alarm_register(l);
 
-	// free list
 	l = g_list_first(l);
 	while (l) {
 		struct _alarm_data_s *ad = (struct _alarm_data_s *)l->data;

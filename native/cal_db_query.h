@@ -48,4 +48,4 @@ int cal_db_query_create_projection_update_set_with_property(
 		calendar_record_h record, unsigned int *properties, int properties_count,
 		char **set, GSList **bind_text);
 
-#endif // __CALENDAR_SVC_DB_QUERY_H__
+#endif /* __CALENDAR_SVC_DB_QUERY_H__ */

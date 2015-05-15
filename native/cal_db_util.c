@@ -173,12 +173,9 @@ int cal_db_util_query_get_first_int_result(const char *query, GSList *bind_text,
 			timersub(&now, &from, &diff);
 			retry = (diff.tv_sec < __CAL_QUERY_RETRY_TIME) ? true : false;
 			if (retry)
-			{
 				usleep(50 * 1000); // 50ms
-			}
 		}
-		else
-		{
+		else {
 			retry = false;
 		}
 	} while (retry);
@@ -203,18 +200,14 @@ int cal_db_util_query_get_first_int_result(const char *query, GSList *bind_text,
 
 	retry = false;
 	gettimeofday(&from, NULL);
-	do
-	{
+	do {
 		ret = sqlite3_step(stmt);
-		if (SQLITE_ROW != ret)
-		{
-			if (SQLITE_DONE == ret)
-			{
+		if (SQLITE_ROW != ret) {
+			if (SQLITE_DONE == ret) {
 				sqlite3_finalize(stmt);
 				return CALENDAR_ERROR_DB_RECORD_NOT_FOUND;
 			}
-			else if (SQLITE_BUSY == ret || SQLITE_LOCKED == ret)
-			{
+			else if (SQLITE_BUSY == ret || SQLITE_LOCKED == ret) {
 				ERR("sqlite3_step fail(%d, %s)", ret, sqlite3_errmsg(cal_db));
 				gettimeofday(&now, NULL);
 				timersub(&now, &from, &diff);
@@ -224,8 +217,7 @@ int cal_db_util_query_get_first_int_result(const char *query, GSList *bind_text,
 					usleep(50 * 1000); // 50ms
 				}
 			}
-			else
-			{
+			else {
 				ERR("sqlite3_step() failed(%d, %s).", ret, sqlite3_errmsg(cal_db));
 				retry = false;
 			}
@@ -281,12 +273,9 @@ sqlite3_stmt* cal_db_util_query_prepare(char *query)
 			timersub(&now, &from, &diff);
 			retry = (diff.tv_sec < __CAL_QUERY_RETRY_TIME) ? true : false;
 			if (retry)
-			{
 				usleep(50 * 1000); // 50ms
-			}
 		}
-		else
-		{
+		else {
 			retry = false;
 		}
 	} while (retry);
@@ -309,12 +298,9 @@ cal_db_util_error_e cal_db_util_stmt_step(sqlite3_stmt *stmt)
 			timersub(&now, &from, &diff);
 			retry = (diff.tv_sec < __CAL_QUERY_RETRY_TIME) ? true : false;
 			if (retry)
-			{
 				usleep(50 * 1000); // 50ms
-			}
 		}
-		else
-		{
+		else {
 			retry = false;
 		}
 	} while (retry);

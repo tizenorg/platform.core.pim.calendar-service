@@ -32,4 +32,4 @@ int cal_inotify_subscribe(cal_noti_type_e type, const char *path, calendar_db_ch
 int cal_inotify_unsubscribe_with_data(const char *path, calendar_db_changed_cb callback, void *user_data);
 void cal_inotify_finalize(void);
 
-#endif // __CALENDAR_SVC_INOTIFY_H__
+#endif /* __CALENDAR_SVC_INOTIFY_H__ */

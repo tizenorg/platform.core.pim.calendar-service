@@ -158,10 +158,8 @@ static gboolean _inotify_gio_cb(GIOChannel *src, GIOCondition cond, gpointer dat
 				}
 			}
 		}
-		else
-		{
-			while (ret < sizeof(ie))
-			{
+		else {
+			while (ret < sizeof(ie)) {
 				int read_size;
 				read_size = read(fd, name, sizeof(ie)-ret);
 				if (-1 == read_size)
@@ -192,7 +190,7 @@ static inline int _inotify_attach_handler(int fd)
 	channel = g_io_channel_unix_new(fd);
 	if (NULL == channel) {
 		ERR("g_io_channel_unix_new() Fail");
-		return -1; // CALENDAR_ERROR_FAILED_INOTIFY
+		return -1; /* CALENDAR_ERROR_FAILED_INOTIFY */
 	}
 
 	g_io_channel_set_flags(channel, G_IO_FLAG_NONBLOCK, NULL);
@@ -227,7 +225,7 @@ int cal_inotify_initialize(void)
 		calendar_inoti_count = 0;
 		cal_mutex_unlock(CAL_MUTEX_INOTIFY);
 #endif
-		return -1; // CALENDAR_ERROR_FAILED_INOTIFY;
+		return -1; /* CALENDAR_ERROR_FAILED_INOTIFY */
 	}
 
 	ret = fcntl(inoti_fd, F_SETFD, FD_CLOEXEC);
@@ -246,7 +244,7 @@ int cal_inotify_initialize(void)
 		calendar_inoti_count = 0;
 		cal_mutex_unlock(CAL_MUTEX_INOTIFY);
 #endif
-		return -1; // CALENDAR_ERROR_FAILED_INOTIFY
+		return -1; /* CALENDAR_ERROR_FAILED_INOTIFY */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -304,10 +302,8 @@ int cal_inotify_subscribe(cal_noti_type_e type, const char *path, calendar_db_ch
 	}
 
 	cursor = noti_list;
-	while (cursor)
-	{
-		if (cursor->data == NULL)
-		{
+	while (cursor) {
+		if (cursor->data == NULL) {
 			DBG("No data exist");
 			cursor = cursor->next;
 			continue;

@@ -17,7 +17,7 @@
  *
  */
 
-#include <unistd.h> // sleep
+#include <unistd.h>
 #include <glib.h>
 #include <db-util.h>
 
@@ -189,7 +189,7 @@ void cal_db_initialize_view_table(void)
 		ERR("create view Fail");
 	}
 
-	// CAL_VIEW_TABLE_ALLDAY_INSTANCE  : CALENDAR_VIEW_INSTANCE_ALLDAY_CALENDAR
+	/* CAL_VIEW_TABLE_ALLDAY_INSTANCE  : CALENDAR_VIEW_INSTANCE_ALLDAY_CALENDAR */
 	snprintf(query, sizeof(query),
 			"CREATE VIEW IF NOT EXISTS %s AS SELECT A.event_id, "
 			"B.dtstart_type, B.dtstart_utime, A.dtstart_datetime, "
@@ -244,7 +244,7 @@ void cal_db_initialize_view_table(void)
 		ERR("create view Fail");
 	}
 
-	// CAL_VIEW_TABLE_ALLDAY_INSTANCE_EXTENDED  : CALENDAR_VIEW_INSTANCE_ALLDAY_CALENDAR_EXTENDED
+	/* CAL_VIEW_TABLE_ALLDAY_INSTANCE_EXTENDED  : CALENDAR_VIEW_INSTANCE_ALLDAY_CALENDAR_EXTENDED */
 	snprintf(query, sizeof(query),
 			"CREATE VIEW IF NOT EXISTS %s AS SELECT A.event_id, "
 			"B.dtstart_type, B.dtstart_utime, A.dtstart_datetime, "
@@ -268,10 +268,12 @@ void cal_db_initialize_view_table(void)
 		ERR("create view Fail");
 	}
 
-	// event_calendar view  :  CALENDAR_VIEW_EVENT_CALENDAR
-	// A : schedule_table
-	// B : rrule_table
-	// C : calendar_table
+	/*
+	 * event_calendar view  :  CALENDAR_VIEW_EVENT_CALENDAR
+	 * A : schedule_table
+	 * B : rrule_table
+	 * C : calendar_table
+	 */
 	snprintf(query, sizeof(query),
 			"CREATE VIEW IF NOT EXISTS %s AS "
 			"SELECT "CAL_QUERY_SCHEDULE_A_ALL", "
@@ -292,10 +294,12 @@ void cal_db_initialize_view_table(void)
 		ERR("create view Fail");
 	}
 
-	// todo_calendar view  : CALENDAR_VIEW_TODO_CALENDAR
-	// A : schedule_table
-	// B : rrule_table
-	// C : calendar_table
+	/*
+	 * todo_calendar view  : CALENDAR_VIEW_TODO_CALENDAR
+	 * A : schedule_table
+	 * B : rrule_table
+	 * C : calendar_table
+	 */
 	snprintf(query, sizeof(query),
 			"CREATE VIEW IF NOT EXISTS %s AS "
 			"SELECT "CAL_QUERY_SCHEDULE_A_ALL", "
@@ -316,11 +320,13 @@ void cal_db_initialize_view_table(void)
 		ERR("create view Fail");
 	}
 
-	// event_calendar_attendee view  :  CALENDAR_VIEW_EVENT_CALENDAR_ATTENDEE
-	// A : schedule_table
-	// B : attendee_table
-	// C : calendar_table;
-	// D : rrule_table;
+	/*
+	 * event_calendar_attendee view  :  CALENDAR_VIEW_EVENT_CALENDAR_ATTENDEE
+	 * A : schedule_table
+	 * B : attendee_table
+	 * C : calendar_table
+	 * D : rrule_table
+	 */
 	snprintf(query, sizeof(query),
 			"CREATE VIEW IF NOT EXISTS %s AS "
 			"SELECT "CAL_QUERY_SCHEDULE_A_ALL", "
@@ -691,7 +697,7 @@ API int calendar_db_clean_after_sync(int calendar_book_id,  int calendar_db_vers
 		ERR("cal_db_util_begin_trans() Failed");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
-	// !! please check rrule_table, alarm_table, attendee_table ..
+	/* !! please check rrule_table, alarm_table, attendee_table ..*/
 
 	ret =  cal_is_owner(calendar_book_id);
 	if (CALENDAR_ERROR_NONE != ret) {
@@ -801,7 +807,7 @@ API int calendar_db_insert_records(calendar_list_h list, int** ids, int* count)
 
 	_ids = calloc(_count, sizeof(int));
 
-	// divide count for accessing of another modules.
+	/* divide count for accessing of another modules */
 	int div = (int)(_count / BULK_DEFAULT_COUNT) + 1;
 	int bulk = _count / div + 1;
 
@@ -878,7 +884,7 @@ API int calendar_db_update_records(calendar_list_h list)
 	calendar_list_get_count(list, &count);
 	DBG("update list count(%d", count);
 
-	// divide count for accessing of another modules.
+	/* divide count for accessing of another modules */
 	int div = (int)(count / BULK_DEFAULT_COUNT) + 1;
 	int bulk = count / div + 1;
 
@@ -1049,7 +1055,6 @@ API int calendar_db_replace_vcalendars(const char* vcalendar_stream, int *record
 		return ret;
 	}
 
-	// check count
 	if (count != list_count) {
 		calendar_list_destroy(list, true);
 		ERR("Mismatched count: vcalendar_count=%d, input count=%d", list_count, count);
@@ -1065,7 +1070,7 @@ API int calendar_db_replace_vcalendars(const char* vcalendar_stream, int *record
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 
-	// divide count for accessing of another modules.
+	/* divide count for accessing of another modules */
 	int div = (int)(count / BULK_DEFAULT_COUNT) + 1;
 	int bulk = count / div + 1;
 
@@ -1081,7 +1086,7 @@ API int calendar_db_replace_vcalendars(const char* vcalendar_stream, int *record
 			return ret;
 		}
 
-		// set_id
+		/* set_id */
 		ret = calendar_record_get_uri_p(record, &view_uri);
 		if (CALENDAR_ERROR_NONE != ret) {
 			ERR("calendar_record_get_uri_p() Fail(%d)", ret);
@@ -1092,9 +1097,11 @@ API int calendar_db_replace_vcalendars(const char* vcalendar_stream, int *record
 
 		if (CAL_STRING_EQUAL == strcmp(view_uri, _calendar_event._uri)) {
 			ret = cal_record_set_int(record, _calendar_event.id, record_id_array[i]);
-		} else if (CAL_STRING_EQUAL == strcmp(view_uri, _calendar_todo._uri)) {
+		}
+		else if (CAL_STRING_EQUAL == strcmp(view_uri, _calendar_todo._uri)) {
 			ret = cal_record_set_int(record, _calendar_todo.id, record_id_array[i]);
-		} else {
+		}
+		else {
 			DBG("this uri[%s] is not replacable.", view_uri);
 			calendar_list_next(list);
 			continue;
@@ -1107,7 +1114,7 @@ API int calendar_db_replace_vcalendars(const char* vcalendar_stream, int *record
 			return ret;
 		}
 
-		// update
+		/* update */
 		ret = calendar_db_update_record(record);
 		if (CALENDAR_ERROR_NONE != ret) {
 			ERR("cal_db_update_record() Fail(%d)", ret);
@@ -1242,7 +1249,8 @@ API int calendar_db_get_changes_exception_by_version(const char* view_uri, int o
 		schedule_type = CAL_SCH_TYPE_EVENT;
 		record_type = CAL_RECORD_TYPE_EVENT;
 
-	} else {
+	}
+	else {
 		ERR("Invalid parameter");
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
@@ -1276,7 +1284,7 @@ API int calendar_db_get_changes_exception_by_version(const char* view_uri, int o
 		int id = 0, calendar_id = 0,type = 0;
 		int ver = 0;
 		int created_ver = 0;
-		// stmt -> record
+
 		ret = calendar_record_create(_calendar_updated_info._uri,&record);
 		if (CALENDAR_ERROR_NONE != ret) {
 			ERR("calendar_record_create() Fail");
@@ -1290,13 +1298,13 @@ API int calendar_db_get_changes_exception_by_version(const char* view_uri, int o
 		ver = sqlite3_column_int(stmt, 1);
 		created_ver = sqlite3_column_int(stmt, 2);
 		is_deleted = sqlite3_column_int(stmt, 3);
-		if (is_deleted == 1) {
+		if (is_deleted == 1)
 			type = CALENDAR_RECORD_MODIFIED_STATUS_DELETED;
-		} else if (created_ver != ver) {
+		else if (created_ver != ver)
 			type = CALENDAR_RECORD_MODIFIED_STATUS_UPDATED;
-		} else {
+		else
 			type = CALENDAR_RECORD_MODIFIED_STATUS_INSERTED;
-		}
+
 
 		calendar_id = sqlite3_column_int(stmt, 4);
 #if 0
@@ -1322,9 +1330,7 @@ API int calendar_db_get_changes_exception_by_version(const char* view_uri, int o
 		}
 	}
 
-	//*current_calendar_db_version = transaction_ver;
 	sqlite3_finalize(stmt);
-
 	calendar_list_first(*record_list);
 
 	return CALENDAR_ERROR_NONE;
@@ -1366,4 +1372,3 @@ int cal_db_append_string(char **dst, char *src)
 	strcat(*dst, src);
 	return CALENDAR_ERROR_NONE;
 }
-

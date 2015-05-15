@@ -24,4 +24,4 @@
 
 int cal_filter_clone(calendar_filter_h filter, calendar_filter_h* out_filter);
 
-#endif //__CALENDAR_SVC_FILTER_H__
+#endif /*__CALENDAR_SVC_FILTER_H__ */

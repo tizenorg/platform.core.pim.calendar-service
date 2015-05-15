@@ -22,4 +22,4 @@
 
 void cal_calendar_internal_disconnect(void);
 
-#endif // __CALENDAR_SVC_SERVICE_H__
+#endif /* __CALENDAR_SVC_SERVICE_H__ */

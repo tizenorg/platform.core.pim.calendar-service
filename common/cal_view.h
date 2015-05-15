@@ -21,31 +21,32 @@
 
 #include "calendar_view.h"
 
-// db record view // get, get_list, insert, update, delete, filter
+/* db record view: get, get_list, insert, update, delete, filter */
 #define CALENDAR_VIEW_CALENDAR              "tizen.calendar_view.calendar"
 #define CALENDAR_VIEW_EVENT                 "tizen.calendar_view.event"
 #define CALENDAR_VIEW_TODO                  "tizen.calendar_view.todo"
 #define CALENDAR_VIEW_TIMEZONE              "tizen.calendar_view.timezone"
-// child view
+
+/* child view */
 #define CALENDAR_VIEW_ATTENDEE              "tizen.calendar_view.attendee"
 #define CALENDAR_VIEW_ALARM                 "tizen.calendar_view.alarm"
 
-// updated info  // get_list
+/* updated info: get_list */
 #define CALENDAR_VIEW_UPDATED_INFO          "tizen.calendar_view.updated_info"
 
-// extended_table
+/* extended_table */
 #define CALENDAR_VIEW_EXTENDED              "tizen.calendar_view.extended_property"
 
-// only for query (filter)
-#define CALENDAR_VIEW_EVENT_CALENDAR             "tizen.calendar_view.event/calendar"
-#define CALENDAR_VIEW_TODO_CALENDAR              "tizen.calendar_view.todo/calendar"
-#define CALENDAR_VIEW_EVENT_CALENDAR_ATTENDEE    "tizen.calendar_view.event/calendar/attendee"
-#define CALENDAR_VIEW_INSTANCE_UTIME_CALENDAR   "tizen.calendar_view.instance_utime/calendar"
-#define CALENDAR_VIEW_INSTANCE_LOCALTIME_CALENDAR   "tizen.calendar_view.instance_localtime/calendar"
-#define CALENDAR_VIEW_INSTANCE_UTIME_CALENDAR_EXTENDED   "tizen.calendar_view.extended/instance_utime/calendar"
-#define CALENDAR_VIEW_INSTANCE_LOCALTIME_CALENDAR_EXTENDED   "tizen.calendar_view.extended/instance_localtime/calendar"
+/* only for query (filter) */
+#define CALENDAR_VIEW_EVENT_CALENDAR "tizen.calendar_view.event/calendar"
+#define CALENDAR_VIEW_TODO_CALENDAR "tizen.calendar_view.todo/calendar"
+#define CALENDAR_VIEW_EVENT_CALENDAR_ATTENDEE "tizen.calendar_view.event/calendar/attendee"
+#define CALENDAR_VIEW_INSTANCE_UTIME_CALENDAR "tizen.calendar_view.instance_utime/calendar"
+#define CALENDAR_VIEW_INSTANCE_LOCALTIME_CALENDAR "tizen.calendar_view.instance_localtime/calendar"
+#define CALENDAR_VIEW_INSTANCE_UTIME_CALENDAR_EXTENDED "tizen.calendar_view.extended/instance_utime/calendar"
+#define CALENDAR_VIEW_INSTANCE_LOCALTIME_CALENDAR_EXTENDED "tizen.calendar_view.extended/instance_localtime/calendar"
 
-// for type check         // data_type mask 0x000FF000
+/* for type check: data_type mask               0x000FF000 */
 #define CAL_PROPERTY_DATA_TYPE_MASK             0x000FF000
 #define CAL_PROPERTY_DATA_TYPE_INT              0x00001000
 #define CAL_PROPERTY_DATA_TYPE_STR              0x00002000
@@ -55,7 +56,8 @@
 #define CAL_PROPERTY_DATA_TYPE_REC              0x00006000
 #define CAL_PROPERTY_CHECK_DATA_TYPE(property_id,data_type) \
 	((property_id&CAL_PROPERTY_DATA_TYPE_MASK) == data_type ? true : false)
-// for property                             //  0xFF000000
+
+/* for property                                 0xFF000000 */
 #define CAL_PROPERTY_MASK                       0xFF000000
 #define CAL_PROPERTY_CALENDAR                   0x01000000
 #define CAL_PROPERTY_EVENT                      0x02000000

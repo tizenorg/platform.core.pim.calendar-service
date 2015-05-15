@@ -95,8 +95,6 @@ API int calendar_filter_add_filter(calendar_filter_h filter, calendar_filter_h a
 static int _cal_filter_create_attribute(cal_composite_filter_s *com_filter, unsigned int property_id, int match, int filter_type, cal_attribute_filter_s **out_filter)
 {
 	cal_attribute_filter_s *filter;
-	//int type;
-	//bool find = false;
 
 	RETVM_IF(g_slist_length(com_filter->filter_ops) != g_slist_length(com_filter->filters),
 			CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter :Please check the operator of filter");

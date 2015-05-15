@@ -23,4 +23,4 @@
 void cal_server_reminder_publish(char *p);
 int cal_server_reminder_add_callback_data(char **p, char *key, char *value);
 
-#endif  //__CAL_SERVER_REMINDER_H__
+#endif  /* __CAL_SERVER_REMINDER_H__ */

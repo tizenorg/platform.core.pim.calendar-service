@@ -33,4 +33,4 @@ void cal_access_control_reset(void);  // reset read_list, write_list..
 bool cal_access_control_have_write_permission(int calendarbook_id);
 int cal_is_owner(int calendarbook_id);
 
-#endif // __CALENDAR_SVC_ACCESS_CONTROL_H__
+#endif /*  __CALENDAR_SVC_ACCESS_CONTROL_H__ */

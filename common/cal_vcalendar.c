@@ -141,7 +141,7 @@ API int calendar_vcalendar_parse_to_calendar(const char* vcalendar_stream, calen
 	RETV_IF(NULL == vcalendar_stream, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == out_list, CALENDAR_ERROR_INVALID_PARAMETER);
 
-	// get vcalendar object
+	/* get vcalendar object */
 	cursor = vcalendar_stream;
 
 	int ret = 0;

@@ -90,8 +90,8 @@ int cal_db_extended_delete_with_id(int record_id, calendar_record_type_e record_
 	dbret = cal_db_util_query_exec(query);
 	if (dbret != CAL_DB_OK) {
 		ERR("cal_db_util_query_exec() failed (%d)", dbret);
-		switch (dbret)
-		{
+		SECURE("[%s]", query);
+		switch (dbret) {
 		case CAL_DB_ERROR_NO_SPACE:
 			return CALENDAR_ERROR_FILE_NO_SPACE;
 		default:
@@ -120,9 +120,9 @@ int cal_db_extended_insert_record(calendar_record_h record, int record_id, calen
 			record_type);
 
 	stmt = cal_db_util_query_prepare(query);
-	if (NULL == stmt)
-	{
+	if (NULL == stmt) {
 		ERR("cal_db_util_query_prepare() Fail");
+		SECURE("query[%s]", query);
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 
@@ -148,23 +148,19 @@ int cal_db_extended_insert_record(calendar_record_h record, int record_id, calen
 	index = cal_db_util_last_insert_id();
 	sqlite3_finalize(stmt);
 
-	//cal_record_set_int(record, _calendar_extended.id,index);
+	/* cal_record_set_int(record, _calendar_extended.id,index); */
 	if (id) {
 		*id = index;
 	}
 
 	if (record_type == CALENDAR_RECORD_TYPE_EVENT || record_type == CALENDAR_RECORD_TYPE_TODO) {
-		snprintf(query, sizeof(query), "UPDATE %s SET "
-				"has_extended = 1 "
-				"WHERE id = %d;",
-				CAL_TABLE_SCHEDULE,
-				record_id);
+		snprintf(query, sizeof(query), "UPDATE %s SET has_extended = 1 WHERE id = %d ",
+				CAL_TABLE_SCHEDULE, record_id);
 		dbret = cal_db_util_query_exec(query);
-		if (CAL_DB_OK != dbret)
-		{
+		if (CAL_DB_OK != dbret) {
 			ERR("cal_db_util_query_exec() Fail(%d)", dbret);
-			switch (dbret)
-			{
+			SECURE("[%s]", query);
+			switch (dbret) {
 			case CAL_DB_ERROR_NO_SPACE:
 				return CALENDAR_ERROR_FILE_NO_SPACE;
 			default:

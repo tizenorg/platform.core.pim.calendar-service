@@ -38,7 +38,7 @@ static int _cal_ipc_unmarshal_attendee(const pims_ipc_data_h ipc_data, calendar_
 
 	pattendee = (cal_attendee_s*) record;
 
-	// read only or primary/secondary key
+	/* read only or primary/secondary key */
 	ret = cal_ipc_unmarshal_int(ipc_data, &pattendee->id);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_ipc_unmarshal_int() Fail(%d), ret");
@@ -140,7 +140,7 @@ static int _cal_ipc_marshal_attendee(const calendar_record_h record, pims_ipc_da
 	RETV_IF(NULL == ipc_data, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == pattendee, CALENDAR_ERROR_INVALID_PARAMETER);
 
-	// read only or primary/secondary key
+	/* read only or primary/secondary key */
 	ret = cal_ipc_marshal_int((pattendee->id), ipc_data);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_ipc_unmarshal_int() Fail(%d), ret");

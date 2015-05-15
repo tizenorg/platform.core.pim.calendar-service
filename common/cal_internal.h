@@ -140,12 +140,12 @@
 	} while (0)
 
 
-// Thread-local storage
+/* Thread-local storage */
 #if defined(CAL_IPC_SERVER)
 #define TLS __thread
 #elif defined(CAL_IPC_CLIENT)
 #define TLS __thread
-#else   //CAL_NATIVE
+#else   /* CAL_NATIVE */
 #define TLS
 #endif
 

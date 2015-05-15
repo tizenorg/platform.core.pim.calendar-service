@@ -52,5 +52,6 @@
 
 #ifdef CAL_MEMORY_TEST
 #define CAL_IPC_SERVER_DESTROY                      "destroy"
-#endif // #ifdef CAL_MEMORY_TEST
+#endif /* CAL_MEMORY_TEST */
+
 #endif /*__CAL_IPC_H__*/

@@ -25,8 +25,9 @@
 
 int cal_zone_get_root_path(const char *zone_name, char *path, int path_size)
 {
-	if (zone_name && '\0' == *zone_name) // host zone
+	if (zone_name && '\0' == *zone_name)
 		return 0;
+
 	return snprintf(path, path_size, CAL_ZONE_BASE_PATH, zone_name);
 }
 
@@ -37,11 +38,11 @@ int cal_zone_get_canonicalize_path(const char *zone_name, const char *path, char
 
 	char buf[1024] = {0};
 	if (zone_name) {
-		if ('\0' == *zone_name) {
+		if ('\0' == *zone_name)
 			snprintf(buf, sizeof(buf), "%s", path);
-		} else {
+		else
 			snprintf(buf, sizeof(buf), CAL_ZONE_BASE_PATH"%s", zone_name, path);
-		}
+
 		*canonicalize_path = g_strdup(buf);
 		return CALENDAR_ERROR_NONE;
 	}

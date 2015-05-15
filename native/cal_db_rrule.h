@@ -29,4 +29,4 @@ void cal_db_rrule_set_rrule_to_event(cal_rrule_s *rrule, calendar_record_h event
 void cal_db_rrule_get_rrule_from_todo(calendar_record_h todo, cal_rrule_s **rrule);
 void cal_db_rrule_set_rrule_to_todo(cal_rrule_s *rrule, calendar_record_h todo);
 
-#endif  //__CALENDAR_SVC_DB_RRULE_H__
+#endif  /* __CALENDAR_SVC_DB_RRULE_H__ */

@@ -23,7 +23,7 @@
 #include <pims-ipc-data.h>
 
 #include "calendar.h"
-#include "cal_internal.h" // DBG
+#include "cal_internal.h"
 #include "cal_typedef.h"
 #include "cal_db.h"
 #include "cal_db_util.h"

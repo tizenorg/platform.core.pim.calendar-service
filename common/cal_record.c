@@ -18,8 +18,8 @@
  */
 
 
-#include <stdlib.h> // calloc
-#include <stdbool.h> // bool
+#include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 
 #include "cal_internal.h"
@@ -238,7 +238,6 @@ API int calendar_record_get_uri_p(calendar_record_h record, char** out_str)
 	return ret;
 }
 
-// Record get/set int,str, etc..
 API int calendar_record_get_str(calendar_record_h record, unsigned int property_id, char** out_str)
 {
 	int ret = CALENDAR_ERROR_NONE;
@@ -389,7 +388,6 @@ API int calendar_record_set_caltime(calendar_record_h record, unsigned int prope
 	return ret;
 }
 
-// Record get/set child records
 API int calendar_record_add_child_record(calendar_record_h record, unsigned int property_id, calendar_record_h child_record)
 {
 	int ret = CALENDAR_ERROR_NONE;

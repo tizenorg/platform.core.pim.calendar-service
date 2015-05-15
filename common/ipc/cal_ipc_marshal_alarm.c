@@ -38,7 +38,7 @@ static int _cal_ipc_unmarshal_alarm(pims_ipc_data_h ipc_data, calendar_record_h 
 
 	palarm = (cal_alarm_s*) record;
 
-	// read only or primary/secondary key
+	/* read only or primary/secondary key */
 	ret = cal_ipc_unmarshal_int(ipc_data, &palarm->id);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
@@ -108,7 +108,7 @@ static int _cal_ipc_marshal_alarm(const calendar_record_h record, pims_ipc_data_
 	RETV_IF(NULL == ipc_data, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == palarm, CALENDAR_ERROR_INVALID_PARAMETER);
 
-	// read only or primary/secondary key
+	/* read only or primary/secondary key */
 	ret = cal_ipc_marshal_int((palarm->id), ipc_data);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_ipc_marshal_int() Fail(%d)", ret);

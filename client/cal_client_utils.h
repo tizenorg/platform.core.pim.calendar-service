@@ -1,7 +1,7 @@
 /*
  * Calendar Service
  *
- * Copyright (c) 2012 - 2015 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2015 Samsung Electronics Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@
  *
  */
 
-#ifndef __CALENDAR_SVC_DB_INSTANCE_HELPER_H__
-#define __CALENDAR_SVC_DB_INSTANCE_HELPER_H__
+#ifndef __CAL_CLIENT_UTILS_H__
+#define __CAL_CLIENT_UTILS_H__
 
-int cal_db_instance_normal_insert_record(cal_instance_normal_s *normal, int* id);
-int cal_db_instance_allday_insert_record(cal_instance_allday_s *normal, int* id);
+inline unsigned int cal_client_get_pid(void);
+inline unsigned int cal_client_get_tid(void);
 
-#endif /* __CALENDAR_SVC_DB_INSTANCE_HELPER_H__ */
+#endif /* __CAL_CLIENT_UTILS_H__ */

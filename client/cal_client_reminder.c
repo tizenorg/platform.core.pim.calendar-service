@@ -17,7 +17,7 @@
  *
  */
 
-#include <stdlib.h>     //calloc
+#include <stdlib.h>
 #include <pims-ipc.h>
 
 #include "calendar.h"
@@ -125,7 +125,7 @@ API int calendar_reminder_add_cb(calendar_reminder_cb callback, void *user_data)
 		}
 	}
 
-	// Check duplication
+	/* Check duplication */
 	for (it = __subscribe_list; it; it = it->next) {
 		if (NULL == it->data) continue;
 

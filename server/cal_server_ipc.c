@@ -25,7 +25,6 @@
 #include "calendar_db.h"
 #include "calendar_query.h"
 #include "calendar_vcalendar.h"
-
 #include "cal_typedef.h"
 #include "cal_db.h"
 #include "cal_db_util.h"
@@ -945,27 +944,25 @@ void cal_server_ipc_db_insert_records(pims_ipc_h ipc, pims_ipc_data_h indata, pi
 			ERR("pims_ipc_data_create fail");
 			goto DATA_FREE;
 		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
+		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0) {
 			pims_ipc_data_destroy(*outdata);
 			*outdata = NULL;
 			ERR("pims_ipc_data_put fail");
 			goto DATA_FREE;
 		}
-		if (CALENDAR_ERROR_NONE == ret)
-		{
+		if (CALENDAR_ERROR_NONE == ret) {
 			int transaction_ver = cal_db_util_get_transaction_ver();
-			if (cal_ipc_marshal_int(transaction_ver,*outdata) != CALENDAR_ERROR_NONE)
-			{
+			if (cal_ipc_marshal_int(transaction_ver,*outdata) != CALENDAR_ERROR_NONE) {
 				pims_ipc_data_destroy(*outdata);
 				ERR("cal_ipc_marshal fail");
 				ret = CALENDAR_ERROR_OUT_OF_MEMORY;
 				goto ERROR_RETURN;
 			}
-			// marshal : id_count+[ids]*id_count
-			// id_count
-			if (pims_ipc_data_put(*outdata,(void*)&id_count,sizeof(int)) != 0)
-			{
+			/*
+			 * marshal : id_count+[ids]*id_count
+			 * id_count
+			 */
+			if (pims_ipc_data_put(*outdata,(void*)&id_count,sizeof(int)) != 0) {
 				pims_ipc_data_destroy(*outdata);
 				*outdata = NULL;
 				ERR("pims_ipc_data_put fail");
@@ -973,11 +970,9 @@ void cal_server_ipc_db_insert_records(pims_ipc_h ipc, pims_ipc_data_h indata, pi
 				goto ERROR_RETURN;
 			}
 
-			for(i=0;i<id_count;i++)
-			{
+			for(i=0;i<id_count;i++) {
 				// marshal ids
-				if (pims_ipc_data_put(*outdata,(void*)&ids[i],sizeof(int)) != 0)
-				{
+				if (pims_ipc_data_put(*outdata,(void*)&ids[i],sizeof(int)) != 0) {
 					pims_ipc_data_destroy(*outdata);
 					*outdata = NULL;
 					ERR("pims_ipc_data_put fail");
@@ -1461,10 +1456,8 @@ void cal_server_ipc_db_insert_vcalendars(pims_ipc_h ipc, pims_ipc_data_h indata,
 			}
 		}
 
-		// count
 		ret = cal_ipc_marshal_int(count,*outdata);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
+		if (CALENDAR_ERROR_NONE != ret) {
 			pims_ipc_data_destroy(*outdata);
 			*outdata = NULL;
 			ERR("cal_ipc_marshal_list fail");

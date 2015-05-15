@@ -17,7 +17,7 @@
  *
  */
 
-#include <stdlib.h> //calloc
+#include <stdlib.h>
 #include "cal_internal.h"
 #include "cal_ipc_marshal.h"
 #include "cal_view.h"

@@ -269,7 +269,7 @@ typedef struct
 	calendar_time_s alarm;
 }cal_alarm_s;
 
-//This is the calendar schema
+/* This is the calendar schema */
 typedef struct
 {
 	cal_record_s common;
@@ -330,7 +330,7 @@ typedef struct
 	int event_status;
 	int priority;
 	int sensitivity;
-	int has_rrule;  //rrule_id;
+	int has_rrule;  /* rrule_id */
 	double latitude;
 	double longitude;
 	int has_alarm;
@@ -353,7 +353,7 @@ typedef struct
 	int event_status;
 	int priority;
 	int sensitivity;
-	int has_rrule;  //rrule_id;
+	int has_rrule;  /* rrule_id */
 	double latitude;
 	double longitude;
 	int has_alarm;
@@ -377,7 +377,7 @@ typedef struct
 	int event_status;
 	int priority;
 	int sensitivity;
-	int has_rrule;  //rrule_id;
+	int has_rrule; /*rrule_id */
 	double latitude;
 	double longitude;
 	int has_alarm;
@@ -406,7 +406,7 @@ typedef struct
 	int event_status;
 	int priority;
 	int sensitivity;
-	int has_rrule;  //rrule_id;
+	int has_rrule; /* rrule_id */
 	double latitude;
 	double longitude;
 	int has_alarm;
@@ -440,7 +440,7 @@ typedef enum
 
 typedef struct{
 	unsigned int property_id;
-	const char* fields;               // DB field
+	const char* fields; /* DB field */
 }cal_property_info_s;
 
 typedef enum {
@@ -453,22 +453,22 @@ typedef enum {
 }cal_filter_type_e;
 
 typedef struct  {
-	int filter_type;     // composite
+	int filter_type; /* composite */
 }cal_filter_s;
 
 typedef struct {
 	int filter_type;
 	char *view_uri;
-	GSList *filter_ops; //calendar_filter_operator_e op;
-	GSList *filters;    //calendar_filter_h l_filter;
+	GSList *filter_ops; /* calendar_filter_operator_e op */
+	GSList *filters; /* calendar_filter_h l_filter */
 	cal_property_info_s *properties;
 	int property_count;
 }cal_composite_filter_s;
 
 typedef struct  {
-	int filter_type;     //cal_filter_type_e
+	int filter_type; /* cal_filter_type_e */
 	int property_id;
-	int match;              //calendar_match_str_flag_e or calendar_match_int_flag_e
+	int match; /* calendar_match_str_flag_e or calendar_match_int_flag_e */
 	union {
 		int i;
 		char *s;
@@ -531,4 +531,4 @@ typedef struct {
  * @}
  */
 
-#endif // __CALENDAR_SVC_TYPEDEF_H__
+#endif /* __CALENDAR_SVC_TYPEDEF_H__ */

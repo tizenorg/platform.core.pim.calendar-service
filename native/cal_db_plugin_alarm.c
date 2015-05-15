@@ -43,20 +43,20 @@ static int _cal_db_alarm_get_count(int *out_count);
 static int _cal_db_alarm_get_count_with_query(calendar_query_h query, int *out_count);
 
 cal_db_plugin_cb_s cal_db_alarm_plugin_cb = {
-	.is_query_only = false,
-	.insert_record=NULL,
-	.get_record=NULL,			//_cal_db_alarm_get_record,
-	.update_record=NULL,
-	.delete_record=NULL,
-	.get_all_records=_cal_db_alarm_get_all_records,
-	.get_records_with_query=_cal_db_alarm_get_records_with_query,
-	.insert_records=NULL,
-	.update_records=NULL,
-	.delete_records=NULL,
-	.get_count=_cal_db_alarm_get_count,
-	.get_count_with_query=_cal_db_alarm_get_count_with_query,
-	.replace_record=NULL,
-	.replace_records=NULL
+	.is_query_only =  false,
+	.insert_record = NULL,
+	.update_record = NULL,
+	.delete_record = NULL,
+	.replace_record = NULL,
+	.insert_records = NULL,
+	.update_records = NULL,
+	.delete_records = NULL,
+	.replace_records = NULL,
+	.get_record = NULL,
+	.get_all_records = _cal_db_alarm_get_all_records,
+	.get_records_with_query = _cal_db_alarm_get_records_with_query,
+	.get_count = _cal_db_alarm_get_count,
+	.get_count_with_query = _cal_db_alarm_get_count_with_query
 };
 
 static void _cal_db_alarm_get_stmt(sqlite3_stmt *stmt,calendar_record_h record)
@@ -87,10 +87,10 @@ static void _cal_db_alarm_get_stmt(sqlite3_stmt *stmt,calendar_record_h record)
 
 	if (alarm->alarm.type == CALENDAR_TIME_UTIME) {
 		alarm->alarm.time.utime = sqlite3_column_int64(stmt,index++);
-		index++; // datetime
+		index++; /* datetime */
 	}
 	else {
-		index++; // utime
+		index++; /* utime */
 		temp = sqlite3_column_text(stmt, index++);
 		if (temp) {
 			int y = 0, m = 0, d = 0;
@@ -143,6 +143,7 @@ static int _cal_db_alarm_get_all_records(int offset, int limit, calendar_list_h*
 	stmt = cal_db_util_query_prepare(query);
 	if (NULL == stmt)	{
 		ERR("cal_db_util_query_prepare() Fail");
+		SECURE("query[%s]", query);
 		calendar_list_destroy(*out_list, true);
 		*out_list = NULL;
 		return CALENDAR_ERROR_DB_FAILED;
@@ -150,7 +151,6 @@ static int _cal_db_alarm_get_all_records(int offset, int limit, calendar_list_h*
 
 	while(CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
 		calendar_record_h record = NULL;
-		// stmt -> record
 		ret = calendar_record_create(_calendar_alarm._uri,&record);
 		if (CALENDAR_ERROR_NONE != ret) {
 			calendar_list_destroy(*out_list, true);
@@ -212,10 +212,11 @@ static void _cal_db_alarm_get_property_stmt(sqlite3_stmt *stmt,
 		if (alarm->alarm.type == CALENDAR_TIME_UTIME) {
 			*stmt_count = *stmt_count+1;
 			alarm->alarm.time.utime = sqlite3_column_int64(stmt, *stmt_count);
-			*stmt_count = *stmt_count+1; // datetime
+			*stmt_count = *stmt_count+1; /* datetime */
 
-		} else {
-			*stmt_count = *stmt_count+1; // utime
+		}
+		else {
+			*stmt_count = *stmt_count+1; /* utime */
 			*stmt_count = *stmt_count+1;
 			temp = sqlite3_column_text(stmt, *stmt_count);
 			if (temp) {
@@ -282,10 +283,9 @@ static int _cal_db_alarm_get_records_with_query(calendar_query_h query, int offs
 	else {
 		ERR("uri(%s) not support get records with query",que->view_uri);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
-		//table_name = SAFE_STRDUP(CAL_TABLE_NORMAL_INSTANCE);
 	}
 
-	// make filter
+	/* make filter */
 	if (que->filter) {
 		ret = cal_db_query_create_condition(query, &condition, &bind_text);
 		if (CALENDAR_ERROR_NONE != ret) {
@@ -295,10 +295,10 @@ static int _cal_db_alarm_get_records_with_query(calendar_query_h query, int offs
 		}
 	}
 
-	// make projection
+	/* make projection */
 	ret = cal_db_query_create_projection(query, &projection);
 
-	// query - projection
+	/* query - projection */
 	if (projection) {
 		cal_db_append_string(&query_str, "SELECT");
 		cal_db_append_string(&query_str, projection);
@@ -312,14 +312,14 @@ static int _cal_db_alarm_get_records_with_query(calendar_query_h query, int offs
 	}
 	CAL_FREE(table_name);
 
-	// query - condition
+	/* query - condition */
 	if (condition) {
 		cal_db_append_string(&query_str, "WHERE");
 		cal_db_append_string(&query_str, condition);
 		CAL_FREE(condition);
 	}
 
-	// ORDER
+	/* ORDER */
 	ret = cal_db_query_create_order(query, condition, &order);
 	if (order) {
 		cal_db_append_string(&query_str, order);
@@ -336,9 +336,10 @@ static int _cal_db_alarm_get_records_with_query(calendar_query_h query, int offs
 		}
 	}
 
-	// query
+	/* query */
 	stmt = cal_db_util_query_prepare(query_str);
 	if (NULL == stmt) {
+		SECURE("query[%s]", query_str);
 		if (bind_text) {
 			g_slist_free_full(bind_text, free);
 			bind_text = NULL;
@@ -347,9 +348,8 @@ static int _cal_db_alarm_get_records_with_query(calendar_query_h query, int offs
 		ERR("cal_db_util_query_prepare() Fail");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
-	DBG("%s",query_str);
 
-	// bind text
+	/* bind text */
 	if (bind_text)	{
 		for (cursor=bind_text, i=1; cursor;cursor=cursor->next, i++) {
 			cal_db_util_stmt_bind_text(stmt, i, cursor->data);
@@ -370,7 +370,6 @@ static int _cal_db_alarm_get_records_with_query(calendar_query_h query, int offs
 
 	while(CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
 		calendar_record_h record;
-		// stmt -> record
 		ret = calendar_record_create(_calendar_alarm._uri,&record);
 		if (CALENDAR_ERROR_NONE != ret) {
 			calendar_list_destroy(*out_list, true);
@@ -463,7 +462,7 @@ static int _cal_db_alarm_get_count_with_query(calendar_query_h query, int *out_c
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	// make filter
+	/* make filter */
 	if (que->filter) {
 		ret = cal_db_query_create_condition(query, &condition, &bind_text);
 		if (CALENDAR_ERROR_NONE != ret) {
@@ -474,19 +473,19 @@ static int _cal_db_alarm_get_count_with_query(calendar_query_h query, int *out_c
 	}
 
 	char *query_str = NULL;
-	// query - select from
+	/* query: select */
 	cal_db_append_string(&query_str, "SELECT count(*) FROM");
 	cal_db_append_string(&query_str, table_name);
 	CAL_FREE(table_name);
 
-	// query - condition
+	/* query: condition */
 	if (condition) {
 		cal_db_append_string(&query_str, "WHERE");
 		cal_db_append_string(&query_str, condition);
 		CAL_FREE(condition);
 	}
 
-	// query
+	/* query */
 	ret = cal_db_util_query_get_first_int_result(query_str, bind_text, &count);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_db_util_query_get_first_int_result() failed");

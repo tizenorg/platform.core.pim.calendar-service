@@ -26,4 +26,4 @@ int cal_db_attendee_get_records(int event_id, cal_list_s *list);
 int cal_db_attendee_delete_with_id(int event_id);
 int cal_db_attendee_insert_records(cal_list_s *list_s, int event_id);
 
-#endif  //__CALENDAR_SVC_DB_ATTENDEE_H__
+#endif  /* __CALENDAR_SVC_DB_ATTENDEE_H__ */

@@ -23,4 +23,4 @@
 int cal_client_reminder_create_for_subscribe(void);
 int cal_client_reminder_destroy_for_subscribe(void);
 
-#endif // __CAL_CLIENT_REMINDER_H__
+#endif /* __CAL_CLIENT_REMINDER_H__ */

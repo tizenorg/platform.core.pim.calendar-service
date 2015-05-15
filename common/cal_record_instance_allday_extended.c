@@ -17,8 +17,8 @@
  *
  */
 
-#include <stdlib.h>	// calloc
-#include <stdbool.h> // bool
+#include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 
 #include "cal_internal.h"
@@ -76,8 +76,8 @@ static void _cal_record_instance_allday_extended_struct_init(cal_instance_allday
 	record->description = NULL;
 	record->location= NULL;
 
-	record->latitude = 1000; // set default 1000 out of range(-180 ~ 180)
-	record->longitude = 1000; // set default 1000 out of range(-180 ~ 180)
+	record->latitude = 1000; /* set default 1000 out of range(-180 ~ 180) */
+	record->longitude = 1000; /* set default 1000 out of range(-180 ~ 180) */
 
 	return;
 }

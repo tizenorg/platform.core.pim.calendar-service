@@ -22,4 +22,4 @@
 
 int cal_server_update(void);
 
-#endif  //__CAL_SERVER_UPDATE_H__
+#endif  /* __CAL_SERVER_UPDATE_H__ */

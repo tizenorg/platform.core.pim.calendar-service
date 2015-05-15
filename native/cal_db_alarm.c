@@ -76,12 +76,10 @@ static int _cal_db_alarm_insert_record(calendar_record_h record, int parent_id)
 			alarm->alarm_action,
 			alarm->alarm.time.utime);
 
-	SEC_DBG("%s",query);
-
 	stmt = cal_db_util_query_prepare(query);
 	if (NULL == stmt) {
 		DBG("cal_db_util_query_prepare() Fail");
-		DBG("query[%s]", query);
+		SECURE("query[%s]", query);
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 
@@ -89,13 +87,13 @@ static int _cal_db_alarm_insert_record(calendar_record_h record, int parent_id)
 
 	if (alarm->alarm_description) {
 		cal_db_util_stmt_bind_text(stmt, index, alarm->alarm_description);
-		DBG("description[ %s ]", alarm->alarm_description);
+		DBG("description[%s]", alarm->alarm_description);
 	}
 	index++;
 
 	if (alarm->alarm_summary) {
 		cal_db_util_stmt_bind_text(stmt, index, alarm->alarm_summary);
-		DBG("summary [ %s ]", alarm->alarm_summary);
+		DBG("summary [%s]", alarm->alarm_summary);
 	}
 	index++;
 
@@ -113,7 +111,7 @@ static int _cal_db_alarm_insert_record(calendar_record_h record, int parent_id)
 				alarm->alarm.time.date.minute,
 				alarm->alarm.time.date.second);
 		cal_db_util_stmt_bind_text(stmt, index, alarm_datetime);
-		DBG("datetime [ %s ]", alarm_datetime);
+		DBG("datetime [%s]", alarm_datetime);
 	}
 	index++;
 
@@ -216,10 +214,10 @@ int cal_db_alarm_get_records(int parent, cal_list_s *list)
 
 		if (alarm->alarm.type == CALENDAR_TIME_UTIME) {
 			alarm->alarm.time.utime = sqlite3_column_int64(stmt,index++);
-			index++; // datetime
+			index++; /* datetime */
 		}
 		else {
-			index++; // utime
+			index++; /* utime */
 			temp = sqlite3_column_text(stmt, index++);
 			if (temp) {
 				int y = 0, m = 0, d = 0;

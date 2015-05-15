@@ -68,7 +68,7 @@ static int _cal_db_attendee_insert_record(calendar_record_h record, int parent_i
 	if (NULL == stmt)
 	{
 		DBG("cal_db_util_query_prepare() Fail");
-		DBG("query[%s]", query);
+		SECURE("query[%s]", query);
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 
@@ -243,11 +243,9 @@ int cal_db_attendee_delete_with_id(int parent_id)
 			CAL_TABLE_ATTENDEE, parent_id);
 
 	dbret = cal_db_util_query_exec(query);
-	if (dbret != CAL_DB_OK)
-	{
+	if (dbret != CAL_DB_OK) {
 		ERR("cal_db_util_query_exec() failed (%d)", dbret);
-		switch (dbret)
-		{
+		switch (dbret) {
 		case CAL_DB_ERROR_NO_SPACE:
 			return CALENDAR_ERROR_FILE_NO_SPACE;
 		default:

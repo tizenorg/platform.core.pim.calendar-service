@@ -26,8 +26,8 @@ typedef struct {
 	int size;
 	char *data;
 	char lbuf[76];
-	char *timezone_tzid; // TZ(ver1) VTIMEZONE(ver2)
-	int type; // event or todo
+	char *timezone_tzid; /* TZ(ver1) VTIMEZONE(ver2) */
+	int type; /* event or todo */
 	int version;
 } cal_make_s ;
 
@@ -36,4 +36,4 @@ int cal_vcalendar_make_vcalendar(cal_make_s *b, calendar_list_h list);
 char* cal_vcalendar_make_get_data(cal_make_s *b);
 void cal_vcalendar_make_free(cal_make_s **b);
 
-#endif // __CALENDAR_SVC_VCALENDAR_MAKE_H__
+#endif /* __CALENDAR_SVC_VCALENDAR_MAKE_H__ */

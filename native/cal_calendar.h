@@ -24,4 +24,4 @@ void cal_calendar_internal_disconnect(void);
 int cal_connect(void);
 int cal_disconnect(void);
 
-#endif // __CALENDAR_SVC_CALENDAR_H__
+#endif /* __CALENDAR_SVC_CALENDAR_H__ */

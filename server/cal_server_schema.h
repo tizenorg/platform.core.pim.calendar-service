@@ -22,4 +22,4 @@
 
 int cal_server_schema_check(void);
 
-#endif // __CAL_SERVER_SCHEMA_H__
+#endif /* __CAL_SERVER_SCHEMA_H__ */

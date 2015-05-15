@@ -77,7 +77,7 @@ static int _cal_db_search_get_records_with_query(calendar_query_h query, int off
 
 	que = (cal_query_s *)query;
 
-	// make filter
+	/* make filter */
 	if (que->filter) {
 		ret = cal_db_query_create_condition(query,
 				&condition, &bind_text);
@@ -87,7 +87,7 @@ static int _cal_db_search_get_records_with_query(calendar_query_h query, int off
 		}
 	}
 
-	// make projection
+	/* make: projection */
 	if (0 < que->projection_count) {
 		ret = cal_db_query_create_projection(query, &projection);
 	}
@@ -111,14 +111,14 @@ static int _cal_db_search_get_records_with_query(calendar_query_h query, int off
 	CAL_FREE(projection);
 	CAL_FREE(table_name);
 
-	// query - condition
+	/* query: condition */
 	if (condition) {
 		cal_db_append_string(&query_str, "WHERE (");
 		cal_db_append_string(&query_str, condition);
 		cal_db_append_string(&query_str, ")");
 	}
 
-	// ORDER
+	/* order */
 	char *order = NULL;
 	ret = cal_db_query_create_order(query, condition, &order);
 	if (order) {
@@ -127,7 +127,7 @@ static int _cal_db_search_get_records_with_query(calendar_query_h query, int off
 	}
 	CAL_FREE(condition);
 
-	// limit, offset
+	/* limit, offset */
 	char buf[32] = {0};
 	if (0 < limit) {
 		snprintf(buf, sizeof(buf), "LIMIT %d", limit);
@@ -139,12 +139,11 @@ static int _cal_db_search_get_records_with_query(calendar_query_h query, int off
 		}
 	}
 
-	// query
+	/* query */
 	stmt = cal_db_util_query_prepare(query_str);
-	if (NULL == stmt)
-	{
-		if (bind_text)
-		{
+	if (NULL == stmt) {
+		SECURE("query[%s]", query_str);
+		if (bind_text) {
 			g_slist_free_full(bind_text, free);
 			bind_text = NULL;
 		}
@@ -154,7 +153,7 @@ static int _cal_db_search_get_records_with_query(calendar_query_h query, int off
 	}
 	DBG("%s",query_str);
 
-	// bind text
+	/* bind text */
 	if (bind_text) {
 		g_slist_length(bind_text);
 		for (cursor=bind_text, i=1; cursor;cursor=cursor->next, i++) {
@@ -162,7 +161,6 @@ static int _cal_db_search_get_records_with_query(calendar_query_h query, int off
 		}
 	}
 
-	//
 	ret = calendar_list_create(out_list);
 	if (CALENDAR_ERROR_NONE != ret) {
 		if (bind_text) {
@@ -177,7 +175,6 @@ static int _cal_db_search_get_records_with_query(calendar_query_h query, int off
 
 	while(CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
 		calendar_record_h record;
-		// stmt -> record
 		ret = calendar_record_create(que->view_uri,&record);
 		if (CALENDAR_ERROR_NONE != ret) {
 			calendar_list_destroy(*out_list, true);
@@ -262,7 +259,7 @@ static int _cal_db_search_get_count_with_query(calendar_query_h query, int *out_
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	// make filter
+	/* make filter */
 	if (que->filter) {
 		ret = cal_db_query_create_condition(query, &condition, &bind_text);
 		if (CALENDAR_ERROR_NONE != ret) {
@@ -275,7 +272,7 @@ static int _cal_db_search_get_count_with_query(calendar_query_h query, int *out_
 
 	char *query_str = NULL;
 
-	// query - select from
+	/* query: select */
 	if (que->distinct == true) {
 		cal_db_append_string(&query_str, "SELECT count(DISTINCT");
 		cal_db_append_string(&query_str, projection);
@@ -289,7 +286,7 @@ static int _cal_db_search_get_count_with_query(calendar_query_h query, int *out_
 	CAL_FREE(projection);
 	CAL_FREE(table_name);
 
-	// query - condition
+	/* query: condition */
 	if (condition) {
 		cal_db_append_string(&query_str, "WHERE (");
 		cal_db_append_string(&query_str, condition);
@@ -297,7 +294,7 @@ static int _cal_db_search_get_count_with_query(calendar_query_h query, int *out_
 		CAL_FREE(condition);
 	}
 
-	// query
+	/* query */
 	ret = cal_db_util_query_get_first_int_result(query_str, bind_text, &count);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_db_util_query_get_first_int_result() Failed");
@@ -375,11 +372,11 @@ static void _cal_db_search_get_property_stmt(sqlite3_stmt *stmt,
 		case CALENDAR_TIME_UTIME:
 			*stmt_count = *stmt_count+1;
 			caltime_tmp.time.utime = sqlite3_column_int64(stmt,*stmt_count);
-			*stmt_count = *stmt_count+1; // datetime
+			*stmt_count = *stmt_count+1; /* datatime */
 			break;
 
 		case CALENDAR_TIME_LOCALTIME:
-			*stmt_count = *stmt_count+1; // utime
+			*stmt_count = *stmt_count+1; /* utime */
 			*stmt_count = *stmt_count+1;
 			temp = sqlite3_column_text(stmt, *stmt_count);
 			if (temp) {

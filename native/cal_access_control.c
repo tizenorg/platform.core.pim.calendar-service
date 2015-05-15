@@ -62,7 +62,7 @@ static calendar_permission_info_s* _cal_access_control_find_permission_info(unsi
 	return NULL;
 }
 
-// check SMACK enable or disable
+/* check SMACK enable or disable */
 static int _cal_have_smack(void)
 {
 	if (-1 == have_smack) {
@@ -96,7 +96,8 @@ static void _cal_access_control_set_permission_info(calendar_permission_info_s *
 	ret = cal_db_util_query_get_first_int_result(query, NULL, &count);
 
 	if (CALENDAR_ERROR_NONE != ret) {
-		ERR("DB get Failed");
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
+		SECURE("query[%s]", query);
 		return;
 	}
 	info->write_list = calloc(count +1, sizeof(int));
@@ -152,6 +153,7 @@ void cal_access_control_set_client_info(pims_ipc_h ipc, const char *smack_label)
 	free(info->smack_label);
 	info->smack_label = SAFE_STRDUP(smack_label);
 
+	/* for close DB or free access_control when client is disconnected */
 	if (info->ipc)
 		pims_ipc_svc_set_client_disconnected_cb(_cal_access_control_disconnected_cb,NULL);
 
@@ -268,9 +270,10 @@ static void _cal_access_control_disconnected_cb(pims_ipc_h ipc, void *user_data)
 		free(info);
 	}
 	cal_mutex_unlock(CAL_MUTEX_ACCESS_CONTROL);
-
-	// if client did not call disconnect function such as disconnect
-	// DB will be closed in cal_db_internal_disconnect()
+	/*
+	 * if client did not call disconnect function such as disconnect
+	 * DB will be closed in cal_db_internal_disconnect()
+	 */
 	cal_calendar_internal_disconnect();
 }
 
@@ -288,6 +291,7 @@ int cal_is_owner(int calendarbook_id)
 	stmt = cal_db_util_query_prepare(query);
 	if (NULL == stmt) {
 		ERR("DB error : cal_db_util_query_prepare() Fail()");
+		SECURE("query[%s]", query);
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 

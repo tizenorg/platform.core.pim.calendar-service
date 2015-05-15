@@ -74,7 +74,7 @@ int cal_time_is_registered_tzid(const char *tzid)
 	return is_found;
 }
 
-void cal_time_get_registered_tzid_with_offset(int offset, char *registered_tzid, int tzid_size) // offset unit: second
+void cal_time_get_registered_tzid_with_offset(int offset, char *registered_tzid, int tzid_size)
 {
 	UErrorCode ec = U_ZERO_ERROR;
 
@@ -208,12 +208,12 @@ static int _cal_time_get_like_utzid(UChar *utzid, int len, const char *tzid, cal
 
 	RETV_IF(NULL == timezone, CALENDAR_ERROR_INVALID_PARAMETER);
 
-	// make utzid
+	/* make utzid */
 	UnicodeString zoneStrID;
 	int32_t l = (len < 0 ? u_strlen(utzid) : len);
 	zoneStrID.setTo((UBool)(len < 0), utzid, l); /* temporary read-only alias */
 
-	// make simple timezone
+	/* make simple timezone */
 	cal_timezone_s *tz = (cal_timezone_s *)timezone;
 	gmtoffset = sec2ms(tz->tz_offset_from_gmt * 60);
 
@@ -251,7 +251,7 @@ static int _cal_time_get_like_utzid(UChar *utzid, int len, const char *tzid, cal
 	stzudate[0] = now;
 	DBG("tzid[%s]", tzid);
 	for (i = 0; i < 4; i++) {
-		// get 4 date: dst begin & end, std begin & end
+		/* get 4 date: dst begin & end, std begin & end */
 		stz->getPreviousTransition(stzudate[i], (UBool)false, trans);
 		stz->getOffset(stzudate[i], (UBool)true, stzrawoff[i], stzdstoff[i], ec);
 		stzudate[i +1] = trans.getTime();
@@ -259,7 +259,7 @@ static int _cal_time_get_like_utzid(UChar *utzid, int len, const char *tzid, cal
 	}
 	delete stz;
 
-	// extract from all
+	/* extract from all */
 	int32_t rawoff;
 	int32_t dstoff;
 	int32_t s_count;
@@ -336,7 +336,7 @@ UCalendar *cal_time_open_ucal(int calendar_system_type, const char *tzid, int wk
 		ucal = ucal_open(utf16_timezone, -1, localeBuf, UCAL_TRADITIONAL, &status);
 		break;
 
-	default: // include CALENDAR_SYSTEM_NONE, CALENDAR_SYSTEM_GREGORIAN
+	default:
 		ucal = ucal_open(utf16_timezone, -1, uloc_getDefault(), UCAL_GREGORIAN, &status);
 		break;
 	}
@@ -902,7 +902,7 @@ void cal_time_get_nth_wday(long long int t, int *nth, int *wday)
 	UCalendar *ucal = __get_gmt_ucal();
 	ucal_setMillis(ucal, sec2ms(t), &status);
 	*wday = ucal_get(ucal, UCAL_DAY_OF_WEEK, &status);
-	// check if nth is last
+	/* check if nth is last */
 	int this_week = ucal_get(ucal, UCAL_DAY_OF_WEEK_IN_MONTH, &status);
 	ucal_add(ucal, UCAL_DAY_OF_YEAR, 7, &status);
 	int next_week = ucal_get(ucal, UCAL_DAY_OF_WEEK_IN_MONTH, &status);

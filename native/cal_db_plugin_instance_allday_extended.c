@@ -63,7 +63,7 @@ cal_db_plugin_cb_s cal_db_instance_allday_extended_plugin_cb = {
 
 static int _cal_db_instance_allday_extended_get_all_records(int offset, int limit, calendar_list_h* out_list)
 {
-	int ret = CALENDAR_ERROR_NONE;
+	int ret = 0;
 	char offsetquery[CAL_DB_SQL_MAX_LEN] = {0};
 	char limitquery[CAL_DB_SQL_MAX_LEN] = {0};
 	sqlite3_stmt *stmt = NULL;
@@ -85,9 +85,9 @@ static int _cal_db_instance_allday_extended_get_all_records(int offset, int limi
 	cal_db_append_string(&query_str, offsetquery);
 
 	stmt = cal_db_util_query_prepare(query_str);
-	if (NULL == stmt)
-	{
+	if (NULL == stmt) {
 		ERR("cal_db_util_query_prepare() Fail");
+		SECURE("query[%s]", query_str);
 		calendar_list_destroy(*out_list, true);
 		*out_list = NULL;
 		CAL_FREE(query_str);
@@ -96,7 +96,6 @@ static int _cal_db_instance_allday_extended_get_all_records(int offset, int limi
 
 	while(CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
 		calendar_record_h record;
-		// stmt -> record
 		ret = calendar_record_create(_calendar_instance_localtime_calendar_book_extended._uri,&record);
 		if (CALENDAR_ERROR_NONE != ret) {
 			calendar_list_destroy(*out_list, true);
@@ -138,7 +137,7 @@ static int _cal_db_instance_allday_extended_get_records_with_query(calendar_quer
 
 	table_name = SAFE_STRDUP(CAL_VIEW_TABLE_ALLDAY_INSTANCE_EXTENDED);
 
-	// make filter
+	/* make filter */
 	if (que->filter) {
 		ret = cal_db_query_create_condition(query, &condition, &bind_text);
 		if (CALENDAR_ERROR_NONE != ret) {
@@ -148,11 +147,11 @@ static int _cal_db_instance_allday_extended_get_records_with_query(calendar_quer
 		}
 	}
 
-	// make projection
+	/* make: projection */
 	ret = cal_db_query_create_projection(query, &projection);
 
 	char *query_str = NULL;
-	// query - projection
+	/* query: projection */
 	if (projection) {
 		cal_db_append_string(&query_str, "SELECT");
 		cal_db_append_string(&query_str, projection);
@@ -166,14 +165,14 @@ static int _cal_db_instance_allday_extended_get_records_with_query(calendar_quer
 	}
 	CAL_FREE(table_name);
 
-	// query - condition
+	/* query: condition */
 	if (condition) {
 		cal_db_append_string(&query_str, "WHERE (");
 		cal_db_append_string(&query_str, condition);
 		cal_db_append_string(&query_str, ")");
 	}
 
-	// ORDER
+	/* order */
 	char *order = NULL;
 	ret = cal_db_query_create_order(query, condition, &order);
 	if (order) {
@@ -182,7 +181,7 @@ static int _cal_db_instance_allday_extended_get_records_with_query(calendar_quer
 	}
 	CAL_FREE(condition);
 
-	// limit, offset
+	/* limit, offset */
 	char buf[32] = {0};
 	if (0 < limit) {
 		snprintf(buf, sizeof(buf), "LIMIT %d", limit);
@@ -194,13 +193,11 @@ static int _cal_db_instance_allday_extended_get_records_with_query(calendar_quer
 		}
 	}
 
-	// query
+	/* query */
 	stmt = cal_db_util_query_prepare(query_str);
-	if (NULL == stmt)
-	{
-		DBG("%s",query_str);
-		if (bind_text)
-		{
+	if (NULL == stmt) {
+		SECURE("query[%s]", query_str);
+		if (bind_text) {
 			g_slist_free_full(bind_text, free);
 			bind_text = NULL;
 		}
@@ -209,7 +206,7 @@ static int _cal_db_instance_allday_extended_get_records_with_query(calendar_quer
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 
-	// bind text
+	/* bind text */
 	if (bind_text) {
 		g_slist_length(bind_text);
 		for (cursor=bind_text, i=1; cursor;cursor=cursor->next, i++) {
@@ -217,7 +214,6 @@ static int _cal_db_instance_allday_extended_get_records_with_query(calendar_quer
 		}
 	}
 
-	//
 	ret = calendar_list_create(out_list);
 	if (CALENDAR_ERROR_NONE != ret) {
 		if (bind_text) {
@@ -232,7 +228,6 @@ static int _cal_db_instance_allday_extended_get_records_with_query(calendar_quer
 
 	while(CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
 		calendar_record_h record;
-		// stmt -> record
 		ret = calendar_record_create(que->view_uri,&record);
 		if (CALENDAR_ERROR_NONE != ret) {
 			calendar_list_destroy(*out_list, true);
@@ -249,7 +244,8 @@ static int _cal_db_instance_allday_extended_get_records_with_query(calendar_quer
 		if (0 < que->projection_count) {
 			cal_record_set_projection(record, que->projection, que->projection_count, que->property_count);
 			_cal_db_instance_allday_extended_get_projection_stmt(stmt, que->projection, que->projection_count, record);
-		} else {
+		}
+		else {
 			_cal_db_instance_allday_extended_get_stmt(stmt,record);
 		}
 
@@ -316,7 +312,7 @@ static int _cal_db_instance_allday_extended_get_count_with_query(calendar_query_
 
 	table_name = SAFE_STRDUP(CAL_VIEW_TABLE_ALLDAY_INSTANCE_EXTENDED);
 
-	// make filter
+	/* make filter */
 	if (que->filter) {
 		ret = cal_db_query_create_condition(query, &condition, &bind_text);
 		if (CALENDAR_ERROR_NONE != ret) {
@@ -327,12 +323,12 @@ static int _cal_db_instance_allday_extended_get_count_with_query(calendar_query_
 	}
 
 	char *query_str = NULL;
-	// query - select from
+	/* query: select */
 	cal_db_append_string(&query_str, "SELECT count(*) FROM");
 	cal_db_append_string(&query_str, table_name);
 	CAL_FREE(table_name);
 
-	// query - condition
+	/* query: condition */
 	if (condition) {
 		cal_db_append_string(&query_str, "WHERE (");
 		cal_db_append_string(&query_str, condition);
@@ -340,7 +336,7 @@ static int _cal_db_instance_allday_extended_get_count_with_query(calendar_query_
 		CAL_FREE(condition);
 	}
 
-	// query
+	/* query */
 	ret = cal_db_util_query_get_first_int_result(query_str, bind_text, &count);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_db_util_query_get_first_int_result() Fail");
@@ -371,7 +367,7 @@ static void _cal_db_instance_allday_extended_get_stmt(sqlite3_stmt *stmt,calenda
 
 	instance->event_id = sqlite3_column_int(stmt, count++);
 	instance->start.type = sqlite3_column_int(stmt, count++);
-	count++; // utime
+	count++; /* utime */
 	temp = sqlite3_column_text(stmt, count++);
 	if (temp) {
 		sscanf((const char *)temp, CAL_FORMAT_LOCAL_DATETIME, &(instance->start.time.date.year),
@@ -381,7 +377,7 @@ static void _cal_db_instance_allday_extended_get_stmt(sqlite3_stmt *stmt,calenda
 	}
 
 	instance->end.type = sqlite3_column_int(stmt, count++);
-	count++; // utime
+	count++; /* utime */
 	temp = sqlite3_column_text(stmt, count++);
 	if (temp) {
 		sscanf((const char *)temp, CAL_FORMAT_LOCAL_DATETIME, &(instance->end.time.date.year),
@@ -454,7 +450,7 @@ static void _cal_db_instance_allday_extended_get_property_stmt(sqlite3_stmt *stm
 	switch (property) {
 	case CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_START:
 		instance->start.type = CALENDAR_TIME_LOCALTIME;
-		*stmt_count = *stmt_count+1; // utime
+		*stmt_count = *stmt_count+1; /* utime */
 		*stmt_count = *stmt_count+1;
 		temp = sqlite3_column_text(stmt, *stmt_count);
 		if (temp) {
@@ -466,7 +462,7 @@ static void _cal_db_instance_allday_extended_get_property_stmt(sqlite3_stmt *stm
 		break;
 	case CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_END:
 		instance->end.type = CALENDAR_TIME_LOCALTIME;
-		*stmt_count = *stmt_count+1; // utime
+		*stmt_count = *stmt_count+1; /* utime */
 		*stmt_count = *stmt_count+1;
 		temp = sqlite3_column_text(stmt, *stmt_count);
 		if (temp) {

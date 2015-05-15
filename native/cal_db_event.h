@@ -29,4 +29,4 @@ void cal_db_event_update_child_origina_event_id(int child_id, int parent_id);
 char *cal_db_event_get_recurrence_id_from_exception(int child_id);
 void cal_db_event_apply_recurrence_id(int parent_id, cal_event_s *event, char *recurrence_id, int child_id);
 
-#endif // __CALENDAR_SVC_DB_EVENT_H__
+#endif /* __CALENDAR_SVC_DB_EVENT_H__ */

@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
-#include <unistd.h>     //getuid
+#include <unistd.h>
 #include <glib-object.h>
 #include <alarm.h>
 #include <contacts.h>
@@ -47,7 +47,7 @@
 static account_subscribe_h cal_account_h = NULL;
 #ifdef CAL_MEMORY_TEST
 GMainLoop* main_loop = NULL;
-#endif //#ifdef CAL_MEMORY_TEST
+#endif /* CAL_MEMORY_TEST */
 
 static int __server_main();
 static bool _cal_server_account_delete_cb(const char* event_type, int account_id, void* user_data);
@@ -103,7 +103,7 @@ void cal_server_ipc_destroy(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_dat
 	ERR();
 	int ret = CALENDAR_ERROR_NONE;
 
-	// kill daemon destroy
+	/* kill daemon destroy */
 	g_timeout_add_seconds(1, &_cal_server_ipc_destroy_idle, NULL);
 
 	if (outdata)
@@ -121,8 +121,7 @@ void cal_server_ipc_destroy(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_dat
 		}
 
 	}
-	else
-	{
+	else {
 		ERR("outdata is NULL");
 	}
 	goto DATA_FREE;
@@ -142,15 +141,14 @@ ERROR_RETURN:
 			goto DATA_FREE;
 		}
 	}
-	else
-	{
+	else {
 		ERR("outdata is NULL");
 	}
 DATA_FREE:
 
 	return;
 }
-#endif //#ifdef CAL_MEMORY_TEST
+#endif /* CAL_MEMORY_TEST */
 
 static int __server_main(void)
 {
@@ -273,15 +271,14 @@ static int __server_main(void)
 		return -1;
 	}
 #ifdef CAL_MEMORY_TEST
-	if (pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DESTROY, cal_server_ipc_destroy, NULL) != 0)
-	{
+	if (pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DESTROY, cal_server_ipc_destroy, NULL) != 0) {
 		ERR("pims_ipc_svc_register error");
 		return -1;
 	}
-#endif //#ifdef CAL_MEMORY_TEST
+#endif /* CAL_MEMORY_TEST */
 
 	snprintf(sock_file, sizeof(sock_file), CAL_SOCK_PATH"/.%s_for_subscribe", getuid(), CAL_IPC_SERVICE);
-	// for subscribe
+	/* for subscribe */
 	pims_ipc_svc_init_for_publish(sock_file, CAL_SECURITY_FILE_GROUP, CAL_SECURITY_DEFAULT_PERMISSION);
 
 	//loop = g_main_loop_new(NULL, FALSE);
@@ -355,9 +352,9 @@ static int __server_main(void)
 
 	ERR("exit");
 	g_main_loop_unref(main_loop);
-#else  //#ifdef CAL_MEMORY_TEST
+#else  /* CAL_MEMORY_TEST */
 	pims_ipc_svc_run_main_loop(NULL);
-#endif //#ifdef CAL_MEMORY_TEST
+#endif /* CAL_MEMORY_TEST */
 
 	cal_time_u_cleanup();
 	cal_inotify_finalize();
@@ -419,13 +416,10 @@ static void _cal_server_create_file(void)
 int main(int argc, char *argv[])
 {
 	CAL_FN_CALL();
-	if (getuid() == 0)
-	{        // root
+	if (getuid() == 0) {
 		gid_t glist[] = {CAL_SECURITY_FILE_GROUP};
-		if (setgroups(1, glist) < 0)        // client and server should have same Groups
-		{
+		if (setgroups(1, glist) < 0)
 			ERR("setgroups() Failed");
-		}
 	}
 
 	_cal_server_create_file();

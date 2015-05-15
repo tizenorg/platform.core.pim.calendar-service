@@ -28,4 +28,4 @@ void cal_client_ipc_set_change_version(int version);
 int cal_client_ipc_get_change_version(void);
 int cal_client_ipc_client_check_permission(int permission, bool *result);
 
-#endif // __CAL_CLIENT_IPC_H__
+#endif /* __CAL_CLIENT_IPC_H__ */

@@ -25,4 +25,4 @@ int cal_db_instance_discard_record(int index);
 int cal_db_instance_get_now(long long int *current);
 int cal_db_instance_update_exdate_del(int id, char *exdate);
 
-#endif // __CALENDAR_SVC_DB_INSTANCE_H__
+#endif /* __CALENDAR_SVC_DB_INSTANCE_H__ */

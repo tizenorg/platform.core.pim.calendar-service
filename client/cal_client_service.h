@@ -26,4 +26,4 @@ int calendar_connect_on_thread(void);
 int calendar_disconnect_on_thread(void);
 int calendar_connect_with_flags(unsigned int flags);
 
-#endif // __CAL_CLIENT_SERVICE_H__
+#endif /* __CAL_CLIENT_SERVICE_H__ */

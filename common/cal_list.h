@@ -25,4 +25,4 @@ int cal_list_clone(calendar_list_h list, calendar_list_h *out_list);
 int cal_list_get_nth_record_p(cal_list_s *list_s, int index, calendar_record_h *record);
 int cal_list_clear(cal_list_s *list_s);
 
-#endif // __CALENDAR_SVC_LIST_H__
+#endif /* __CALENDAR_SVC_LIST_H__ */
