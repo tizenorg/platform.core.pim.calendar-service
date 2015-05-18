@@ -27,6 +27,7 @@ extern "C" {
 
 void cal_free(void *ptr);
 char* cal_strdup(const char *src);
+char* cal_strdup_with_sort(const char *src);
 
 #ifdef __cplusplus
 }

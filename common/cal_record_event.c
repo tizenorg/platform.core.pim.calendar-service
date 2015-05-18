@@ -598,39 +598,39 @@ static int _cal_record_event_set_str(calendar_record_h record, unsigned int prop
 		break;
 	case CAL_PROPERTY_EVENT_BYSECOND:
 		CAL_FREE(rec->bysecond);
-		rec->bysecond = cal_strdup(value);
+		rec->bysecond = cal_strdup_with_sort(value);
 		break;
 	case CAL_PROPERTY_EVENT_BYMINUTE:
 		CAL_FREE(rec->byminute);
-		rec->byminute = cal_strdup(value);
+		rec->byminute = cal_strdup_with_sort(value);
 		break;
 	case CAL_PROPERTY_EVENT_BYHOUR:
 		CAL_FREE(rec->byhour);
-		rec->byhour = cal_strdup(value);
+		rec->byhour = cal_strdup_with_sort(value);
 		break;
 	case CAL_PROPERTY_EVENT_BYDAY:
 		CAL_FREE(rec->byday);
-		rec->byday = cal_strdup(value);
+		rec->byday = cal_strdup_with_sort(value);
 		break;
 	case CAL_PROPERTY_EVENT_BYMONTHDAY:
 		CAL_FREE(rec->bymonthday);
-		rec->bymonthday = cal_strdup(value);
+		rec->bymonthday = cal_strdup_with_sort(value);
 		break;
 	case CAL_PROPERTY_EVENT_BYYEARDAY:
 		CAL_FREE(rec->byyearday);
-		rec->byyearday = cal_strdup(value);
+		rec->byyearday = cal_strdup_with_sort(value);
 		break;
 	case CAL_PROPERTY_EVENT_BYWEEKNO:
 		CAL_FREE(rec->byweekno);
-		rec->byweekno = cal_strdup(value);
+		rec->byweekno = cal_strdup_with_sort(value);
 		break;
 	case CAL_PROPERTY_EVENT_BYMONTH:
 		CAL_FREE(rec->bymonth);
-		rec->bymonth = cal_strdup(value);
+		rec->bymonth = cal_strdup_with_sort(value);
 		break;
 	case CAL_PROPERTY_EVENT_BYSETPOS:
 		CAL_FREE(rec->bysetpos);
-		rec->bysetpos = cal_strdup(value);
+		rec->bysetpos = cal_strdup_with_sort(value);
 		break;
 	case CAL_PROPERTY_EVENT_RECURRENCE_ID:
 		CAL_FREE(rec->recurrence_id);
