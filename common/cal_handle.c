@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include "cal_internal.h"
 #include "cal_handle.h"
+#include "cal_utils.h"
 
 int cal_handle_create(calendar_h *handle)
 {
@@ -47,7 +48,7 @@ int cal_handle_set_zone_name(calendar_h handle, const char *zone_name)
 	RETV_IF(NULL == zone_name, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	cal_s *h = (cal_s *)handle;
-	h->zone_name = CAL_SAFE_STRDUP(zone_name);
+	h->zone_name = cal_strdup(zone_name);
 	return CALENDAR_ERROR_NONE;
 }
 
@@ -58,9 +59,13 @@ int cal_handle_get_zone_name(calendar_h handle, char **zone_name)
 
 	cal_s *h = (cal_s *)handle;
 	if (h->zone_name)
+<<<<<<< HEAD
 		*zone_name = CAL_SAFE_STRDUP(h->zone_name);
 	else
 		*zone_name = strdup(""); // empty string means host
+=======
+		*zone_name = cal_strdup(h->zone_name);
+>>>>>>> 3a3e67b... Apply coding guide:g_strdup->cal_strdup, g_free->free
 	return CALENDAR_ERROR_NONE;
 }
 

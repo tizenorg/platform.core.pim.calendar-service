@@ -28,6 +28,7 @@
 #include "cal_db.h"
 #include "cal_db_query.h"
 #include "cal_access_control.h"
+#include "cal_utils.h"
 
 static int _cal_db_instance_allday_extended_get_all_records(int offset, int limit, calendar_list_h* out_list);
 static int _cal_db_instance_allday_extended_get_records_with_query(calendar_query_h query, int offset, int limit, calendar_list_h* out_list);
@@ -135,7 +136,7 @@ static int _cal_db_instance_allday_extended_get_records_with_query(calendar_quer
 
 	que = (cal_query_s *)query;
 
-	table_name = SAFE_STRDUP(CAL_VIEW_TABLE_ALLDAY_INSTANCE_EXTENDED);
+	table_name = cal_strdup(CAL_VIEW_TABLE_ALLDAY_INSTANCE_EXTENDED);
 
 	/* make filter */
 	if (que->filter) {
@@ -310,7 +311,7 @@ static int _cal_db_instance_allday_extended_get_count_with_query(calendar_query_
 
 	que = (cal_query_s *)query;
 
-	table_name = SAFE_STRDUP(CAL_VIEW_TABLE_ALLDAY_INSTANCE_EXTENDED);
+	table_name = cal_strdup(CAL_VIEW_TABLE_ALLDAY_INSTANCE_EXTENDED);
 
 	/* make filter */
 	if (que->filter) {
@@ -387,13 +388,13 @@ static void _cal_db_instance_allday_extended_get_stmt(sqlite3_stmt *stmt,calenda
 	}
 
 	temp = sqlite3_column_text(stmt, count++);
-	instance->summary = SAFE_STRDUP(temp);
+	instance->summary = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, count++);
-	instance->description = SAFE_STRDUP(temp);
+	instance->description = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, count++);
-	instance->location = SAFE_STRDUP(temp);
+	instance->location = cal_strdup((const char*)temp);
 
 	instance->busy_status = sqlite3_column_int(stmt, count++);
 
@@ -417,24 +418,24 @@ static void _cal_db_instance_allday_extended_get_stmt(sqlite3_stmt *stmt,calenda
 	instance->last_mod = sqlite3_column_int64(stmt, count++);
 
 	temp = sqlite3_column_text(stmt, count++);
-	instance->sync_data1 = SAFE_STRDUP(temp);
+	instance->sync_data1 = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, count++);
-	instance->organizer_name = SAFE_STRDUP(temp);
+	instance->organizer_name = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, count++);
-	instance->categories= SAFE_STRDUP(temp);
+	instance->categories= cal_strdup((const char*)temp);
 
 	instance->has_attendee= sqlite3_column_int(stmt, count++);
 
 	temp = sqlite3_column_text(stmt, count++);
-	instance->sync_data2 = SAFE_STRDUP(temp);
+	instance->sync_data2 = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, count++);
-	instance->sync_data3 = SAFE_STRDUP(temp);
+	instance->sync_data3 = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, count++);
-	instance->sync_data4 = SAFE_STRDUP(temp);
+	instance->sync_data4 = cal_strdup((const char*)temp);
 
 	instance->is_allday = sqlite3_column_int(stmt, count++);
 
@@ -474,18 +475,18 @@ static void _cal_db_instance_allday_extended_get_property_stmt(sqlite3_stmt *stm
 		break;
 	case CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_SUMMARY:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		instance->summary = SAFE_STRDUP(temp);
+		instance->summary = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_LOCATION:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		instance->location = SAFE_STRDUP(temp);
+		instance->location = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_CALENDAR_ID:
 		instance->calendar_id = sqlite3_column_int(stmt, *stmt_count);
 		break;
 	case CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_DESCRIPTION:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		instance->description = SAFE_STRDUP(temp);
+		instance->description = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_BUSY_STATUS:
 		instance->busy_status = sqlite3_column_int(stmt, *stmt_count);
@@ -525,30 +526,30 @@ static void _cal_db_instance_allday_extended_get_property_stmt(sqlite3_stmt *stm
 		break;
 	case CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_SYNC_DATA1:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		instance->sync_data1 = SAFE_STRDUP(temp);
+		instance->sync_data1 = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_ORGANIZER_NAME:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		instance->organizer_name= SAFE_STRDUP(temp);
+		instance->organizer_name= cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_CATEGORIES:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		instance->categories= SAFE_STRDUP(temp);
+		instance->categories= cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_HAS_ATTENDEE:
 		instance->has_attendee= sqlite3_column_int(stmt, *stmt_count);
 		break;
 	case CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_SYNC_DATA2:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		instance->sync_data2= SAFE_STRDUP(temp);
+		instance->sync_data2= cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_SYNC_DATA3:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		instance->sync_data3 = SAFE_STRDUP(temp);
+		instance->sync_data3 = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_SYNC_DATA4:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		instance->sync_data4= SAFE_STRDUP(temp);
+		instance->sync_data4= cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_IS_ALLDAY:
 		instance->is_allday = sqlite3_column_int(stmt, *stmt_count);

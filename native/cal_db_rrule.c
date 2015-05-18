@@ -24,6 +24,7 @@
 #include "cal_db.h"
 #include "cal_view.h"
 #include "cal_time.h"
+#include "cal_utils.h"
 
 void cal_db_rrule_set_default(calendar_record_h record)
 {
@@ -372,31 +373,31 @@ int cal_db_rrule_get_rrule(int id, cal_rrule_s **rrule)
 	_rrule->interval = sqlite3_column_int(stmt, index++);
 
 	temp = sqlite3_column_text(stmt, index++);
-	_rrule->bysecond = SAFE_STRDUP(temp);
+	_rrule->bysecond = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, index++);
-	_rrule->byminute = SAFE_STRDUP(temp);
+	_rrule->byminute = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, index++);
-	_rrule->byhour = SAFE_STRDUP(temp);
+	_rrule->byhour = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, index++);
-	_rrule->byday= SAFE_STRDUP(temp);
+	_rrule->byday= cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, index++);
-	_rrule->bymonthday= SAFE_STRDUP(temp);
+	_rrule->bymonthday= cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, index++);
-	_rrule->byyearday= SAFE_STRDUP(temp);
+	_rrule->byyearday= cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, index++);
-	_rrule->byweekno= SAFE_STRDUP(temp);
+	_rrule->byweekno= cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, index++);
-	_rrule->bymonth= SAFE_STRDUP(temp);
+	_rrule->bymonth= cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, index++);
-	_rrule->bysetpos = SAFE_STRDUP(temp);
+	_rrule->bysetpos = cal_strdup((const char*)temp);
 
 	_rrule->wkst = sqlite3_column_int(stmt, index++);
 

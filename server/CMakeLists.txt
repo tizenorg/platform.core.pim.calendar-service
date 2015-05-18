@@ -50,6 +50,7 @@ SET(LIBSRCS
     ${CMAKE_SOURCE_DIR}/common/cal_vcalendar_parse.c
 	${CMAKE_SOURCE_DIR}/common/cal_mutex.c
 	${CMAKE_SOURCE_DIR}/native/cal_db.c
+	${CMAKE_SOURCE_DIR}/common/cal_utils.c
 	${CMAKE_SOURCE_DIR}/native/cal_calendar.c
 	${CMAKE_SOURCE_DIR}/native/cal_db_calendar.c
 	${CMAKE_SOURCE_DIR}/native/cal_db_util.c

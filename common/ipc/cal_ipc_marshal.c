@@ -25,6 +25,7 @@
 #include "cal_record.h"
 #include "cal_internal.h"
 #include "cal_view.h"
+#include "cal_utils.h"
 
 extern cal_ipc_marshal_record_plugin_cb_s cal_ipc_record_calendar_plugin_cb;
 extern cal_ipc_marshal_record_plugin_cb_s cal_ipc_record_event_plugin_cb;
@@ -122,7 +123,7 @@ static int _cal_ipc_unmarshal_composite_filter(const pims_ipc_data_h ipc_data, c
 
 	str = (char*)pims_ipc_data_get(ipc_data,&size);
 	CAL_FREE(filter->view_uri);
-	filter->view_uri = strdup(str);
+	filter->view_uri = cal_strdup(str);
 
 	ret = cal_ipc_unmarshal_int(ipc_data, &count);
 	if (CALENDAR_ERROR_NONE != ret) {
@@ -523,7 +524,7 @@ int cal_ipc_unmarshal_char(const pims_ipc_data_h ipc_data, char** ppbufchar)
 
 	str = (char*)pims_ipc_data_get(ipc_data,&size);
 	if (str) {
-		*ppbufchar = SAFE_STRDUP(str);
+		*ppbufchar = cal_strdup(str);
 	}
 
 	return ret;
@@ -706,7 +707,7 @@ int cal_ipc_unmarshal_record_common(const pims_ipc_data_h ipc_data, cal_record_s
 	ret_pims = pims_ipc_data_get(ipc_data,&size);
 	if (NULL == ret_pims) {
 		ERR("pims_ipc_data_get() Fail");
-		g_free(common->properties_flags);
+		free(common->properties_flags);
 		return CALENDAR_ERROR_IPC;
 	}
 	common->property_flag = *(unsigned char*)ret_pims;

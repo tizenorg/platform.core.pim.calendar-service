@@ -30,6 +30,7 @@
 
 #include "cal_vcalendar.h"
 #include "cal_vcalendar_make.h"
+#include "cal_utils.h"
 
 #define VCAL_DATETIME_FORMAT_YYYYMMDD "%04d%02d%02d"
 #define VCAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS "%04d%02d%02dT%02d%02d%02d"
@@ -179,7 +180,7 @@ char* cal_vcalendar_make_get_data(cal_make_s *b)
 {
 	if (!b || !b->data)
 		return NULL;
-	return strdup(b->data);
+	return cal_strdup(b->data);
 }
 
 void cal_vcalendar_make_free(cal_make_s **b)

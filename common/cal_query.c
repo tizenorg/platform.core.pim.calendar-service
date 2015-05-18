@@ -24,6 +24,7 @@
 #include "cal_view.h"
 #include "cal_filter.h"
 #include "cal_query.h"
+#include "cal_utils.h"
 
 static bool _cal_query_property_check(const cal_property_info_s *properties,
 		int count, unsigned int property_id)
@@ -49,7 +50,7 @@ API int calendar_query_create(const char* view_uri, calendar_query_h* out_query)
 	query = calloc(1, sizeof(cal_query_s));
 	RETV_IF(NULL == query, CALENDAR_ERROR_OUT_OF_MEMORY);
 
-	query->view_uri = strdup(view_uri);
+	query->view_uri = cal_strdup(view_uri);
 	query->properties = (cal_property_info_s *)cal_view_get_property_info(view_uri, &query->property_count);
 	*out_query = (calendar_query_h)query;
 

@@ -27,6 +27,7 @@
 #include "cal_db_util.h"
 #include "cal_db_query.h"
 #include "cal_access_control.h"
+#include "cal_utils.h"
 
 /*
  * db plugin function
@@ -229,24 +230,24 @@ static int _cal_db_search_get_count_with_query(calendar_query_h query, int *out_
 	que = (cal_query_s *)query;
 
 	if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_EVENT_CALENDAR)) {
-		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_EVENT_CALENDAR);
-		projection = SAFE_STRDUP("id");
+		table_name = cal_strdup(CAL_VIEW_TABLE_EVENT_CALENDAR);
+		projection = cal_strdup("id");
 	}
 	else if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_TODO_CALENDAR)) {
-		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_TODO_CALENDAR);
-		projection = SAFE_STRDUP("id");
+		table_name = cal_strdup(CAL_VIEW_TABLE_TODO_CALENDAR);
+		projection = cal_strdup("id");
 	}
 	else if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_EVENT_CALENDAR_ATTENDEE)) {
-		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_EVENT_CALENDAR_ATTENDEE);
-		projection = SAFE_STRDUP("id");
+		table_name = cal_strdup(CAL_VIEW_TABLE_EVENT_CALENDAR_ATTENDEE);
+		projection = cal_strdup("id");
 	}
 	else if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_INSTANCE_UTIME_CALENDAR)) {
-		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_NORMAL_INSTANCE);
-		projection = SAFE_STRDUP("event_id");
+		table_name = cal_strdup(CAL_VIEW_TABLE_NORMAL_INSTANCE);
+		projection = cal_strdup("event_id");
 	}
 	else if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_INSTANCE_LOCALTIME_CALENDAR)) {
-		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_ALLDAY_INSTANCE);
-		projection = SAFE_STRDUP("event_id");
+		table_name = cal_strdup(CAL_VIEW_TABLE_ALLDAY_INSTANCE);
+		projection = cal_strdup("event_id");
 	}
 	else {
 		ERR("uri(%s) not support get records with query",que->view_uri);

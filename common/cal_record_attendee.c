@@ -25,6 +25,7 @@
 #include "cal_typedef.h"
 #include "cal_view.h"
 #include "cal_record.h"
+#include "cal_utils.h"
 
 static int _cal_record_attendee_create(calendar_record_h* out_record);
 static int _cal_record_attendee_destroy(calendar_record_h record, bool delete_child);
@@ -119,14 +120,14 @@ static int _cal_record_attendee_clone(calendar_record_h record, calendar_record_
 	out_data->attendee_role = src_data->attendee_role;
 	out_data->attendee_status = src_data->attendee_status;
 	out_data->attendee_rsvp = src_data->attendee_rsvp;
-	out_data->attendee_number = SAFE_STRDUP(src_data->attendee_number);
-	out_data->attendee_uid = SAFE_STRDUP(src_data->attendee_uid);
-	out_data->attendee_group = SAFE_STRDUP(src_data->attendee_group);
-	out_data->attendee_email = SAFE_STRDUP(src_data->attendee_email);
-	out_data->attendee_delegatee_uri = SAFE_STRDUP(src_data->attendee_delegatee_uri);
-	out_data->attendee_delegator_uri = SAFE_STRDUP(src_data->attendee_delegator_uri);
-	out_data->attendee_name = SAFE_STRDUP(src_data->attendee_name);
-	out_data->attendee_member = SAFE_STRDUP(src_data->attendee_member);
+	out_data->attendee_number = cal_strdup(src_data->attendee_number);
+	out_data->attendee_uid = cal_strdup(src_data->attendee_uid);
+	out_data->attendee_group = cal_strdup(src_data->attendee_group);
+	out_data->attendee_email = cal_strdup(src_data->attendee_email);
+	out_data->attendee_delegatee_uri = cal_strdup(src_data->attendee_delegatee_uri);
+	out_data->attendee_delegator_uri = cal_strdup(src_data->attendee_delegator_uri);
+	out_data->attendee_name = cal_strdup(src_data->attendee_name);
+	out_data->attendee_member = cal_strdup(src_data->attendee_member);
 
 	*out_record = (calendar_record_h)out_data;
 
@@ -138,28 +139,28 @@ static int _cal_record_attendee_get_str(calendar_record_h record, unsigned int p
 	cal_attendee_s *rec = (cal_attendee_s*)(record);
 	switch (property_id) {
 	case CAL_PROPERTY_ATTENDEE_NUMBER:
-		*out_str = SAFE_STRDUP(rec->attendee_number);
+		*out_str = cal_strdup(rec->attendee_number);
 		break;
 	case CAL_PROPERTY_ATTENDEE_UID:
-		*out_str = SAFE_STRDUP(rec->attendee_uid);
+		*out_str = cal_strdup(rec->attendee_uid);
 		break;
 	case CAL_PROPERTY_ATTENDEE_GROUP:
-		*out_str = SAFE_STRDUP(rec->attendee_group);
+		*out_str = cal_strdup(rec->attendee_group);
 		break;
 	case CAL_PROPERTY_ATTENDEE_EMAIL:
-		*out_str = SAFE_STRDUP(rec->attendee_email);
+		*out_str = cal_strdup(rec->attendee_email);
 		break;
 	case CAL_PROPERTY_ATTENDEE_DELEGATEE_URI:
-		*out_str = SAFE_STRDUP(rec->attendee_delegatee_uri);
+		*out_str = cal_strdup(rec->attendee_delegatee_uri);
 		break;
 	case CAL_PROPERTY_ATTENDEE_DELEGATOR_URI:
-		*out_str = SAFE_STRDUP(rec->attendee_delegator_uri);
+		*out_str = cal_strdup(rec->attendee_delegator_uri);
 		break;
 	case CAL_PROPERTY_ATTENDEE_NAME:
-		*out_str = SAFE_STRDUP(rec->attendee_name);
+		*out_str = cal_strdup(rec->attendee_name);
 		break;
 	case CAL_PROPERTY_ATTENDEE_MEMBER:
-		*out_str = SAFE_STRDUP(rec->attendee_member);
+		*out_str = cal_strdup(rec->attendee_member);
 		break;
 	default:
 		ERR("invalid parameter (property:%d)",property_id);
@@ -241,35 +242,35 @@ static int _cal_record_attendee_set_str(calendar_record_h record, unsigned int p
 	switch (property_id) {
 	case CAL_PROPERTY_ATTENDEE_NUMBER:
 		CAL_FREE(rec->attendee_number);
-		rec->attendee_number = SAFE_STRDUP(value);
+		rec->attendee_number = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_ATTENDEE_UID:
 		CAL_FREE(rec->attendee_uid);
-		rec->attendee_uid = SAFE_STRDUP(value);
+		rec->attendee_uid = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_ATTENDEE_GROUP:
 		CAL_FREE(rec->attendee_group);
-		rec->attendee_group = SAFE_STRDUP(value);
+		rec->attendee_group = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_ATTENDEE_EMAIL:
 		CAL_FREE(rec->attendee_email);
-		rec->attendee_email = SAFE_STRDUP(value);
+		rec->attendee_email = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_ATTENDEE_DELEGATEE_URI:
 		CAL_FREE(rec->attendee_delegatee_uri);
-		rec->attendee_delegatee_uri = SAFE_STRDUP(value);
+		rec->attendee_delegatee_uri = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_ATTENDEE_DELEGATOR_URI:
 		CAL_FREE(rec->attendee_delegator_uri);
-		rec->attendee_delegator_uri = SAFE_STRDUP(value);
+		rec->attendee_delegator_uri = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_ATTENDEE_NAME:
 		CAL_FREE(rec->attendee_name);
-		rec->attendee_name = SAFE_STRDUP(value);
+		rec->attendee_name = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_ATTENDEE_MEMBER:
 		CAL_FREE(rec->attendee_member);
-		rec->attendee_member = SAFE_STRDUP(value);
+		rec->attendee_member = cal_strdup(value);
 		break;
 	default:
 		ERR("invalid parameter (property:%d)",property_id);

@@ -37,6 +37,8 @@
 #include "cal_db_extended.h"
 #include "cal_db_event.h"
 #include "cal_access_control.h"
+#include "cal_db_timezone.h"
+#include "cal_utils.h"
 
 static int _cal_db_event_insert_record(calendar_record_h record, int* id);
 static int _cal_db_event_get_record(int id, calendar_record_h* out_record);
@@ -823,7 +825,7 @@ static int _cal_db_event_add_exdate(int original_event_id, char* recurrence_id)
 	if (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		temp = sqlite3_column_text(stmt, 0);
 		if (NULL == temp || strlen((char *)temp) < 1) {
-			exdate = strdup(recurrence_id);
+			exdate = cal_strdup(recurrence_id);
 			DBG("append first exdate[%s]", exdate);
 		}
 		else {
@@ -1062,13 +1064,13 @@ static int _cal_db_event_get_records_with_query(calendar_query_h query, int offs
 	que = (cal_query_s *)query;
 
 	if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_EVENT)) {
-		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_EVENT);
+		table_name = cal_strdup(CAL_VIEW_TABLE_EVENT);
 	}
 	else if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_EVENT_CALENDAR)) {
-		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_EVENT_CALENDAR);
+		table_name = cal_strdup(CAL_VIEW_TABLE_EVENT_CALENDAR);
 	}
 	else if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_EVENT_CALENDAR_ATTENDEE)) {
-		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_EVENT_CALENDAR_ATTENDEE);
+		table_name = cal_strdup(CAL_VIEW_TABLE_EVENT_CALENDAR_ATTENDEE);
 	}
 	else {
 		ERR("uri(%s) not support get records with query",que->view_uri);
@@ -1361,13 +1363,13 @@ static int _cal_db_event_get_count_with_query(calendar_query_h query, int *out_c
 	que = (cal_query_s *)query;
 
 	if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_EVENT)) {
-		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_EVENT);
+		table_name = cal_strdup(CAL_VIEW_TABLE_EVENT);
 	}
 	else if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_EVENT_CALENDAR)) {
-		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_EVENT_CALENDAR);
+		table_name = cal_strdup(CAL_VIEW_TABLE_EVENT_CALENDAR);
 	}
 	else if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_EVENT_CALENDAR_ATTENDEE)) {
-		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_EVENT_CALENDAR_ATTENDEE);
+		table_name = cal_strdup(CAL_VIEW_TABLE_EVENT_CALENDAR_ATTENDEE);
 	}
 	else {
 		ERR("uri(%s) not support get records with query",que->view_uri);
@@ -1724,19 +1726,18 @@ static void _cal_db_event_get_stmt(sqlite3_stmt *stmt,bool is_view_table,calenda
 	sqlite3_column_int(stmt, count++);
 
 	temp = sqlite3_column_text(stmt, count++);
-	event->summary = SAFE_STRDUP(temp);
+	event->summary = cal_strdup((const char*)temp);
+	temp = sqlite3_column_text(stmt, count++);
+	event->description = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, count++);
-	event->description = SAFE_STRDUP(temp);
+	event->location = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, count++);
-	event->location = SAFE_STRDUP(temp);
+	event->categories = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, count++);
-	event->categories = SAFE_STRDUP(temp);
-
-	temp = sqlite3_column_text(stmt, count++);
-	event->exdate = SAFE_STRDUP(temp);
+	event->exdate = cal_strdup((const char*)temp);
 
 	event->event_status = sqlite3_column_int(stmt, count++);
 	event->priority = sqlite3_column_int(stmt, count++);
@@ -1746,13 +1747,13 @@ static void _cal_db_event_get_stmt(sqlite3_stmt *stmt,bool is_view_table,calenda
 	event->sensitivity = sqlite3_column_int(stmt, count++);
 
 	temp = sqlite3_column_text(stmt, count++);
-	event->uid = SAFE_STRDUP(temp);
+	event->uid = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, count++);
-	event->organizer_name = SAFE_STRDUP(temp);
+	event->organizer_name = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, count++);
-	event->organizer_email = SAFE_STRDUP(temp);
+	event->organizer_email = cal_strdup((const char*)temp);
 
 	event->meeting_status = sqlite3_column_int(stmt, count++);
 	event->calendar_id = sqlite3_column_int(stmt, count++);
@@ -1786,7 +1787,7 @@ static void _cal_db_event_get_stmt(sqlite3_stmt *stmt,bool is_view_table,calenda
 	}
 
 	temp = sqlite3_column_text(stmt, count++);
-	event->start_tzid = SAFE_STRDUP(temp);
+	event->start_tzid = cal_strdup((const char*)temp);
 
 	event->end.type = sqlite3_column_int(stmt, count++);
 	if (event->end.type == CALENDAR_TIME_UTIME) {
@@ -1804,27 +1805,27 @@ static void _cal_db_event_get_stmt(sqlite3_stmt *stmt,bool is_view_table,calenda
 		}
 	}
 	temp = sqlite3_column_text(stmt, count++);
-	event->end_tzid = SAFE_STRDUP(temp);
+	event->end_tzid = cal_strdup((const char*)temp);
 
 	event->last_mod = sqlite3_column_int64(stmt,count++);
 	sqlite3_column_int(stmt,count++);
 
 	temp = sqlite3_column_text(stmt, count++);
-	event->recurrence_id = SAFE_STRDUP(temp);
+	event->recurrence_id = cal_strdup((const char*)temp);
 	temp = sqlite3_column_text(stmt, count++);
-	event->rdate = SAFE_STRDUP(temp);
+	event->rdate = cal_strdup((const char*)temp);
 	event->has_attendee = sqlite3_column_int(stmt,count++);
 	event->has_alarm = sqlite3_column_int(stmt,count++);
 	event->system_type = sqlite3_column_int(stmt,count++);
 	event->updated = sqlite3_column_int(stmt,count++);
 	temp = sqlite3_column_text(stmt, count++);
-	event->sync_data1 = SAFE_STRDUP(temp);
+	event->sync_data1 = cal_strdup((const char*)temp);
 	temp = sqlite3_column_text(stmt, count++);
-	event->sync_data2 = SAFE_STRDUP(temp);
+	event->sync_data2 = cal_strdup((const char*)temp);
 	temp = sqlite3_column_text(stmt, count++);
-	event->sync_data3 = SAFE_STRDUP(temp);
+	event->sync_data3 = cal_strdup((const char*)temp);
 	temp = sqlite3_column_text(stmt, count++);
-	event->sync_data4 = SAFE_STRDUP(temp);
+	event->sync_data4 = cal_strdup((const char*)temp);
 
 	/* has_exception */
 	if (exception)
@@ -1867,31 +1868,31 @@ static void _cal_db_event_get_stmt(sqlite3_stmt *stmt,bool is_view_table,calenda
 		event->interval = sqlite3_column_int(stmt, count++);
 
 		temp = sqlite3_column_text(stmt, count++);
-		event->bysecond = SAFE_STRDUP(temp);
+		event->bysecond = cal_strdup((const char*)temp);
 
 		temp = sqlite3_column_text(stmt, count++);
-		event->byminute = SAFE_STRDUP(temp);
+		event->byminute = cal_strdup((const char*)temp);
 
 		temp = sqlite3_column_text(stmt, count++);
-		event->byhour = SAFE_STRDUP(temp);
+		event->byhour = cal_strdup((const char*)temp);
 
 		temp = sqlite3_column_text(stmt, count++);
-		event->byday= SAFE_STRDUP(temp);
+		event->byday= cal_strdup((const char*)temp);
 
 		temp = sqlite3_column_text(stmt, count++);
-		event->bymonthday= SAFE_STRDUP(temp);
+		event->bymonthday= cal_strdup((const char*)temp);
 
 		temp = sqlite3_column_text(stmt, count++);
-		event->byyearday= SAFE_STRDUP(temp);
+		event->byyearday= cal_strdup((const char*)temp);
 
 		temp = sqlite3_column_text(stmt, count++);
-		event->byweekno= SAFE_STRDUP(temp);
+		event->byweekno= cal_strdup((const char*)temp);
 
 		temp = sqlite3_column_text(stmt, count++);
-		event->bymonth= SAFE_STRDUP(temp);
+		event->bymonth= cal_strdup((const char*)temp);
 
 		temp = sqlite3_column_text(stmt, count++);
-		event->bysetpos = SAFE_STRDUP(temp);
+		event->bysetpos = cal_strdup((const char*)temp);
 
 		event->wkst = sqlite3_column_int(stmt, count++);
 
@@ -1917,23 +1918,23 @@ static void _cal_db_event_get_property_stmt(sqlite3_stmt *stmt,
 		break;
 	case CAL_PROPERTY_EVENT_SUMMARY:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		event->summary = SAFE_STRDUP(temp);
+		event->summary = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_EVENT_DESCRIPTION:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		event->description = SAFE_STRDUP(temp);
+		event->description = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_EVENT_LOCATION:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		event->location = SAFE_STRDUP(temp);
+		event->location = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_EVENT_CATEGORIES:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		event->categories = SAFE_STRDUP(temp);
+		event->categories = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_EVENT_EXDATE:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		event->exdate = SAFE_STRDUP(temp);
+		event->exdate = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_EVENT_EVENT_STATUS:
 		event->event_status = sqlite3_column_int(stmt, *stmt_count);
@@ -1955,15 +1956,15 @@ static void _cal_db_event_get_property_stmt(sqlite3_stmt *stmt,
 		break;
 	case CAL_PROPERTY_EVENT_UID:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		event->uid = SAFE_STRDUP(temp);
+		event->uid = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_EVENT_ORGANIZER_NAME:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		event->organizer_name = SAFE_STRDUP(temp);
+		event->organizer_name = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_EVENT_ORGANIZER_EMAIL:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		event->organizer_email = SAFE_STRDUP(temp);
+		event->organizer_email = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_EVENT_MEETING_STATUS:
 		event->meeting_status = sqlite3_column_int(stmt, *stmt_count);
@@ -2005,50 +2006,50 @@ static void _cal_db_event_get_property_stmt(sqlite3_stmt *stmt,
 		break;
 	case CAL_PROPERTY_EVENT_BYSECOND:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		event->bysecond = SAFE_STRDUP(temp);
+		event->bysecond = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_EVENT_BYMINUTE:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		event->byminute = SAFE_STRDUP(temp);
+		event->byminute = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_EVENT_BYHOUR:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		event->byhour = SAFE_STRDUP(temp);
+		event->byhour = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_EVENT_BYDAY:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		event->byday = SAFE_STRDUP(temp);
+		event->byday = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_EVENT_BYMONTHDAY:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		event->bymonthday = SAFE_STRDUP(temp);
+		event->bymonthday = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_EVENT_BYYEARDAY:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		event->byyearday = SAFE_STRDUP(temp);
+		event->byyearday = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_EVENT_BYWEEKNO:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		event->byweekno = SAFE_STRDUP(temp);
+		event->byweekno = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_EVENT_BYMONTH:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		event->bymonth = SAFE_STRDUP(temp);
+		event->bymonth = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_EVENT_BYSETPOS:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		event->bysetpos = SAFE_STRDUP(temp);
+		event->bysetpos = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_EVENT_WKST:
 		event->wkst = sqlite3_column_int(stmt, *stmt_count);
 		break;
 	case CAL_PROPERTY_EVENT_RECURRENCE_ID:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		event->recurrence_id = SAFE_STRDUP(temp);
+		event->recurrence_id = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_EVENT_RDATE:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		event->rdate = SAFE_STRDUP(temp);
+		event->rdate = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_EVENT_HAS_ATTENDEE:
 		event->has_attendee = sqlite3_column_int(stmt, *stmt_count);
@@ -2058,19 +2059,19 @@ static void _cal_db_event_get_property_stmt(sqlite3_stmt *stmt,
 		break;
 	case CAL_PROPERTY_EVENT_SYNC_DATA1:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		event->sync_data1 = SAFE_STRDUP(temp);
+		event->sync_data1 = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_EVENT_SYNC_DATA2:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		event->sync_data2 = SAFE_STRDUP(temp);
+		event->sync_data2 = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_EVENT_SYNC_DATA3:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		event->sync_data3 = SAFE_STRDUP(temp);
+		event->sync_data3 = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_EVENT_SYNC_DATA4:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		event->sync_data4 = SAFE_STRDUP(temp);
+		event->sync_data4 = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_EVENT_START:
 		event->start.type = sqlite3_column_int(stmt,*stmt_count);
@@ -2093,7 +2094,7 @@ static void _cal_db_event_get_property_stmt(sqlite3_stmt *stmt,
 		break;
 	case CAL_PROPERTY_EVENT_START_TZID:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		event->start_tzid = SAFE_STRDUP(temp);
+		event->start_tzid = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_EVENT_END:
 		event->end.type = sqlite3_column_int(stmt, *stmt_count);
@@ -2116,7 +2117,7 @@ static void _cal_db_event_get_property_stmt(sqlite3_stmt *stmt,
 		break;
 	case CAL_PROPERTY_EVENT_END_TZID:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		event->end_tzid = SAFE_STRDUP(temp);
+		event->end_tzid = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_EVENT_CALENDAR_SYSTEM_TYPE:
 		event->system_type = sqlite3_column_int(stmt, *stmt_count);
@@ -2577,7 +2578,7 @@ static int _cal_db_event_get_deleted_data(int id, int* calendar_book_id, int* cr
 		*created_ver = sqlite3_column_int(stmt, 1);
 		*original_event_id = sqlite3_column_int(stmt, 2);
 		tmp = sqlite3_column_text(stmt, 3);
-		*recurrence_id = SAFE_STRDUP(tmp);
+		*recurrence_id = cal_strdup((const char*)tmp);
 	}
 	else {
 		sqlite3_finalize(stmt);

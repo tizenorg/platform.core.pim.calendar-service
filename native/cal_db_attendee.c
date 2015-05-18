@@ -28,6 +28,8 @@
 #include "cal_db_util.h"
 #include "cal_db_query.h"
 #include "cal_db_attendee.h"
+#include "cal_db.h"
+#include "cal_utils.h"
 
 static int _cal_db_attendee_insert_record(calendar_record_h record, int parent_id)
 {
@@ -192,13 +194,13 @@ int cal_db_attendee_get_records(int parent_id, cal_list_s *list)
 		attendee->id = sqlite3_column_int(stmt, index++);
 
 		temp = sqlite3_column_text(stmt, index++);
-		attendee->attendee_name = SAFE_STRDUP(temp);
+		attendee->attendee_name = cal_strdup((const char*)temp);
 
 		temp = sqlite3_column_text(stmt, index++);
-		attendee->attendee_email = SAFE_STRDUP(temp);
+		attendee->attendee_email = cal_strdup((const char*)temp);
 
 		temp = sqlite3_column_text(stmt, index++);
-		attendee->attendee_number = SAFE_STRDUP(temp);
+		attendee->attendee_number = cal_strdup((const char*)temp);
 
 		attendee->attendee_status = sqlite3_column_int(stmt, index++);
 		attendee->attendee_ct_index = sqlite3_column_int(stmt, index++);
@@ -206,21 +208,21 @@ int cal_db_attendee_get_records(int parent_id, cal_list_s *list)
 		attendee->attendee_rsvp = sqlite3_column_int(stmt, index++);
 
 		temp = sqlite3_column_text(stmt, index++);
-		attendee->attendee_group = SAFE_STRDUP(temp);
+		attendee->attendee_group = cal_strdup((const char*)temp);
 
 		temp = sqlite3_column_text(stmt, index++);
-		attendee->attendee_delegator_uri = SAFE_STRDUP(temp);
+		attendee->attendee_delegator_uri = cal_strdup((const char*)temp);
 
 		temp = sqlite3_column_text(stmt, index++);
-		attendee->attendee_uid = SAFE_STRDUP(temp);
+		attendee->attendee_uid = cal_strdup((const char*)temp);
 
 		attendee->attendee_cutype = sqlite3_column_int(stmt, index++);
 
 		temp = sqlite3_column_text(stmt, index++);
-		attendee->attendee_delegatee_uri = SAFE_STRDUP(temp);
+		attendee->attendee_delegatee_uri = cal_strdup((const char*)temp);
 
 		temp = sqlite3_column_text(stmt, index++);
-		attendee->attendee_member = SAFE_STRDUP(temp);
+		attendee->attendee_member = cal_strdup((const char*)temp);
 
 		calendar_list_add((calendar_list_h)list, record);
 	}

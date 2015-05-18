@@ -25,6 +25,7 @@
 #include "cal_typedef.h"
 #include "cal_view.h"
 #include "cal_record.h"
+#include "cal_utils.h"
 
 static int _cal_record_calendar_create(calendar_record_h* out_record);
 static int _cal_record_calendar_destroy(calendar_record_h record, bool delete_child);
@@ -121,20 +122,20 @@ static int _cal_record_calendar_clone(calendar_record_h record, calendar_record_
 
 	out_data->index = src_data->index;
 	out_data->store_type = src_data->store_type;
-	out_data->uid = SAFE_STRDUP(src_data->uid);
+	out_data->uid = cal_strdup(src_data->uid);
 	out_data->updated = src_data->updated;
-	out_data->name = SAFE_STRDUP(src_data->name);
-	out_data->description = SAFE_STRDUP(src_data->description);
-	out_data->color = SAFE_STRDUP(src_data->color);
-	out_data->location = SAFE_STRDUP(src_data->location);
+	out_data->name = cal_strdup(src_data->name);
+	out_data->description = cal_strdup(src_data->description);
+	out_data->color = cal_strdup(src_data->color);
+	out_data->location = cal_strdup(src_data->location);
 	out_data->visibility = src_data->visibility;
 	out_data->sync_event = src_data->sync_event;
 	out_data->is_deleted = src_data->is_deleted;
 	out_data->account_id = src_data->account_id;
-	out_data->sync_data1 = SAFE_STRDUP(src_data->sync_data1);
-	out_data->sync_data2 = SAFE_STRDUP(src_data->sync_data2);
-	out_data->sync_data3 = SAFE_STRDUP(src_data->sync_data3);
-	out_data->sync_data4 = SAFE_STRDUP(src_data->sync_data4);
+	out_data->sync_data1 = cal_strdup(src_data->sync_data1);
+	out_data->sync_data2 = cal_strdup(src_data->sync_data2);
+	out_data->sync_data3 = cal_strdup(src_data->sync_data3);
+	out_data->sync_data4 = cal_strdup(src_data->sync_data4);
 	out_data->mode = src_data->mode;
 
 	*out_record = (calendar_record_h)out_data;
@@ -147,31 +148,31 @@ static int _cal_record_calendar_get_str(calendar_record_h record, unsigned int p
 	cal_calendar_s *cal_rec = (cal_calendar_s*)(record);
 	switch (property_id) {
 	case CAL_PROPERTY_CALENDAR_UID:
-		*out_str = SAFE_STRDUP(cal_rec->uid);
+		*out_str = cal_strdup(cal_rec->uid);
 		break;
 	case CAL_PROPERTY_CALENDAR_NAME:
-		*out_str = SAFE_STRDUP(cal_rec->name);
+		*out_str = cal_strdup(cal_rec->name);
 		break;
 	case CAL_PROPERTY_CALENDAR_DESCRIPTION:
-		*out_str = SAFE_STRDUP(cal_rec->description);
+		*out_str = cal_strdup(cal_rec->description);
 		break;
 	case CAL_PROPERTY_CALENDAR_COLOR:
-		*out_str = SAFE_STRDUP(cal_rec->color);
+		*out_str = cal_strdup(cal_rec->color);
 		break;
 	case CAL_PROPERTY_CALENDAR_LOCATION:
-		*out_str = SAFE_STRDUP(cal_rec->location);
+		*out_str = cal_strdup(cal_rec->location);
 		break;
 	case CAL_PROPERTY_CALENDAR_SYNC_DATA1:
-		*out_str = SAFE_STRDUP(cal_rec->sync_data1);
+		*out_str = cal_strdup(cal_rec->sync_data1);
 		break;
 	case CAL_PROPERTY_CALENDAR_SYNC_DATA2:
-		*out_str = SAFE_STRDUP(cal_rec->sync_data2);
+		*out_str = cal_strdup(cal_rec->sync_data2);
 		break;
 	case CAL_PROPERTY_CALENDAR_SYNC_DATA3:
-		*out_str = SAFE_STRDUP(cal_rec->sync_data3);
+		*out_str = cal_strdup(cal_rec->sync_data3);
 		break;
 	case CAL_PROPERTY_CALENDAR_SYNC_DATA4:
-		*out_str = SAFE_STRDUP(cal_rec->sync_data4);
+		*out_str = cal_strdup(cal_rec->sync_data4);
 		break;
 	default:
 		ERR("invalid parameter (property:%d)",property_id);
@@ -256,39 +257,39 @@ static int _cal_record_calendar_set_str(calendar_record_h record, unsigned int p
 	switch (property_id) {
 	case CAL_PROPERTY_CALENDAR_UID:
 		CAL_FREE(cal_rec->uid);
-		cal_rec->uid = SAFE_STRDUP(value);
+		cal_rec->uid = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_CALENDAR_NAME:
 		CAL_FREE(cal_rec->name);
-		cal_rec->name = SAFE_STRDUP(value);
+		cal_rec->name = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_CALENDAR_DESCRIPTION:
 		CAL_FREE(cal_rec->description);
-		cal_rec->description = SAFE_STRDUP(value);
+		cal_rec->description = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_CALENDAR_COLOR:
 		CAL_FREE(cal_rec->color);
-		cal_rec->color = SAFE_STRDUP(value);
+		cal_rec->color = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_CALENDAR_LOCATION:
 		CAL_FREE(cal_rec->location);
-		cal_rec->location = SAFE_STRDUP(value);
+		cal_rec->location = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_CALENDAR_SYNC_DATA1:
 		CAL_FREE(cal_rec->sync_data1);
-		cal_rec->sync_data1 = SAFE_STRDUP(value);
+		cal_rec->sync_data1 = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_CALENDAR_SYNC_DATA2:
 		CAL_FREE(cal_rec->sync_data2);
-		cal_rec->sync_data2 = SAFE_STRDUP(value);
+		cal_rec->sync_data2 = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_CALENDAR_SYNC_DATA3:
 		CAL_FREE(cal_rec->sync_data3);
-		cal_rec->sync_data3 = SAFE_STRDUP(value);
+		cal_rec->sync_data3 = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_CALENDAR_SYNC_DATA4:
 		CAL_FREE(cal_rec->sync_data4);
-		cal_rec->sync_data4 = SAFE_STRDUP(value);
+		cal_rec->sync_data4 = cal_strdup(value);
 		break;
 	default:
 		ERR("invalid parameter (property:%d)",property_id);

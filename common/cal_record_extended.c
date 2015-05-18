@@ -25,6 +25,7 @@
 #include "cal_typedef.h"
 #include "cal_view.h"
 #include "cal_record.h"
+#include "cal_utils.h"
 
 static int _cal_record_extended_create(calendar_record_h* out_record);
 static int _cal_record_extended_destroy(calendar_record_h record, bool delete_child);
@@ -111,8 +112,8 @@ static int _cal_record_extended_clone(calendar_record_h record, calendar_record_
 	out_data->id = src_data->id;
 	out_data->record_id = src_data->record_id;
 	out_data->record_type = src_data->record_type;
-	out_data->key = SAFE_STRDUP(src_data->key);
-	out_data->value = SAFE_STRDUP(src_data->value);
+	out_data->key = cal_strdup(src_data->key);
+	out_data->value = cal_strdup(src_data->value);
 
 	*out_record = (calendar_record_h)out_data;
 
@@ -124,10 +125,10 @@ static int _cal_record_extended_get_str(calendar_record_h record, unsigned int p
 	cal_extended_s *rec = (cal_extended_s*)(record);
 	switch (property_id) {
 	case CAL_PROPERTY_EXTENDED_KEY:
-		*out_str = SAFE_STRDUP(rec->key);
+		*out_str = cal_strdup(rec->key);
 		break;
 	case CAL_PROPERTY_EXTENDED_VALUE:
-		*out_str = SAFE_STRDUP(rec->value);
+		*out_str = cal_strdup(rec->value);
 		break;
 	default:
 		ERR("invalid parameter (property:%d)",property_id);
@@ -182,11 +183,11 @@ static int _cal_record_extended_set_str(calendar_record_h record, unsigned int p
 	switch (property_id) {
 	case CAL_PROPERTY_EXTENDED_KEY:
 		CAL_FREE(rec->key);
-		rec->key = SAFE_STRDUP(value);
+		rec->key = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_EXTENDED_VALUE:
 		CAL_FREE(rec->value);
-		rec->value = SAFE_STRDUP(value);
+		rec->value = cal_strdup(value);
 		break;
 	default:
 		ERR("invalid parameter (property:%d)",property_id);

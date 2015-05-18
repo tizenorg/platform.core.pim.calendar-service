@@ -26,6 +26,7 @@
 #include "cal_typedef.h"
 #include "cal_db.h"
 #include "cal_db_util.h"
+#include "cal_utils.h"
 
 // For Security
 #define CALS_SECURITY_FILE_GROUP 6003

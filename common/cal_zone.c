@@ -22,6 +22,7 @@
 #include "calendar_errors.h"
 #include "cal_internal.h"
 #include "cal_zone.h"
+#include "cal_utils.h"
 
 int cal_zone_get_root_path(const char *zone_name, char *path, int path_size)
 {
@@ -43,7 +44,7 @@ int cal_zone_get_canonicalize_path(const char *zone_name, const char *path, char
 		else
 			snprintf(buf, sizeof(buf), CAL_ZONE_BASE_PATH"%s", zone_name, path);
 
-		*canonicalize_path = g_strdup(buf);
+		*canonicalize_path = cal_strdup(buf);
 		return CALENDAR_ERROR_NONE;
 	}
 

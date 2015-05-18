@@ -23,37 +23,38 @@ SET(SRCS
 	${CMAKE_SOURCE_DIR}/common/ipc/cal_ipc_marshal_instance_allday.c
 	${CMAKE_SOURCE_DIR}/common/ipc/cal_ipc_marshal_instance_allday_extended.c
 	${CMAKE_SOURCE_DIR}/common/ipc/cal_ipc_marshal_instance_normal.c
-        ${CMAKE_SOURCE_DIR}/common/ipc/cal_ipc_marshal_instance_normal_extended.c
+	${CMAKE_SOURCE_DIR}/common/ipc/cal_ipc_marshal_instance_normal_extended.c
 	${CMAKE_SOURCE_DIR}/common/ipc/cal_ipc_marshal_search.c
 	${CMAKE_SOURCE_DIR}/common/ipc/cal_ipc_marshal_timezone.c
 	${CMAKE_SOURCE_DIR}/common/ipc/cal_ipc_marshal_todo.c
 	${CMAKE_SOURCE_DIR}/common/ipc/cal_ipc_marshal_updated_info.c
 	${CMAKE_SOURCE_DIR}/common/ipc/cal_ipc_marshal_extended.c
 	${CMAKE_SOURCE_DIR}/common/cal_record.c
-    ${CMAKE_SOURCE_DIR}/common/cal_record_calendar.c
-    ${CMAKE_SOURCE_DIR}/common/cal_record_event.c
-    ${CMAKE_SOURCE_DIR}/common/cal_record_todo.c
-    ${CMAKE_SOURCE_DIR}/common/cal_record_attendee.c
-    ${CMAKE_SOURCE_DIR}/common/cal_record_alarm.c
-    ${CMAKE_SOURCE_DIR}/common/cal_record_search.c
-    ${CMAKE_SOURCE_DIR}/common/cal_record_timezone.c
-    ${CMAKE_SOURCE_DIR}/common/cal_record_updated_info.c
-    ${CMAKE_SOURCE_DIR}/common/cal_record_instance_normal.c
-    ${CMAKE_SOURCE_DIR}/common/cal_record_instance_allday.c
-    ${CMAKE_SOURCE_DIR}/common/cal_record_instance_normal_extended.c
-    ${CMAKE_SOURCE_DIR}/common/cal_record_instance_allday_extended.c
-    ${CMAKE_SOURCE_DIR}/common/cal_record_extended.c
-    ${CMAKE_SOURCE_DIR}/common/cal_view.c
-    ${CMAKE_SOURCE_DIR}/common/cal_filter.c
-    ${CMAKE_SOURCE_DIR}/common/cal_query.c
-    ${CMAKE_SOURCE_DIR}/common/cal_inotify.c
-    ${CMAKE_SOURCE_DIR}/common/cal_list.c
-    ${CMAKE_SOURCE_DIR}/common/cal_time.cpp
-    ${CMAKE_SOURCE_DIR}/common/cal_vcalendar.c
-    ${CMAKE_SOURCE_DIR}/common/cal_vcalendar_make.c
-    ${CMAKE_SOURCE_DIR}/common/cal_vcalendar_parse.c
-    ${CMAKE_SOURCE_DIR}/common/cal_mutex.c
-)
+	${CMAKE_SOURCE_DIR}/common/cal_record_calendar.c
+	${CMAKE_SOURCE_DIR}/common/cal_record_event.c
+	${CMAKE_SOURCE_DIR}/common/cal_record_todo.c
+	${CMAKE_SOURCE_DIR}/common/cal_record_attendee.c
+	${CMAKE_SOURCE_DIR}/common/cal_record_alarm.c
+	${CMAKE_SOURCE_DIR}/common/cal_record_search.c
+	${CMAKE_SOURCE_DIR}/common/cal_record_timezone.c
+	${CMAKE_SOURCE_DIR}/common/cal_record_updated_info.c
+	${CMAKE_SOURCE_DIR}/common/cal_record_instance_normal.c
+	${CMAKE_SOURCE_DIR}/common/cal_record_instance_allday.c
+	${CMAKE_SOURCE_DIR}/common/cal_record_instance_normal_extended.c
+	${CMAKE_SOURCE_DIR}/common/cal_record_instance_allday_extended.c
+	${CMAKE_SOURCE_DIR}/common/cal_record_extended.c
+	${CMAKE_SOURCE_DIR}/common/cal_view.c
+	${CMAKE_SOURCE_DIR}/common/cal_filter.c
+	${CMAKE_SOURCE_DIR}/common/cal_query.c
+	${CMAKE_SOURCE_DIR}/common/cal_inotify.c
+	${CMAKE_SOURCE_DIR}/common/cal_list.c
+	${CMAKE_SOURCE_DIR}/common/cal_time.cpp
+	${CMAKE_SOURCE_DIR}/common/cal_vcalendar.c
+	${CMAKE_SOURCE_DIR}/common/cal_vcalendar_make.c
+	${CMAKE_SOURCE_DIR}/common/cal_vcalendar_parse.c
+	${CMAKE_SOURCE_DIR}/common/cal_mutex.c
+	${CMAKE_SOURCE_DIR}/common/cal_utils.c
+	)
 
 INCLUDE(FindPkgConfig)
 pkg_check_modules(service2_pkgs REQUIRED

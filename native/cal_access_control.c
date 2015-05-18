@@ -34,6 +34,9 @@
 #include "cal_db.h"
 #include "cal_access_control.h"
 #include "cal_service.h"
+#include "cal_db_util.h"
+#include "cal_calendar.h"
+#include "cal_utils.h"
 
 typedef struct {
 	unsigned int thread_id;
@@ -146,7 +149,7 @@ void cal_access_control_set_client_info(pims_ipc_h ipc, const char *smack_label)
 	info->ipc = ipc;
 
 	free(info->smack_label);
-	info->smack_label = SAFE_STRDUP(smack_label);
+	info->smack_label = cal_strdup(smack_label);
 
 	/* for close DB or free access_control when client is disconnected */
 	if (info->ipc)

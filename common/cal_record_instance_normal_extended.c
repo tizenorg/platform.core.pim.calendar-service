@@ -25,6 +25,7 @@
 #include "cal_typedef.h"
 #include "cal_view.h"
 #include "cal_record.h"
+#include "cal_utils.h"
 
 static int _cal_record_instance_normal_extended_create(calendar_record_h* out_record);
 static int _cal_record_instance_normal_extended_destroy(calendar_record_h record, bool delete_child);
@@ -137,9 +138,9 @@ static int _cal_record_instance_normal_extended_clone(calendar_record_h record, 
 	out_data->calendar_id = src_data->calendar_id;
 	out_data->start = src_data->start;
 	out_data->end = src_data->end;
-	out_data->summary = SAFE_STRDUP(src_data->summary);
-	out_data->description = SAFE_STRDUP(src_data->description);
-	out_data->location = SAFE_STRDUP(src_data->location);
+	out_data->summary = cal_strdup(src_data->summary);
+	out_data->description = cal_strdup(src_data->description);
+	out_data->location = cal_strdup(src_data->location);
 	out_data->busy_status = src_data->busy_status;
 	out_data->event_status = src_data->event_status;
 	out_data->priority = src_data->priority;
@@ -150,12 +151,12 @@ static int _cal_record_instance_normal_extended_clone(calendar_record_h record, 
 	out_data->has_alarm = src_data->has_alarm;
 	out_data->original_event_id = src_data->original_event_id;
 	out_data->last_mod = src_data->last_mod;
-	out_data->organizer_name = SAFE_STRDUP(src_data->organizer_name);
-	out_data->categories = SAFE_STRDUP(src_data->categories);
-	out_data->sync_data1 = SAFE_STRDUP(src_data->sync_data1);
-	out_data->sync_data2 = SAFE_STRDUP(src_data->sync_data2);
-	out_data->sync_data3 = SAFE_STRDUP(src_data->sync_data3);
-	out_data->sync_data4 = SAFE_STRDUP(src_data->sync_data4);
+	out_data->organizer_name = cal_strdup(src_data->organizer_name);
+	out_data->categories = cal_strdup(src_data->categories);
+	out_data->sync_data1 = cal_strdup(src_data->sync_data1);
+	out_data->sync_data2 = cal_strdup(src_data->sync_data2);
+	out_data->sync_data3 = cal_strdup(src_data->sync_data3);
+	out_data->sync_data4 = cal_strdup(src_data->sync_data4);
 
 	*out_record = (calendar_record_h)out_data;
 
@@ -167,31 +168,31 @@ static int _cal_record_instance_normal_extended_get_str(calendar_record_h record
 	cal_instance_normal_extended_s *rec = (cal_instance_normal_extended_s*)(record);
 	switch (property_id) {
 	case CAL_PROPERTY_INSTANCE_NORMAL_EXTENDED_SUMMARY:
-		*out_str = SAFE_STRDUP(rec->summary);
+		*out_str = cal_strdup(rec->summary);
 		break;
 	case CAL_PROPERTY_INSTANCE_NORMAL_EXTENDED_DESCRIPTION:
-		*out_str = SAFE_STRDUP(rec->description);
+		*out_str = cal_strdup(rec->description);
 		break;
 	case CAL_PROPERTY_INSTANCE_NORMAL_EXTENDED_LOCATION:
-		*out_str = SAFE_STRDUP(rec->location);
+		*out_str = cal_strdup(rec->location);
 		break;
 	case CAL_PROPERTY_INSTANCE_NORMAL_EXTENDED_SYNC_DATA1:
-		*out_str = SAFE_STRDUP(rec->sync_data1);
+		*out_str = cal_strdup(rec->sync_data1);
 		break;
 	case CAL_PROPERTY_INSTANCE_NORMAL_EXTENDED_ORGANIZER_NAME:
-		*out_str = SAFE_STRDUP(rec->organizer_name);
+		*out_str = cal_strdup(rec->organizer_name);
 		break;
 	case CAL_PROPERTY_INSTANCE_NORMAL_EXTENDED_CATEGORIES:
-		*out_str = SAFE_STRDUP(rec->categories);
+		*out_str = cal_strdup(rec->categories);
 		break;
 	case CAL_PROPERTY_INSTANCE_NORMAL_EXTENDED_SYNC_DATA2:
-		*out_str = SAFE_STRDUP(rec->sync_data2);
+		*out_str = cal_strdup(rec->sync_data2);
 		break;
 	case CAL_PROPERTY_INSTANCE_NORMAL_EXTENDED_SYNC_DATA3:
-		*out_str = SAFE_STRDUP(rec->sync_data3);
+		*out_str = cal_strdup(rec->sync_data3);
 		break;
 	case CAL_PROPERTY_INSTANCE_NORMAL_EXTENDED_SYNC_DATA4:
-		*out_str = SAFE_STRDUP(rec->sync_data4);
+		*out_str = cal_strdup(rec->sync_data4);
 		break;
 	default:
 		ERR("invalid parameter (property:%d)",property_id);
@@ -339,39 +340,39 @@ static int _cal_record_instance_normal_extended_set_str(calendar_record_h record
 	switch (property_id) {
 	case CAL_PROPERTY_INSTANCE_NORMAL_EXTENDED_SUMMARY:
 		CAL_FREE(rec->summary);
-		rec->summary = SAFE_STRDUP(value);
+		rec->summary = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_INSTANCE_NORMAL_EXTENDED_DESCRIPTION:
 		CAL_FREE(rec->description);
-		rec->description = SAFE_STRDUP(value);
+		rec->description = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_INSTANCE_NORMAL_EXTENDED_LOCATION:
 		CAL_FREE(rec->location);
-		rec->location = SAFE_STRDUP(value);
+		rec->location = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_INSTANCE_NORMAL_EXTENDED_SYNC_DATA1:
 		CAL_FREE(rec->sync_data1);
-		rec->sync_data1 = SAFE_STRDUP(value);
+		rec->sync_data1 = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_INSTANCE_NORMAL_EXTENDED_ORGANIZER_NAME:
 		CAL_FREE(rec->organizer_name);
-		rec->organizer_name = SAFE_STRDUP(value);
+		rec->organizer_name = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_INSTANCE_NORMAL_EXTENDED_CATEGORIES:
 		CAL_FREE(rec->categories);
-		rec->categories = SAFE_STRDUP(value);
+		rec->categories = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_INSTANCE_NORMAL_EXTENDED_SYNC_DATA2:
 		CAL_FREE(rec->sync_data2);
-		rec->sync_data2 = SAFE_STRDUP(value);
+		rec->sync_data2 = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_INSTANCE_NORMAL_EXTENDED_SYNC_DATA3:
 		CAL_FREE(rec->sync_data3);
-		rec->sync_data3 = SAFE_STRDUP(value);
+		rec->sync_data3 = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_INSTANCE_NORMAL_EXTENDED_SYNC_DATA4:
 		CAL_FREE(rec->sync_data4);
-		rec->sync_data4 = SAFE_STRDUP(value);
+		rec->sync_data4 = cal_strdup(value);
 		break;
 	default:
 		ERR("invalid parameter (property:%d)",property_id);

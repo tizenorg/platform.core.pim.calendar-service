@@ -27,8 +27,8 @@
 #include "cal_internal.h"
 #include "cal_typedef.h"
 #include "cal_view.h"
-
 #include "cal_inotify.h"
+#include "cal_utils.h"
 
 #ifdef CAL_IPC_CLIENT
 #include "cal_client_ipc.h"
@@ -275,26 +275,12 @@ int cal_inotify_subscribe(cal_noti_type_e type, const char *path, calendar_db_ch
 	noti_info *noti, *same_noti = NULL;
 	GSList *cursor;
 
-	if (path == NULL)
-	{
-		ERR("Invalid argument: path is NULL");
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
-	if (callback == NULL)
-	{
-		ERR("Invalid argument: callback is NULL");
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
-
-	if (inoti_fd < 0)
-	{
-		ERR("Invalid argument: inoti_fd(%d) is invalid", inoti_fd);
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
+	RETV_IF(NULL == path, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == callback, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETVM_IF(inoti_fd < 0, CALENDAR_ERROR_INVALID_PARAMETER, "inoti_fd(%d) is invalid", inoti_fd);
 
 	wd = _cal_inotify_get_wd(inoti_fd, path);
-	if (wd == -1)
-	{
+	if (wd == -1) {
 		ERR("Failed to get wd(err:%d)", errno);
 		if (errno == EACCES)
 			return CALENDAR_ERROR_PERMISSION_DENIED;
@@ -314,31 +300,27 @@ int cal_inotify_subscribe(cal_noti_type_e type, const char *path, calendar_db_ch
 			break;
 
 		}
-		else
-		{
+		else {
 			same_noti = NULL;
 		}
 
 		cursor = cursor->next;
 	}
 
-	if (same_noti)
-	{
+	if (same_noti) {
 		_cal_inotify_add_watch(inoti_fd, path);
 		ERR("The same callback(%s) is already exist", path);
 		return CALENDAR_ERROR_SYSTEM;
 	}
 
 	ret = _cal_inotify_add_watch(inoti_fd, path);
-	if (CALENDAR_ERROR_NONE != ret)
-	{
+	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("Failed to add watch");
 		return CALENDAR_ERROR_SYSTEM;
 	}
 
 	noti = calloc(1, sizeof(noti_info));
-	if (noti == NULL)
-	{
+	if (noti == NULL) {
 		ERR("Failed to alloc");
 		return CALENDAR_ERROR_OUT_OF_MEMORY;
 	}

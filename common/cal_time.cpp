@@ -38,6 +38,7 @@
 #include "cal_internal.h"
 #include "cal_typedef.h"
 #include "cal_time.h"
+#include "cal_utils.h"
 
 #define ULOC_LOCALE_IDENTIFIER_CAPACITY (ULOC_FULLNAME_CAPACITY + 1 + ULOC_KEYWORD_AND_VALUES_CAPACITY)
 #define uprv_strncpy(dst, src, size) U_STANDARD_CPP_NAMESPACE strncpy(dst, src, size)
@@ -223,7 +224,7 @@ static int _cal_time_get_like_utzid(UChar *utzid, int len, const char *tzid, cal
 				gmtoffset < 0 ? '+' : '-',
 				tz->tz_offset_from_gmt / 60);
 		DBG("No dayligit, set like tzid[%s]", buf);
-		*like_tzid = strdup(buf);
+		*like_tzid = cal_strdup(buf);
 		return CALENDAR_ERROR_NONE;
 	}
 
@@ -395,7 +396,7 @@ int cal_time_get_like_tzid(const char *tzid, calendar_record_h timezone, char **
 	ret = _cal_time_get_like_utzid(utzid, u_strlen(utzid), tzid, timezone, like_tzid);
 	if (CALENDAR_ERROR_NONE != ret) {
 		DBG("_cal_time_get_like_utzid() Fail(%d): set GMT", ret);
-		*like_tzid = strdup(CAL_TZID_GMT);
+		*like_tzid = cal_strdup(CAL_TZID_GMT);
 	}
 	CAL_FREE(utzid);
 
@@ -467,7 +468,7 @@ char* cal_time_extract_by(int calendar_system_type, const char *tzid, int wkst, 
 
 	}
 	ucal_close(ucal);
-	return strdup(buf);
+	return cal_strdup(buf);
 }
 
 char* cal_time_convert_ltos(const char *tzid, long long int lli, int is_allday)
@@ -507,7 +508,7 @@ char* cal_time_convert_ltos(const char *tzid, long long int lli, int is_allday)
 
 	ucal_close(ucal);
 
-	return strdup(buf);
+	return cal_strdup(buf);
 }
 
 long long int cal_time_convert_itol(const char *tzid, int y, int mon, int d, int h, int min, int s)
@@ -746,7 +747,7 @@ char* cal_time_get_timezone(void)
 	RETVM_IF(-1 == len, NULL, "readlink() Fail");
 
 	buf[len] = '\0';
-	return g_strdup(buf + strlen("/usr/share/zoneinfo/"));
+	return cal_strdup(buf + strlen("/usr/share/zoneinfo/"));
 }
 
 long long int cal_time_get_utime(UCalendar *ucal, int y, int mon, int d, int h, int min, int s)

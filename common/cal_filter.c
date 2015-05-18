@@ -23,6 +23,7 @@
 #include "cal_typedef.h"
 #include "cal_view.h"
 #include "cal_filter.h"
+#include "cal_utils.h"
 
 static int _cal_filter_create_attribute(cal_composite_filter_s *com_filter, unsigned int property_id,
 		int match, int filter_type, cal_attribute_filter_s **out_filter);
@@ -45,7 +46,7 @@ API int calendar_filter_create(const char* view_uri, calendar_filter_h* out_filt
 	RETV_IF(NULL == com_filter, CALENDAR_ERROR_OUT_OF_MEMORY);
 
 	com_filter->filter_type = CAL_FILTER_COMPOSITE;
-	com_filter->view_uri = strdup(view_uri);
+	com_filter->view_uri = cal_strdup(view_uri);
 	com_filter->properties = (cal_property_info_s *)cal_view_get_property_info(view_uri, &com_filter->property_count);
 	*out_filter = (calendar_filter_h)com_filter;
 	return CALENDAR_ERROR_NONE;
@@ -131,7 +132,7 @@ API int calendar_filter_add_str(calendar_filter_h filter, unsigned int property_
 	ret = _cal_filter_create_attribute(com_filter, property_id, match, CAL_FILTER_STR, &str_filter);
 	RETVM_IF(CALENDAR_ERROR_NONE !=ret, ret, "property_id(%d), match(%d), match_value(%s)", property_id, match, match_value);
 
-	str_filter->value.s = SAFE_STRDUP(match_value);
+	str_filter->value.s = cal_strdup(match_value);
 	return CALENDAR_ERROR_NONE;
 }
 
@@ -340,7 +341,7 @@ static int _cal_filter_clone_attribute(cal_attribute_filter_s* filter,
 	out->property_id = filter->property_id;
 	switch (filter->filter_type) {
 	case CAL_FILTER_STR:
-		out->value.s = SAFE_STRDUP(filter->value.s);
+		out->value.s = cal_strdup(filter->value.s);
 		break;
 	case CAL_FILTER_INT:
 		out->value.i = filter->value.i;

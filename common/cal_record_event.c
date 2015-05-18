@@ -28,6 +28,7 @@
 #include "cal_view.h"
 #include "cal_list.h"
 #include "cal_record.h"
+#include "cal_utils.h"
 
 static int _cal_record_event_create(calendar_record_h* out_record);
 static int _cal_record_event_destroy(calendar_record_h record, bool delete_child);
@@ -187,11 +188,11 @@ static int _cal_record_event_clone(calendar_record_h record, calendar_record_h* 
 	out_data->index = src_data->index;
 	out_data->calendar_id = src_data->calendar_id;
 
-	out_data->summary = SAFE_STRDUP(src_data->summary);
-	out_data->description = SAFE_STRDUP(src_data->description);
-	out_data->location = SAFE_STRDUP(src_data->location);
-	out_data->categories = SAFE_STRDUP(src_data->categories);
-	out_data->exdate = SAFE_STRDUP(src_data->exdate);
+	out_data->summary = cal_strdup(src_data->summary);
+	out_data->description = cal_strdup(src_data->description);
+	out_data->location = cal_strdup(src_data->location);
+	out_data->categories = cal_strdup(src_data->categories);
+	out_data->exdate = cal_strdup(src_data->exdate);
 
 	out_data->event_status = src_data->event_status;
 	out_data->priority = src_data->priority;
@@ -201,9 +202,9 @@ static int _cal_record_event_clone(calendar_record_h record, calendar_record_h* 
 	out_data->sensitivity = src_data->sensitivity;
 	out_data->meeting_status = src_data->meeting_status;
 
-	out_data->uid = SAFE_STRDUP(src_data->uid);
-	out_data->organizer_name = SAFE_STRDUP(src_data->organizer_name);
-	out_data->organizer_email = SAFE_STRDUP(src_data->organizer_email);
+	out_data->uid = cal_strdup(src_data->uid);
+	out_data->organizer_name = cal_strdup(src_data->organizer_name);
+	out_data->organizer_email = cal_strdup(src_data->organizer_email);
 
 	out_data->original_event_id = src_data->original_event_id;
 	out_data->latitude = src_data->latitude;
@@ -218,32 +219,32 @@ static int _cal_record_event_clone(calendar_record_h record, calendar_record_h* 
 
 	out_data->count = src_data->count;
 	out_data->interval = src_data->interval;
-	out_data->bysecond = SAFE_STRDUP(src_data->bysecond);
-	out_data->byminute = SAFE_STRDUP(src_data->byminute);
-	out_data->byhour = SAFE_STRDUP(src_data->byhour);
-	out_data->byday = SAFE_STRDUP(src_data->byday);
-	out_data->bymonthday = SAFE_STRDUP(src_data->bymonthday);
-	out_data->byyearday = SAFE_STRDUP(src_data->byyearday);
-	out_data->byweekno = SAFE_STRDUP(src_data->byweekno);
-	out_data->bymonth = SAFE_STRDUP(src_data->bymonth);
-	out_data->bysetpos = SAFE_STRDUP(src_data->bysetpos);
+	out_data->bysecond = cal_strdup(src_data->bysecond);
+	out_data->byminute = cal_strdup(src_data->byminute);
+	out_data->byhour = cal_strdup(src_data->byhour);
+	out_data->byday = cal_strdup(src_data->byday);
+	out_data->bymonthday = cal_strdup(src_data->bymonthday);
+	out_data->byyearday = cal_strdup(src_data->byyearday);
+	out_data->byweekno = cal_strdup(src_data->byweekno);
+	out_data->bymonth = cal_strdup(src_data->bymonth);
+	out_data->bysetpos = cal_strdup(src_data->bysetpos);
 	out_data->wkst = src_data->wkst;
-	out_data->recurrence_id = SAFE_STRDUP(src_data->recurrence_id);
-	out_data->rdate = SAFE_STRDUP(src_data->rdate);
+	out_data->recurrence_id = cal_strdup(src_data->recurrence_id);
+	out_data->rdate = cal_strdup(src_data->rdate);
 	out_data->has_attendee = src_data->has_attendee;
 	out_data->has_alarm = src_data->has_alarm;
 	out_data->system_type = src_data->system_type;
 	out_data->updated = src_data->updated;
 
-	out_data->sync_data1 = SAFE_STRDUP(src_data->sync_data1);
-	out_data->sync_data2 = SAFE_STRDUP(src_data->sync_data2);
-	out_data->sync_data3 = SAFE_STRDUP(src_data->sync_data3);
-	out_data->sync_data4 = SAFE_STRDUP(src_data->sync_data4);
+	out_data->sync_data1 = cal_strdup(src_data->sync_data1);
+	out_data->sync_data2 = cal_strdup(src_data->sync_data2);
+	out_data->sync_data3 = cal_strdup(src_data->sync_data3);
+	out_data->sync_data4 = cal_strdup(src_data->sync_data4);
 
 	out_data->start = src_data->start;
-	out_data->start_tzid = SAFE_STRDUP(src_data->start_tzid);
+	out_data->start_tzid = cal_strdup(src_data->start_tzid);
 	out_data->end = src_data->end;
-	out_data->end_tzid = SAFE_STRDUP(src_data->end_tzid);
+	out_data->end_tzid = cal_strdup(src_data->end_tzid);
 
 	cal_list_clone((calendar_list_h)src_data->alarm_list, (calendar_list_h *)&out_data->alarm_list);
 	cal_list_clone((calendar_list_h)src_data->attendee_list, (calendar_list_h *)&out_data->attendee_list);
@@ -260,79 +261,79 @@ static int _cal_record_event_get_str(calendar_record_h record, unsigned int prop
 	cal_event_s *rec = (cal_event_s*)(record);
 	switch (property_id) {
 	case CAL_PROPERTY_EVENT_SUMMARY:
-		*out_str = SAFE_STRDUP(rec->summary);
+		*out_str = cal_strdup(rec->summary);
 		break;
 	case CAL_PROPERTY_EVENT_DESCRIPTION:
-		*out_str = SAFE_STRDUP(rec->description);
+		*out_str = cal_strdup(rec->description);
 		break;
 	case CAL_PROPERTY_EVENT_LOCATION:
-		*out_str = SAFE_STRDUP(rec->location);
+		*out_str = cal_strdup(rec->location);
 		break;
 	case CAL_PROPERTY_EVENT_CATEGORIES:
-		*out_str = SAFE_STRDUP(rec->categories);
+		*out_str = cal_strdup(rec->categories);
 		break;
 	case CAL_PROPERTY_EVENT_EXDATE:
-		*out_str = SAFE_STRDUP(rec->exdate);
+		*out_str = cal_strdup(rec->exdate);
 		break;
 	case CAL_PROPERTY_EVENT_UID:
-		*out_str = SAFE_STRDUP(rec->uid);
+		*out_str = cal_strdup(rec->uid);
 		break;
 	case CAL_PROPERTY_EVENT_ORGANIZER_NAME:
-		*out_str = SAFE_STRDUP(rec->organizer_name);
+		*out_str = cal_strdup(rec->organizer_name);
 		break;
 	case CAL_PROPERTY_EVENT_ORGANIZER_EMAIL:
-		*out_str = SAFE_STRDUP(rec->organizer_email);
+		*out_str = cal_strdup(rec->organizer_email);
 		break;
 	case CAL_PROPERTY_EVENT_BYSECOND:
-		*out_str = SAFE_STRDUP(rec->bysecond);
+		*out_str = cal_strdup(rec->bysecond);
 		break;
 	case CAL_PROPERTY_EVENT_BYMINUTE:
-		*out_str = SAFE_STRDUP(rec->byminute);
+		*out_str = cal_strdup(rec->byminute);
 		break;
 	case CAL_PROPERTY_EVENT_BYHOUR:
-		*out_str = SAFE_STRDUP(rec->byhour);
+		*out_str = cal_strdup(rec->byhour);
 		break;
 	case CAL_PROPERTY_EVENT_BYDAY:
-		*out_str = SAFE_STRDUP(rec->byday);
+		*out_str = cal_strdup(rec->byday);
 		break;
 	case CAL_PROPERTY_EVENT_BYMONTHDAY:
-		*out_str = SAFE_STRDUP(rec->bymonthday);
+		*out_str = cal_strdup(rec->bymonthday);
 		break;
 	case CAL_PROPERTY_EVENT_BYYEARDAY:
-		*out_str = SAFE_STRDUP(rec->byyearday);
+		*out_str = cal_strdup(rec->byyearday);
 		break;
 	case CAL_PROPERTY_EVENT_BYWEEKNO:
-		*out_str = SAFE_STRDUP(rec->byweekno);
+		*out_str = cal_strdup(rec->byweekno);
 		break;
 	case CAL_PROPERTY_EVENT_BYMONTH:
-		*out_str = SAFE_STRDUP(rec->bymonth);
+		*out_str = cal_strdup(rec->bymonth);
 		break;
 	case CAL_PROPERTY_EVENT_BYSETPOS:
-		*out_str = SAFE_STRDUP(rec->bysetpos);
+		*out_str = cal_strdup(rec->bysetpos);
 		break;
 	case CAL_PROPERTY_EVENT_RECURRENCE_ID:
-		*out_str = SAFE_STRDUP(rec->recurrence_id);
+		*out_str = cal_strdup(rec->recurrence_id);
 		break;
 	case CAL_PROPERTY_EVENT_RDATE:
-		*out_str = SAFE_STRDUP(rec->rdate);
+		*out_str = cal_strdup(rec->rdate);
 		break;
 	case CAL_PROPERTY_EVENT_SYNC_DATA1:
-		*out_str = SAFE_STRDUP(rec->sync_data1);
+		*out_str = cal_strdup(rec->sync_data1);
 		break;
 	case CAL_PROPERTY_EVENT_SYNC_DATA2:
-		*out_str = SAFE_STRDUP(rec->sync_data2);
+		*out_str = cal_strdup(rec->sync_data2);
 		break;
 	case CAL_PROPERTY_EVENT_SYNC_DATA3:
-		*out_str = SAFE_STRDUP(rec->sync_data3);
+		*out_str = cal_strdup(rec->sync_data3);
 		break;
 	case CAL_PROPERTY_EVENT_SYNC_DATA4:
-		*out_str = SAFE_STRDUP(rec->sync_data4);
+		*out_str = cal_strdup(rec->sync_data4);
 		break;
 	case CAL_PROPERTY_EVENT_START_TZID:
-		*out_str = SAFE_STRDUP(rec->start_tzid);
+		*out_str = cal_strdup(rec->start_tzid);
 		break;
 	case CAL_PROPERTY_EVENT_END_TZID:
-		*out_str = SAFE_STRDUP(rec->end_tzid);
+		*out_str = cal_strdup(rec->end_tzid);
 		break;
 	default:
 		ERR("invalid parameter (property:%d)",property_id);
@@ -565,103 +566,103 @@ static int _cal_record_event_set_str(calendar_record_h record, unsigned int prop
 	switch (property_id) {
 	case CAL_PROPERTY_EVENT_SUMMARY:
 		CAL_FREE(rec->summary);
-		rec->summary = SAFE_STRDUP(value);
+		rec->summary = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_EVENT_DESCRIPTION:
 		CAL_FREE(rec->description);
-		rec->description = SAFE_STRDUP(value);
+		rec->description = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_EVENT_LOCATION:
 		CAL_FREE(rec->location);
-		rec->location = SAFE_STRDUP(value);
+		rec->location = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_EVENT_CATEGORIES:
 		CAL_FREE(rec->categories);
-		rec->categories = SAFE_STRDUP(value);
+		rec->categories = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_EVENT_EXDATE:
 		CAL_FREE(rec->exdate);
-		rec->exdate = SAFE_STRDUP(value);
+		rec->exdate = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_EVENT_UID:
 		CAL_FREE(rec->uid);
-		rec->uid = SAFE_STRDUP(value);
+		rec->uid = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_EVENT_ORGANIZER_NAME:
 		CAL_FREE(rec->organizer_name);
-		rec->organizer_name = SAFE_STRDUP(value);
+		rec->organizer_name = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_EVENT_ORGANIZER_EMAIL:
 		CAL_FREE(rec->organizer_email);
-		rec->organizer_email = SAFE_STRDUP(value);
+		rec->organizer_email = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_EVENT_BYSECOND:
 		CAL_FREE(rec->bysecond);
-		rec->bysecond = SAFE_STRDUP(value);
+		rec->bysecond = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_EVENT_BYMINUTE:
 		CAL_FREE(rec->byminute);
-		rec->byminute = SAFE_STRDUP(value);
+		rec->byminute = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_EVENT_BYHOUR:
 		CAL_FREE(rec->byhour);
-		rec->byhour = SAFE_STRDUP(value);
+		rec->byhour = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_EVENT_BYDAY:
 		CAL_FREE(rec->byday);
-		rec->byday = SAFE_STRDUP(value);
+		rec->byday = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_EVENT_BYMONTHDAY:
 		CAL_FREE(rec->bymonthday);
-		rec->bymonthday = SAFE_STRDUP(value);
+		rec->bymonthday = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_EVENT_BYYEARDAY:
 		CAL_FREE(rec->byyearday);
-		rec->byyearday = SAFE_STRDUP(value);
+		rec->byyearday = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_EVENT_BYWEEKNO:
 		CAL_FREE(rec->byweekno);
-		rec->byweekno = SAFE_STRDUP(value);
+		rec->byweekno = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_EVENT_BYMONTH:
 		CAL_FREE(rec->bymonth);
-		rec->bymonth = SAFE_STRDUP(value);
+		rec->bymonth = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_EVENT_BYSETPOS:
 		CAL_FREE(rec->bysetpos);
-		rec->bysetpos = SAFE_STRDUP(value);
+		rec->bysetpos = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_EVENT_RECURRENCE_ID:
 		CAL_FREE(rec->recurrence_id);
-		rec->recurrence_id = SAFE_STRDUP(value);
+		rec->recurrence_id = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_EVENT_RDATE:
 		CAL_FREE(rec->rdate);
-		rec->rdate = SAFE_STRDUP(value);
+		rec->rdate = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_EVENT_SYNC_DATA1:
 		CAL_FREE(rec->sync_data1);
-		rec->sync_data1 = SAFE_STRDUP(value);
+		rec->sync_data1 = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_EVENT_SYNC_DATA2:
 		CAL_FREE(rec->sync_data2);
-		rec->sync_data2 = SAFE_STRDUP(value);
+		rec->sync_data2 = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_EVENT_SYNC_DATA3:
 		CAL_FREE(rec->sync_data3);
-		rec->sync_data3 = SAFE_STRDUP(value);
+		rec->sync_data3 = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_EVENT_SYNC_DATA4:
 		CAL_FREE(rec->sync_data4);
-		rec->sync_data4 = SAFE_STRDUP(value);
+		rec->sync_data4 = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_EVENT_START_TZID:
 		CAL_FREE(rec->start_tzid);
-		rec->start_tzid = SAFE_STRDUP(value);
+		rec->start_tzid = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_EVENT_END_TZID:
 		CAL_FREE(rec->end_tzid);
-		rec->end_tzid = SAFE_STRDUP(value);
+		rec->end_tzid = cal_strdup(value);
 		break;
 	default:
 		ERR("invalid parameter (property:%d)",property_id);

@@ -36,6 +36,7 @@
 #include "cal_db_query.h"
 #include "cal_db_instance.h"
 #include "cal_db_alarm.h"
+#include "cal_utils.h"
 
 static int _cal_db_alarm_insert_record(calendar_record_h record, int parent_id)
 {
@@ -156,7 +157,7 @@ int cal_db_alarm_get_records(int parent, cal_list_s *list)
 
 	snprintf(query, sizeof(query), "SELECT rowid,remind_tick,remind_tick_unit,"
 			"alarm_description,alarm_type,alarm_summary,alarm_action,alarm_attach,"
-			"alarm_utime,alarm_datetime FROM %s WHERE event_id = %d ",
+			"alarm_utime,alarm_datetime FROM %s WHERE event_id=%d ",
 			CAL_TABLE_ALARM, parent);
 
 	ret = cal_db_util_query_prepare(query, &stmt);
@@ -188,17 +189,17 @@ int cal_db_alarm_get_records(int parent, cal_list_s *list)
 		alarm->remind_tick_unit = sqlite3_column_int(stmt, index++);
 
 		temp = sqlite3_column_text(stmt, index++);
-		alarm->alarm_description = SAFE_STRDUP(temp);
+		alarm->alarm_description = cal_strdup((const char*)temp);
 
 		alarm->alarm.type = sqlite3_column_int(stmt, index++);
 
 		temp = sqlite3_column_text(stmt, index++);
-		alarm->alarm_summary= SAFE_STRDUP(temp);
+		alarm->alarm_summary= cal_strdup((const char*)temp);
 
 		alarm->alarm_action = sqlite3_column_int(stmt, index++);
 
 		temp = sqlite3_column_text(stmt, index++);
-		alarm->alarm_attach= SAFE_STRDUP(temp);
+		alarm->alarm_attach= cal_strdup((const char*)temp);
 
 		if (alarm->alarm.type == CALENDAR_TIME_UTIME) {
 			alarm->alarm.time.utime = sqlite3_column_int64(stmt,index++);

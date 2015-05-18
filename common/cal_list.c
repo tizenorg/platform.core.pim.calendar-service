@@ -177,7 +177,7 @@ API int calendar_list_destroy(calendar_list_h list, bool delete_record)
 	if (l->record)
 		g_list_free(l->record);
 
-	g_free(l);
+	free(l);
 
 	return CALENDAR_ERROR_NONE;
 }

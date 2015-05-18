@@ -25,6 +25,7 @@
 #include "cal_typedef.h"
 #include "cal_view.h"
 #include "cal_record.h"
+#include "cal_utils.h"
 
 static int _cal_record_timezone_create(calendar_record_h* out_record);
 static int _cal_record_timezone_destroy(calendar_record_h record, bool delete_child);
@@ -111,13 +112,13 @@ static int _cal_record_timezone_clone(calendar_record_h record, calendar_record_
 
 	out_data->index = src_data->index;
 	out_data->tz_offset_from_gmt = src_data->tz_offset_from_gmt;
-	out_data->standard_name = SAFE_STRDUP(src_data->standard_name);
+	out_data->standard_name = cal_strdup(src_data->standard_name);
 	out_data->std_start_month = src_data->std_start_month;
 	out_data->std_start_position_of_week = src_data->std_start_position_of_week;
 	out_data->std_start_day = src_data->std_start_day;
 	out_data->std_start_hour = src_data->std_start_hour;
 	out_data->standard_bias = src_data->standard_bias;
-	out_data->day_light_name = SAFE_STRDUP(src_data->day_light_name);
+	out_data->day_light_name = cal_strdup(src_data->day_light_name);
 	out_data->day_light_start_month = src_data->day_light_start_month;
 	out_data->day_light_start_position_of_week = src_data->day_light_start_position_of_week;
 	out_data->day_light_start_day = src_data->day_light_start_day;
@@ -135,10 +136,10 @@ static int _cal_record_timezone_get_str(calendar_record_h record, unsigned int p
 	cal_timezone_s *rec = (cal_timezone_s*)(record);
 	switch (property_id) {
 	case CAL_PROPERTY_TIMEZONE_STANDARD_NAME:
-		*out_str = SAFE_STRDUP(rec->standard_name);
+		*out_str = cal_strdup(rec->standard_name);
 		break;
 	case CAL_PROPERTY_TIMEZONE_DAY_LIGHT_NAME:
-		*out_str = SAFE_STRDUP(rec->day_light_name);
+		*out_str = cal_strdup(rec->day_light_name);
 		break;
 	default:
 		ERR("invalid parameter (property:%d)",property_id);
@@ -223,11 +224,11 @@ static int _cal_record_timezone_set_str(calendar_record_h record, unsigned int p
 	switch (property_id) {
 	case CAL_PROPERTY_TIMEZONE_STANDARD_NAME:
 		CAL_FREE(rec->standard_name);
-		rec->standard_name = SAFE_STRDUP(value);
+		rec->standard_name = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_TIMEZONE_DAY_LIGHT_NAME:
 		CAL_FREE(rec->day_light_name);
-		rec->day_light_name = SAFE_STRDUP(value);
+		rec->day_light_name = cal_strdup(value);
 		break;
 	default:
 		ERR("invalid parameter (property:%d)",property_id);

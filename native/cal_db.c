@@ -32,6 +32,7 @@
 #include "cal_list.h"
 #include "cal_db.h"
 #include "cal_access_control.h"
+#include "cal_utils.h"
 
 #define BULK_DEFAULT_COUNT 100
 

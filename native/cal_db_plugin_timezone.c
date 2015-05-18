@@ -27,6 +27,7 @@
 #include "cal_db_util.h"
 #include "cal_db.h"
 #include "cal_db_query.h"
+#include "cal_utils.h"
 
 static int _cal_db_timezone_insert_record(calendar_record_h record, int* id);
 static int _cal_db_timezone_get_record(int id, calendar_record_h* out_record);
@@ -730,7 +731,7 @@ static int _cal_db_timezone_get_count_with_query(calendar_query_h query, int *ou
 	que = (cal_query_s *)query;
 
 	if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_TIMEZONE)) {
-		table_name = SAFE_STRDUP(CAL_TABLE_TIMEZONE);
+		table_name = cal_strdup(CAL_TABLE_TIMEZONE);
 	}
 	else {
 		ERR("uri(%s) not support get records with query",que->view_uri);
@@ -800,7 +801,7 @@ static void _cal_db_timezone_get_stmt(sqlite3_stmt *stmt,calendar_record_h recor
 	timezone->tz_offset_from_gmt = sqlite3_column_int(stmt, count++);
 
 	temp = sqlite3_column_text(stmt, count++);
-	timezone->standard_name = SAFE_STRDUP(temp);
+	timezone->standard_name = cal_strdup((const char *)temp);
 
 	timezone->std_start_month = sqlite3_column_int(stmt, count++);
 	timezone->std_start_position_of_week = sqlite3_column_int(stmt, count++);
@@ -809,7 +810,7 @@ static void _cal_db_timezone_get_stmt(sqlite3_stmt *stmt,calendar_record_h recor
 	timezone->standard_bias = sqlite3_column_int(stmt, count++);
 
 	temp = sqlite3_column_text(stmt, count++);
-	timezone->day_light_name = SAFE_STRDUP(temp);
+	timezone->day_light_name = cal_strdup((const char *)temp);
 
 	timezone->day_light_start_month = sqlite3_column_int(stmt, count++);
 	timezone->day_light_start_position_of_week = sqlite3_column_int(stmt, count++);
@@ -835,7 +836,7 @@ static void _cal_db_timezone_get_property_stmt(sqlite3_stmt *stmt,
 		break;
 	case CAL_PROPERTY_TIMEZONE_STANDARD_NAME:
 		temp = sqlite3_column_text(stmt, stmt_count);
-		timezone->standard_name = SAFE_STRDUP(temp);
+		timezone->standard_name = cal_strdup((const char *)temp);
 		break;
 	case CAL_PROPERTY_TIMEZONE_STD_START_MONTH:
 		timezone->std_start_month = sqlite3_column_int(stmt, stmt_count);
@@ -854,7 +855,7 @@ static void _cal_db_timezone_get_property_stmt(sqlite3_stmt *stmt,
 		break;
 	case CAL_PROPERTY_TIMEZONE_DAY_LIGHT_NAME:
 		temp = sqlite3_column_text(stmt, stmt_count);
-		timezone->day_light_name = SAFE_STRDUP(temp);
+		timezone->day_light_name = cal_strdup((const char *)temp);
 		break;
 	case CAL_PROPERTY_TIMEZONE_DAY_LIGHT_START_MONTH:
 		timezone->day_light_start_month = sqlite3_column_int(stmt, stmt_count);

@@ -17,15 +17,14 @@
  *
  */
 
+#include <stdlib.h>
+
 #include "cal_internal.h"
 #include "cal_typedef.h"
 #include "cal_db_util.h"
 #include "cal_view.h"
 #include "cal_mutex.h"
-
-#ifdef CAL_NATIVE
-#include "cal_inotify.h"
-#endif
+#include "cal_utils.h"
 
 static int cal_total_connection = 0;
 static TLS int cal_thread_connection = 0;

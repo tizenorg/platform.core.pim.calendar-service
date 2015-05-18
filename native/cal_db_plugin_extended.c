@@ -28,6 +28,7 @@
 #include "cal_db.h"
 #include "cal_db_query.h"
 #include "cal_db_extended.h"
+#include "cal_utils.h"
 
 static int _cal_db_extended_insert_record(calendar_record_h record, int* id);
 static int _cal_db_extended_get_record(int id, calendar_record_h* out_record);
@@ -583,7 +584,7 @@ static int _cal_db_extended_get_count_with_query(calendar_query_h query, int *ou
 	que = (cal_query_s *)query;
 
 	if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_EXTENDED)) {
-		table_name = SAFE_STRDUP(CAL_TABLE_EXTENDED);
+		table_name = cal_strdup(CAL_TABLE_EXTENDED);
 	}
 	else {
 		ERR("uri(%s) not support get records with query",que->view_uri);
@@ -646,10 +647,10 @@ static void _cal_db_extended_get_stmt(sqlite3_stmt *stmt,calendar_record_h recor
 	extended->record_type = sqlite3_column_int(stmt, count++);
 
 	temp = sqlite3_column_text(stmt, count++);
-	extended->key = SAFE_STRDUP(temp);
+	extended->key = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, count++);
-	extended->value = SAFE_STRDUP(temp);
+	extended->value = cal_strdup((const char*)temp);
 }
 
 static void _cal_db_extended_get_property_stmt(sqlite3_stmt *stmt,
@@ -670,11 +671,11 @@ static void _cal_db_extended_get_property_stmt(sqlite3_stmt *stmt,
 		break;
 	case CAL_PROPERTY_EXTENDED_KEY:
 		temp = sqlite3_column_text(stmt, stmt_count);
-		extended->key = SAFE_STRDUP(temp);
+		extended->key = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_EXTENDED_VALUE:
 		temp = sqlite3_column_text(stmt, stmt_count);
-		extended->value = SAFE_STRDUP(temp);
+		extended->value = cal_strdup((const char*)temp);
 		break;
 	default:
 		sqlite3_column_int(stmt, stmt_count);

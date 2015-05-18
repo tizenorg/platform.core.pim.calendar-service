@@ -27,6 +27,7 @@
 #include "cal_db_util.h"
 #include "cal_db_query.h"
 #include "cal_db_attendee.h"
+#include "cal_utils.h"
 
 static int _cal_db_attendee_get_all_records(int offset, int limit, calendar_list_h* out_list);
 static int _cal_db_attendee_get_records_with_query(calendar_query_h query, int offset, int limit, calendar_list_h* out_list);
@@ -63,13 +64,13 @@ static void _cal_db_attendee_get_stmt(sqlite3_stmt *stmt,calendar_record_h recor
 	attendee->parent_id = sqlite3_column_int(stmt, index++);
 
 	temp = sqlite3_column_text(stmt, index++);
-	attendee->attendee_name = SAFE_STRDUP(temp);
+	attendee->attendee_name = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, index++);
-	attendee->attendee_email = SAFE_STRDUP(temp);
+	attendee->attendee_email = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, index++);
-	attendee->attendee_number = SAFE_STRDUP(temp);
+	attendee->attendee_number = cal_strdup((const char*)temp);
 
 	attendee->attendee_status = sqlite3_column_int(stmt, index++);
 	attendee->attendee_ct_index = sqlite3_column_int(stmt, index++);
@@ -77,21 +78,21 @@ static void _cal_db_attendee_get_stmt(sqlite3_stmt *stmt,calendar_record_h recor
 	attendee->attendee_rsvp = sqlite3_column_int(stmt, index++);
 
 	temp = sqlite3_column_text(stmt, index++);
-	attendee->attendee_group = SAFE_STRDUP(temp);
+	attendee->attendee_group = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, index++);
-	attendee->attendee_delegator_uri = SAFE_STRDUP(temp);
+	attendee->attendee_delegator_uri = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, index++);
-	attendee->attendee_uid = SAFE_STRDUP(temp);
+	attendee->attendee_uid = cal_strdup((const char*)temp);
 
 	attendee->attendee_cutype = sqlite3_column_int(stmt, index++);
 
 	temp = sqlite3_column_text(stmt, index++);
-	attendee->attendee_delegatee_uri = SAFE_STRDUP(temp);
+	attendee->attendee_delegatee_uri = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, index++);
-	attendee->attendee_member = SAFE_STRDUP(temp);
+	attendee->attendee_member = cal_strdup((const char*)temp);
 
 	attendee->id = sqlite3_column_int(stmt, index++);
 }
@@ -164,7 +165,7 @@ static void _cal_db_attendee_get_property_stmt(sqlite3_stmt *stmt,
 	switch (property) {
 	case CAL_PROPERTY_ATTENDEE_NUMBER:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		attendee->attendee_number = SAFE_STRDUP(temp);
+		attendee->attendee_number = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_ATTENDEE_CUTYPE:
 		attendee->attendee_cutype = sqlite3_column_int(stmt, *stmt_count);
@@ -174,15 +175,15 @@ static void _cal_db_attendee_get_property_stmt(sqlite3_stmt *stmt,
 		break;
 	case CAL_PROPERTY_ATTENDEE_UID:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		attendee->attendee_uid = SAFE_STRDUP(temp);
+		attendee->attendee_uid = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_ATTENDEE_GROUP:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		attendee->attendee_group = SAFE_STRDUP(temp);
+		attendee->attendee_group = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_ATTENDEE_EMAIL:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		attendee->attendee_email = SAFE_STRDUP(temp);
+		attendee->attendee_email = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_ATTENDEE_ROLE:
 		attendee->attendee_role = sqlite3_column_int(stmt, *stmt_count);
@@ -195,19 +196,19 @@ static void _cal_db_attendee_get_property_stmt(sqlite3_stmt *stmt,
 		break;
 	case CAL_PROPERTY_ATTENDEE_DELEGATEE_URI:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		attendee->attendee_delegatee_uri = SAFE_STRDUP(temp);
+		attendee->attendee_delegatee_uri = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_ATTENDEE_DELEGATOR_URI:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		attendee->attendee_delegator_uri = SAFE_STRDUP(temp);
+		attendee->attendee_delegator_uri = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_ATTENDEE_NAME:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		attendee->attendee_name = SAFE_STRDUP(temp);
+		attendee->attendee_name = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_ATTENDEE_MEMBER:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		attendee->attendee_member = SAFE_STRDUP(temp);
+		attendee->attendee_member = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_ATTENDEE_PARENT_ID:
 		attendee->parent_id = sqlite3_column_int(stmt, *stmt_count);
@@ -246,7 +247,7 @@ static int _cal_db_attendee_get_records_with_query(calendar_query_h query, int o
 	que = (cal_query_s *)query;
 
 	if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_ATTENDEE)) {
-		table_name = SAFE_STRDUP(CAL_TABLE_ATTENDEE);
+		table_name = cal_strdup(CAL_TABLE_ATTENDEE);
 	}
 	else {
 		ERR("uri(%s) not support get records with query",que->view_uri);
@@ -422,7 +423,7 @@ static int _cal_db_attendee_get_count_with_query(calendar_query_h query, int *ou
 	que = (cal_query_s *)query;
 
 	if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_ATTENDEE)) {
-		table_name = SAFE_STRDUP(CAL_TABLE_ATTENDEE);
+		table_name = cal_strdup(CAL_TABLE_ATTENDEE);
 	}
 	else {
 		ERR("uri(%s) not support get records with query",que->view_uri);

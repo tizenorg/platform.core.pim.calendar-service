@@ -272,34 +272,36 @@ static bool  _cal_server_calendar_run(__calendar_delete_data_s* data)
 
 static gpointer _cal_server_calendar_main(gpointer user_data)
 {
-	__calendar_delete_data_s *callback_data = NULL;
 	int ret = CALENDAR_ERROR_NONE;
 	CAL_FN_CALL();
 
 	while(1) {
-		callback_data = calloc(1,sizeof(__calendar_delete_data_s));
-
-		if (callback_data != NULL) {
-			callback_data->step = STEP_1;
-
-			/* delete */
-			while(1) {
-				ret = calendar_connect();
-				if (CALENDAR_ERROR_NONE != ret) {
-					break;
-				}
-				sleep(CAL_SERVER_CALENDAR_DELETE_STEP_TIME); // sleep 1 sec.
-				if (_cal_server_calendar_run(callback_data) == false) {
-					callback_data = NULL;
-					DBG("end");
-					break;
-				}
-			}
-			calendar_disconnect();
-			CAL_FREE(callback_data);
+		__calendar_delete_data_s *callback_data = NULL;
+		callback_data = calloc(1, sizeof(__calendar_delete_data_s));
+		if (NULL == callback_data) {
+			ERR("calloc() Fail");
+			break;
 		}
-		else {
-			ERR("calloc fail");
+
+		callback_data->step = STEP_1;
+
+		/* delete */
+		ret = calendar_connect();
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("cal_connect() Fail(%d)", ret);
+			free(callback_data);
+			break;
+		}
+
+		while (1) {
+			sleep(CAL_SERVER_CALENDAR_DELETE_STEP_TIME); /* sleep 1 sec. */
+			ret = _cal_server_calendar_run(callback_data);
+			if (false == ret) {
+				DBG("_cal_server_calendar_run() return false");
+				callback_data = NULL;
+				DBG("end");
+				break;
+			}
 		}
 		calendar_disconnect();
 		CAL_FREE(callback_data);

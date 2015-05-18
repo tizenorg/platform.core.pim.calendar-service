@@ -35,6 +35,7 @@
 #include "cal_db_query.h"
 #include "cal_db_instance.h"
 #include "cal_db_alarm.h"
+#include "cal_utils.h"
 
 //static int _cal_db_alarm_get_record(int id, calendar_record_h* out_record);
 static int _cal_db_alarm_get_all_records(int offset, int limit, calendar_list_h* out_list);
@@ -73,17 +74,17 @@ static void _cal_db_alarm_get_stmt(sqlite3_stmt *stmt,calendar_record_h record)
 	alarm->remind_tick_unit = sqlite3_column_int(stmt, index++);
 
 	temp = sqlite3_column_text(stmt, index++);
-	alarm->alarm_description = SAFE_STRDUP(temp);
+	alarm->alarm_description = cal_strdup((const char*)temp);
 
 	alarm->alarm.type = sqlite3_column_int(stmt, index++);
 	index++; /* alarm_id */
 	temp = sqlite3_column_text(stmt, index++);
-	alarm->alarm_summary = SAFE_STRDUP(temp);
+	alarm->alarm_summary = cal_strdup((const char*)temp);
 
 	alarm->alarm_action = sqlite3_column_int(stmt, index++);
 
 	temp = sqlite3_column_text(stmt, index++);
-	alarm->alarm_attach = SAFE_STRDUP(temp);
+	alarm->alarm_attach = cal_strdup((const char*)temp);
 
 	if (alarm->alarm.type == CALENDAR_TIME_UTIME) {
 		alarm->alarm.time.utime = sqlite3_column_int64(stmt,index++);
@@ -191,21 +192,21 @@ static void _cal_db_alarm_get_property_stmt(sqlite3_stmt *stmt,
 		break;
 	case CAL_PROPERTY_ALARM_DESCRIPTION:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		alarm->alarm_description = SAFE_STRDUP(temp);
+		alarm->alarm_description = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_ALARM_PARENT_ID:
 		alarm->parent_id = sqlite3_column_int(stmt, *stmt_count);
 		break;
 	case CAL_PROPERTY_ALARM_SUMMARY:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		alarm->alarm_summary = SAFE_STRDUP(temp);
+		alarm->alarm_summary = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_ALARM_ACTION:
 		alarm->alarm_action = sqlite3_column_int(stmt, *stmt_count);
 		break;
 	case CAL_PROPERTY_ALARM_ATTACH:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		alarm->alarm_attach = SAFE_STRDUP(temp);
+		alarm->alarm_attach = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_ALARM_ALARM:
 		alarm->alarm.type = sqlite3_column_int(stmt, *stmt_count);
@@ -278,7 +279,7 @@ static int _cal_db_alarm_get_records_with_query(calendar_query_h query, int offs
 	que = (cal_query_s *)query;
 
 	if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_ALARM)) {
-		table_name = SAFE_STRDUP(CAL_TABLE_ALARM);
+		table_name = cal_strdup(CAL_TABLE_ALARM);
 	}
 	else {
 		ERR("uri(%s) not support get records with query",que->view_uri);
@@ -455,7 +456,7 @@ static int _cal_db_alarm_get_count_with_query(calendar_query_h query, int *out_c
 	que = (cal_query_s *)query;
 
 	if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_ALARM))	{
-		table_name = SAFE_STRDUP(CAL_TABLE_ALARM);
+		table_name = cal_strdup(CAL_TABLE_ALARM);
 	}
 	else {
 		ERR("uri(%s) not support get records with query",que->view_uri);

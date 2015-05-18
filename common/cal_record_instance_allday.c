@@ -25,6 +25,7 @@
 #include "cal_typedef.h"
 #include "cal_view.h"
 #include "cal_record.h"
+#include "cal_utils.h"
 
 static int _cal_record_instance_allday_create(calendar_record_h* out_record);
 static int _cal_record_instance_allday_destroy(calendar_record_h record, bool delete_child);
@@ -134,9 +135,9 @@ static int _cal_record_instance_allday_clone(calendar_record_h record, calendar_
 	out_data->calendar_id = src_data->calendar_id;
 	out_data->start = src_data->start;
 	out_data->end = src_data->end;
-	out_data->summary = SAFE_STRDUP(src_data->summary);
-	out_data->description = SAFE_STRDUP(src_data->description);
-	out_data->location = SAFE_STRDUP(src_data->location);
+	out_data->summary = cal_strdup(src_data->summary);
+	out_data->description = cal_strdup(src_data->description);
+	out_data->location = cal_strdup(src_data->location);
 	out_data->busy_status = src_data->busy_status;
 	out_data->event_status = src_data->event_status;
 	out_data->priority = src_data->priority;
@@ -147,7 +148,7 @@ static int _cal_record_instance_allday_clone(calendar_record_h record, calendar_
 	out_data->has_alarm = src_data->has_alarm;
 	out_data->original_event_id = src_data->original_event_id;
 	out_data->last_mod = src_data->last_mod;
-	out_data->sync_data1 = SAFE_STRDUP(src_data->sync_data1);
+	out_data->sync_data1 = cal_strdup(src_data->sync_data1);
 
 	*out_record = (calendar_record_h)out_data;
 
@@ -159,16 +160,16 @@ static int _cal_record_instance_allday_get_str(calendar_record_h record, unsigne
 	cal_instance_allday_s *rec = (cal_instance_allday_s*)(record);
 	switch (property_id) {
 	case CAL_PROPERTY_INSTANCE_ALLDAY_SUMMARY:
-		*out_str = SAFE_STRDUP(rec->summary);
+		*out_str = cal_strdup(rec->summary);
 		break;
 	case CAL_PROPERTY_INSTANCE_ALLDAY_DESCRIPTION:
-		*out_str = SAFE_STRDUP(rec->description);
+		*out_str = cal_strdup(rec->description);
 		break;
 	case CAL_PROPERTY_INSTANCE_ALLDAY_LOCATION:
-		*out_str = SAFE_STRDUP(rec->location);
+		*out_str = cal_strdup(rec->location);
 		break;
 	case CAL_PROPERTY_INSTANCE_ALLDAY_SYNC_DATA1:
-		*out_str = SAFE_STRDUP(rec->sync_data1);
+		*out_str = cal_strdup(rec->sync_data1);
 		break;
 	default:
 		ERR("invalid parameter (property:%d)",property_id);
@@ -300,19 +301,19 @@ static int _cal_record_instance_allday_set_str(calendar_record_h record, unsigne
 	switch (property_id) {
 	case CAL_PROPERTY_INSTANCE_ALLDAY_SUMMARY:
 		CAL_FREE(rec->summary);
-		rec->summary = SAFE_STRDUP(value);
+		rec->summary = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_INSTANCE_ALLDAY_DESCRIPTION:
 		CAL_FREE(rec->description);
-		rec->description = SAFE_STRDUP(value);
+		rec->description = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_INSTANCE_ALLDAY_LOCATION:
 		CAL_FREE(rec->location);
-		rec->location = SAFE_STRDUP(value);
+		rec->location = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_INSTANCE_ALLDAY_SYNC_DATA1:
 		CAL_FREE(rec->sync_data1);
-		rec->sync_data1 = SAFE_STRDUP(value);
+		rec->sync_data1 = cal_strdup(value);
 		break;
 	default:
 		ERR("invalid parameter (property:%d)",property_id);

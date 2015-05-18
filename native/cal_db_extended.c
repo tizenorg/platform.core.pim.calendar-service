@@ -29,6 +29,7 @@
 #include "cal_db_util.h"
 #include "cal_db_query.h"
 #include "cal_db_extended.h"
+#include "cal_utils.h"
 
 int cal_db_extended_get_records(int record_id, calendar_record_type_e record_type, cal_list_s *list)
 {
@@ -73,9 +74,9 @@ int cal_db_extended_get_records(int record_id, calendar_record_type_e record_typ
 		extended->record_id = sqlite3_column_int(stmt, count++);
 		extended->record_type = sqlite3_column_int(stmt, count++);
 		temp = sqlite3_column_text(stmt, count++);
-		extended->key = SAFE_STRDUP(temp);
+		extended->key = cal_strdup((const char*)temp);
 		temp = sqlite3_column_text(stmt, count++);
-		extended->value = SAFE_STRDUP(temp);
+		extended->value = cal_strdup((const char*)temp);
 
 		calendar_list_add((calendar_list_h)list, record);
 	}

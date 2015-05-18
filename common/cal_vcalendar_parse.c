@@ -477,7 +477,7 @@ static void __decode_base64(char *p)
 	gsize size = 0;
 	buf = g_base64_decode(p, &size);
 	if (0 == size) {
-		g_free(buf);
+		free(buf);
 		return;
 	}
 	if (strlen(p) < size) {
@@ -486,7 +486,7 @@ static void __decode_base64(char *p)
 	}
 
 	snprintf(p, size + 1, "%s%c", buf, '\0');
-	g_free(buf);
+	free(buf);
 	DBG("After [%s]", p);
 }
 
@@ -3186,7 +3186,7 @@ int cal_vcalendar_parse_vcalendar_object(char *stream, calendar_list_h list, vca
 	DBG("count(%d)", count);
 	if (0 == count)
 		DBG("No record");
-	g_free(ud);
+	free(ud);
 
 	return CALENDAR_ERROR_NONE;
 }

@@ -25,6 +25,7 @@
 #include "cal_typedef.h"
 #include "cal_view.h"
 #include "cal_record.h"
+#include "cal_utils.h"
 
 static int _cal_record_search_create(calendar_record_h* out_record);
 static int _cal_record_search_destroy(calendar_record_h record, bool delete_child);
@@ -119,7 +120,7 @@ static int _cal_record_search_clone(calendar_record_h record, calendar_record_h*
 		}
 		dest->property_id = src->property_id;
 		if (CAL_PROPERTY_CHECK_DATA_TYPE(src->property_id, CAL_PROPERTY_DATA_TYPE_STR) == true) {
-			dest->value.s = SAFE_STRDUP(src->value.s);
+			dest->value.s = cal_strdup(src->value.s);
 		}
 		else if (CAL_PROPERTY_CHECK_DATA_TYPE(src->property_id, CAL_PROPERTY_DATA_TYPE_INT) == true) {
 			dest->value.i = src->value.i;
@@ -155,7 +156,7 @@ static int _cal_record_search_get_str(calendar_record_h record, unsigned int pro
 		cal_search_value_s *data = cursor->data;
 		if (data->property_id == property_id) {
 			if (CAL_PROPERTY_CHECK_DATA_TYPE(data->property_id, CAL_PROPERTY_DATA_TYPE_STR) == true) {
-				*out_str = SAFE_STRDUP(data->value.s);
+				*out_str = cal_strdup(data->value.s);
 				break;
 			}
 			else {
@@ -289,7 +290,7 @@ static int _cal_record_search_set_str(calendar_record_h record, unsigned int pro
 		if (data->property_id == property_id) {
 			if (CAL_PROPERTY_CHECK_DATA_TYPE(data->property_id, CAL_PROPERTY_DATA_TYPE_STR) == true) {
 				CAL_FREE(data->value.s);
-				(data->value.s) = SAFE_STRDUP(value);
+				(data->value.s) = cal_strdup(value);
 				return CALENDAR_ERROR_NONE;
 			}
 			else {
@@ -302,7 +303,7 @@ static int _cal_record_search_set_str(calendar_record_h record, unsigned int pro
 	data = calloc(1, sizeof(cal_search_value_s));
 	RETVM_IF(NULL == data, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc() Fail");
 	data->property_id = property_id;
-	data->value.s = SAFE_STRDUP(value);
+	data->value.s = cal_strdup(value);
 	rec->values = g_slist_append(rec->values, data);
 
 	return CALENDAR_ERROR_NONE;

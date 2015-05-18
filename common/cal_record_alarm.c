@@ -25,6 +25,7 @@
 #include "cal_typedef.h"
 #include "cal_view.h"
 #include "cal_record.h"
+#include "cal_utils.h"
 
 static int _cal_record_alarm_create(calendar_record_h* out_record);
 static int _cal_record_alarm_destroy(calendar_record_h record, bool delete_child);
@@ -114,10 +115,10 @@ static int _cal_record_alarm_clone(calendar_record_h record, calendar_record_h* 
 	out_data->is_deleted = src_data->is_deleted;
 	out_data->remind_tick = src_data->remind_tick;
 	out_data->remind_tick_unit = src_data->remind_tick_unit;
-	out_data->alarm_description = SAFE_STRDUP(src_data->alarm_description);
-	out_data->alarm_summary = SAFE_STRDUP(src_data->alarm_summary);
+	out_data->alarm_description = cal_strdup(src_data->alarm_description);
+	out_data->alarm_summary = cal_strdup(src_data->alarm_summary);
 	out_data->alarm_action = src_data->alarm_action;
-	out_data->alarm_attach = SAFE_STRDUP(src_data->alarm_attach);
+	out_data->alarm_attach = cal_strdup(src_data->alarm_attach);
 	out_data->alarm = src_data->alarm;
 
 	*out_record = (calendar_record_h)out_data;
@@ -130,13 +131,13 @@ static int _cal_record_alarm_get_str(calendar_record_h record, unsigned int prop
 	cal_alarm_s *rec = (cal_alarm_s*)(record);
 	switch (property_id) {
 	case CAL_PROPERTY_ALARM_DESCRIPTION:
-		*out_str = SAFE_STRDUP(rec->alarm_description);
+		*out_str = cal_strdup(rec->alarm_description);
 		break;
 	case CAL_PROPERTY_ALARM_SUMMARY:
-		*out_str = SAFE_STRDUP(rec->alarm_summary);
+		*out_str = cal_strdup(rec->alarm_summary);
 		break;
 	case CAL_PROPERTY_ALARM_ATTACH:
-		*out_str = SAFE_STRDUP(rec->alarm_attach);
+		*out_str = cal_strdup(rec->alarm_attach);
 		break;
 	default:
 		ERR("invalid parameter (property:%d)",property_id);
@@ -211,15 +212,15 @@ static int _cal_record_alarm_set_str(calendar_record_h record, unsigned int prop
 	switch (property_id) {
 	case CAL_PROPERTY_ALARM_DESCRIPTION:
 		CAL_FREE(rec->alarm_description);
-		rec->alarm_description = SAFE_STRDUP(value);
+		rec->alarm_description = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_ALARM_SUMMARY:
 		CAL_FREE(rec->alarm_summary);
-		rec->alarm_summary = SAFE_STRDUP(value);
+		rec->alarm_summary = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_ALARM_ATTACH:
 		CAL_FREE(rec->alarm_attach);
-		rec->alarm_attach = SAFE_STRDUP(value);
+		rec->alarm_attach = cal_strdup(value);
 		break;
 	default:
 		ERR("invalid parameter (property:%d)",property_id);

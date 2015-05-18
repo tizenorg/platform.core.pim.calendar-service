@@ -34,6 +34,7 @@
 #include "cal_db_attendee.h"
 #include "cal_db_extended.h"
 #include "cal_access_control.h"
+#include "cal_utils.h"
 
 static int _cal_db_todo_insert_record(calendar_record_h record, int* id);
 static int _cal_db_todo_get_record(int id, calendar_record_h* out_record);
@@ -967,10 +968,10 @@ static int _cal_db_todo_get_records_with_query(calendar_query_h query, int offse
 	que = (cal_query_s *)query;
 
 	if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_TODO)) {
-		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_TODO);
+		table_name = cal_strdup(CAL_VIEW_TABLE_TODO);
 	}
 	else if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_TODO_CALENDAR)) {
-		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_TODO_CALENDAR);
+		table_name = cal_strdup(CAL_VIEW_TABLE_TODO_CALENDAR);
 	}
 	else {
 		ERR("uri(%s) not support get records with query",que->view_uri);
@@ -1293,10 +1294,10 @@ static int _cal_db_todo_get_count_with_query(calendar_query_h query, int *out_co
 	que = (cal_query_s *)query;
 
 	if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_TODO)) {
-		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_TODO);
+		table_name = cal_strdup(CAL_VIEW_TABLE_TODO);
 	}
 	else if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_TODO_CALENDAR)) {
-		table_name = SAFE_STRDUP(CAL_VIEW_TABLE_TODO_CALENDAR);
+		table_name = cal_strdup(CAL_VIEW_TABLE_TODO_CALENDAR);
 	}
 	else {
 		ERR("uri(%s) not support get records with query",que->view_uri);
@@ -1362,15 +1363,15 @@ static void _cal_db_todo_get_stmt(sqlite3_stmt *stmt,bool is_view_table,calendar
 	sqlite3_column_int(stmt, count++);
 
 	temp = sqlite3_column_text(stmt, count++);
-	todo->summary = SAFE_STRDUP(temp);
+	todo->summary = cal_strdup((const char*)temp);
 	temp = sqlite3_column_text(stmt, count++);
-	todo->description = SAFE_STRDUP(temp);
+	todo->description = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, count++);
-	todo->location = SAFE_STRDUP(temp);
+	todo->location = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, count++);
-	todo->categories = SAFE_STRDUP(temp);
+	todo->categories = cal_strdup((const char*)temp);
 
 	sqlite3_column_text(stmt, count++);
 
@@ -1382,13 +1383,13 @@ static void _cal_db_todo_get_stmt(sqlite3_stmt *stmt,bool is_view_table,calendar
 	todo->sensitivity = sqlite3_column_int(stmt, count++);
 
 	temp = sqlite3_column_text(stmt, count++);
-	todo->uid = SAFE_STRDUP(temp);
+	todo->uid = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, count++);
-	todo->organizer_name = SAFE_STRDUP(temp);
+	todo->organizer_name = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, count++);
-	todo->organizer_email = SAFE_STRDUP(temp);
+	todo->organizer_email = cal_strdup((const char*)temp);
 
 	sqlite3_column_int(stmt, count++);
 
@@ -1428,7 +1429,7 @@ static void _cal_db_todo_get_stmt(sqlite3_stmt *stmt,bool is_view_table,calendar
 	}
 
 	temp = sqlite3_column_text(stmt, count++);
-	todo->start_tzid = SAFE_STRDUP(temp);
+	todo->start_tzid = cal_strdup((const char*)temp);
 	todo->due.type = sqlite3_column_int(stmt, count++);
 	if (todo->due.type == CALENDAR_TIME_UTIME) {
 		todo->due.time.utime = sqlite3_column_int64(stmt,count++);
@@ -1445,7 +1446,7 @@ static void _cal_db_todo_get_stmt(sqlite3_stmt *stmt,bool is_view_table,calendar
 		}
 	}
 	temp = sqlite3_column_text(stmt, count++);
-	todo->due_tzid = SAFE_STRDUP(temp);
+	todo->due_tzid = cal_strdup((const char*)temp);
 
 	todo->last_mod = sqlite3_column_int64(stmt,count++);
 	sqlite3_column_int(stmt,count++);
@@ -1457,13 +1458,13 @@ static void _cal_db_todo_get_stmt(sqlite3_stmt *stmt,bool is_view_table,calendar
 	todo->system_type = sqlite3_column_int(stmt,count++);
 	todo->updated = sqlite3_column_int(stmt,count++);
 	temp = sqlite3_column_text(stmt, count++);
-	todo->sync_data1 = SAFE_STRDUP(temp);
+	todo->sync_data1 = cal_strdup((const char*)temp);
 	temp = sqlite3_column_text(stmt, count++);
-	todo->sync_data2 = SAFE_STRDUP(temp);
+	todo->sync_data2 = cal_strdup((const char*)temp);
 	temp = sqlite3_column_text(stmt, count++);
-	todo->sync_data3 = SAFE_STRDUP(temp);
+	todo->sync_data3 = cal_strdup((const char*)temp);
 	temp = sqlite3_column_text(stmt, count++);
-	todo->sync_data4 = SAFE_STRDUP(temp);
+	todo->sync_data4 = cal_strdup((const char*)temp);
 
 	sqlite3_column_int(stmt,count++);
 
@@ -1497,31 +1498,31 @@ static void _cal_db_todo_get_stmt(sqlite3_stmt *stmt,bool is_view_table,calendar
 		todo->interval = sqlite3_column_int(stmt, count++);
 
 		temp = sqlite3_column_text(stmt, count++);
-		todo->bysecond = SAFE_STRDUP(temp);
+		todo->bysecond = cal_strdup((const char*)temp);
 
 		temp = sqlite3_column_text(stmt, count++);
-		todo->byminute = SAFE_STRDUP(temp);
+		todo->byminute = cal_strdup((const char*)temp);
 
 		temp = sqlite3_column_text(stmt, count++);
-		todo->byhour = SAFE_STRDUP(temp);
+		todo->byhour = cal_strdup((const char*)temp);
 
 		temp = sqlite3_column_text(stmt, count++);
-		todo->byday= SAFE_STRDUP(temp);
+		todo->byday= cal_strdup((const char*)temp);
 
 		temp = sqlite3_column_text(stmt, count++);
-		todo->bymonthday= SAFE_STRDUP(temp);
+		todo->bymonthday= cal_strdup((const char*)temp);
 
 		temp = sqlite3_column_text(stmt, count++);
-		todo->byyearday= SAFE_STRDUP(temp);
+		todo->byyearday= cal_strdup((const char*)temp);
 
 		temp = sqlite3_column_text(stmt, count++);
-		todo->byweekno= SAFE_STRDUP(temp);
+		todo->byweekno= cal_strdup((const char*)temp);
 
 		temp = sqlite3_column_text(stmt, count++);
-		todo->bymonth= SAFE_STRDUP(temp);
+		todo->bymonth= cal_strdup((const char*)temp);
 
 		temp = sqlite3_column_text(stmt, count++);
-		todo->bysetpos = SAFE_STRDUP(temp);
+		todo->bysetpos = cal_strdup((const char*)temp);
 
 		todo->wkst = sqlite3_column_int(stmt, count++);
 
@@ -1546,19 +1547,19 @@ static void _cal_db_todo_get_property_stmt(sqlite3_stmt *stmt,
 		break;
 	case CAL_PROPERTY_TODO_SUMMARY:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		todo->summary = SAFE_STRDUP(temp);
+		todo->summary = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_TODO_DESCRIPTION:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		todo->description = SAFE_STRDUP(temp);
+		todo->description = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_TODO_LOCATION:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		todo->location = SAFE_STRDUP(temp);
+		todo->location = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_TODO_CATEGORIES:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		todo->categories = SAFE_STRDUP(temp);
+		todo->categories = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_TODO_TODO_STATUS:
 		todo->todo_status = sqlite3_column_int(stmt, *stmt_count);
@@ -1571,7 +1572,7 @@ static void _cal_db_todo_get_property_stmt(sqlite3_stmt *stmt,
 		break;
 	case CAL_PROPERTY_TODO_UID:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		todo->uid = SAFE_STRDUP(temp);
+		todo->uid = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_TODO_LATITUDE:
 		todo->latitude = sqlite3_column_double(stmt,*stmt_count);
@@ -1610,39 +1611,39 @@ static void _cal_db_todo_get_property_stmt(sqlite3_stmt *stmt,
 		break;
 	case CAL_PROPERTY_TODO_BYSECOND:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		todo->bysecond = SAFE_STRDUP(temp);
+		todo->bysecond = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_TODO_BYMINUTE:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		todo->byminute = SAFE_STRDUP(temp);
+		todo->byminute = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_TODO_BYHOUR:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		todo->byhour = SAFE_STRDUP(temp);
+		todo->byhour = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_TODO_BYDAY:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		todo->byday = SAFE_STRDUP(temp);
+		todo->byday = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_TODO_BYMONTHDAY:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		todo->bymonthday = SAFE_STRDUP(temp);
+		todo->bymonthday = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_TODO_BYYEARDAY:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		todo->byyearday = SAFE_STRDUP(temp);
+		todo->byyearday = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_TODO_BYWEEKNO:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		todo->byweekno = SAFE_STRDUP(temp);
+		todo->byweekno = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_TODO_BYMONTH:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		todo->bymonth = SAFE_STRDUP(temp);
+		todo->bymonth = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_TODO_BYSETPOS:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		todo->bysetpos = SAFE_STRDUP(temp);
+		todo->bysetpos = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_TODO_WKST:
 		todo->wkst = sqlite3_column_int(stmt, *stmt_count);
@@ -1652,19 +1653,19 @@ static void _cal_db_todo_get_property_stmt(sqlite3_stmt *stmt,
 		break;
 	case CAL_PROPERTY_TODO_SYNC_DATA1:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		todo->sync_data1 = SAFE_STRDUP(temp);
+		todo->sync_data1 = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_TODO_SYNC_DATA2:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		todo->sync_data2 = SAFE_STRDUP(temp);
+		todo->sync_data2 = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_TODO_SYNC_DATA3:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		todo->sync_data3 = SAFE_STRDUP(temp);
+		todo->sync_data3 = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_TODO_SYNC_DATA4:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		todo->sync_data4 = SAFE_STRDUP(temp);
+		todo->sync_data4 = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_TODO_START:
 		todo->start.type = sqlite3_column_int(stmt,*stmt_count);
@@ -1687,7 +1688,7 @@ static void _cal_db_todo_get_property_stmt(sqlite3_stmt *stmt,
 		break;
 	case CAL_PROPERTY_TODO_START_TZID:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		todo->start_tzid = SAFE_STRDUP(temp);
+		todo->start_tzid = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_TODO_DUE:
 		todo->due.type = sqlite3_column_int(stmt, *stmt_count);
@@ -1710,15 +1711,15 @@ static void _cal_db_todo_get_property_stmt(sqlite3_stmt *stmt,
 		break;
 	case CAL_PROPERTY_TODO_DUE_TZID:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		todo->due_tzid = SAFE_STRDUP(temp);
+		todo->due_tzid = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_TODO_ORGANIZER_NAME:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		todo->organizer_name = SAFE_STRDUP(temp);
+		todo->organizer_name = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_TODO_ORGANIZER_EMAIL:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		todo->organizer_email = SAFE_STRDUP(temp);
+		todo->organizer_email = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_TODO_HAS_ATTENDEE:
 		todo->has_attendee = sqlite3_column_int(stmt, *stmt_count);

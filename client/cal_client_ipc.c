@@ -38,6 +38,7 @@
 #include "cal_ipc_marshal.h"
 #include "cal_client_ipc.h"
 #include "cal_client_reminder.h"
+#include "cal_utils.h"
 
 static pims_ipc_h cal_ipc = NULL;
 static TLS pims_ipc_h cal_ipc_thread = NULL;

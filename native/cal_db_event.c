@@ -37,6 +37,8 @@
 #include "cal_db_attendee.h"
 #include "cal_db_extended.h"
 #include "cal_db_event.h"
+#include "cal_db_timezone.h"
+#include "cal_utils.h"
 
 enum {
 	CAL_RECURRENCE_ID_RANGE_NONE,
@@ -207,7 +209,7 @@ char* cal_db_event_get_recurrence_id_from_exception(int child_id)
 
 	char *recurrence_id = NULL;
 	if (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
-		recurrence_id = SAFE_STRDUP(sqlite3_column_text(stmt, 0));
+		recurrence_id = cal_strdup((const char*)sqlite3_column_text(stmt, 0));
 	}
 	sqlite3_finalize(stmt);
 	return recurrence_id;

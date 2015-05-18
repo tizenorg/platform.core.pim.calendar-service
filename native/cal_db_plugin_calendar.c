@@ -27,6 +27,7 @@
 #include "cal_db_util.h"
 #include "cal_db_query.h"
 #include "cal_access_control.h"
+#include "cal_utils.h"
 
 #ifdef CAL_IPC_SERVER
 #include "cal_server_calendar_delete.h"
@@ -805,7 +806,7 @@ static int _cal_db_calendar_get_count_with_query(calendar_query_h query, int *ou
 	que = (cal_query_s *)query;
 
 	if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_CALENDAR)) {
-		table_name = SAFE_STRDUP(CAL_TABLE_CALENDAR);
+		table_name = cal_strdup(CAL_TABLE_CALENDAR);
 	}
 	else {
 		ERR("uri(%s) not support get records with query",que->view_uri);
@@ -869,21 +870,21 @@ static void _cal_db_calendar_get_stmt(sqlite3_stmt *stmt,calendar_record_h recor
 	calendar->index = sqlite3_column_int(stmt, count++);
 
 	temp = sqlite3_column_text(stmt, count++);
-	calendar->uid = SAFE_STRDUP(temp);
+	calendar->uid = cal_strdup((const char*)temp);
 
 	calendar->updated = sqlite3_column_int(stmt, count++);
 
 	temp = sqlite3_column_text(stmt, count++);
-	calendar->name = SAFE_STRDUP(temp);
+	calendar->name = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, count++);
-	calendar->description = SAFE_STRDUP(temp);
+	calendar->description = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, count++);
-	calendar->color = SAFE_STRDUP(temp);
+	calendar->color = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, count++);
-	calendar->location = SAFE_STRDUP(temp);
+	calendar->location = cal_strdup((const char*)temp);
 
 	calendar->visibility = sqlite3_column_int(stmt, count++);
 	calendar->sync_event = sqlite3_column_int(stmt, count++);
@@ -892,13 +893,13 @@ static void _cal_db_calendar_get_stmt(sqlite3_stmt *stmt,calendar_record_h recor
 	calendar->store_type = sqlite3_column_int(stmt, count++);
 
 	temp = sqlite3_column_text(stmt, count++);
-	calendar->sync_data1 = SAFE_STRDUP(temp);
+	calendar->sync_data1 = cal_strdup((const char*)temp);
 	temp = sqlite3_column_text(stmt, count++);
-	calendar->sync_data2 = SAFE_STRDUP(temp);
+	calendar->sync_data2 = cal_strdup((const char*)temp);
 	temp = sqlite3_column_text(stmt, count++);
-	calendar->sync_data3 = SAFE_STRDUP(temp);
+	calendar->sync_data3 = cal_strdup((const char*)temp);
 	temp = sqlite3_column_text(stmt, count++);
-	calendar->sync_data4 = SAFE_STRDUP(temp);
+	calendar->sync_data4 = cal_strdup((const char*)temp);
 
 	/* deleted */
 	sqlite3_column_int(stmt, count++);
@@ -922,23 +923,23 @@ static void _cal_db_calendar_get_property_stmt(sqlite3_stmt *stmt,
 		break;
 	case CAL_PROPERTY_CALENDAR_UID:
 		temp = sqlite3_column_text(stmt, stmt_count);
-		calendar->uid = SAFE_STRDUP(temp);
+		calendar->uid = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_CALENDAR_NAME:
 		temp = sqlite3_column_text(stmt, stmt_count);
-		calendar->name = SAFE_STRDUP(temp);
+		calendar->name = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_CALENDAR_DESCRIPTION:
 		temp = sqlite3_column_text(stmt, stmt_count);
-		calendar->description = SAFE_STRDUP(temp);
+		calendar->description = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_CALENDAR_COLOR:
 		temp = sqlite3_column_text(stmt, stmt_count);
-		calendar->color = SAFE_STRDUP(temp);
+		calendar->color = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_CALENDAR_LOCATION:
 		temp = sqlite3_column_text(stmt, stmt_count);
-		calendar->location = SAFE_STRDUP(temp);
+		calendar->location = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_CALENDAR_VISIBILITY:
 		calendar->visibility = sqlite3_column_int(stmt, stmt_count);
@@ -954,19 +955,19 @@ static void _cal_db_calendar_get_property_stmt(sqlite3_stmt *stmt,
 		break;
 	case CAL_PROPERTY_CALENDAR_SYNC_DATA1:
 		temp = sqlite3_column_text(stmt, stmt_count);
-		calendar->sync_data1 = SAFE_STRDUP(temp);
+		calendar->sync_data1 = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_CALENDAR_SYNC_DATA2:
 		temp = sqlite3_column_text(stmt, stmt_count);
-		calendar->sync_data1 = SAFE_STRDUP(temp);
+		calendar->sync_data1 = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_CALENDAR_SYNC_DATA3:
 		temp = sqlite3_column_text(stmt, stmt_count);
-		calendar->sync_data1 = SAFE_STRDUP(temp);
+		calendar->sync_data1 = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_CALENDAR_SYNC_DATA4:
 		temp = sqlite3_column_text(stmt, stmt_count);
-		calendar->sync_data1 = SAFE_STRDUP(temp);
+		calendar->sync_data1 = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_CALENDAR_MODE:
 		calendar->mode = sqlite3_column_int(stmt, stmt_count);
