@@ -20,6 +20,11 @@
 #ifndef __CAL_SERVER_ALARM_H__
 #define __CAL_SERVER_ALARM_H__
 
-int cal_server_alarm(void);
+void cal_server_alarm_init(void);
+void cal_server_alarm_fini(void);
+
+void cal_server_alarm_register(void);
+void cal_server_alarm_alert(time_t tt_alert);
+int cal_server_alarm_register_next_alarm(time_t tt);
 
 #endif  /* __CAL_SERVER_ALARM_H__ */

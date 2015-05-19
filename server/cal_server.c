@@ -332,17 +332,7 @@ static int __server_main(void)
 	else
 		DBG("account_subscribe_create Failed (%d)", ret);
 
-	ret = cal_server_alarm();
-	if (CALENDAR_ERROR_NONE != ret)
-	{
-		if (on_contact)
-		{
-//			contacts_disconnect();
-		}
-		ERR("cal_server_alarm() Failed");
-//		return -1;
-	}
-
+	cal_server_alarm_register();
 	cal_server_calendar_delete_start();
 
 #ifdef CAL_MEMORY_TEST
@@ -424,9 +414,12 @@ int main(int argc, char *argv[])
 
 	_cal_server_create_file();
 	cal_server_schema_check();
+	cal_server_alarm_init();
 	cal_server_update();
 
 	__server_main();
+
+	cal_server_alarm_fini();
 	return 0;
 }
 

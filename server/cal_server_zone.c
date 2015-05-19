@@ -307,10 +307,13 @@ static void _cal_server_zone_iterate_alarm_cb(vsm_zone_h zone, void *user_data)
 	time_t t = (time_t)GPOINTER_TO_INT(user_data);
 	if (t < 0)
 		t = time(NULL);
+
 	DBG("system changed time(%ld)", t);
 	const char *zone_name = NULL;
 	zone_name = vsm_get_zone_name(zone);
-	cal_server_alarm_register_with_alarmmgr(zone_name, t);
+	/* check if alert time is matched */
+	cal_server_alarm_alert(zone_name, t);
+	cal_server_alarm_register_next_alarm(zone_name, t);
 }
 
 void cal_server_zone_iterate_alarm(time_t t)
