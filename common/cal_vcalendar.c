@@ -181,7 +181,7 @@ API int calendar_vcalendar_parse_to_calendar_foreach(const char *vcalendar_file_
 	FILE *file;
 	int buf_size, len;
 	char *stream;
-	char buf[1024];
+	char buf[CAL_STR_MIDDLE_LEN];
 	vcalendar_foreach_s *foreach_data = NULL;
 
 	RETV_IF(NULL == vcalendar_file_path, CALENDAR_ERROR_INVALID_PARAMETER);

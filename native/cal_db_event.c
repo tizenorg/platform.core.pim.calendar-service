@@ -505,7 +505,7 @@ void cal_db_event_apply_recurrence_id(int parent_id, cal_event_s *event, char *r
 
 	int y = 0, m = 0, d = 0;
 	int h = 0, n = 0, s = 0;
-	char dtstart_datetime[32] = {0};
+	char dtstart_datetime[CAL_STR_SHORT_LEN32] = {0};
 	long long int dtstart_utime = 0;
 	calendar_time_s rectime = {0};
 	switch (len_datetime) {
@@ -635,8 +635,8 @@ int cal_db_event_insert_record(calendar_record_h record, int original_event_id, 
 	int index;
 	int input_ver;
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
-	char dtstart_datetime[32] = {0};
-	char dtend_datetime[32] = {0};
+	char dtstart_datetime[CAL_STR_SHORT_LEN32] = {0};
+	char dtend_datetime[CAL_STR_SHORT_LEN32] = {0};
 	sqlite3_stmt *stmt = NULL;
 	cal_event_s* event =  (cal_event_s*)(record);
 	cal_rrule_s *rrule = NULL;

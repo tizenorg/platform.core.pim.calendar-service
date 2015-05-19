@@ -350,7 +350,7 @@ static int __get_time_shifted_field(char *old_field, int old_type, int new_type,
 		tm.tm_min = n;
 		tm.tm_sec = s;
 
-		char buf[32] = {0};
+		char buf[CAL_STR_SHORT_LEN32] = {0};
 		switch (new_type) {
 		case CALENDAR_TIME_UTIME:
 			switch (strlen(t[i])) {
@@ -465,8 +465,8 @@ static int __update_record(calendar_record_h record, int is_dirty_in_time)
 {
 	int ret = 0;
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
-	char dtstart_datetime[32] = {0};
-	char dtend_datetime[32] = {0};
+	char dtstart_datetime[CAL_STR_SHORT_LEN32] = {0};
+	char dtend_datetime[CAL_STR_SHORT_LEN32] = {0};
 	sqlite3_stmt *stmt = NULL;
 	cal_event_s* event =  (cal_event_s*)(record);
 	cal_rrule_s *rrule = NULL;
@@ -1122,7 +1122,7 @@ static int _cal_db_event_get_records_with_query(calendar_query_h query, int offs
 	CAL_FREE(condition);
 
 	/* limit, offset */
-	char buf[32] = {0};
+	char buf[CAL_STR_SHORT_LEN32] = {0};
 	if (0 < limit) {
 		snprintf(buf, sizeof(buf), "LIMIT %d", limit);
 		cal_db_append_string(&query_str, buf);
@@ -1427,8 +1427,8 @@ static int _cal_db_event_replace_record(calendar_record_h record, int id)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
-	char dtstart_datetime[32] = {0};
-	char dtend_datetime[32] = {0};
+	char dtstart_datetime[CAL_STR_SHORT_LEN32] = {0};
+	char dtend_datetime[CAL_STR_SHORT_LEN32] = {0};
 	sqlite3_stmt *stmt = NULL;
 	cal_event_s* event =  (cal_event_s*)(record);
 	cal_rrule_s *rrule = NULL;

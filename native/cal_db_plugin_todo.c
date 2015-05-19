@@ -86,8 +86,8 @@ static int _cal_db_todo_insert_record(calendar_record_h record, int* id)
 	int index = -1;
 	int input_ver;
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
-	char dtstart_datetime[32] = {0};
-	char dtend_datetime[32] = {0};
+	char dtstart_datetime[CAL_STR_SHORT_LEN32] = {0};
+	char dtend_datetime[CAL_STR_SHORT_LEN32] = {0};
 	sqlite3_stmt *stmt = NULL;
 	cal_todo_s* todo =  (cal_todo_s*)(record);
 	cal_rrule_s *rrule = NULL;
@@ -389,8 +389,8 @@ static int _cal_db_todo_get_record(int id, calendar_record_h* out_record)
 static int _cal_db_todo_update_record(calendar_record_h record)
 {
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
-	char dtstart_datetime[32] = {0};
-	char dtend_datetime[32] = {0};
+	char dtstart_datetime[CAL_STR_SHORT_LEN32] = {0};
+	char dtend_datetime[CAL_STR_SHORT_LEN32] = {0};
 	sqlite3_stmt *stmt = NULL;
 	cal_todo_s* todo =  (cal_todo_s*)(record);
 	cal_rrule_s *rrule = NULL;
@@ -664,8 +664,8 @@ static int _cal_db_todo_replace_record(calendar_record_h record, int id)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
-	char dtstart_datetime[32] = {0};
-	char dtend_datetime[32] = {0};
+	char dtstart_datetime[CAL_STR_SHORT_LEN32] = {0};
+	char dtend_datetime[CAL_STR_SHORT_LEN32] = {0};
 	sqlite3_stmt *stmt = NULL;
 	cal_todo_s* todo =  (cal_todo_s*)(record);
 	cal_rrule_s *rrule = NULL;
@@ -1024,7 +1024,7 @@ static int _cal_db_todo_get_records_with_query(calendar_query_h query, int offse
 	CAL_FREE(condition);
 
 	/* limit, offset */
-	char buf[32] = {0};
+	char buf[CAL_STR_SHORT_LEN32] = {0};
 	if (0 < limit) {
 		snprintf(buf, sizeof(buf), "LIMIT %d", limit);
 		cal_db_append_string(&query_str, buf);

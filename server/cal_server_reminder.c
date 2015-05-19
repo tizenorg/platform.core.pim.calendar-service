@@ -33,47 +33,30 @@
 
 #define CAL_SUBSCRIBE_MAX_LEN 1024
 
-static gboolean _cal_server_reminder_publish_changes_with_data(char *data, int len)
-{
-	pims_ipc_data_h indata = NULL;
-	if (NULL == data)
-	{
-		ERR("Invalid parameter: data is NULL");
-		return true;
-	}
-
-	indata = pims_ipc_data_create(0);
-	if (NULL == indata)
-	{
-		ERR("pims_ipc_data_create() failed");
-		return false;
-	}
-	if (pims_ipc_data_put(indata, &len, sizeof(int)) != 0)
-	{
-		ERR("pims_ipc_data_put() failed");
-		pims_ipc_data_destroy(indata);
-		return false;
-	}
-	if (pims_ipc_data_put(indata, data, strlen(data) + 1) != 0)
-	{
-		ERR("pims_ipc_data_put() failed");
-		pims_ipc_data_destroy(indata);
-		return false;
-	}
-	if (pims_ipc_svc_publish(CAL_IPC_MODULE_FOR_SUBSCRIPTION, (char *)CAL_NOTI_REMINDER_CAHNGED, indata) != 0)
-	{
-		ERR("pims_ipc_svc_publish() failed");
-		pims_ipc_data_destroy(indata);
-		return false;
-	}
-	pims_ipc_data_destroy(indata);
-	return true;
-}
-
-void cal_server_reminder_publish(char *p)
+void cal_server_reminder_publish(char *p, int p_len)
 {
 	RET_IF(NULL == p);
-	_cal_server_reminder_publish_changes_with_data(p, strlen(p));
+
+	pims_ipc_data_h indata = NULL;
+	indata = pims_ipc_data_create(0);
+	RETM_IF(NULL == indata, "pims_ipc_data_create() Fail");
+
+	if (pims_ipc_data_put(indata, &p_len, sizeof(int)) != 0) {
+		ERR("pims_ipc_data_put() Fail");
+		pims_ipc_data_destroy(indata);
+		return;
+	}
+	if (pims_ipc_data_put(indata, p, p_len + 1) != 0) {
+		ERR("pims_ipc_data_put() Fail");
+		pims_ipc_data_destroy(indata);
+		return;
+	}
+	if (pims_ipc_svc_publish(CAL_IPC_MODULE_FOR_SUBSCRIPTION, (char *)CAL_NOTI_REMINDER_CAHNGED, indata) != 0) {
+		ERR("pims_ipc_svc_publish() Fail");
+		pims_ipc_data_destroy(indata);
+		return;
+	}
+	pims_ipc_data_destroy(indata);
 }
 
 int cal_server_reminder_add_callback_data(char **p, char *key, char *value)

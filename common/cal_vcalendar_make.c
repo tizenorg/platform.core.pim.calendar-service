@@ -212,7 +212,7 @@ static int  _cal_vcalendar_make_time(cal_make_s *b, char *tzid, calendar_time_s 
 		return CALENDAR_ERROR_NONE;
 	}
 
-	char buf[256] = {0};
+	char buf[CAL_STR_MIDDLE_LEN] = {0};
 	int y = 0, m = 0, d = 0;
 	int h = 0, n = 0, s = 0;
 	switch (b->version) {
@@ -298,7 +298,7 @@ static void __encode_escaped_char(char *p, char **r)
 
 static const char* vl_tick(calendar_alarm_time_unit_type_e unit, int tick)
 {
-	static char buf[32] = {0};
+	static char buf[CAL_STR_SHORT_LEN32] = {0};
 
 	int i = 0;
 	if (0 < tick) {
@@ -352,7 +352,7 @@ int _cal_vcalendar_make_audio(cal_make_s *b, calendar_record_h alarm)
 
 		}
 		else {
-			char datetime[32] = {0};
+			char datetime[CAL_STR_SHORT_LEN32] = {0};
 			snprintf(datetime, sizeof(datetime), "%04d%02d%02dT%02d%02d%02d",
 					at.time.date.year, at.time.date.month, at.time.date.mday,
 					at.time.date.hour, at.time.date.minute, at.time.date.second);
@@ -389,7 +389,7 @@ static void _cal_vcalendar_make_aalarm(cal_make_s *b, calendar_record_h record, 
 	ret = calendar_record_get_int(alarm, _calendar_alarm.tick_unit, &unit);
 	RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_int() Fail(%d)", ret);
 
-	char datetime[32] = {0};
+	char datetime[CAL_STR_SHORT_LEN32] = {0};
 	if (CALENDAR_ALARM_TIME_UNIT_SPECIFIC == unit) {
 		calendar_time_s at = {0};
 		ret = calendar_record_get_caltime(alarm, _calendar_alarm.alarm_time, &at);
@@ -607,7 +607,7 @@ static void _cal_vcalendar_make_rrule_append_setpos(calendar_record_h record, ch
 				if (false == is_working) {
 					is_extracted = true;
 					is_working = true;
-					char num[32] = {0};
+					char num[CAL_STR_SHORT_LEN32] = {0};
 					snprintf(num, digit +1, "%s%s", byday +i -digit, (-1 == sign) ? "- ": "+ ");
 					if (NULL == strstr(buf, num)) {
 						blen += snprintf(buf +blen, buf_len -blen, "%s", num);
@@ -949,7 +949,7 @@ static void __make_rrule_ver1_default(calendar_record_h record, int freq, int in
 		d = caltime.time.date.mday;
 		break;
 	}
-	char mday[32] = {0};
+	char mday[CAL_STR_SHORT_LEN32] = {0};
 	snprintf(mday, sizeof(mday), "%d", d);
 	_cal_vcalendar_make_rrule_append_mday(buf, sizeof(buf), mday);
 }
@@ -960,7 +960,7 @@ static void __make_rrule_ver1(cal_make_s *b, calendar_record_h record)
 	RET_IF(NULL == record);
 
 	int ret = 0;
-	char buf[1024] = {0};
+	char buf[CAL_STR_MIDDLE_LEN] = {0};
 
 	int freq = 0;
 	ret = calendar_record_get_int(record, _calendar_event.freq, &freq);
@@ -1070,7 +1070,7 @@ static void __make_rrule_ver2(cal_make_s *b, calendar_record_h record)
 
 	int ret = 0;
 	char *text = NULL;
-	char tmp[32] = {0};
+	char tmp[CAL_STR_SHORT_LEN32] = {0};
 	calendar_time_s caltime = {0};
 
 	int freq = 0;
@@ -1521,7 +1521,7 @@ static void __make_created_time(cal_make_s *b, calendar_record_h record)
 	int y = 0, m = 0, d = 0;
 	int h = 0, n = 0, s = 0;
 	cal_time_get_local_datetime(NULL, value, &y, &m, &d, &h, &n, &s);
-	char buf[128] = {0};
+	char buf[CAL_STR_MIDDLE_LEN] = {0};
 	snprintf(buf, sizeof(buf), VCAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ, y, m, d, h, n, s);
 
 	switch (b->version) {
@@ -1638,7 +1638,7 @@ static void __make_organizer(cal_make_s *b, calendar_record_h record)
 	if ((NULL == name || '\0' == *name) && (NULL == email || '\0' == *email))
 		return;
 
-	char buf[128] = {0};
+	char buf[CAL_STR_MIDDLE_LEN] = {0};
 	snprintf(buf, sizeof(buf), "ORGANIZER%s%s%s%s",
 			(name && *name) ? ";CN=" : "",
 			(name && *name) ? name : "",
@@ -1676,7 +1676,7 @@ static void __make_last_modified(cal_make_s *b, calendar_record_h record)
 	int h = 0, n = 0, s = 0;
 	cal_time_get_local_datetime(NULL, value, &y, &m, &d, &h, &n, &s);
 
-	char buf[128] = {0};
+	char buf[CAL_STR_MIDDLE_LEN] = {0};
 	snprintf(buf, sizeof(buf), VCAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ, y, m, d, h, n, s);
 	_cal_vcalendar_make_printf(b, "LAST-MODIFIED:", buf);
 }
@@ -1751,7 +1751,7 @@ static void __make_completed(cal_make_s *b, calendar_record_h record)
 	int y = 0, m = 0, d = 0;
 	int h = 0, n = 0, s = 0;
 	cal_time_get_local_datetime(NULL, value, &y, &m, &d, &h, &n, &s);
-	char buf[128] = {0};
+	char buf[CAL_STR_MIDDLE_LEN] = {0};
 	snprintf(buf, sizeof(buf), VCAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ, y, m, d, h, n, s);
 	_cal_vcalendar_make_printf(b, "COMPLETED", buf);
 }
@@ -1810,7 +1810,7 @@ static void __make_priority(cal_make_s *b, calendar_record_h record)
 		}
 		break;
 	}
-	char buf[128] = {0};
+	char buf[CAL_STR_MIDDLE_LEN] = {0};
 	snprintf(buf, sizeof(buf), "PRIORITY:%d", priority);
 	_cal_vcalendar_make_printf(b, buf, NULL);
 }
@@ -1828,7 +1828,7 @@ static void __make_dtstamp(cal_make_s *b, calendar_record_h record)
 	int y = 0, m = 0, d = 0;
 	int h = 0, n = 0, s = 0;
 	cal_time_get_local_datetime(NULL, t, &y, &m, &d, &h, &n, &s);
-	char buf[128] = {0};
+	char buf[CAL_STR_MIDDLE_LEN] = {0};
 	snprintf(buf, sizeof(buf), VCAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ, y, m, d, h, n, s);
 	_cal_vcalendar_make_printf(b, "DTSTAMP:", buf);
 }
@@ -2096,7 +2096,7 @@ static void __append_header(cal_make_s *b)
 	ret = _cal_vcalendar_make_printf(b, "PRODID:vCal ID Default", NULL);
 	RETM_IF(CALENDAR_ERROR_NONE != ret, "_cal_vcalendar_make_printf() Fail(%d)", ret);
 
-	char buf[32] = {0};
+	char buf[CAL_STR_SHORT_LEN32] = {0};
 	snprintf(buf, sizeof(buf), "VERSION:%d.0", b->version);
 	ret = _cal_vcalendar_make_printf(b, buf, NULL);
 	RETM_IF(CALENDAR_ERROR_NONE != ret, "_cal_vcalendar_make_printf() Fail(%d)", ret);
@@ -2131,7 +2131,7 @@ static void __make_tz(cal_make_s *b, char *tzid, long long int created)
 	int h = (zone / 3600) + (dst / 3600);
 	int m = (zone % 3600) / 60 + (dst % 3600) / 60;
 
-	char buf[32] = {0};
+	char buf[CAL_STR_SHORT_LEN32] = {0};
 	snprintf(buf, sizeof(buf), "TZ:%s%02d:%02d",
 			h == 0 ? "" : (h < 0 ? "-" : "+"),
 			h < 0 ? (-1 * h) : h, m < 0 ? (-1 * m) : m);

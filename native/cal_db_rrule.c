@@ -217,7 +217,7 @@ int _cal_db_rrule_insert_record(int id, cal_rrule_s *rrule)
 	int rrule_id;
 	int index;
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
-	char until_datetime[32] = {0};
+	char until_datetime[CAL_STR_SHORT_LEN32] = {0};
 	sqlite3_stmt *stmt = NULL;
 	int ret = 0;
 
@@ -448,9 +448,9 @@ static int _cal_db_rrule_has_record(int id, int *has_record)
 
 static int _cal_db_rrule_update_record(int id, cal_rrule_s *rrule)
 {
-	char query[CAL_DB_SQL_MAX_LEN] = {0};
-	char until_datetime[32] = {0};
 	int ret = 0;
+	char query[CAL_DB_SQL_MAX_LEN] = {0};
+	char until_datetime[CAL_STR_SHORT_LEN32] = {0};
 	sqlite3_stmt *stmt = NULL;
 
 	snprintf(query, sizeof(query),

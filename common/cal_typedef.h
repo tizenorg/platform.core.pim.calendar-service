@@ -27,7 +27,10 @@
 #include "cal_record.h"
 #include <tzplatform_config.h>
 
-#define CAL_STR_SHORT_LEN 1024
+#define CAL_STR_SHORT_LEN32 32
+#define CAL_STR_SHORT_LEN64 64
+#define CAL_STR_MIDDLE_LEN 1024
+#define CAL_STR_LONG_LEN 2048
 #define CAL_STRING_EQUAL 0
 #define CAL_TZID_GMT "Etc/GMT"
 #define CAL_SOCK_PATH "/run/user/%d"

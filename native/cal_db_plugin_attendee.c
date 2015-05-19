@@ -295,7 +295,7 @@ static int _cal_db_attendee_get_records_with_query(calendar_query_h query, int o
 		CAL_FREE(order);
 	}
 
-	char buf[32] = {0};
+	char buf[CAL_STR_SHORT_LEN32] = {0};
 	if (0 < limit) {
 		snprintf(buf, sizeof(buf), "LIMIT %d", limit);
 		cal_db_append_string(&query_str, buf);

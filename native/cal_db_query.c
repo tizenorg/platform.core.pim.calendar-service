@@ -307,7 +307,7 @@ int cal_db_query_create_projection_update_set(calendar_record_h record, char **s
 				}
 				else {
 					char *bind_tmp = NULL;
-					char bind_datetime[32] = {0};
+					char bind_datetime[CAL_STR_SHORT_LEN32] = {0};
 					snprintf(bind_datetime, sizeof(bind_datetime), CAL_FORMAT_LOCAL_DATETIME,
 							tmp.time.date.year,
 							tmp.time.date.month,
@@ -446,7 +446,7 @@ int cal_db_query_create_projection_update_set_with_property(
 				}
 				else {
 					char *bind_tmp = NULL;
-					char bind_datetime[32] = {0};
+					char bind_datetime[CAL_STR_SHORT_LEN32] = {0};
 					snprintf(bind_datetime, sizeof(bind_datetime), CAL_FORMAT_LOCAL_DATETIME,
 							tmp.time.date.year,
 							tmp.time.date.month,
@@ -758,7 +758,7 @@ static int _cal_db_query_create_caltime_condition(cal_composite_filter_s *com_fi
 		}
 	}
 	else if (filter->value.caltime.type == CALENDAR_TIME_LOCALTIME) {
-		char sdate[32] = {0};
+		char sdate[CAL_STR_SHORT_LEN32] = {0};
 		snprintf(sdate, sizeof(sdate), CAL_FORMAT_LOCAL_DATETIME,
 				filter->value.caltime.time.date.year, filter->value.caltime.time.date.month, filter->value.caltime.time.date.mday,
 				filter->value.caltime.time.date.hour, filter->value.caltime.time.date.minute, filter->value.caltime.time.date.second);

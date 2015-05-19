@@ -932,7 +932,7 @@ static void __get_tz(char *value, char **tz)
 	int h = 0, m = 0;
 	__parse_tz(value +1, &h, &m); /* +1 to skip ':' */
 
-	char buf[32] = {0};
+	char buf[CAL_STR_SHORT_LEN32] = {0};
 	if (0 == m) {
 		snprintf(buf, sizeof(buf), "Etc/GMT%c%d", h < 0 ? '+' : '-', h);
 
@@ -1351,7 +1351,7 @@ static void __work_component_property_rrule_ver_1(char *value, calendar_record_h
 	int freq_mode = 0;
 	bool has_by = false;
 
-	char bystr[1024] = {0};
+	char bystr[CAL_STR_MIDDLE_LEN] = {0};
 	int len_str = 0;
 
 	int week[5] = {0};
@@ -2826,7 +2826,7 @@ static void __work_component_property_vtimezone_standard_tzoffsetto(char *value,
 	WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
 
 	if (NULL == ud->timezone_tzid || '\0' == *ud->timezone_tzid) {
-		char buf[32] = {0};
+		char buf[CAL_STR_SHORT_LEN32] = {0};
 		snprintf(buf, sizeof(buf), "Etc/GMT%c%d", offset < 0 ? '+' : '-', h);
 		ud->timezone_tzid = strdup(buf);
 		__adjust_tzid(ud->timezone_tzid);

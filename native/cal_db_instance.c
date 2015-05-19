@@ -300,7 +300,7 @@ static int _cal_db_instance_update_exdate_mod(int original_event_id, char *recur
 
 		int y = 0, m = 0, d = 0;
 		int h = 0, n = 0, s = 0;
-		char buf[32] = {0};
+		char buf[CAL_STR_SHORT_LEN32] = {0};
 		switch (strlen(p)) {
 		case 8:
 			DBG("ALLDAY instance");
@@ -494,8 +494,8 @@ static int _cal_db_instance_insert_record(UCalendar *ucal, long long int duratio
 	long long int lli_e = 0;
 	int y = 0, m = 0, d = 0;
 	int h = 0, n = 0, s = 0;
-	char buf_s[256] = {0};
-	char buf_e[256] = {0};
+	char buf_s[CAL_STR_MIDDLE_LEN] = {0};
+	char buf_e[CAL_STR_MIDDLE_LEN] = {0};
 
 	RETV_IF(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER);
 
@@ -763,12 +763,12 @@ static int _cal_db_instance_publish_yearly_yday(UCalendar *ucal, cal_event_s *ev
 	/* set until before dtstart_utime */
 	long long int until_utime = ms2sec(ucal_getMillis(ucal, &ec));
 
-	int byyearday[1024] = {0};
+	int byyearday[CAL_STR_MIDDLE_LEN] = {0};
 	int byyearday_len = 0;
 	_cal_db_instance_parse_byint(event->byyearday, byyearday, &byyearday_len);
 	DBG("byyearday len(%d)", byyearday_len);
 
-	int bysetpos[1024] = {0};
+	int bysetpos[CAL_STR_MIDDLE_LEN] = {0};
 	int bysetpos_len = 0;
 	_cal_db_instance_parse_byint(event->bysetpos, bysetpos, &bysetpos_len);
 	DBG("bysetpos len(%d)", bysetpos_len);
@@ -849,12 +849,12 @@ static int _cal_db_instance_publish_yearly_weekno(UCalendar *ucal, cal_event_s *
 	}
 	DBG("byday_len (%d) week integer(0x%x)", byday_len, week_bits);
 
-	int byweekno[1024] = {0};
+	int byweekno[CAL_STR_MIDDLE_LEN] = {0};
 	int byweekno_len = 0;
 	_cal_db_instance_parse_byint(event->byweekno, byweekno, &byweekno_len);
 	DBG("byweekno len(%d)", byweekno_len);
 
-	int bysetpos[1024] = {0};
+	int bysetpos[CAL_STR_MIDDLE_LEN] = {0};
 	int bysetpos_len = 0;
 	_cal_db_instance_parse_byint(event->bysetpos, bysetpos, &bysetpos_len);
 	DBG("bysetpos len(%d)", bysetpos_len);
@@ -952,7 +952,7 @@ static int _cal_db_instance_publish_yearly_wday(UCalendar *ucal, cal_event_s *ev
 	}
 
 	/* get bymonthday into array */
-	int bymonthday[1024] = {0};
+	int bymonthday[CAL_STR_MIDDLE_LEN] = {0};
 	int bymonthday_len = 0;
 	_cal_db_instance_parse_byint(event->bymonthday, bymonthday, &bymonthday_len);
 	DBG("bymonthday_len(%d)", bymonthday_len);
@@ -968,7 +968,7 @@ static int _cal_db_instance_publish_yearly_wday(UCalendar *ucal, cal_event_s *ev
 		__set_time_to_ucal(event->system_type, ucal, st);
 		int nth = ucal_get(ucal, UCAL_DAY_OF_WEEK_IN_MONTH, &ec);
 		int dtstart_wday = ucal_get(ucal, UCAL_DAY_OF_WEEK, &ec);
-		char buf[32] = {0};
+		char buf[CAL_STR_SHORT_LEN32] = {0};
 		snprintf(buf, sizeof(buf), "%d%s", nth, week_text[dtstart_wday -1]);
 		DBG("set byday[%s]", buf);
 
@@ -982,7 +982,7 @@ static int _cal_db_instance_publish_yearly_wday(UCalendar *ucal, cal_event_s *ev
 	}
 	DBG("[%s] byday_len(%d)", event->byday, byday_len);
 
-	int bysetpos[1024] = {0};
+	int bysetpos[CAL_STR_MIDDLE_LEN] = {0};
 	int bysetpos_len = 0;
 	_cal_db_instance_parse_byint(event->bysetpos, bysetpos, &bysetpos_len);
 	DBG("bysetpos len(%d)", bysetpos_len);
@@ -1012,7 +1012,7 @@ static int _cal_db_instance_publish_yearly_wday(UCalendar *ucal, cal_event_s *ev
 					if (0 == strlen(t[j])) continue;
 					/* get nth, wday */
 					int nth = 0;
-					char wday[32] = {0};
+					char wday[CAL_STR_SHORT_LEN32] = {0};
 
 					sscanf(t[j], "%d%s", &nth, wday); /* -3SU, +2SA */
 					DBG("nth(%d) wday[%s]", nth, wday);
@@ -1182,7 +1182,7 @@ static int _cal_db_instance_publish_yearly_mday(UCalendar *ucal, cal_event_s *ev
 	DBG("bymonth_len(%d)", bymonth_len);
 
 	/* get bymonthday into array */
-	int bymonthday[1024] = {0};
+	int bymonthday[CAL_STR_MIDDLE_LEN] = {0};
 	int bymonthday_len = 0;
 	_cal_db_instance_parse_byint(event->bymonthday, bymonthday, &bymonthday_len);
 	if (0 == bymonthday_len) {
@@ -1194,7 +1194,7 @@ static int _cal_db_instance_publish_yearly_mday(UCalendar *ucal, cal_event_s *ev
 	}
 	DBG("bymonthday len(%d)", bymonthday_len);
 
-	int bysetpos[1024] = {0};
+	int bysetpos[CAL_STR_MIDDLE_LEN] = {0};
 	int bysetpos_len = 0;
 	_cal_db_instance_parse_byint(event->bysetpos, bysetpos, &bysetpos_len);
 	DBG("bysetpos len(%d)", bysetpos_len);
@@ -1298,7 +1298,7 @@ static int _cal_db_instance_publish_monthly_wday(UCalendar *ucal, cal_event_s *e
 	long long int until_utime = ms2sec(ucal_getMillis(ucal, &ec));
 
 	/* get bymonthday into array */
-	int bymonthday[1024] = {0};
+	int bymonthday[CAL_STR_MIDDLE_LEN] = {0};
 	int bymonthday_len = 0;
 	_cal_db_instance_parse_byint(event->bymonthday, bymonthday, &bymonthday_len);
 
@@ -1313,7 +1313,7 @@ static int _cal_db_instance_publish_monthly_wday(UCalendar *ucal, cal_event_s *e
 		__set_time_to_ucal(event->system_type, ucal, st);
 		int week_nth = ucal_get(ucal, UCAL_DAY_OF_WEEK_IN_MONTH, &ec);
 		int dtstart_wday = ucal_get(ucal, UCAL_DAY_OF_WEEK, &ec);
-		char buf[32] = {0};
+		char buf[CAL_STR_SHORT_LEN32] = {0};
 		snprintf(buf, sizeof(buf), "%d%s", week_nth, week_text[dtstart_wday -1]);
 		DBG("set byday[%s]", buf);
 
@@ -1327,7 +1327,7 @@ static int _cal_db_instance_publish_monthly_wday(UCalendar *ucal, cal_event_s *e
 	}
 	DBG("[%s] byday_len(%d)", event->byday, byday_len);
 
-	int bysetpos[1024] = {0};
+	int bysetpos[CAL_STR_MIDDLE_LEN] = {0};
 	int bysetpos_len = 0;
 	_cal_db_instance_parse_byint(event->bysetpos, bysetpos, &bysetpos_len);
 	DBG("bysetpos len(%d)", bysetpos_len);
@@ -1356,7 +1356,7 @@ static int _cal_db_instance_publish_monthly_wday(UCalendar *ucal, cal_event_s *e
 					continue;
 				/* get nth, wday */
 				int nth = 0;
-				char wday[32] = {0};
+				char wday[CAL_STR_SHORT_LEN32] = {0};
 
 				sscanf(t[i], "%d%s", &nth, wday); /* -3SU, +2SA */
 				DBG("nth(%d) wday[%s]", nth, wday);
@@ -1513,7 +1513,7 @@ static int _cal_db_instance_publish_monthly_mday(UCalendar *ucal, cal_event_s *e
 	long long int until_utime = ms2sec(ucal_getMillis(ucal, &ec));
 
 	/* get bymonthday into array */
-	int bymonthday[1024] = {0};
+	int bymonthday[CAL_STR_MIDDLE_LEN] = {0};
 	int bymonthday_len = 0;
 	_cal_db_instance_parse_byint(event->bymonthday, bymonthday, &bymonthday_len);
 	if (0 == bymonthday_len) {
@@ -1525,7 +1525,7 @@ static int _cal_db_instance_publish_monthly_mday(UCalendar *ucal, cal_event_s *e
 	}
 	DBG("bymonthday_len(%d) [%s]", bymonthday_len, event->bymonthday);
 
-	int bysetpos[1024] = {0};
+	int bysetpos[CAL_STR_MIDDLE_LEN] = {0};
 	int bysetpos_len = 0;
 	_cal_db_instance_parse_byint(event->bysetpos, bysetpos, &bysetpos_len);
 	DBG("bysetpos_len(%d)", bysetpos_len);
@@ -1631,7 +1631,7 @@ static int _cal_db_instance_publish_weekly_wday(UCalendar *ucal, cal_event_s *ev
 	}
 	DBG("week integer(0x%x)", week_bits);
 
-	int bysetpos[1024] = {0};
+	int bysetpos[CAL_STR_MIDDLE_LEN] = {0};
 	int bysetpos_len = 0;
 	_cal_db_instance_parse_byint(event->bysetpos, bysetpos, &bysetpos_len);
 	DBG("bysetpos len(%d)", bysetpos_len);

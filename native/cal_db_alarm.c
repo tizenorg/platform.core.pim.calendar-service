@@ -103,7 +103,7 @@ static int _cal_db_alarm_insert_record(calendar_record_h record, int parent_id)
 	index++;
 
 	if (CALENDAR_TIME_LOCALTIME == alarm->alarm.type) {
-		char alarm_datetime[32] = {0};
+		char alarm_datetime[CAL_STR_SHORT_LEN32] = {0};
 		snprintf(alarm_datetime, sizeof(alarm_datetime), CAL_FORMAT_LOCAL_DATETIME,
 				alarm->alarm.time.date.year,
 				alarm->alarm.time.date.month,

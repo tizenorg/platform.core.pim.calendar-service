@@ -77,7 +77,7 @@ static void __zone_iterate_cb(vsm_zone_h zone, void *user_data)
 	}
 
 	DBG("schema init");
-	char path[1024] = {0};
+	char path[CAL_STR_MIDDLE_LEN] = {0};
 	int len = 0;
 	len = cal_zone_get_root_path(zone_name, path, sizeof(path));
 	snprintf(path+len, sizeof(path)-len, "%s", "/opt/usr/dbspace/");
@@ -128,7 +128,7 @@ static int __status_cb(vsm_zone_h zone, vsm_zone_state_t state, void *user_data)
 	vsm_zone_h old_zone = NULL;
 
 	int len = 0;
-	char path[1024] = {0};
+	char path[CAL_STR_MIDDLE_LEN] = {0};
 	switch (state) {
 	case VSM_ZONE_STATE_STARTING:
 		DBG("STARTING");

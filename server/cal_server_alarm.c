@@ -46,7 +46,7 @@ struct _alarm_data_s
 	int type; /* utime, localtime */
 	long long int time;
 	int record; /* todo, event */
-	char datetime[32];
+	char datetime[CAL_STR_SHORT_LEN32];
 	int system_type;
 };
 
@@ -629,7 +629,7 @@ static void _cal_server_alarm_get_latest(time_t utime, bool get_all, GList **out
 	struct tm st_local = {0};
 	localtime_r(&utime, &st_local);
 
-	char datetime[32] = {0};
+	char datetime[CAL_STR_SHORT_LEN32] = {0};
 	snprintf(datetime, sizeof(datetime), CAL_FORMAT_LOCAL_DATETIME,
 			st_local.tm_year +1900, st_local.tm_mon + 1, st_local.tm_mday,
 			st_local.tm_hour, st_local.tm_min, st_local.tm_sec);
@@ -780,30 +780,21 @@ static bool __app_matched_cb(app_control_h app_control, const char *package, voi
 		DBG("pkg[%s] time[%lld] tick[%d] unit[%d] record_type[%d]",
 				package, ad->time, ad->tick, ad->unit, ad->record);
 
-		char buf_event_id[128] = {0};
-		char buf_time[128] = {0};
-		char buf_tick[128] = {0};
-		char buf_unit[128] = {0};
-		char buf_record_type[128] = {0};
-		snprintf(buf_event_id, sizeof(buf_event_id), "%d", ad->event_id);
-		snprintf(buf_time, sizeof(buf_time), "%lld", ad->time);
-		snprintf(buf_tick, sizeof(buf_tick), "%d", ad->tick);
-		snprintf(buf_unit, sizeof(buf_unit), "%d", ad->unit);
-		snprintf(buf_record_type, sizeof(buf_record_type), "%d", ad->record);
+		int len = 0;
+		char extra[CAL_STR_MIDDLE_LEN] = {0};
+		len = snprintf(extra, sizeof(extra), "%s=%d", "id", ad->event_id);
+		len += snprintf(extra+len, sizeof(extra)-len, "&%s=%lld", "time", ad->time);
+		len += snprintf(extra+len, sizeof(extra)-len, "&%s=%d", "tick", ad->tick);
+		len += snprintf(extra+len, sizeof(extra)-len, "&%s=%d", "unit", ad->unit);
+		len += snprintf(extra+len, sizeof(extra)-len, "&%s=%d", "type", ad->record);
 
-		char *p = NULL;
-		cal_server_reminder_add_callback_data(&p, "id", buf_event_id);
-		cal_server_reminder_add_callback_data(&p, "time", buf_time);
-		cal_server_reminder_add_callback_data(&p, "tick", buf_tick);
-		cal_server_reminder_add_callback_data(&p, "unit", buf_unit);
-		cal_server_reminder_add_callback_data(&p, "type", buf_record_type);
+		char buf_id[CAL_STR_MIDDLE_LEN] = {0};
+		snprintf(buf_id, sizeof(buf_id), "%d", ad->event_id);
+		app_control_add_extra_data(b, buf_id, extra); /* key: id, value: id=4&time=123123&.. */
+		DBG("value[%s]", extra);
 
-		app_control_add_extra_data(b, buf_event_id, p); // key: id, value: id=4&time=123123&..
-		DBG("value[%s]", p);
-		free(p);
-
-		// append ids
-		ids[i] = strdup(buf_event_id);
+		/* append ids */
+		ids[i] = strdup(buf_id);
 
 		l = g_list_next(l);
 	}
@@ -847,25 +838,15 @@ static void _cal_server_alarm_noti_with_callback(GList *alarm_list)
 		DBG("callback time[%lld] tick[%d] unit[%d] record_type[%d]",
 				ad->time, ad->tick, ad->unit, ad->record);
 
-		char buf_event_id[128] = {0};
-		char buf_time[128] = {0};
-		char buf_tick[128] = {0};
-		char buf_unit[128] = {0};
-		char buf_record_type[128] = {0};
-		snprintf(buf_event_id, sizeof(buf_event_id), "%d", ad->event_id);
-		snprintf(buf_time, sizeof(buf_time), "%lld", ad->time);
-		snprintf(buf_tick, sizeof(buf_tick), "%d", ad->tick);
-		snprintf(buf_unit, sizeof(buf_unit), "%d", ad->unit);
-		snprintf(buf_record_type, sizeof(buf_record_type), "%d", ad->record);
+		int len = 0;
+		char extra[CAL_STR_MIDDLE_LEN] = {0};
+		len = snprintf(extra, sizeof(extra), "%s=%d", "id", ad->event_id);
+		len += snprintf(extra+len, sizeof(extra)-len, "&%s=%lld", "time", ad->time);
+		len += snprintf(extra+len, sizeof(extra)-len, "&%s=%d", "tick", ad->tick);
+		len += snprintf(extra+len, sizeof(extra)-len, "&%s=%d", "unit", ad->unit);
+		len += snprintf(extra+len, sizeof(extra)-len, "&%s=%d", "type", ad->record);
 
-		char *p = NULL;
-		cal_server_reminder_add_callback_data(&p, "id", buf_event_id);
-		cal_server_reminder_add_callback_data(&p, "time", buf_time);
-		cal_server_reminder_add_callback_data(&p, "tick", buf_tick);
-		cal_server_reminder_add_callback_data(&p, "unit", buf_unit);
-		cal_server_reminder_add_callback_data(&p, "type", buf_record_type);
-		cal_server_reminder_publish(p);
-		free(p);
+		cal_server_reminder_publish(extra, len);
 
 		l = g_list_next(l);
 	}
@@ -901,7 +882,6 @@ static int _alert_cb(alarm_id_t alarm_id, void *data)
 	DBG("alarm_id (%ld)", alarm_id);
 
 	time_t tt_alert = 0;
-	char *zone_name = data;
 	cal_server_alarm_get_alert_time(alarm_id, &tt_alert);
 	cal_server_alarm_alert(tt_alert);
 	_cal_server_alarm_unset_alerted_alarmmgr_id(alarm_id);

@@ -62,7 +62,7 @@ int cal_server_update(void)
 	sqlite3 *__db;
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 
-	char db_file[256] = {0};
+	char db_file[CAL_STR_MIDDLE_LEN] = {0};
 	snprintf(db_file, sizeof(db_file), "%s/%s", DB_PATH, CALS_DB_NAME);
 	ret = db_util_open(db_file, &__db, 0);
 	if (SQLITE_OK != ret) {

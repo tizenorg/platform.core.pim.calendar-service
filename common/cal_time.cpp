@@ -63,7 +63,7 @@ int cal_time_is_registered_tzid(const char *tzid)
 	int32_t s_count = s->count(ec);
 
 	for (i = 0; i < s_count; i++) {
-		char buf[128] = {0};
+		char buf[CAL_STR_MIDDLE_LEN] = {0};
 		const UnicodeString *unicode_tzid = s->snext(ec);
 		unicode_tzid->extract(buf, sizeof(buf), NULL, ec);
 		if (CAL_STRING_EQUAL == strncmp(tzid, buf, strlen(buf))) {
@@ -219,7 +219,7 @@ static int _cal_time_get_like_utzid(UChar *utzid, int len, const char *tzid, cal
 	gmtoffset = sec2ms(tz->tz_offset_from_gmt * 60);
 
 	if (tz->day_light_bias == 0) {
-		char buf[128] = {0};
+		char buf[CAL_STR_MIDDLE_LEN] = {0};
 		snprintf(buf, sizeof(buf), "Etc/GMT%c%d",
 				gmtoffset < 0 ? '+' : '-',
 				tz->tz_offset_from_gmt / 60);
@@ -323,7 +323,7 @@ static int _cal_time_get_like_utzid(UChar *utzid, int len, const char *tzid, cal
 
 UCalendar *cal_time_open_ucal(int calendar_system_type, const char *tzid, int wkst)
 {
-	UChar utf16_timezone[64] = {0};
+	UChar utf16_timezone[CAL_STR_SHORT_LEN64] = {0};
 	u_uastrncpy(utf16_timezone, tzid, sizeof(utf16_timezone));
 
 	UErrorCode status = U_ZERO_ERROR;
@@ -357,7 +357,7 @@ UCalendar *cal_time_open_ucal(int calendar_system_type, const char *tzid, int wk
 
 UCalendar *cal_time_get_ucal(const char *tzid, int wkst)
 {
-	UChar utf16_timezone[64] = {0};
+	UChar utf16_timezone[CAL_STR_SHORT_LEN64] = {0};
 	u_uastrncpy(utf16_timezone, tzid, sizeof(utf16_timezone));
 
 	UErrorCode status = U_ZERO_ERROR;
@@ -474,7 +474,7 @@ char* cal_time_extract_by(int calendar_system_type, const char *tzid, int wkst, 
 char* cal_time_convert_ltos(const char *tzid, long long int lli, int is_allday)
 {
 	int y, mon, d, h, min, s;
-	char buf[32] = {0};
+	char buf[CAL_STR_SHORT_LEN32] = {0};
 	UCalendar *ucal;
 	UErrorCode status = U_ZERO_ERROR;
 
@@ -742,7 +742,7 @@ int cal_time_get_next_time(UCalendar *ucal, int offset, int freq, calendar_time_
  */
 char* cal_time_get_timezone(void)
 {
-	char buf[256] = {0};
+	char buf[CAL_STR_MIDDLE_LEN] = {0};
 	ssize_t len = readlink("/opt/etc/localtime", buf, sizeof(buf)-1);
 	RETVM_IF(-1 == len, NULL, "readlink() Fail");
 
@@ -948,7 +948,7 @@ bool cal_time_is_available_tzid(char *tzid)
 	int len = strlen(tzid);
 	int i, j;
 	for (i = 0; i < s_count; i++) {
-		char buf[32] = {0};
+		char buf[CAL_STR_SHORT_LEN32] = {0};
 		const UnicodeString *unicode_tzid = s->snext(ec);
 		for (j = 0; j < unicode_tzid->length(); j++) {
 			buf[j] = unicode_tzid->charAt(j);

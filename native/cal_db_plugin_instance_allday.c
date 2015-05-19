@@ -213,7 +213,7 @@ static int _cal_db_instance_allday_get_records_with_query(calendar_query_h query
 	CAL_FREE(condition);
 
 	/* limit, offset */
-	char buf[32] = {0};
+	char buf[CAL_STR_SHORT_LEN32] = {0};
 	if (0 < limit) {
 		snprintf(buf, sizeof(buf), "LIMIT %d", limit);
 		cal_db_append_string(&query_str, buf);
