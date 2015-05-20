@@ -610,7 +610,7 @@ static int _cal_record_event_set_str(calendar_record_h record, unsigned int prop
 		break;
 	case CAL_PROPERTY_EVENT_BYDAY:
 		CAL_FREE(rec->byday);
-		rec->byday = cal_strdup_with_sort(value);
+		rec->byday = cal_strdup(value);
 		break;
 	case CAL_PROPERTY_EVENT_BYMONTHDAY:
 		CAL_FREE(rec->bymonthday);
