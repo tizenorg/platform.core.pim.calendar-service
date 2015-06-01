@@ -951,7 +951,7 @@ static void __make_rrule_ver1_default(calendar_record_h record, int freq, int in
 	}
 	char mday[CAL_STR_SHORT_LEN32] = {0};
 	snprintf(mday, sizeof(mday), "%d", d);
-	_cal_vcalendar_make_rrule_append_mday(buf, sizeof(buf), mday);
+	_cal_vcalendar_make_rrule_append_mday(buf, buf_size, mday);
 }
 
 static void __make_rrule_ver1(cal_make_s *b, calendar_record_h record)

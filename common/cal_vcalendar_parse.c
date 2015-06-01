@@ -624,16 +624,28 @@ static char* __decode_datetime(char *p, struct user_data *ud)
 	DBG("count_param(%d)", count_param);
 	int i;
 	for (i = 0; i < count_param; i++) {
-		if (NULL == s[i] || '\0' == *s[i]) continue;
+		if (NULL == s[i] || '\0' == *s[i])
+			continue;
 
 		if (CAL_STRING_EQUAL == strncmp(s[i], "TZID=", strlen("TZID="))) {
-			char *tzid = strdup(s[i] + strlen("TZID="));
+			char *tzid = NULL;
+			tzid = strdup(s[i] + strlen("TZID="));
+			if (NULL == tzid) {
+				ERR("strdup() Fail");
+				break;
+			}
+
 			__adjust_tzid(tzid);
 			DBG("[%s]", tzid);
 			if (false == cal_time_is_available_tzid(tzid)) {
 				ERR("check tzid[%s]: INVALID", tzid);
 				if (ud->timezone_tzid && *ud->timezone_tzid) {
 					ud->datetime_tzid = strdup(ud->timezone_tzid);
+					if (NULL == ud->datetime_tzid) {
+						ERR("strdup() Fail");
+						free(tzid);
+						break;
+					}
 					free(tzid);
 					DBG("set datetime_tzid[%s] as timezone_tzid", ud->datetime_tzid);
 				}
