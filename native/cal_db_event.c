@@ -233,6 +233,8 @@ static void __get_tzid_and_range(char *p, char **out_tzid, int *out_range)
 		if (NULL == s[i] || '\0' == *s[i]) continue;
 
 		if (CAL_STRING_EQUAL == strncmp(s[i], "TZID=", strlen("TZID="))) {
+			if (tzid)
+				continue;
 			tzid = strdup(s[i] + strlen("TZID="));
 			DBG("tzid [%s]", tzid);
 		}

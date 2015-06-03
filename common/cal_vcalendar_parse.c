@@ -627,41 +627,40 @@ static char* __decode_datetime(char *p, struct user_data *ud)
 		if (NULL == s[i] || '\0' == *s[i])
 			continue;
 
-		if (CAL_STRING_EQUAL == strncmp(s[i], "TZID=", strlen("TZID="))) {
-			char *tzid = NULL;
-			tzid = strdup(s[i] + strlen("TZID="));
-			if (NULL == tzid) {
+		if (CAL_STRING_EQUAL != strncmp(s[i], "TZID=", strlen("TZID=")))
+			continue;
+
+		if (ud->datetime_tzid)
+			break;
+
+		char *tzid = NULL;
+		tzid = strdup(s[i] + strlen("TZID="));
+		if (NULL == tzid) {
+			ERR("strdup() Fail");
+			break;
+		}
+		__adjust_tzid(tzid);
+		DBG("modified tzid[%s]", tzid);
+
+		if (true == cal_time_is_available_tzid(tzid)) {
+			DBG("VALID tzid");
+			ud->datetime_tzid = tzid;
+			break;
+		}
+		free(tzid);
+
+		if (ud->timezone_tzid && *ud->timezone_tzid) {
+			ud->datetime_tzid = strdup(ud->timezone_tzid);
+			if (NULL == ud->datetime_tzid) {
 				ERR("strdup() Fail");
 				break;
 			}
-
-			__adjust_tzid(tzid);
-			DBG("[%s]", tzid);
-			if (false == cal_time_is_available_tzid(tzid)) {
-				ERR("check tzid[%s]: INVALID", tzid);
-				if (ud->timezone_tzid && *ud->timezone_tzid) {
-					ud->datetime_tzid = strdup(ud->timezone_tzid);
-					if (NULL == ud->datetime_tzid) {
-						ERR("strdup() Fail");
-						free(tzid);
-						break;
-					}
-					free(tzid);
-					DBG("set datetime_tzid[%s] as timezone_tzid", ud->datetime_tzid);
-				}
-				else {
-					ERR("Unable to pase[%s]", tzid);
-					free(tzid);
-				}
-			}
-			else {
-				DBG("check tzid[%s]: VALID", tzid);
-				ud->datetime_tzid = tzid;
-			}
+			DBG("set datetime_tzid[%s] as timezone_tzid", ud->datetime_tzid);
 		}
 		else {
-			DBG("skip [%s]", s[i]);
+			ERR("INVALID tzid");
 		}
+		break;
 	}
 	g_strfreev(s);
 	/* param end */
@@ -3162,6 +3161,8 @@ int cal_vcalendar_parse_vcalendar_object(char *stream, calendar_list_h list, vca
 			break;
 
 		case VCAL_PROPERTY_TZ:
+			if (ud->timezone_tzid)
+				break;
 			cursor = __get_value(cursor, &value);
 			__get_tz(value + 1, &ud->timezone_tzid);
 			__adjust_tzid(ud->timezone_tzid);
@@ -3192,12 +3193,14 @@ int cal_vcalendar_parse_vcalendar_object(char *stream, calendar_list_h list, vca
 			cursor = __crlf(cursor);
 			break;
 		}
-		if (true == exit_loop) break;
+		if (true == exit_loop)
+			break;
 	}
 
 	DBG("count(%d)", count);
 	if (0 == count)
 		DBG("No record");
+	free(ud->timezone_tzid);
 	free(ud);
 
 	return CALENDAR_ERROR_NONE;

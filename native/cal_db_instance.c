@@ -73,6 +73,10 @@ static void __print_ucal(int calendar_system_type, UCalendar *ucal, const char *
 	switch (calendar_system_type) {
 	case CALENDAR_SYSTEM_EAST_ASIAN_LUNISOLAR:
 		s_ucal = cal_time_get_ucal(tzid, wkst);
+		if (NULL == s_ucal) {
+			ERR("cal_time_get_ucal() Fail");
+			return;
+		}
 		ucal_setMillis(s_ucal, ucal_getMillis(ucal, &ec), &ec);
 		break;
 

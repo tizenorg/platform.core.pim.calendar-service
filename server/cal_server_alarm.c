@@ -729,6 +729,10 @@ static int _cal_server_alarm_register(GList *alarm_list)
 	return CALENDAR_ERROR_NONE;
 }
 
+struct alarm_ud {
+	GList *alarm_list;
+};
+
 static bool __app_matched_cb(app_control_h app_control, const char *package, void *user_data)
 {
 	int ret = 0;
@@ -819,7 +823,15 @@ static void _cal_server_alarm_noti_with_control(GList *alarm_list)
 	app_control_create(&app_control);
 	app_control_set_operation(app_control, APP_CONTROL_OPERATION_VIEW);
 	app_control_set_mime(app_control, "application/x-tizen.calendar.reminder");
-	app_control_foreach_app_matched(app_control, __app_matched_cb, alarm_list);
+
+	struct alarm_ud *au = calloc(1, sizeof(struct alarm_ud));
+	if (NULL == au) {
+		ERR("calloc() Fail");
+		app_control_destroy(app_control);
+		return;
+	}
+	au->alarm_list = alarm_list;
+	app_control_foreach_app_matched(app_control, __app_matched_cb, au);
 	app_control_destroy(app_control);
 }
 

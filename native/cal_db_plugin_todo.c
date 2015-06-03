@@ -1484,14 +1484,16 @@ static void _cal_db_todo_get_stmt(sqlite3_stmt *stmt,bool is_view_table,calendar
 		todo->until.time.utime = sqlite3_column_int64(stmt, count++);
 
 		temp = sqlite3_column_text(stmt, count++);
-		if (CALENDAR_TIME_LOCALTIME == todo->until.type) {
-			sscanf((const char *)temp, CAL_FORMAT_LOCAL_DATETIME,
-					&todo->until.time.date.year,
-					&todo->until.time.date.month,
-					&todo->until.time.date.mday,
-					&todo->until.time.date.hour,
-					&todo->until.time.date.minute,
-					&todo->until.time.date.second);
+		if (temp) {
+			if (CALENDAR_TIME_LOCALTIME == todo->until.type) {
+				sscanf((const char *)temp, CAL_FORMAT_LOCAL_DATETIME,
+						&todo->until.time.date.year,
+						&todo->until.time.date.month,
+						&todo->until.time.date.mday,
+						&todo->until.time.date.hour,
+						&todo->until.time.date.minute,
+						&todo->until.time.date.second);
+			}
 		}
 
 		todo->count = sqlite3_column_int(stmt, count++);

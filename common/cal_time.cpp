@@ -484,6 +484,10 @@ char* cal_time_convert_ltos(const char *tzid, long long int lli, int is_allday)
 	}
 
 	ucal = cal_time_get_ucal(tzid, -1);
+	if (NULL == ucal) {
+		ERR("cal_time_get_ucal() Fail");
+		return NULL;
+	}
 	ucal_setMillis(ucal, sec2ms(lli), &status);
 	if (U_FAILURE(status)) {
 		ERR("ucal_setMillFail (%s)", u_errorName(status));
@@ -518,7 +522,10 @@ long long int cal_time_convert_itol(const char *tzid, int y, int mon, int d, int
 	UErrorCode status = U_ZERO_ERROR;
 
 	ucal = cal_time_get_ucal(tzid, -1);
-
+	if (NULL == ucal) {
+		ERR("cal_time_get_ucal() Fail");
+		return 0;
+	}
 	ucal_set(ucal, UCAL_YEAR, y);
 	ucal_set(ucal, UCAL_MONTH, mon -1);
 	ucal_set(ucal, UCAL_DATE, d);
@@ -592,6 +599,10 @@ int cal_time_ltoi2(char *tzid, long long int lli, int *nth, int *wday)
 	UErrorCode status = U_ZERO_ERROR;
 
 	ucal = cal_time_get_ucal(tzid, 1);
+	if (NULL == ucal) {
+		ERR("cal_time_get_ucal() Fail");
+		return CALENDAR_ERROR_OUT_OF_MEMORY;
+	}
 	ucal_setMillis(ucal, sec2ms(lli), &status);
 
 	if (wday)  *wday = ucal_get(ucal, UCAL_DAY_OF_WEEK, &status);
@@ -793,6 +804,10 @@ void cal_time_get_tz_offset(const char *tz, time_t *zone_offset, time_t *dst_off
 	UCalendar *ucal = NULL;
 
 	ucal = cal_time_get_ucal(tz, -1);
+	if (NULL == ucal) {
+		ERR("cal_time_get_ucal() Fail");
+		return;
+	}
 	int32_t zone = ucal_get(ucal, UCAL_ZONE_OFFSET, &status);
 	int32_t dst = ucal_get(ucal, UCAL_DST_OFFSET, &status);
 	ucal_close(ucal);
@@ -807,6 +822,10 @@ bool cal_time_in_dst(const char *tz, long long int t)
 	UCalendar *ucal = NULL;
 
 	ucal = cal_time_get_ucal(tz, -1);
+	if (NULL == ucal) {
+		ERR("cal_time_get_ucal() Fail");
+		return false;
+	}
 	ucal_setMillis(ucal, sec2ms(t), &status);
 	bool is_dst = ucal_inDaylightTime(ucal, &status);
 	ucal_close(ucal);
@@ -915,6 +934,10 @@ void cal_time_get_datetime(long long int t, int *y, int *m, int *d, int *h, int 
 {
 	UErrorCode status = U_ZERO_ERROR;
 	UCalendar *ucal = __get_gmt_ucal();
+	if (NULL == ucal) {
+		ERR("__get_gmt_ucal() Fail");
+		return;
+	}
 	ucal_setMillis(ucal, sec2ms(t), &status);
 	if (y) *y = ucal_get(ucal, UCAL_YEAR, &status);
 	if (m) *m = ucal_get(ucal, UCAL_MONTH, &status) + 1;
@@ -929,6 +952,10 @@ void cal_time_get_local_datetime(char *tzid, long long int t, int *y, int *m, in
 {
 	UErrorCode status = U_ZERO_ERROR;
 	UCalendar *ucal = cal_time_get_ucal(tzid, 0);
+	if (NULL == ucal) {
+		ERR("__get_gmt_ucal() Fail");
+		return;
+	}
 	ucal_setMillis(ucal, sec2ms(t), &status);
 	if (y) *y = ucal_get(ucal, UCAL_YEAR, &status);
 	if (m) *m = ucal_get(ucal, UCAL_MONTH, &status) + 1;
