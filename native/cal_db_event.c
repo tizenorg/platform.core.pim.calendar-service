@@ -668,7 +668,7 @@ int cal_db_event_insert_record(calendar_record_h record, int original_event_id, 
 	calendar_record_destroy(record_calendar, true);
 
 	has_alarm = cal_db_alarm_has_alarm(event->alarm_list);
-	cal_time_get_timezone_from_table(event->start_tzid, NULL, &timezone_id);
+	cal_db_timezone_search_with_tzid(event->start_tzid, &timezone_id);
 	input_ver = cal_db_util_get_next_ver();
 	int is_allday = 0;
 	if (CALENDAR_TIME_LOCALTIME == event->start.type

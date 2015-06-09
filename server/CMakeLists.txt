@@ -66,6 +66,7 @@ SET(LIBSRCS
 	${CMAKE_SOURCE_DIR}/native/cal_db_plugin_attendee.c
 	${CMAKE_SOURCE_DIR}/native/cal_db_plugin_alarm.c
 	${CMAKE_SOURCE_DIR}/native/cal_db_plugin_timezone.c
+	${CMAKE_SOURCE_DIR}/native/cal_db_timezone.c
 	${CMAKE_SOURCE_DIR}/native/cal_db_plugin_instance_normal.c
 	${CMAKE_SOURCE_DIR}/native/cal_db_plugin_instance_normal_extended.c
 	${CMAKE_SOURCE_DIR}/native/cal_db_plugin_instance_allday.c

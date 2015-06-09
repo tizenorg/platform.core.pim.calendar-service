@@ -20,6 +20,6 @@
 #ifndef __CALENDAR_SVC_DB_TIMEZONE_H__
 #define __CALENDAR_SVC_DB_TIMEZONE_H__
 
-void cal_db_timezone_search_with_tzid(const char *zone, char *tzid, int *timezone_id);
+void cal_db_timezone_search_with_tzid(char *tzid, int *timezone_id);
 
 #endif  /* __CALENDAR_SVC_DB_TIMEZONE_H__ */
