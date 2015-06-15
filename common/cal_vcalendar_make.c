@@ -18,6 +18,8 @@
  */
 
 #include <stdlib.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "calendar_list.h"
 #include "calendar_db.h"
@@ -950,7 +952,7 @@ static void __make_rrule_ver1_default(calendar_record_h record, int freq, int in
 		break;
 	}
 	char mday[CAL_STR_SHORT_LEN32] = {0};
-	snprintf(mday, buf_size, "%d", d);
+	snprintf(mday, sizeof(mday), "%d", d);
 	_cal_vcalendar_make_rrule_append_mday(buf, buf_size, mday);
 }
 
