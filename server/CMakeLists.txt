@@ -74,7 +74,6 @@ SET(LIBSRCS
 	${CMAKE_SOURCE_DIR}/native/cal_db_plugin_todo.c
 	${CMAKE_SOURCE_DIR}/native/cal_db_plugin_extended.c
 	${CMAKE_SOURCE_DIR}/native/cal_db_extended.c
-	${CMAKE_SOURCE_DIR}/native/cal_reminder.c
 	${CMAKE_SOURCE_DIR}/native/cal_access_control.c
 	${CMAKE_SOURCE_DIR}/native/cal_db_instance_helper.c
 	cal_server_ipc.c
