@@ -25,17 +25,14 @@
 
 typedef int (*cal_ipc_unmarshal_record_cb)(const pims_ipc_data_h ipc_data, calendar_record_h record);
 typedef int (*cal_ipc_marshal_record_cb)(const calendar_record_h record, pims_ipc_data_h ipc_data);
-typedef int (*cal_ipc_marshal_record_get_primary_id_cb)(const calendar_record_h record, unsigned int *property_id, int *id);
 
 typedef struct {
 	cal_ipc_unmarshal_record_cb unmarshal_record;
 	cal_ipc_marshal_record_cb marshal_record;
-	cal_ipc_marshal_record_get_primary_id_cb get_primary_id;
 } cal_ipc_marshal_record_plugin_cb_s;
 
 int cal_ipc_unmarshal_record(const pims_ipc_data_h ipc_data, calendar_record_h* precord);
 int cal_ipc_marshal_record(const calendar_record_h record, pims_ipc_data_h ipc_data);
-int cal_ipc_marshal_record_get_primary_id(const calendar_record_h record, unsigned int *property_id, int *id);
 
 int cal_ipc_unmarshal_char(const pims_ipc_data_h ipc_data, char** ppbufchar);
 int cal_ipc_unmarshal_int(const pims_ipc_data_h data, int *pout);

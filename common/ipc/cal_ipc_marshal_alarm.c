@@ -25,8 +25,7 @@ static int _cal_ipc_marshal_alarm(const calendar_record_h record, pims_ipc_data_
 
 cal_ipc_marshal_record_plugin_cb_s cal_ipc_record_alarm_plugin_cb = {
 	.unmarshal_record = _cal_ipc_unmarshal_alarm,
-	.marshal_record = _cal_ipc_marshal_alarm,
-	.get_primary_id = NULL
+	.marshal_record = _cal_ipc_marshal_alarm
 };
 
 static int _cal_ipc_unmarshal_alarm(pims_ipc_data_h ipc_data, calendar_record_h record)

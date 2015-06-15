@@ -26,8 +26,7 @@ static int _cal_ipc_marshal_instance_allday(const calendar_record_h record, pims
 
 cal_ipc_marshal_record_plugin_cb_s cal_ipc_record_instance_allday_plugin_cb = {
 	.unmarshal_record = _cal_ipc_unmarshal_instance_allday,
-	.marshal_record = _cal_ipc_marshal_instance_allday,
-	.get_primary_id = NULL
+	.marshal_record = _cal_ipc_marshal_instance_allday
 };
 
 static int _cal_ipc_unmarshal_instance_allday(pims_ipc_data_h ipc_data, calendar_record_h record)

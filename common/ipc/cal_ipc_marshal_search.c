@@ -27,8 +27,7 @@ static int _cal_ipc_marshal_search(const calendar_record_h record, pims_ipc_data
 
 cal_ipc_marshal_record_plugin_cb_s cal_ipc_record_search_plugin_cb = {
 	.unmarshal_record = _cal_ipc_unmarshal_search,
-	.marshal_record = _cal_ipc_marshal_search,
-	.get_primary_id = NULL
+	.marshal_record = _cal_ipc_marshal_search
 };
 
 static int _cal_ipc_unmarshal_search_value(pims_ipc_data_h ipc_data, cal_search_value_s* pvalue);

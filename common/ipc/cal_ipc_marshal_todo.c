@@ -23,12 +23,10 @@
 
 static int _cal_ipc_unmarshal_todo(pims_ipc_data_h ipc_data, calendar_record_h record);
 static int _cal_ipc_marshal_todo(const calendar_record_h record, pims_ipc_data_h ipc_data);
-static int _cal_ipc_marshal_todo_get_primary_id(const calendar_record_h record, unsigned int *property_id, int *id);
 
 cal_ipc_marshal_record_plugin_cb_s cal_ipc_record_todo_plugin_cb = {
 	.unmarshal_record = _cal_ipc_unmarshal_todo,
-	.marshal_record = _cal_ipc_marshal_todo,
-	.get_primary_id = _cal_ipc_marshal_todo_get_primary_id
+	.marshal_record = _cal_ipc_marshal_todo
 };
 
 static int _cal_ipc_unmarshal_todo(pims_ipc_data_h ipc_data, calendar_record_h record)
@@ -546,10 +544,3 @@ static int _cal_ipc_marshal_todo(const calendar_record_h record, pims_ipc_data_h
 
 	return CALENDAR_ERROR_NONE;
 }
-
-static int _cal_ipc_marshal_todo_get_primary_id(const calendar_record_h record, unsigned int *property_id, int *id)
-{
-	*property_id = CAL_PROPERTY_TODO_ID;
-	return calendar_record_get_int(record, *property_id, id);
-}
-
