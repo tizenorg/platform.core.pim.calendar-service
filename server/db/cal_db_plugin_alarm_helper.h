@@ -17,11 +17,18 @@
  *
  */
 
-#ifndef __CALENDAR_SVC_CALENDAR_H__
-#define __CALENDAR_SVC_CALENDAR_H__
+#ifndef __CAL_DB_PLUGIN_ALARM_HELPER_H__
+#define __CAL_DB_PLUGIN_ALARM_HELPER_H__
 
-void cal_calendar_internal_disconnect(void);
-int cal_connect(void);
-int cal_disconnect(void);
+int cal_db_alarm_get_records(int event_id, cal_list_s *list);
+int cal_db_alarm_delete_with_id(int event_id);
+int cal_db_alarm_insert_records(cal_list_s *list_s, int event_id);
 
-#endif /* __CALENDAR_SVC_CALENDAR_H__ */
+/*
+ * @param[in] list   The alarm list
+ *
+ * @return 0 on none alarm, 1 on alarm.
+ */
+int cal_db_alarm_has_alarm(cal_list_s *list_s);
+
+#endif  /* __CAL_DB_PLUGIN_ALARM_HELPER_H__ */

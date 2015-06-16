@@ -16,11 +16,17 @@
  * limitations under the License.
  *
  */
-#ifndef __CALENDAR_SVC_DB_CALENDAR_H__
-#define __CALENDAR_SVC_DB_CALENDAR_H__
 
-#ifdef CAL_IPC_SERVER
-int calendar_db_delete_account(int account_id);
-#endif
+#ifndef __CAL_DB_RRULE_H__
+#define __CAL_DB_RRULE_H__
 
-#endif /* __CALENDAR_SVC_DB_CALENDAR_H__ */
+void cal_db_rrule_set_default(calendar_record_h event);
+int cal_db_rrule_insert_record(int id, cal_rrule_s *rrule);
+int cal_db_rrule_update_record(int id, cal_rrule_s *rrule);
+int cal_db_rrule_get_rrule(int id, cal_rrule_s **rrule);
+void cal_db_rrule_get_rrule_from_event(calendar_record_h event, cal_rrule_s **rrule);
+void cal_db_rrule_set_rrule_to_event(cal_rrule_s *rrule, calendar_record_h event);
+void cal_db_rrule_get_rrule_from_todo(calendar_record_h todo, cal_rrule_s **rrule);
+void cal_db_rrule_set_rrule_to_todo(cal_rrule_s *rrule, calendar_record_h todo);
+
+#endif  /* __CAL_DB_RRULE_H__ */

@@ -27,7 +27,7 @@
 
 #include "cal_db_util.h"
 #include "cal_db_query.h"
-#include "cal_db_attendee.h"
+#include "cal_db_plugin_attendee_helper.h"
 #include "cal_db.h"
 #include "cal_utils.h"
 

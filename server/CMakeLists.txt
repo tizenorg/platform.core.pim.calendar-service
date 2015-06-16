@@ -1,6 +1,6 @@
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/include)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/server)
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/native)
+INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/server/db)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/common)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/common/ipc)
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/schema)
@@ -49,34 +49,34 @@ SET(LIBSRCS
     ${CMAKE_SOURCE_DIR}/common/cal_vcalendar_make.c
     ${CMAKE_SOURCE_DIR}/common/cal_vcalendar_parse.c
 	${CMAKE_SOURCE_DIR}/common/cal_mutex.c
-	${CMAKE_SOURCE_DIR}/native/cal_db.c
 	${CMAKE_SOURCE_DIR}/common/cal_utils.c
-	${CMAKE_SOURCE_DIR}/native/cal_calendar.c
-	${CMAKE_SOURCE_DIR}/native/cal_db_calendar.c
-	${CMAKE_SOURCE_DIR}/native/cal_db_util.c
-	${CMAKE_SOURCE_DIR}/native/cal_db_alarm.c
-	${CMAKE_SOURCE_DIR}/native/cal_db_attendee.c
-	${CMAKE_SOURCE_DIR}/native/cal_db_instance.c
-	${CMAKE_SOURCE_DIR}/native/cal_db_rrule.c
-	${CMAKE_SOURCE_DIR}/native/cal_db_query.c
-	${CMAKE_SOURCE_DIR}/native/cal_db_plugin_calendar.c
-	${CMAKE_SOURCE_DIR}/native/cal_db_plugin_event.c
-	${CMAKE_SOURCE_DIR}/native/cal_db_event.c
-	${CMAKE_SOURCE_DIR}/native/cal_db_plugin_search.c
-	${CMAKE_SOURCE_DIR}/native/cal_db_plugin_attendee.c
-	${CMAKE_SOURCE_DIR}/native/cal_db_plugin_alarm.c
-	${CMAKE_SOURCE_DIR}/native/cal_db_plugin_timezone.c
-	${CMAKE_SOURCE_DIR}/native/cal_db_timezone.c
-	${CMAKE_SOURCE_DIR}/native/cal_db_plugin_instance_normal.c
-	${CMAKE_SOURCE_DIR}/native/cal_db_plugin_instance_normal_extended.c
-	${CMAKE_SOURCE_DIR}/native/cal_db_plugin_instance_allday.c
-	${CMAKE_SOURCE_DIR}/native/cal_db_plugin_instance_allday_extended.c
-	${CMAKE_SOURCE_DIR}/native/cal_db_plugin_todo.c
-	${CMAKE_SOURCE_DIR}/native/cal_db_plugin_extended.c
-	${CMAKE_SOURCE_DIR}/native/cal_db_extended.c
-	${CMAKE_SOURCE_DIR}/native/cal_access_control.c
-	${CMAKE_SOURCE_DIR}/native/cal_db_instance_helper.c
+	cal_access_control.c
+	cal_server_service.c
 	cal_server_ipc.c
+	db/cal_db.c
+	db/cal_db_util.c
+	db/cal_db_rrule.c
+	db/cal_db_query.c
+	db/cal_db_plugin_todo.c
+	db/cal_db_plugin_search.c
+	db/cal_db_plugin_calendar.c
+	db/cal_db_plugin_calendar_helper.c
+	db/cal_db_plugin_event.c
+	db/cal_db_plugin_event_helper.c
+	db/cal_db_plugin_alarm.c
+	db/cal_db_plugin_alarm_helper.c
+	db/cal_db_plugin_attendee.c
+	db/cal_db_plugin_attendee_helper.c
+	db/cal_db_plugin_timezone.c
+	db/cal_db_plugin_timezone_helper.c
+	db/cal_db_plugin_instance_normal.c
+	db/cal_db_plugin_instance_normal_extended.c
+	db/cal_db_plugin_instance_allday.c
+	db/cal_db_plugin_instance_allday_extended.c
+	db/cal_db_plugin_extended.c
+	db/cal_db_plugin_extended_helper.c
+	db/cal_db_instance.c
+	db/cal_db_instance_helper.c
 )
 
 INCLUDE(FindPkgConfig)

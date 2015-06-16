@@ -17,18 +17,10 @@
  *
  */
 
-#ifndef __CALENDAR_SVC_DB_ALARM_H__
-#define __CALENDAR_SVC_DB_ALARM_H__
+#ifndef __CAL_DB_INSTANCE_HELPER_H__
+#define __CAL_DB_INSTANCE_HELPER_H__
 
-int cal_db_alarm_get_records(int event_id, cal_list_s *list);
-int cal_db_alarm_delete_with_id(int event_id);
-int cal_db_alarm_insert_records(cal_list_s *list_s, int event_id);
+int cal_db_instance_helper_insert_utime_instance(int event_id, long long int s, long long int e);
+int cal_db_instance_helper_insert_localtime_instance(int event_id, const char *s, const char *e);
 
-/*
- * @param[in] list   The alarm list
- *
- * @return 0 on none alarm, 1 on alarm.
- */
-int cal_db_alarm_has_alarm(cal_list_s *list_s);
-
-#endif  /* __CALENDAR_SVC_DB_ALARM_H__ */
+#endif /* __CAL_DB_INSTANCE_HELPER_H__ */

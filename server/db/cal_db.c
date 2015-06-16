@@ -52,7 +52,7 @@ extern cal_db_plugin_cb_s cal_db_search_plugin_cb;
 extern cal_db_plugin_cb_s cal_db_timezone_plugin_cb;
 extern cal_db_plugin_cb_s cal_db_extended_plugin_cb;
 
-static cal_db_plugin_cb_s* _cal_db_get_plugin(cal_record_type_e type)
+cal_db_plugin_cb_s* _cal_db_get_plugin(cal_record_type_e type)
 {
 	switch (type) {
 	case CAL_RECORD_TYPE_CALENDAR:

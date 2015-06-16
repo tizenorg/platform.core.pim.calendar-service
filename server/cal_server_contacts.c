@@ -30,6 +30,7 @@
 #include "cal_time.h"
 #include "cal_server_contacts.h"
 #include "cal_access_control.h"
+#include "cal_server_service.h"
 
 #define CAL_SERVER_CONTACTS_SYNC_THREAD_NAME "cal_server_contacts_sync"
 

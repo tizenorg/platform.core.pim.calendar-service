@@ -39,8 +39,8 @@
 #include "cal_server_schema.h"
 #include "cal_server_update.h"
 #include "cal_access_control.h"
-#include "cal_db_calendar.h"
-#include "cal_time.h" // u_clean
+#include "cal_db_plugin_calendar_helper.h"
+#include "cal_time.h"
 
 //static GMainLoop *loop;
 
@@ -157,7 +157,7 @@ static int __server_main(void)
 	int try_count = 0;
 	g_type_init();
 
-	char sock_file[CAL_PATH_MAX_LEN] = {0};
+	char sock_file[CAL_STR_MIDDLE_LEN] = {0};
 	snprintf(sock_file, sizeof(sock_file), CAL_SOCK_PATH"/.%s", getuid(), CAL_IPC_SERVICE);
 	pims_ipc_svc_init(sock_file,CAL_SECURITY_FILE_GROUP, 0777);
 

@@ -17,10 +17,11 @@
  *
  */
 
-#ifndef __CALENDAR_SVC_DB_INSTANCE_HELPER_H__
-#define __CALENDAR_SVC_DB_INSTANCE_HELPER_H__
+#ifndef __CALENDAR_SVC_CALENDAR_H__
+#define __CALENDAR_SVC_CALENDAR_H__
 
-int cal_db_instance_helper_insert_utime_instance(int event_id, long long int s, long long int e);
-int cal_db_instance_helper_insert_localtime_instance(int event_id, const char *s, const char *e);
+void cal_service_internal_disconnect(void);
+int cal_connect(void);
+int cal_disconnect(void);
 
-#endif /* __CALENDAR_SVC_DB_INSTANCE_HELPER_H__ */
+#endif /* __CALENDAR_SVC_CALENDAR_H__ */

@@ -16,13 +16,11 @@
  * limitations under the License.
  *
  */
+#ifndef __CAL_DB_PLUGIN_CALENDAR_HELPER_H__
+#define __CAL_DB_PLUGIN_CALENDAR_HELPER_H__
 
-#ifndef __CALENDAR_SVC_DB_EXTENDED_H__
-#define __CALENDAR_SVC_DB_EXTENDED_H__
+#ifdef CAL_IPC_SERVER
+int calendar_db_delete_account(int account_id);
+#endif
 
-int cal_db_extended_get_records(int record_id, calendar_record_type_e record_type, cal_list_s *list);
-int cal_db_extended_delete_with_id(int record_id, calendar_record_type_e record_type);
-int cal_db_extended_insert_record(calendar_record_h record, int record_id, calendar_record_type_e record_type, int *id);
-int cal_db_extended_insert_records(cal_list_s *list_s, int record_id, calendar_record_type_e record_type);
-
-#endif  /* __CALENDAR_SVC_DB_EXTENDED_H__ */
+#endif /* __CAL_DB_PLUGIN_CALENDAR_HELPER_H__ */

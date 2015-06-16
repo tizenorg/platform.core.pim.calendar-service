@@ -33,9 +33,7 @@
 #include "cal_db_util.h"
 #include "cal_db.h"
 #include "cal_access_control.h"
-#include "cal_service.h"
-#include "cal_db_util.h"
-#include "cal_calendar.h"
+#include "cal_server_service.h"
 #include "cal_utils.h"
 
 typedef struct {
@@ -273,7 +271,7 @@ static void _cal_access_control_disconnected_cb(pims_ipc_h ipc, void *user_data)
 	 * if client did not call disconnect function such as disconnect
 	 * DB will be closed in cal_db_internal_disconnect()
 	 */
-	cal_calendar_internal_disconnect();
+	cal_service_internal_disconnect();
 }
 
 int cal_is_owner(int calendarbook_id)

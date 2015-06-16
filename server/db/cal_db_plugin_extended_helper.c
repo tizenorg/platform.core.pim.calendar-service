@@ -28,7 +28,7 @@
 #include "cal_db.h"
 #include "cal_db_util.h"
 #include "cal_db_query.h"
-#include "cal_db_extended.h"
+#include "cal_db_plugin_extended_helper.h"
 #include "cal_utils.h"
 
 int cal_db_extended_get_records(int record_id, calendar_record_type_e record_type, cal_list_s *list)

@@ -22,7 +22,6 @@
 #include <vconf.h>
 
 #include "calendar_list.h"
-
 #include "cal_internal.h"
 #include "cal_typedef.h"
 #include "cal_record.h"
@@ -37,10 +36,6 @@
  */
 #define VCAL_LF 0x0A
 #define VCAL_CR 0x0D
-
-#define VCAL_DATETIME_FORMAT_YYYYMMDD "%04d%02d%02d"
-#define VCAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS "%04d%02d%02dT%02d%02d%02d"
-#define VCAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ "%04d%02d%02dT%02d%02d%02dZ"
 
 struct user_data {
 	char *timezone_tzid; /* TZ(ver1) VTIMEZONE(ver2) */
@@ -822,16 +817,17 @@ static void __get_caltime(char *p, calendar_time_s *caltime, struct user_data *u
 	switch (strlen(p)) {
 	case VCAL_DATETIME_LENGTH_YYYYMMDD:
 		caltime->type = CALENDAR_TIME_LOCALTIME;
-		sscanf(p, VCAL_DATETIME_FORMAT_YYYYMMDD,
+		sscanf(p, CAL_DATETIME_FORMAT_YYYYMMDD,
 				&(caltime->time.date.year), &(caltime->time.date.month), &(caltime->time.date.mday));
 		caltime->time.date.hour = 0;
 		caltime->time.date.minute = 0;
 		caltime->time.date.second = 0;
-		DBG("%04d%02d%02dT%02d%02d%02d", caltime->time.date.year, caltime->time.date.month, caltime->time.date.mday,
+		DBG(CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS,
+				caltime->time.date.year, caltime->time.date.month, caltime->time.date.mday,
 				caltime->time.date.hour, caltime->time.date.minute, caltime->time.date.second);
 		break;
 	case VCAL_DATETIME_LENGTH_YYYYMMDDTHHMMSS:
-		sscanf(p, VCAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS,
+		sscanf(p, CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS,
 				&(caltime->time.date.year), &(caltime->time.date.month), &(caltime->time.date.mday),
 				&(caltime->time.date.hour), &(caltime->time.date.minute), &(caltime->time.date.second));
 		if (NULL == ud->datetime_tzid || '\0' == *ud->datetime_tzid) {
@@ -843,7 +839,8 @@ static void __get_caltime(char *p, calendar_time_s *caltime, struct user_data *u
 					caltime->time.date.minute = 0;
 					caltime->time.date.second = 0;
 				}
-				DBG("%04d%02d%02dT%02d%02d%02d", caltime->time.date.year, caltime->time.date.month, caltime->time.date.mday,
+				DBG(CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS,
+						caltime->time.date.year, caltime->time.date.month, caltime->time.date.mday,
 						caltime->time.date.hour, caltime->time.date.minute, caltime->time.date.second);
 			}
 			else {
@@ -867,13 +864,14 @@ static void __get_caltime(char *p, calendar_time_s *caltime, struct user_data *u
 	case VCAL_DATETIME_LENGTH_YYYYMMDDTHHMMSSZ:
 		if (ud->is_allday) {
 			caltime->type = CALENDAR_TIME_LOCALTIME;
-			sscanf(p, VCAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ,
+			sscanf(p, CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ,
 					&(caltime->time.date.year), &(caltime->time.date.month), &(caltime->time.date.mday),
 					&(caltime->time.date.hour), &(caltime->time.date.minute), &(caltime->time.date.second));
 			caltime->time.date.hour = 0;
 			caltime->time.date.minute = 0;
 			caltime->time.date.second = 0;
-			DBG("%04d%02d%02dT%02d%02d%02d", caltime->time.date.year, caltime->time.date.month, caltime->time.date.mday,
+			DBG(CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS,
+					caltime->time.date.year, caltime->time.date.month, caltime->time.date.mday,
 					caltime->time.date.hour, caltime->time.date.minute, caltime->time.date.second);
 		}
 		else {
@@ -2797,7 +2795,7 @@ static void __work_component_property_vtimezone_standard_dtstart(char *value, ca
 	int ret = 0;
 	int y = 0, m = 0, d = 0;
 	int h = 0, n = 0, s = 0;
-	sscanf(value +1, VCAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS, &y, &m, &d, &h, &n, &s);
+	sscanf(value +1, CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS, &y, &m, &d, &h, &n, &s);
 	ret = cal_record_set_int(record, _calendar_timezone.standard_start_month, m);
 	WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
 	ret = cal_record_set_int(record, _calendar_timezone.standard_start_hour, h);
@@ -2925,7 +2923,7 @@ static void __work_component_property_vtimezone_daylight_dtstart(char *value, ca
 	int ret = 0;
 	int y = 0, m = 0, d = 0;
 	int h = 0, n = 0, s = 0;
-	sscanf(value +1, VCAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS, &y, &m, &d, &h, &n, &s);
+	sscanf(value +1, CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS, &y, &m, &d, &h, &n, &s);
 	ret = cal_record_set_int(record, _calendar_timezone.day_light_start_month, m);
 	WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
 	ret = cal_record_set_int(record, _calendar_timezone.day_light_start_hour, h);

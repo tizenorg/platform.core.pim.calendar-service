@@ -17,9 +17,12 @@
  *
  */
 
-#ifndef __CALENDAR_SVC_DB_TIMEZONE_H__
-#define __CALENDAR_SVC_DB_TIMEZONE_H__
+#ifndef __CAL_DB_INSTANCE_H__
+#define __CAL_DB_INSTANCE_H__
 
-void cal_db_timezone_search_with_tzid(char *tzid, int *timezone_id);
+int cal_db_instance_publish_record(calendar_record_h record);
+int cal_db_instance_discard_record(int index);
+int cal_db_instance_get_now(long long int *current);
+int cal_db_instance_update_exdate_del(int id, char *exdate);
 
-#endif  /* __CALENDAR_SVC_DB_TIMEZONE_H__ */
+#endif /* __CAL_DB_INSTANCE_H__ */

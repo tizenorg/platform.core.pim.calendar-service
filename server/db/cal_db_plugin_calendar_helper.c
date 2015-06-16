@@ -25,9 +25,9 @@
 #include "cal_record.h"
 
 #include "cal_db.h"
-#include "cal_db_util.h"
 #include "cal_db_query.h"
-#include "cal_db_calendar.h"
+#include "cal_db_plugin_calendar_helper.h"
+#include "cal_db_util.h"
 
 #ifdef CAL_IPC_SERVER
 int calendar_db_delete_account(int account_id)

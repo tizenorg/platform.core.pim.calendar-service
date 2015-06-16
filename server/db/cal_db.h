@@ -18,8 +18,8 @@
  */
 #include <tzplatform_config.h>
 
-#ifndef __CALENDAR_SVC_DB_H__
-#define __CALENDAR_SVC_DB_H__
+#ifndef __CAL_DB_H__
+#define __CAL_DB_H__
 
 #include "calendar_view.h"
 #include "calendar_list.h"
@@ -108,8 +108,11 @@ typedef struct {
 int cal_db_open(void);
 int cal_db_close(void);
 
-int cal_db_get_record(const char* view_uri, int record_id, calendar_record_h* record);
-int cal_db_append_string(char **dst, char *src);
 void cal_db_initialize_view_table(void);
 
-#endif /* __CALENDAR_SVC_DB_H__ */
+int cal_db_get_record(const char* view_uri, int record_id, calendar_record_h* record);
+
+int cal_db_append_string(char **dst, char *src);
+cal_db_plugin_cb_s* _cal_db_get_plugin(cal_record_type_e type);
+
+#endif /* __CAL_DB_H__ */

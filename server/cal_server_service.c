@@ -97,7 +97,7 @@ API int calendar_disconnect(void)
 	return CALENDAR_ERROR_NONE;
 }
 
-void cal_calendar_internal_disconnect(void)
+void cal_service_internal_disconnect(void)
 {
 	cal_mutex_lock(CAL_MUTEX_CONNECTION);
 

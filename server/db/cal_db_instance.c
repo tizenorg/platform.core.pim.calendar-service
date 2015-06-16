@@ -239,7 +239,7 @@ static int __get_exdate_list(UCalendar *ucal, cal_event_s *event, GList **l, int
 		switch (strlen(p)) {
 		case 8:
 			DBG("ALLDAY instance");
-			sscanf(p, "%04d%02d%02d", &y, &m, &d);
+			sscanf(p, CAL_DATETIME_FORMAT_YYYYMMDD, &y, &m, &d);
 
 			ucal2 = ucal_clone(ucal, &ec);
 			ucal_setDateTime(ucal2, y, m - 1, d, 0, 0, 0, &ec);
@@ -249,7 +249,7 @@ static int __get_exdate_list(UCalendar *ucal, cal_event_s *event, GList **l, int
 
 		case 15:
 			DBG("ALLDAY instance");
-			sscanf(p, "%04d%02d%02dT%02d%02d%02d", &y, &m, &d, &h, &n, &s);
+			sscanf(p, CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS, &y, &m, &d, &h, &n, &s);
 
 			ucal2 = ucal_clone(ucal, &ec);
 			ucal_setDateTime(ucal2, y, m - 1, d, h, n, s, &ec);
@@ -259,7 +259,7 @@ static int __get_exdate_list(UCalendar *ucal, cal_event_s *event, GList **l, int
 
 		case 16:
 			DBG("NORMAL instance");
-			sscanf(p, "%04d%02d%02dT%02d%02d%02dZ", &y, &m, &d, &h, &n, &s);
+			sscanf(p, CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ, &y, &m, &d, &h, &n, &s);
 			lli = cal_time_convert_itol(NULL, y, m, d, h, n, s);
 			break;
 		}
@@ -308,7 +308,7 @@ static int _cal_db_instance_update_exdate_mod(int original_event_id, char *recur
 		switch (strlen(p)) {
 		case 8:
 			DBG("ALLDAY instance");
-			sscanf(p, "%04d%02d%02d", &y, &m, &d);
+			sscanf(p, CAL_DATETIME_FORMAT_YYYYMMDD, &y, &m, &d);
 			snprintf(buf, sizeof(buf), "%04d-%02d-%02dT%02d:%02d:%02d", y, m, d, 0, 0, 0);
 			snprintf(query, sizeof(query),
 					"DELETE FROM %s "
@@ -319,7 +319,7 @@ static int _cal_db_instance_update_exdate_mod(int original_event_id, char *recur
 
 		case 15:
 			DBG("ALLDAY instance");
-			sscanf(p, "%04d%02d%02dT%02d%02d%02d", &y, &m, &d, &h, &n, &s);
+			sscanf(p, CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS, &y, &m, &d, &h, &n, &s);
 			snprintf(buf, sizeof(buf), "%04d-%02d-%02dT%02d:%02d:%02d", y, m, d, h, n, s);
 			snprintf(query, sizeof(query),
 					"DELETE FROM %s "
@@ -330,11 +330,9 @@ static int _cal_db_instance_update_exdate_mod(int original_event_id, char *recur
 
 		case 16:
 			DBG("NORMAL instance");
-			sscanf(p, "%04d%02d%02dT%02d%02d%02dZ", &y, &m, &d, &h, &n, &s);
-			snprintf(query, sizeof(query), "DELETE FROM %s "
-					"WHERE event_id = %d AND dtstart_utime = %lld ",
-					CAL_TABLE_NORMAL_INSTANCE,
-					original_event_id, cal_time_convert_itol(NULL, y, m, d, h, n, s));
+			sscanf(p, CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ, &y, &m, &d, &h, &n, &s);
+			snprintf(query, sizeof(query), "DELETE FROM %s WHERE event_id=%d AND dtstart_utime=%lld ",
+					CAL_TABLE_NORMAL_INSTANCE, original_event_id, cal_time_convert_itol(NULL, y, m, d, h, n, s));
 			DBG("(%lld)", cal_time_convert_itol(NULL, y, m, d, h, n, s));
 			break;
 		}
@@ -1867,14 +1865,14 @@ int cal_db_instance_update_exdate_del(int id, char *exdate)
 		switch (len) {
 		case 8: /* 20141212 */
 			DBG("ALLDAY instance");
-			sscanf(p, "%04d%02d%02d", &y, &m, &d);
+			sscanf(p, CAL_DATETIME_FORMAT_YYYYMMDD, &y, &m, &d);
 			snprintf(query, sizeof(query), "DELETE FROM %s "
 					"WHERE event_id = %d AND dtstart_datetime = '%04d-%02d-%02dT%02d:%02d:%02d' ",
 					CAL_TABLE_ALLDAY_INSTANCE, id, y, m, d, h, n, s);
 			break;
 
 		case 15: /* 20141212T000000 */
-			sscanf(p, "%04d%02d%02dT%02d%02d%02d", &y, &m, &d, &h, &n, &s);
+			sscanf(p, CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS, &y, &m, &d, &h, &n, &s);
 			snprintf(query, sizeof(query), "DELETE FROM %s "
 					"WHERE event_id = %d AND dtstart_datetime = '%04d-%02d-%02dT%02d:%02d:%02d' ",
 					CAL_TABLE_ALLDAY_INSTANCE, id, y, m, d, h, n, s);
@@ -1882,7 +1880,7 @@ int cal_db_instance_update_exdate_del(int id, char *exdate)
 			break;
 
 		case 16: /* 20141212T000000Z */
-			sscanf(p, "%04d%02d%02dT%02d%02d%02dZ", &y, &m, &d, &h, &n, &s);
+			sscanf(p, CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ, &y, &m, &d, &h, &n, &s);
 			snprintf(query, sizeof(query), "DELETE FROM %s "
 					"WHERE event_id = %d AND dtstart_utime = %lld ",
 					CAL_TABLE_NORMAL_INSTANCE, id, cal_time_convert_itol(NULL, y, m, d, h, n, s));

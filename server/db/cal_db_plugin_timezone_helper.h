@@ -17,13 +17,9 @@
  *
  */
 
-#ifndef __CALENDAR_SVC_DB_ATTENDEE_H__
-#define __CALENDAR_SVC_DB_ATTENDEE_H__
+#ifndef __CAL_DB_PLUGIN_TIMEZONE_HELPER_H__
+#define __CAL_DB_PLUGIN_TIMEZONE_HELPER_H__
 
-#include "cal_db.h"
+void cal_db_timezone_search_with_tzid(char *tzid, int *timezone_id);
 
-int cal_db_attendee_get_records(int event_id, cal_list_s *list);
-int cal_db_attendee_delete_with_id(int event_id);
-int cal_db_attendee_insert_records(cal_list_s *list_s, int event_id);
-
-#endif  /* __CALENDAR_SVC_DB_ATTENDEE_H__ */
+#endif  /* __CAL_DB_PLUGIN_TIMEZONE_HELPER_H__ */

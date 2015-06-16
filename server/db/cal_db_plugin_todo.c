@@ -30,9 +30,9 @@
 #include "cal_db.h"
 #include "cal_db_query.h"
 #include "cal_db_rrule.h"
-#include "cal_db_alarm.h"
-#include "cal_db_attendee.h"
-#include "cal_db_extended.h"
+#include "cal_db_plugin_alarm_helper.h"
+#include "cal_db_plugin_attendee_helper.h"
+#include "cal_db_plugin_extended_helper.h"
 #include "cal_access_control.h"
 #include "cal_utils.h"
 

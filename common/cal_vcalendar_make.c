@@ -34,10 +34,6 @@
 #include "cal_vcalendar_make.h"
 #include "cal_utils.h"
 
-#define VCAL_DATETIME_FORMAT_YYYYMMDD "%04d%02d%02d"
-#define VCAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS "%04d%02d%02dT%02d%02d%02d"
-#define VCAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ "%04d%02d%02dT%02d%02d%02dZ"
-
 enum {
 	VCAL_VER_1 = 1,
 	VCAL_VER_2 = 2,
@@ -201,7 +197,7 @@ static void __get_str_utime(long long int t, char *out_str, int size)
 	int y = 0, m = 0, d = 0;
 	int h = 0, n = 0, s = 0;
 	cal_time_get_local_datetime(NULL, t, &y, &m, &d, &h, &n, &s);
-	snprintf(out_str, size, ":"VCAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ, y, m, d, h, n, s);
+	snprintf(out_str, size, ":"CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ, y, m, d, h, n, s);
 }
 
 static int  _cal_vcalendar_make_time(cal_make_s *b, char *tzid, calendar_time_s *t, const char *prop)
@@ -222,10 +218,10 @@ static int  _cal_vcalendar_make_time(cal_make_s *b, char *tzid, calendar_time_s 
 		switch (t->type) {
 		case CALENDAR_TIME_UTIME:
 			cal_time_get_local_datetime(NULL, t->time.utime, &y, &m, &d, &h, &n, &s);
-			snprintf(buf, sizeof(buf), ":"VCAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ, y, m, d, h, n, s);
+			snprintf(buf, sizeof(buf), ":"CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ, y, m, d, h, n, s);
 			break;
 		case CALENDAR_TIME_LOCALTIME:
-			snprintf(buf, sizeof(buf), ":"VCAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS,
+			snprintf(buf, sizeof(buf), ":"CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS,
 					t->time.date.year, t->time.date.month, t->time.date.mday,
 					t->time.date.hour, t->time.date.minute, t->time.date.second);
 			break;
@@ -236,15 +232,15 @@ static int  _cal_vcalendar_make_time(cal_make_s *b, char *tzid, calendar_time_s 
 		case CALENDAR_TIME_UTIME:
 			if (NULL == tzid || '\0' == *tzid) {
 				cal_time_get_local_datetime(NULL, t->time.utime, &y, &m, &d, &h, &n, &s);
-				snprintf(buf, sizeof(buf), ":"VCAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ, y, m, d, h, n, s);
+				snprintf(buf, sizeof(buf), ":"CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ, y, m, d, h, n, s);
 			}
 			else {
 				cal_time_get_local_datetime(tzid, t->time.utime, &y, &m, &d, &h, &n, &s);
-				snprintf(buf, sizeof(buf), ";TZID=%s:"VCAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS, tzid, y, m, d, h, n, s);
+				snprintf(buf, sizeof(buf), ";TZID=%s:"CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS, tzid, y, m, d, h, n, s);
 			}
 			break;
 		case CALENDAR_TIME_LOCALTIME:
-			snprintf(buf, sizeof(buf), VCAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS,
+			snprintf(buf, sizeof(buf), CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS,
 					t->time.date.year, t->time.date.month, t->time.date.mday,
 					t->time.date.hour, t->time.date.minute, t->time.date.second);
 			break;
@@ -355,7 +351,7 @@ int _cal_vcalendar_make_audio(cal_make_s *b, calendar_record_h alarm)
 		}
 		else {
 			char datetime[CAL_STR_SHORT_LEN32] = {0};
-			snprintf(datetime, sizeof(datetime), "%04d%02d%02dT%02d%02d%02d",
+			snprintf(datetime, sizeof(datetime), CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS,
 					at.time.date.year, at.time.date.month, at.time.date.mday,
 					at.time.date.hour, at.time.date.minute, at.time.date.second);
 			_cal_vcalendar_make_printf(b, "TRIGGER;VALUE=DATE-TIME:", datetime);
@@ -404,7 +400,7 @@ static void _cal_vcalendar_make_aalarm(cal_make_s *b, calendar_record_h record, 
 
 		}
 		else {
-			snprintf(datetime, sizeof(datetime), "%04d%02d%02dT%02d%02d%02d;;;",
+			snprintf(datetime, sizeof(datetime), CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS";;;",
 					at.time.date.year, at.time.date.month, at.time.date.mday,
 					at.time.date.hour, at.time.date.minute, at.time.date.second);
 		}
@@ -451,7 +447,7 @@ static void _cal_vcalendar_make_aalarm(cal_make_s *b, calendar_record_h record, 
 			tt -= (tick * unit);
 			localtime_r(&tt, &tm);
 
-			snprintf(datetime, sizeof(datetime), "%04d%02d%02dT%02d%02d%02d",
+			snprintf(datetime, sizeof(datetime), CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS,
 					tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
 					tm.tm_hour, tm.tm_min, tm.tm_sec);
 
@@ -909,7 +905,7 @@ int _cal_vcalendar_make_rrule_append_until(char *buf, int buf_len, calendar_reco
 			break;
 
 		case CALENDAR_TIME_LOCALTIME:
-			snprintf(buf +len, buf_len -len, "%04d%02d%02dT%02d%02d%02d",
+			snprintf(buf +len, buf_len -len, CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS,
 					caltime.time.date.year, caltime.time.date.month, caltime.time.date.mday,
 					caltime.time.date.hour, caltime.time.date.minute, caltime.time.date.second);
 			break;
@@ -1240,7 +1236,7 @@ static void __make_rrule_ver2(cal_make_s *b, calendar_record_h record)
 			}
 		}
 		else {
-			snprintf(tmp, sizeof(tmp), ";UNTIL=%04d%02d%02dT%02d%02d%02dZ",
+			snprintf(tmp, sizeof(tmp), ";UNTIL="CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ,
 					caltime.time.date.year,
 					caltime.time.date.month,
 					caltime.time.date.mday,
@@ -1524,7 +1520,7 @@ static void __make_created_time(cal_make_s *b, calendar_record_h record)
 	int h = 0, n = 0, s = 0;
 	cal_time_get_local_datetime(NULL, value, &y, &m, &d, &h, &n, &s);
 	char buf[CAL_STR_MIDDLE_LEN] = {0};
-	snprintf(buf, sizeof(buf), VCAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ, y, m, d, h, n, s);
+	snprintf(buf, sizeof(buf), CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ, y, m, d, h, n, s);
 
 	switch (b->version) {
 	case VCAL_VER_1:
@@ -1679,7 +1675,7 @@ static void __make_last_modified(cal_make_s *b, calendar_record_h record)
 	cal_time_get_local_datetime(NULL, value, &y, &m, &d, &h, &n, &s);
 
 	char buf[CAL_STR_MIDDLE_LEN] = {0};
-	snprintf(buf, sizeof(buf), VCAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ, y, m, d, h, n, s);
+	snprintf(buf, sizeof(buf), CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ, y, m, d, h, n, s);
 	_cal_vcalendar_make_printf(b, "LAST-MODIFIED:", buf);
 }
 
@@ -1754,7 +1750,7 @@ static void __make_completed(cal_make_s *b, calendar_record_h record)
 	int h = 0, n = 0, s = 0;
 	cal_time_get_local_datetime(NULL, value, &y, &m, &d, &h, &n, &s);
 	char buf[CAL_STR_MIDDLE_LEN] = {0};
-	snprintf(buf, sizeof(buf), VCAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ, y, m, d, h, n, s);
+	snprintf(buf, sizeof(buf), CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ, y, m, d, h, n, s);
 	_cal_vcalendar_make_printf(b, "COMPLETED", buf);
 }
 
@@ -1831,7 +1827,7 @@ static void __make_dtstamp(cal_make_s *b, calendar_record_h record)
 	int h = 0, n = 0, s = 0;
 	cal_time_get_local_datetime(NULL, t, &y, &m, &d, &h, &n, &s);
 	char buf[CAL_STR_MIDDLE_LEN] = {0};
-	snprintf(buf, sizeof(buf), VCAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ, y, m, d, h, n, s);
+	snprintf(buf, sizeof(buf), CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ, y, m, d, h, n, s);
 	_cal_vcalendar_make_printf(b, "DTSTAMP:", buf);
 }
 
@@ -1863,7 +1859,7 @@ static char* __get_new_uid(void)
 	int h = 0, n = 0, s = 0;
 	cal_time_get_datetime(t, &y, &m, &d, &h, &n, &s);
 	char buf[128] = {0};
-	snprintf(buf, sizeof(buf), VCAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ"@tizen.org", y, m, d, h, n, s);
+	snprintf(buf, sizeof(buf), CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ"@tizen.org", y, m, d, h, n, s);
 	return strdup(buf);
 }
 static char* __get_parent_uid(int parent_id)

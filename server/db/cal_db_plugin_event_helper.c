@@ -32,12 +32,12 @@
 #include "cal_db_query.h"
 #include "cal_db_rrule.h"
 #include "cal_db_query.h"
-#include "cal_db_alarm.h"
+#include "cal_db_plugin_alarm_helper.h"
 #include "cal_db_instance.h"
-#include "cal_db_attendee.h"
-#include "cal_db_extended.h"
-#include "cal_db_event.h"
-#include "cal_db_timezone.h"
+#include "cal_db_plugin_attendee_helper.h"
+#include "cal_db_plugin_extended_helper.h"
+#include "cal_db_plugin_event_helper.h"
+#include "cal_db_plugin_timezone_helper.h"
 #include "cal_utils.h"
 
 enum {
@@ -512,7 +512,7 @@ void cal_db_event_apply_recurrence_id(int parent_id, cal_event_s *event, char *r
 	calendar_time_s rectime = {0};
 	switch (len_datetime) {
 	case 8:
-		sscanf(datetime, "%04d%02d%02d", &y, &m, &d);
+		sscanf(datetime, CAL_DATETIME_FORMAT_YYYYMMDD, &y, &m, &d);
 		snprintf(dtstart_datetime, sizeof(dtstart_datetime), CAL_FORMAT_LOCAL_DATETIME, y, m, d, 0, 0, 0);
 		rectime.type = CALENDAR_TIME_LOCALTIME;
 		rectime.time.date.year = y;
@@ -523,7 +523,7 @@ void cal_db_event_apply_recurrence_id(int parent_id, cal_event_s *event, char *r
 		rectime.time.date.second = 0;
 		break;
 	case 15:
-		sscanf(datetime, "%04d%02d%02dT%02d%02d%02d", &y, &m, &d, &h, &n, &s);
+		sscanf(datetime, CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS, &y, &m, &d, &h, &n, &s);
 		if (tzid && *tzid) {
 			dtstart_utime = cal_time_convert_itol(tzid, y, m, d, h, n, s);
 			rectime.type = CALENDAR_TIME_UTIME;
@@ -541,7 +541,7 @@ void cal_db_event_apply_recurrence_id(int parent_id, cal_event_s *event, char *r
 		}
 		break;
 	case 16:
-		sscanf(datetime, "%04d%02d%02dT%02d%02d%02dZ", &y, &m, &d, &h, &n, &s);
+		sscanf(datetime, CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ, &y, &m, &d, &h, &n, &s);
 		dtstart_utime = cal_time_convert_itol(tzid, y, m, d, h, n, s);
 		rectime.type = CALENDAR_TIME_UTIME;
 		rectime.time.utime = dtstart_utime;

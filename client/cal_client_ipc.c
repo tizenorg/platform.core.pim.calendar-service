@@ -61,7 +61,7 @@ int cal_client_ipc_connect(void)
 		return CALENDAR_ERROR_NONE;
 	}
 
-	char sock_file[CAL_PATH_MAX_LEN] = {0};
+	char sock_file[CAL_STR_MIDDLE_LEN] = {0};
 	snprintf(sock_file, sizeof(sock_file), CAL_SOCK_PATH"/.%s", getuid(), CAL_IPC_SERVICE);
 	cal_ipc = pims_ipc_create(sock_file);
 	DBG("[%s]", sock_file);
@@ -145,7 +145,7 @@ int cal_client_ipc_connect_on_thread(void)
 	}
 
 	if (cal_ipc_thread == NULL) {
-		char sock_file[CAL_PATH_MAX_LEN] = {0};
+		char sock_file[CAL_STR_MIDDLE_LEN] = {0};
 		snprintf(sock_file, sizeof(sock_file), CAL_SOCK_PATH"/.%s", getuid(), CAL_IPC_SERVICE);
 		cal_ipc_thread = pims_ipc_create(sock_file);
 		if (cal_ipc_thread == NULL) {

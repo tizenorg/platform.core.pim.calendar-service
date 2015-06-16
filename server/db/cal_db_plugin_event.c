@@ -31,13 +31,13 @@
 #include "cal_db.h"
 #include "cal_db_rrule.h"
 #include "cal_db_query.h"
-#include "cal_db_alarm.h"
+#include "cal_db_plugin_alarm_helper.h"
 #include "cal_db_instance.h"
-#include "cal_db_attendee.h"
-#include "cal_db_extended.h"
-#include "cal_db_event.h"
+#include "cal_db_plugin_attendee_helper.h"
+#include "cal_db_plugin_extended_helper.h"
+#include "cal_db_plugin_event_helper.h"
 #include "cal_access_control.h"
-#include "cal_db_timezone.h"
+#include "cal_db_plugin_timezone_helper.h"
 #include "cal_utils.h"
 
 static int _cal_db_event_insert_record(calendar_record_h record, int* id);
@@ -327,17 +327,17 @@ static int __get_time_shifted_field(char *old_field, int old_type, int new_type,
 		int h = 0, n = 0, s = 0;
 		switch (old_type) {
 		case CALENDAR_TIME_UTIME:
-			sscanf(t[i],  "%04d%02d%02dT%02d%02d%02dZ", &y, &m, &d, &h, &n, &s);
+			sscanf(t[i], CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ, &y, &m, &d, &h, &n, &s);
 			break;
 
 		case CALENDAR_TIME_LOCALTIME:
 			switch (strlen(t[i])) {
 			case 8: /* YYYYMMDD */
-				sscanf(t[i],  "%04d%02d%02d", &y, &m, &d);
+				sscanf(t[i], CAL_DATETIME_FORMAT_YYYYMMDD, &y, &m, &d);
 				break;
 
 			case 15: /* YYYYMMDDTHHMMSS */
-				sscanf(t[i],  "%04d%02d%02dT%02d%02d%02d", &y, &m, &d, &h, &n, &s);
+				sscanf(t[i], CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS, &y, &m, &d, &h, &n, &s);
 				break;
 			}
 			break;
@@ -358,7 +358,7 @@ static int __get_time_shifted_field(char *old_field, int old_type, int new_type,
 			case 15: /* YYYYMMDDTHHMMSS */
 				tt = timelocal(&tm) - time_diff;
 				gmtime_r(&tt, &tm);
-				snprintf(buf, sizeof(buf), "%s%04d%02d%02dT%02d%02d%02dZ",
+				snprintf(buf, sizeof(buf), "%s"CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ,
 						i == 0 ? "" : ",", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
 						tm.tm_hour, tm.tm_min, tm.tm_sec);
 				break;
@@ -366,7 +366,7 @@ static int __get_time_shifted_field(char *old_field, int old_type, int new_type,
 			case 16: /* YYYYMMDDTHHMMSSZ */
 				tt = timegm(&tm) - time_diff;
 				gmtime_r(&tt, &tm);
-				snprintf(buf, sizeof(buf), "%s%04d%02d%02dT%02d%02d%02dZ",
+				snprintf(buf, sizeof(buf), "%s"CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ,
 						i == 0 ? "" : ",", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
 						tm.tm_hour, tm.tm_min, tm.tm_sec);
 				break;
@@ -379,20 +379,20 @@ static int __get_time_shifted_field(char *old_field, int old_type, int new_type,
 			case 8: /* YYYYMMDD */
 				tt = timegm(&tm) - time_diff;
 				gmtime_r(&tt, &tm);
-				snprintf(buf, sizeof(buf), "%s%04d%02d%02d",
+				snprintf(buf, sizeof(buf), "%s"CAL_DATETIME_FORMAT_YYYYMMDD,
 						i == 0 ? "" : ",", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday);
 				break;
 			case 15: /* YYYYMMDDTHHMMSS */
 				tt = timegm(&tm) - time_diff;
 				gmtime_r(&tt, &tm);
-				snprintf(buf, sizeof(buf), "%s%04d%02d%02dT%02d%02d%02d",
+				snprintf(buf, sizeof(buf), "%s"CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS,
 						i == 0 ? "" : ",", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
 						tm.tm_hour, tm.tm_min, tm.tm_sec);
 				break;
 			case 16: /* YYYYMMDDTHHMMSSZ */
 				tt = timegm(&tm) - time_diff;
 				localtime_r(&tt, &tm);
-				snprintf(buf, sizeof(buf), "%s%04d%02d%02dT%02d%02d%02d",
+				snprintf(buf, sizeof(buf), "%s"CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ,
 						i == 0 ? "" : ",", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
 						tm.tm_hour, tm.tm_min, tm.tm_sec);
 				break;
@@ -2635,7 +2635,7 @@ static int _cal_db_event_exdate_insert_normal(int event_id, const char* original
 			char datetime[16] = {0};
 			if (strlen("YYYYMMDD") < strlen(patterns1[i])) {
 				int y, mon, d, h, min, s;
-				sscanf(patterns1[i], "%04d%02d%02dT%02d%02d%02dZ",
+				sscanf(patterns1[i], CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ,
 						&y, &mon, &d, &h, &min, &s);
 				start_utime = cal_time_convert_itol(NULL, y, mon, d, h, min, s);
 

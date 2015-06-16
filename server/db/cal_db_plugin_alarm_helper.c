@@ -18,9 +18,6 @@
  */
 
 #include <stdlib.h>
-#ifdef CAL_NATIVE
-#include <alarm.h>
-#endif
 
 #include "calendar_db.h"
 
@@ -35,7 +32,8 @@
 #include "cal_db.h"
 #include "cal_db_query.h"
 #include "cal_db_instance.h"
-#include "cal_db_alarm.h"
+#include "cal_db_plugin_alarm_helper.h"
+#include "cal_db_util.h"
 #include "cal_utils.h"
 
 static int _cal_db_alarm_insert_record(calendar_record_h record, int parent_id)
@@ -213,14 +211,14 @@ int cal_db_alarm_get_records(int parent, cal_list_s *list)
 				int h = 0, n = 0, s = 0;
 				switch (strlen((const char*)temp)) {
 				case 8:
-					sscanf((const char *)temp, "%04d%02d%02d", &y, &m, &d);
+					sscanf((const char *)temp, CAL_DATETIME_FORMAT_YYYYMMDD, &y, &m, &d);
 					alarm->alarm.time.date.year = y;
 					alarm->alarm.time.date.month = m;
 					alarm->alarm.time.date.mday = d;
 					break;
 
 				case 15:
-					sscanf((const char *)temp, "%04d%02d%02dT%02d%02d%02d", &y, &m, &d, &h, &n, &s);
+					sscanf((const char *)temp, CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS, &y, &m, &d, &h, &n, &s);
 					alarm->alarm.time.date.year = y;
 					alarm->alarm.time.date.month = m;
 					alarm->alarm.time.date.mday = d;

@@ -17,8 +17,8 @@
  *
  */
 
-#ifndef __CALENDAR_SVC_DB_UTIL_H__
-#define __CALENDAR_SVC_DB_UTIL_H__
+#ifndef __CAL_DB_UTIL_H__
+#define __CAL_DB_UTIL_H__
 
 #include <sqlite3.h>
 #include "cal_typedef.h"
@@ -40,4 +40,4 @@ int cal_db_util_stmt_bind_text(sqlite3_stmt *stmt, int pos, const char *str);
 int cal_db_util_stmt_step(sqlite3_stmt *stmt);
 int cal_db_util_get_transaction_ver(void);
 
-#endif  /* __CALENDAR_SVC_DB_UTIL_H__ */
+#endif  /* __CAL_DB_UTIL_H__ */

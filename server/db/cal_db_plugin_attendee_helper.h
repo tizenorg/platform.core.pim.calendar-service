@@ -17,12 +17,13 @@
  *
  */
 
-#ifndef __CALENDAR_SVC_DB_INSTANCE_H__
-#define __CALENDAR_SVC_DB_INSTANCE_H__
+#ifndef __CAL_DB_PLUGIN_ATTENDEE_HELPER_H__
+#define __CAL_DB_PLUGIN_ATTENDEE_HELPER_H__
 
-int cal_db_instance_publish_record(calendar_record_h record);
-int cal_db_instance_discard_record(int index);
-int cal_db_instance_get_now(long long int *current);
-int cal_db_instance_update_exdate_del(int id, char *exdate);
+#include "cal_db.h"
 
-#endif /* __CALENDAR_SVC_DB_INSTANCE_H__ */
+int cal_db_attendee_get_records(int event_id, cal_list_s *list);
+int cal_db_attendee_delete_with_id(int event_id);
+int cal_db_attendee_insert_records(cal_list_s *list_s, int event_id);
+
+#endif  /* __CAL_DB_PLUGIN_ATTENDEE_HELPER_H__ */

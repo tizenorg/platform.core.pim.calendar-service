@@ -32,6 +32,9 @@
 #include "cal_internal.h"
 #include "cal_server_ipc.h"
 #include "cal_access_control.h"
+#include "cal_mutex.h"
+#include "cal_server_service.h"
+#include "cal_db.h"
 
 static void _cal_server_ipc_return(pims_ipc_data_h *outdata, int ret)
 {

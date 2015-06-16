@@ -17,8 +17,8 @@
  *
  */
 
-#ifndef __CALENDAR_SVC_DB_EVENT_H__
-#define __CALENDAR_SVC_DB_EVENT_H__
+#ifndef __CAL_DB_PLUGIN_EVENT_HELPER_H__
+#define __CAL_DB_PLUGIN_EVENT_HELPER_H__
 
 int cal_db_event_update_original_event_version(int original_event_id, int version);
 int cal_db_event_check_value_validation(cal_event_s *event);
@@ -29,4 +29,4 @@ void cal_db_event_update_child_origina_event_id(int child_id, int parent_id);
 char *cal_db_event_get_recurrence_id_from_exception(int child_id);
 void cal_db_event_apply_recurrence_id(int parent_id, cal_event_s *event, char *recurrence_id, int child_id);
 
-#endif /* __CALENDAR_SVC_DB_EVENT_H__ */
+#endif /* __CAL_DB_PLUGIN_EVENT_HELPER_H__ */

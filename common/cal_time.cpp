@@ -186,11 +186,11 @@ char* cal_time_convert_ltos(const char *tzid, long long int lli, int is_allday)
 	s = ucal_get(ucal, UCAL_SECOND, &status);
 
 	if (CAL_STRING_EQUAL == strncmp(tzid, CAL_TZID_GMT, strlen(CAL_TZID_GMT))) {
-		snprintf(buf, sizeof(buf), "%04d%02d%02dT%02d%02d%02d%s", y, mon, d, h, min, s,
-				is_allday ? "" : "Z");
+		snprintf(buf, sizeof(buf), CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS"%s",
+				y, mon, d, h, min, s, is_allday ? "" : "Z");
 	}
 	else {
-		snprintf(buf, sizeof(buf), "%04d%02d%02dT%02d%02d%02d", y, mon, d, h, min, s);
+		snprintf(buf, sizeof(buf), CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS, y, mon, d, h, min, s);
 	}
 
 	ucal_close(ucal);
@@ -372,7 +372,7 @@ long long int cal_time_convert_lli(char *p)
 	if (p && *p) {
 		int y = 0, m = 0, d = 0;
 		int h = 0, n = 0, s = 0;
-		sscanf(p,  "%04d%02d%02dT%02d%02d%02dZ", &y, &m, &d, &h, &n, &s);
+		sscanf(p, CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ, &y, &m, &d, &h, &n, &s);
 
 		UCalendar *ucal = __get_gmt_ucal();
 		ucal_setDateTime(ucal, y, m -1, d, h, n, s, &status);
@@ -396,7 +396,7 @@ void cal_time_modify_caltime(calendar_time_s *caltime, long long int diff)
 		break;
 
 	case CALENDAR_TIME_LOCALTIME:
-		DBG("Before %04d%02d%02dT%02d%02d%02d%s", caltime->time.date.year, caltime->time.date.month, caltime->time.date.mday,
+		DBG("Before "CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS, caltime->time.date.year, caltime->time.date.month, caltime->time.date.mday,
 				caltime->time.date.hour, caltime->time.date.minute, caltime->time.date.second);
 
 		ucal_setDateTime(ucal, caltime->time.date.year, caltime->time.date.month - 1, caltime->time.date.mday,
@@ -411,7 +411,7 @@ void cal_time_modify_caltime(calendar_time_s *caltime, long long int diff)
 		caltime->time.date.minute = ucal_get(ucal, UCAL_MINUTE, &status);
 		caltime->time.date.second = ucal_get(ucal, UCAL_SECOND, &status);
 
-		DBG("After %04d%02d%02dT%02d%02d%02d%s", caltime->time.date.year, caltime->time.date.month, caltime->time.date.mday,
+		DBG("After "CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS, caltime->time.date.year, caltime->time.date.month, caltime->time.date.mday,
 				caltime->time.date.hour, caltime->time.date.minute, caltime->time.date.second);
 		break;
 	}

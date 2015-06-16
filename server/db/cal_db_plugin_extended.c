@@ -27,7 +27,7 @@
 #include "cal_db_util.h"
 #include "cal_db.h"
 #include "cal_db_query.h"
-#include "cal_db_extended.h"
+#include "cal_db_plugin_extended_helper.h"
 #include "cal_utils.h"
 
 static int _cal_db_extended_insert_record(calendar_record_h record, int* id);

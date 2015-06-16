@@ -25,6 +25,7 @@
 #include "cal_typedef.h"
 #include "cal_internal.h"
 #include "cal_server_calendar_delete.h"
+#include "cal_server_service.h"
 #include "cal_db.h"
 #include "cal_db_util.h"
 
