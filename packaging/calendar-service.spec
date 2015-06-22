@@ -7,6 +7,7 @@ License:    Apache 2.0
 Source0:    %{name}-%{version}.tar.gz
 Source1:    calendar-serviced.service
 Source2:    calendar-serviced.socket
+Source3:    ALARM.acalendar-service.service
 
 %if "%{?tizen_profile_name}" == "wearable"
 ExcludeArch: %{arm} %ix86 x86_64
@@ -77,6 +78,10 @@ ln -s ../calendar-serviced.socket %{buildroot}%{_unitdir_user}/sockets.target.wa
 mkdir -p %{buildroot}/usr/share/license
 cp LICENSE.APLv2 %{buildroot}/usr/share/license/%{name}
 
+# alarm dbus service file
+mkdir -p %{buildroot}/usr/share/dbus-1/system-services
+cp -a %SOURCE3 %{buildroot}/usr/share/dbus-1/system-services
+
 %post
 /sbin/ldconfig
 
@@ -92,6 +97,7 @@ cp LICENSE.APLv2 %{buildroot}/usr/share/license/%{name}
 %{_unitdir_user}/sockets.target.wants/calendar-serviced.socket
 %{_unitdir_user}/calendar-serviced.socket
 /usr/share/license/%{name}
+/usr/share/dbus-1/system-services/ALARM.acalendar-service.service
 
 %files devel
 %defattr(-,root,root,-)
