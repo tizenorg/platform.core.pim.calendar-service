@@ -4,9 +4,8 @@ After=contacts-service.service
 Requires=contacts-service.service
 
 [Service]
+Type=simple
 ExecStart=/usr/bin/calendar-serviced
-Type=dbus
-BusName=ALARM.acalendar-service
 
 [Install]
 WantedBy=default.target

@@ -1,6 +1,6 @@
 Name:       calendar-service
 Summary:    DB library for calendar
-Version:    0.1.134
+Version:    0.1.135
 Release:    1
 Group:      System/Libraries
 License:    Apache 2.0
