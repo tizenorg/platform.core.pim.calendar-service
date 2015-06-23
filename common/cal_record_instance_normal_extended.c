@@ -39,7 +39,6 @@ static int _cal_record_instance_normal_extended_get_caltime(calendar_record_h re
 static int _cal_record_instance_normal_extended_set_str(calendar_record_h record, unsigned int property_id, const char* value);
 static int _cal_record_instance_normal_extended_set_int(calendar_record_h record, unsigned int property_id, int value);
 static int _cal_record_instance_normal_extended_set_double(calendar_record_h record, unsigned int property_id, double value);
-static int _cal_record_instance_normal_extended_set_lli(calendar_record_h record, unsigned int property_id, long long int value);
 static int _cal_record_instance_normal_extended_set_caltime(calendar_record_h record, unsigned int property_id, calendar_time_s value);
 
 cal_record_plugin_cb_s cal_record_instance_normal_extended_plugin_cb = {
@@ -55,7 +54,7 @@ cal_record_plugin_cb_s cal_record_instance_normal_extended_plugin_cb = {
 	.set_str = _cal_record_instance_normal_extended_set_str,
 	.set_int = _cal_record_instance_normal_extended_set_int,
 	.set_double = _cal_record_instance_normal_extended_set_double,
-	.set_lli = _cal_record_instance_normal_extended_set_lli,
+	.set_lli = NULL,
 	.set_caltime = _cal_record_instance_normal_extended_set_caltime,
 	.add_child_record = NULL,
 	.remove_child_record = NULL,
@@ -435,21 +434,6 @@ static int _cal_record_instance_normal_extended_set_double(calendar_record_h rec
 		(rec->longitude) = value;
 		break;
 
-	default:
-		ERR("invalid parameter (property:%d)",property_id);
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
-
-	return CALENDAR_ERROR_NONE;
-}
-
-static int _cal_record_instance_normal_extended_set_lli(calendar_record_h record, unsigned int property_id, long long int value)
-{
-	cal_instance_normal_extended_s *rec = (cal_instance_normal_extended_s*)(record);
-	switch (property_id) {
-	case CAL_PROPERTY_INSTANCE_NORMAL_EXTENDED_LAST_MODIFIED_TIME:
-		(rec->last_mod) = value;
-		break;
 	default:
 		ERR("invalid parameter (property:%d)",property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;

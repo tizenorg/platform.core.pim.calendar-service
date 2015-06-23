@@ -1921,8 +1921,8 @@ static void __work_component_property_attendee(char *value, calendar_record_h re
 			__work_component_property_attendee_cn(attendee, t[i] + strlen("CN") +1);
 		else if (CAL_STRING_EQUAL == strncmp(t[i], "DIR", strlen("DIR")))
 			__work_component_property_attendee_dir(attendee, t[i] + strlen("DIR") +1);
-		else if (CAL_STRING_EQUAL == strncmp(t[0], ":MAILTO", strlen(":MAILTO")))
-			__work_component_property_attendee_mailto(attendee, t[i] + strlen(":MAILTO") +1);
+		else if (CAL_STRING_EQUAL == strncmp(t[0], "MAILTO", strlen("MAILTO")))
+			__work_component_property_attendee_mailto(attendee, t[i] + strlen("MAILTO") +1);
 		else
 			ERR("Invalid value[%s]", t[i]);
 

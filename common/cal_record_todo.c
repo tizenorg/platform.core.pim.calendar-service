@@ -741,12 +741,6 @@ static int _cal_record_todo_set_lli(calendar_record_h record, unsigned int prope
 {
 	cal_todo_s *rec = (cal_todo_s*)(record);
 	switch (property_id) {
-	case CAL_PROPERTY_TODO_CREATED_TIME:
-		(rec->created_time) = value;
-		break;
-	case CAL_PROPERTY_TODO_LAST_MODIFIED_TIME:
-		(rec->last_mod) = value;
-		break;
 	case CAL_PROPERTY_TODO_COMPLETED_TIME:
 		(rec->completed_time) = value;
 		break;

@@ -42,7 +42,6 @@ static int _cal_record_event_get_caltime(calendar_record_h record, unsigned int 
 static int _cal_record_event_set_str(calendar_record_h record, unsigned int property_id, const char* value);
 static int _cal_record_event_set_int(calendar_record_h record, unsigned int property_id, int value);
 static int _cal_record_event_set_double(calendar_record_h record, unsigned int property_id, double value);
-static int _cal_record_event_set_lli(calendar_record_h record, unsigned int property_id, long long int value);
 static int _cal_record_event_set_caltime(calendar_record_h record, unsigned int property_id, calendar_time_s value);
 static int _cal_record_event_add_child_record(calendar_record_h record, unsigned int property_id, calendar_record_h child_record);
 static int _cal_record_event_remove_child_record(calendar_record_h record, unsigned int property_id, calendar_record_h child_record);
@@ -63,7 +62,7 @@ cal_record_plugin_cb_s cal_record_event_plugin_cb = {
 	.set_str = _cal_record_event_set_str,
 	.set_int = _cal_record_event_set_int,
 	.set_double = _cal_record_event_set_double,
-	.set_lli = _cal_record_event_set_lli,
+	.set_lli = NULL,
 	.set_caltime = _cal_record_event_set_caltime,
 	.add_child_record = _cal_record_event_add_child_record,
 	.remove_child_record = _cal_record_event_remove_child_record,
@@ -847,24 +846,6 @@ static int _cal_record_event_set_double(calendar_record_h record, unsigned int p
 		break;
 	case CAL_PROPERTY_EVENT_LONGITUDE:
 		(rec->longitude) = value;
-		break;
-	default:
-		ERR("invalid parameter (property:%d)",property_id);
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
-
-	return CALENDAR_ERROR_NONE;
-}
-
-static int _cal_record_event_set_lli(calendar_record_h record, unsigned int property_id, long long int value)
-{
-	cal_event_s *rec = (cal_event_s*)(record);
-	switch (property_id) {
-	case CAL_PROPERTY_EVENT_CREATED_TIME:
-		(rec->created_time) = value;
-		break;
-	case CAL_PROPERTY_EVENT_LAST_MODIFIED_TIME:
-		(rec->last_mod) = value;
 		break;
 	default:
 		ERR("invalid parameter (property:%d)",property_id);
