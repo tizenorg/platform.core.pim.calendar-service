@@ -744,6 +744,9 @@ static int _cal_record_todo_set_lli(calendar_record_h record, unsigned int prope
 	case CAL_PROPERTY_TODO_COMPLETED_TIME:
 		(rec->completed_time) = value;
 		break;
+	case CAL_PROPERTY_TODO_CREATED_TIME:
+		(rec->created_time) = value;
+		break;
 	default:
 		ERR("invalid parameter (property:%d)",property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
