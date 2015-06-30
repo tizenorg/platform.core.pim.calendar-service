@@ -28,11 +28,12 @@
 #include "cal_db_util.h"
 #include "cal_utils.h"
 
-// For Security
-#define CALS_SECURITY_FILE_GROUP 6003
-#define CAL_QUERY_RETRY_TIME 2
-#define CAL_QUERY_RETRY_INTERVAL (50*1000)
+#define CAL_QUERY_RETRY_TIME 4
 #define CAL_COMMIT_TRY_MAX 500000
+#define CAL_QUERY_RETRY_INTERVAL (50*1000)
+#define CAL_CHANGES_EVENT 0x01
+#define CAL_CHANGES_TODO 0x02
+#define CAL_CHANGES_CALENDAR 0x04
 
 static TLS sqlite3 *cal_db = NULL;
 static TLS int transaction_cnt = 0;
