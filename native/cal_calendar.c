@@ -27,37 +27,46 @@
 #include "cal_typedef.h"
 #include "cal_db.h"
 #include "cal_view.h"
+#include "cal_mutex.h"
 
 #ifdef CAL_NATIVE
 #include "cal_inotify.h"
 #endif
 
-static TLS int db_ref_cnt = 0;
+static int calsvc_connection = 0;
+static TLS int thread_connection = 0;
 
 API int calendar_connect(void)
 {
 	CAL_FN_CALL;
 	int ret = 0;
 
-	DBG("pthread_self=%x, db_ref_cnt=%p", pthread_self(),&db_ref_cnt );
-
-	g_type_init();	// added for alarmmgr
-
-	if(db_ref_cnt <= 0)
-	{
-		ret = _cal_db_open();
-		retvm_if(ret, ret, "cal_db_open() Failed(%d)", ret);
-
-		db_ref_cnt = 0;
-#ifdef CAL_NATIVE
-		_cal_inotify_initialize();
-#endif
+	_cal_mutex_lock(CAL_MUTEX_CONNECTION);
+	if (0 == calsvc_connection) {
+		ret = _cal_inotify_initialize();
+		_cal_view_initialize();
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("_cal_inotify_initialize() Fail(%d)", ret);
+			_cal_mutex_unlock(CAL_MUTEX_CONNECTION);
+			return ret;
+		}
 	}
-	db_ref_cnt++;
+	else {
+		DBG("System : Calendar service has been already connected");
+	}
+	calsvc_connection++;
 
-	_cal_view_initialize();
-
-	DBG("db_ref_cnt(%d)", db_ref_cnt);
+	if (0 == thread_connection) {
+		g_type_init();	// added for alarmmgr
+		ret = _cal_db_open();
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("_cal_db_open() Fail(%d)", ret);
+			_cal_mutex_unlock(CAL_MUTEX_CONNECTION);
+			return ret;
+		}
+	}
+	thread_connection++;
+	_cal_mutex_unlock(CAL_MUTEX_CONNECTION);
 
 	return CALENDAR_ERROR_NONE;
 }
@@ -66,181 +75,48 @@ API int calendar_disconnect(void)
 {
 	CAL_FN_CALL;
 
-	DBG("db_ref_cnt(%d)", db_ref_cnt);
-	DBG("pthread_self=%x, db_ref_cnt=%p", pthread_self(),&db_ref_cnt );
-
-	retvm_if(0 == db_ref_cnt, CALENDAR_ERROR_INVALID_PARAMETER,
-			"Calendar service was not connected");
-
-	if (db_ref_cnt==1)
-	{
+	_cal_mutex_lock(CAL_MUTEX_CONNECTION);
+	if (1 == thread_connection) {
 		_cal_db_close();
-
-		db_ref_cnt = 0;
-
-#ifdef CAL_NATIVE
-		_cal_inotify_finalize();
-#endif
-
-		_cal_view_finalize();
-		return CALENDAR_ERROR_NONE;
 	}
-	db_ref_cnt--;
+	else if (thread_connection <= 0) {
+		DBG("System : please call calendar_connect_on_thread(), thread_connection count is (%d)", thread_connection);
+		_cal_mutex_unlock(CAL_MUTEX_CONNECTION);
+		return CALENDAR_ERROR_INVALID_PARAMETER;
+	}
+	thread_connection--;
+
+	if (1 == calsvc_connection) {
+		_cal_inotify_finalize();
+		_cal_view_finalize();
+	}
+	else if (1 < calsvc_connection) {
+		DBG("System : connection count is %d", calsvc_connection);
+	}
+	else {
+		DBG("System : please call calendar_connect(), connection count is (%d)", calsvc_connection);
+		_cal_mutex_unlock(CAL_MUTEX_CONNECTION);
+		return CALENDAR_ERROR_INVALID_PARAMETER;
+	}
+	calsvc_connection--;
+	_cal_mutex_unlock(CAL_MUTEX_CONNECTION);
 
 	return CALENDAR_ERROR_NONE;
 }
 
 void _cal_calendar_internal_disconnect(void)
 {
-	ENTER();
-	if (db_ref_cnt > 0)
-	{
+	_cal_mutex_lock(CAL_MUTEX_CONNECTION);
+
+	if (1 == thread_connection) {
 		_cal_db_close();
+		thread_connection--;
 
-		db_ref_cnt = 0;
-	}
-}
-
-#ifdef CAL_NATIVE
-API int calendar_db_add_changed_cb(const char* view_uri, calendar_db_changed_cb callback, void* user_data )
-{
-	CAL_FN_CALL;
-	int ret;
-	cal_record_type_e type = CAL_RECORD_TYPE_INVALID;
-
-	retv_if(NULL == view_uri || NULL == callback , CALENDAR_ERROR_INVALID_PARAMETER);
-
-	type = _cal_view_get_type(view_uri);
-
-	switch(type)
-	{
-	case CAL_RECORD_TYPE_CALENDAR:
-		ret = _cal_inotify_subscribe(CAL_NOTI_TYPE_CALENDAR, CAL_NOTI_CALENDAR_CHANGED, callback, user_data);
-		break;
-	case CAL_RECORD_TYPE_EVENT:
-		ret = _cal_inotify_subscribe(CAL_NOTI_TYPE_EVENT, CAL_NOTI_EVENT_CHANGED, callback, user_data);
-		break;
-	case CAL_RECORD_TYPE_TODO:
-		ret = _cal_inotify_subscribe(CAL_NOTI_TYPE_TODO, CAL_NOTI_TODO_CHANGED, callback, user_data);
-		break;
-	default:
-		ERR("Invalid view_uri(%s)", view_uri);
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
-	retvm_if(CALENDAR_ERROR_NONE != ret, ret, "_cal_inotify_subscribe() Failed(%d)", ret);
-
-	return CALENDAR_ERROR_NONE;
-}
-
-API int calendar_db_remove_changed_cb( const char* view_uri, calendar_db_changed_cb callback, void* user_data )
-{
-	CAL_FN_CALL;
-	int ret;
-	cal_record_type_e type = CAL_RECORD_TYPE_INVALID;
-
-	retv_if(NULL == view_uri || NULL == callback , CALENDAR_ERROR_INVALID_PARAMETER);
-
-	type = _cal_view_get_type(view_uri);
-
-	switch(type)
-	{
-	case CAL_RECORD_TYPE_CALENDAR:
-		ret = _cal_inotify_unsubscribe_with_data(CAL_NOTI_CALENDAR_CHANGED,
-				callback, user_data);
-		break;
-	case CAL_RECORD_TYPE_EVENT:
-		ret = _cal_inotify_unsubscribe_with_data(CAL_NOTI_EVENT_CHANGED,
-				callback, user_data);
-		break;
-	case CAL_RECORD_TYPE_TODO:
-		ret = _cal_inotify_unsubscribe_with_data(CAL_NOTI_TODO_CHANGED,
-				callback, user_data);
-		break;
-	default:
-		ERR("Invalid view_uri(%s)", view_uri);
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
-	retvm_if(CALENDAR_ERROR_NONE != ret, ret, "_cal_inotify_unsubscribe_with_data() Failed(%d)", ret);
-
-	return CALENDAR_ERROR_NONE;
-}
-
-API int calendar_connect_on_thread(void)
-{
-	CAL_FN_CALL;
-	int ret = 0;
-
-	DBG("pthread_self=%x, db_ref_cnt=%p", pthread_self(),&db_ref_cnt );
-
-	g_type_init();  // added for alarmmgr
-
-	if(db_ref_cnt <= 0)
-	{
-		ret = _cal_db_open();
-		retvm_if(ret, ret, "cal_db_open() Failed(%d)", ret);
-
-		db_ref_cnt = 0;
-		_cal_inotify_initialize();
-
-	}
-	db_ref_cnt++;
-
-	_cal_view_initialize();
-
-	DBG("db_ref_cnt(%d)", db_ref_cnt);
-
-	return CALENDAR_ERROR_NONE;
-}
-
-API int calendar_disconnect_on_thread(void)
-{
-	CAL_FN_CALL;
-
-	DBG("db_ref_cnt(%d)", db_ref_cnt);
-	DBG("pthread_self=%x, db_ref_cnt=%p", pthread_self(),&db_ref_cnt );
-
-	retvm_if(0 == db_ref_cnt, CALENDAR_ERROR_INVALID_PARAMETER,
-			"Calendar service was not connected");
-
-	if (db_ref_cnt==1) {
-		_cal_db_close();
-
-		db_ref_cnt = 0;
-
-		_cal_inotify_finalize();
-
-		_cal_view_finalize();
-		return CALENDAR_ERROR_NONE;
-	}
-	db_ref_cnt--;
-
-	return CALENDAR_ERROR_NONE;
-}
-
-API int calendar_connect_with_flags(unsigned int flags)
-{
-	int ret = CALENDAR_ERROR_NONE;
-
-	ret = calendar_connect();
-	if (ret != CALENDAR_ERROR_NONE)
-	{
-		if (flags & CALENDAR_CONNECT_FLAG_RETRY)
-		{
-			int retry_time = 500;
-			int i = 0;
-			for(i=0;i<6;i++)
-			{
-				usleep(retry_time*1000);
-				ret = calendar_connect();
-				DBG("retry cnt=%d, ret=%x",(i+1), ret);
-				if (ret == CALENDAR_ERROR_NONE)
-					break;
-				retry_time *= 2;
-			}
-
+		if (1 <= calsvc_connection) {
+			calsvc_connection--;
 		}
 	}
+	_cal_mutex_unlock(CAL_MUTEX_CONNECTION);
 
-	return ret;
+	return CALENDAR_ERROR_NONE;
 }
-#endif

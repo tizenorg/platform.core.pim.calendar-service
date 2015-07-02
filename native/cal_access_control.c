@@ -99,7 +99,7 @@ static void __cal_access_control_set_permission_info(calendar_permission_info_s 
 		ERR("DB get Failed");
 		return;
 	}
-	info->write_list = calloc(count, sizeof(int));
+	info->write_list = calloc(count +1, sizeof(int));
 	retm_if(NULL == info->write_list, "calloc() Fail");
 	info->write_list[0] = -1;
 
@@ -184,7 +184,7 @@ bool _cal_access_control_have_permission(pims_ipc_h ipc, cal_permission_e permis
 	if (NULL == ipc) // calendar-service daemon
 		return true;
 
-	if ((CAL_PERMISSION_READ& permission) && !pims_ipc_svc_check_privilege(ipc, CAL_PRIVILEGE_READ))
+	if ((CAL_PERMISSION_READ & permission) && !pims_ipc_svc_check_privilege(ipc, CAL_PRIVILEGE_READ))
 		return false;
 
 	if ((CAL_PERMISSION_WRITE & permission) && !pims_ipc_svc_check_privilege(ipc, CAL_PRIVILEGE_WRITE))

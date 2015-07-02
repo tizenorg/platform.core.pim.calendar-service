@@ -30,7 +30,7 @@
 // For Security
 #define CALS_SECURITY_FILE_GROUP 6003
 
-static TLS sqlite3 *calendar_db_handle;
+static TLS sqlite3 *calendar_db_handle = NULL;
 static TLS int transaction_cnt = 0;
 static TLS int transaction_ver = 0;
 static TLS bool version_up = false;

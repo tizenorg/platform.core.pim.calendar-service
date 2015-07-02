@@ -181,7 +181,8 @@ API int calendar_record_create( const char* view_uri, calendar_record_h* out_rec
 	int ret = CALENDAR_ERROR_NONE;
 	cal_record_type_e type = CAL_RECORD_TYPE_INVALID;
 
-	retvm_if(NULL == view_uri || NULL == out_record, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
+	retvm_if(NULL == view_uri, CALENDAR_ERROR_INVALID_PARAMETER, "uri[%s]", view_uri);
+	retvm_if(NULL == out_record, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter");
 
 	type =_cal_view_get_type(view_uri);
 	retv_if(CAL_RECORD_TYPE_INVALID == type, CALENDAR_ERROR_INVALID_PARAMETER);

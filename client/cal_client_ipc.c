@@ -49,156 +49,146 @@ pims_ipc_h __cal_client_ipc_get_handle(void);
 void __cal_client_ipc_lock(void);
 void __cal_client_ipc_unlock(void);
 
-API int calendar_connect(void)
+int cal_ipc_connect()
 {
 	int ret = CALENDAR_ERROR_NONE;
 	pims_ipc_data_h outdata = NULL;
-	pims_ipc_h ipc_handle = NULL;
 
-	CAL_FN_CALL;
-
-	_cal_mutex_lock(CAL_MUTEX_CONNECTION);
-	// ipc create
-	if (calendar_ipc == NULL) {
+	if (NULL == calendar_ipc) {
 		char sock_file[CAL_PATH_MAX_LEN] = {0};
 		snprintf(sock_file, sizeof(sock_file), CAL_SOCK_PATH"/.%s", getuid(), CAL_IPC_SERVICE);
-		ipc_handle = pims_ipc_create(sock_file);
-		if (ipc_handle == NULL) {
-			if (errno == EACCES) {
-				ERR("pims_ipc_create() Failed : Permission denied");
-				ret = CALENDAR_ERROR_PERMISSION_DENIED;
-			} else {
-				ERR("pims_ipc_create() Failed(%d)", CALENDAR_ERROR_IPC);
-				ret = CALENDAR_ERROR_IPC;
+		calendar_ipc = pims_ipc_create(sock_file);
+		if (NULL == calendar_ipc) {
+			if (EACCES == errno) {
+				ERR("[GLOBAL_IPC_CHANNEL] pims_ipc_create() Fail(%d)", CALENDAR_ERROR_PERMISSION_DENIED);
+				return CALENDAR_ERROR_PERMISSION_DENIED;
 			}
-			goto ERROR_RETURN;
+			else {
+				ERR("[GLOBAL_IPC_CHANNEL] pims_ipc_create() Fail(%d)", CALENDAR_ERROR_IPC);
+				return CALENDAR_ERROR_IPC;
+			}
 		}
-	} else {
-		calendar_connection_count++;
-		CAL_DBG("calendar already connected = %d",calendar_connection_count);
-		ret = CALENDAR_ERROR_NONE;
-		_cal_mutex_unlock(CAL_MUTEX_CONNECTION);
-		return ret;
+	}
+	else {
+		DBG("[GLOBAL_IPC_CHANNEL] calendar already connected");
+		return CALENDAR_ERROR_NONE;
 	}
 
-	// ipc call
-	if (pims_ipc_call(ipc_handle, CAL_IPC_MODULE, CAL_IPC_SERVER_CONNECT, NULL, &outdata) != 0) {
-		ERR("pims_ipc_call failed");
+	if (pims_ipc_call(calendar_ipc, CAL_IPC_MODULE, CAL_IPC_SERVER_CONNECT, NULL, &outdata) != 0) {
+		ERR("[GLOBAL_IPC_CHANNEL] pims_ipc_call failed");
 		ret = CALENDAR_ERROR_IPC;
-		goto ERROR_RETURN;
+		goto DATA_FREE;
 	}
 
 	if (outdata) {
-		// check outdata
 		unsigned int size = 0;
 		ret = *(int*) pims_ipc_data_get(outdata,&size);
 		pims_ipc_data_destroy(outdata);
-		if (ret != CALENDAR_ERROR_NONE) {
-			ERR("calendar_connect return (%d)",ret);
-			goto ERROR_RETURN;
+
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("cal_ipc_server_connect return(%d)", ret);
+			goto DATA_FREE;
 		}
-	} else {
-		ERR("ipc outdata is NULL");
-		ret = CALENDAR_ERROR_IPC;
-		goto ERROR_RETURN;
 	}
-
-	g_type_init();  // added for alarmmgr
-
-	if (_cal_inotify_initialize() !=  CALENDAR_ERROR_NONE)
-	{
-		ERR("_cal_inotify_initialize failed");
-	}
-
-	_cal_view_initialize();
-
-	if (0 == calendar_connection_count)
-	{
-		_cal_client_reminder_create_for_subscribe();
-	}
-	calendar_connection_count++;
-	calendar_ipc = ipc_handle;
-	calendar_change_version = 0;
-	_cal_mutex_unlock(CAL_MUTEX_CONNECTION);
-
 	return ret;
 
-ERROR_RETURN:
-	if (ipc_handle != NULL)
-	{
-		pims_ipc_destroy(ipc_handle);
-		ipc_handle = NULL;
+DATA_FREE:
+	pims_ipc_destroy(calendar_ipc);
+	calendar_ipc = NULL;
+	return ret;
+}
+
+API int calendar_connect(void)
+{
+	int ret = 0;
+	CAL_FN_CALL;
+
+	_cal_mutex_lock(CAL_MUTEX_CONNECTION);
+	if (0 == calendar_connection_count) {
+		g_type_init();  // added for alarmmgr
+		ret = cal_ipc_connect();
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("cal_ipc_connect() Fail(%d)", ret);
+			_cal_mutex_unlock(CAL_MUTEX_CONNECTION);
+			return ret;
+		}
+
+		_cal_view_initialize();
+		_cal_client_reminder_create_for_subscribe();
 	}
+	else {
+		DBG("System : Calendar service has been already connected(%d)",
+				calendar_connection_count + 1);
+	}
+
+	calendar_connection_count++;
 	_cal_mutex_unlock(CAL_MUTEX_CONNECTION);
+
+	return CALENDAR_ERROR_NONE;
+}
+
+static int cal_ipc_disconnect(void)
+{
+	int ret = CALENDAR_ERROR_NONE;
+	pims_ipc_data_h outdata = NULL;
+
+	retvm_if(NULL == calendar_ipc, CALENDAR_ERROR_IPC,
+			"[GLOBAL_IPC_CHANNEL] calendar not connected");
+
+	if (pims_ipc_call(calendar_ipc, CAL_IPC_MODULE, CAL_IPC_SERVER_DISCONNECT, NULL, &outdata) != 0) {
+		ERR("[GLOBAL_IPC_CHANNEL] pims_ipc_call failed");
+		return CALENDAR_ERROR_IPC;
+	}
+
+	if (outdata) {
+		unsigned int size = 0;
+		ret = *(int*) pims_ipc_data_get(outdata,&size);
+		pims_ipc_data_destroy(outdata);
+
+		if (CALENDAR_ERROR_NONE != ret)
+			ERR("[GLOBAL_IPC_CHANNEL] pims_ipc didn't destroyed!!!(%d)", ret);
+
+		pims_ipc_destroy(calendar_ipc);
+		calendar_ipc = NULL;
+	}
+	else {
+		ERR("pims_ipc_call out data is NULL");
+		return CALENDAR_ERROR_IPC;
+	}
+
 	return ret;
 }
 
 API int calendar_disconnect(void)
 {
-	int ret = CALENDAR_ERROR_NONE;
-	pims_ipc_data_h indata = NULL;
-	pims_ipc_data_h outdata = NULL;
+	int ret = 0;
 
 	CAL_FN_CALL;
 	_cal_mutex_lock(CAL_MUTEX_CONNECTION);
-
-	if (calendar_ipc == NULL)
-	{
-		ERR("calendar not connected");
-		ret = CALENDAR_ERROR_NOT_PERMITTED;
-		goto ERROR_RETURN;
-	}
-
-	if (calendar_connection_count > 1)
-	{
-		calendar_connection_count--;
-		CAL_DBG("calendar connect count -1 = %d",calendar_connection_count);
-		ret = CALENDAR_ERROR_NONE;
-		goto ERROR_RETURN;
-	}
-	else
-	{
-		calendar_connection_count--;
+	if (1 == calendar_connection_count) {
 		_cal_client_reminder_destroy_for_subscribe();
-	}
 
-	// ipc call
-	if (pims_ipc_call(calendar_ipc, CAL_IPC_MODULE, CAL_IPC_SERVER_DISCONNECT, indata, &outdata) != 0)
-	{
-		ERR("pims_ipc_call failed");
-		ret = CALENDAR_ERROR_NOT_PERMITTED;
-		goto ERROR_RETURN;
-	}
-
-	if (outdata)
-	{
-		// check outdata
-		unsigned int size = 0;
-		ret = *(int*) pims_ipc_data_get(outdata,&size);
-
-		pims_ipc_data_destroy(outdata);
-
-	}
-	else
-	{
-		ERR("ipc outdata is NULL");
-		ret = CALENDAR_ERROR_IPC;
-		goto ERROR_RETURN;
-	}
-
-	if (calendar_ipc && ret == CALENDAR_ERROR_NONE)
-	{
-		pims_ipc_destroy(calendar_ipc);
-		calendar_ipc = NULL;
-
+		ret = cal_ipc_disconnect();
+		if (CALENDAR_ERROR_NONE != ret) {
+			_cal_mutex_unlock(CAL_MUTEX_CONNECTION);
+			ERR("cal_ipc_disconnect() Failed(%d)", ret);
+			return ret;
+		}
 		_cal_inotify_finalize();
 		_cal_view_finalize();
 	}
+	else if (1 < calendar_connection_count) {
+		DBG("System: connection count is %d",  calendar_connection_count);
+	}
+	else {
+		DBG("System : please call calendar_connect(), connection count is (%d)",
+				calendar_connection_count);
+	}
 
-ERROR_RETURN:
-
+	calendar_connection_count--;
 	_cal_mutex_unlock(CAL_MUTEX_CONNECTION);
-	return ret;
+
+	return CALENDAR_ERROR_NONE;
 }
 
 API int calendar_connect_on_thread(void)
