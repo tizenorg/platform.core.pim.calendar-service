@@ -91,6 +91,28 @@ static int _cal_db_search_get_records_with_query(calendar_query_h query, int off
 		_cal_db_search_make_projection(query, &projection);
 	}
 
+	// query - projection
+	if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_EVENT_CALENDAR)) {
+		table_name = strdup(CAL_VIEW_TABLE_EVENT_CALENDAR);
+	} else if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_TODO_CALENDAR)) {
+		table_name = strdup(CAL_VIEW_TABLE_TODO_CALENDAR);
+	} else if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_EVENT_CALENDAR_ATTENDEE)) {
+		table_name = strdup(CAL_VIEW_TABLE_EVENT_CALENDAR_ATTENDEE);
+	} else if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_INSTANCE_UTIME_CALENDAR)) {
+		table_name = strdup(CAL_VIEW_TABLE_NORMAL_INSTANCE);
+	} else if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_INSTANCE_UTIME_CALENDAR_EXTENDED)) {
+		table_name = strdup(CAL_VIEW_TABLE_NORMAL_INSTANCE_EXTENDED);
+	} else if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_INSTANCE_LOCALTIME_CALENDAR)) {
+		table_name = strdup(CAL_VIEW_TABLE_ALLDAY_INSTANCE);
+	} else if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_INSTANCE_LOCALTIME_CALENDAR_EXTENDED)) {
+		table_name = strdup(CAL_VIEW_TABLE_ALLDAY_INSTANCE_EXTENDED);
+	} else {
+		ERR("uri(%s) not support get records with query",que->view_uri);
+		CAL_FREE(projection);
+		CAL_FREE(condition);
+		return CALENDAR_ERROR_INVALID_PARAMETER;
+	}
+
 	char *query_str = NULL;
 	if (que->distinct == true) {
 		cal_db_append_string(&query_str, "SELECT DISTINCT");
