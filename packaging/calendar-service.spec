@@ -61,9 +61,9 @@ make %{?jobs:-j%jobs}
 %install
 %make_install
 
-mkdir -p %{buildroot}%{_unitdir_user}/tizen-middleware.target.wants
+mkdir -p %{buildroot}%{_unitdir_user}/default.target.wants
 install -m 0644 %SOURCE1 %{buildroot}%{_unitdir_user}/calendar-serviced.service
-ln -s ../calendar-serviced.service %{buildroot}%{_unitdir_user}/tizen-middleware.target.wants/calendar-serviced.service
+ln -s ../calendar-serviced.service %{buildroot}%{_unitdir_user}/default.target.wants/calendar-serviced.service
 
 mkdir -p %{buildroot}%{_unitdir_user}/sockets.target.wants
 install -m 0644 %SOURCE2 %{buildroot}%{_unitdir_user}/calendar-serviced.socket
@@ -83,7 +83,7 @@ cp LICENSE.APLv2 %{buildroot}/usr/share/license/%{name}
 %{_bindir}/calendar-serviced*
 %{_libdir}/libcalendar-service2.so.*
 %config(noreplace) /opt/usr/dbspace/.calendar-svc.db*
-%{_unitdir_user}/tizen-middleware.target.wants/calendar-serviced.service
+%{_unitdir_user}/default.target.wants/calendar-serviced.service
 %{_unitdir_user}/calendar-serviced.service
 %{_unitdir_user}/sockets.target.wants/calendar-serviced.socket
 %{_unitdir_user}/calendar-serviced.socket

@@ -290,8 +290,9 @@ static int __server_main(void)
 	}
 #endif //#ifdef CAL_MEMORY_TEST
 
+	snprintf(sock_file, sizeof(sock_file), CAL_SOCK_PATH"/.%s_for_subscribe", getuid(), CAL_IPC_SERVICE);
 	// for subscribe
-	pims_ipc_svc_init_for_publish(CAL_IPC_SOCKET_PATH_FOR_SUBSCRIPTION, CAL_SECURITY_FILE_GROUP, CAL_SECURITY_DEFAULT_PERMISSION);
+	pims_ipc_svc_init_for_publish(sock_file, CAL_SECURITY_FILE_GROUP, CAL_SECURITY_DEFAULT_PERMISSION);
 
 	//loop = g_main_loop_new(NULL, FALSE);
 

@@ -51,7 +51,9 @@ int _cal_client_reminder_create_for_subscribe(void)
 {
 	_cal_mutex_lock(CAL_MUTEX_PIMS_IPC_PUBSUB);
 	if (!__ipc) {
-		__ipc = pims_ipc_create_for_subscribe(CAL_IPC_SOCKET_PATH_FOR_SUBSCRIPTION);
+		char sock_file[CAL_PATH_MAX_LEN] = {0};
+		snprintf(sock_file, sizeof(sock_file), CAL_SOCK_PATH"/.%s_for_subscribe", getuid(), CAL_IPC_SERVICE);
+		__ipc = pims_ipc_create_for_subscribe(sock_file);
 		if (!__ipc) {
 			ERR("pims_ipc_create_for_subscribe");
 			_cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);

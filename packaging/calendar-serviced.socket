@@ -3,8 +3,6 @@ Description=Calendar Service socket
 
 [Socket]
 ListenStream=/tmp/.cal_svc_ipc
-SmackLabelIPIn=calendar-service
-SmackLabelIPOut=calendar-service
 Service=calendar-serviced.service
 
 [Install]
