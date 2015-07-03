@@ -227,6 +227,8 @@ static int __cal_db_calendar_get_record( int id, calendar_record_h* out_record )
 		ERR("Failed to step stmt(%d)", dbret);
 		sqlite3_finalize(stmt);
 		switch (dbret) {
+		case CAL_DB_DONE:
+			return CALENDAR_ERROR_DB_RECORD_NOT_FOUND;
 		case CAL_DB_ERROR_NO_SPACE:
 			return CALENDAR_ERROR_FILE_NO_SPACE;
 		default:

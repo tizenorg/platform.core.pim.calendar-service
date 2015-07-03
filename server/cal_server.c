@@ -345,7 +345,6 @@ static int __server_main(void)
 	else
 		DBG("account_subscribe_create Failed (%d)", ret);
 
-	_cal_inotify_initialize();
 	ret = _cal_server_alarm();
 	if (CALENDAR_ERROR_NONE != ret)
 	{
@@ -392,6 +391,35 @@ static int __server_main(void)
 	return 0;
 }
 
+static void _cal_server_create_directory(const char* directory, mode_t mode)
+{
+	if (-1 == access (directory, F_OK)) {
+		mkdir(directory, mode);
+	}
+}
+
+static void _cal_server_set_directory_permission(const char* file, mode_t mode)
+{
+	int fd, ret;
+	fd = creat(file, mode);
+	if (0 <= fd) {
+		ret = fchown(fd, -1, CAL_SECURITY_FILE_GROUP);
+		if (-1 == ret) {
+			printf("Failed to fchown\n");
+			return;
+		}
+		close(fd);
+	}
+}
+
+static void _cal_server_create_file(void)
+{
+	_cal_server_create_directory(CAL_DATA_PATH, 0775);
+	_cal_server_set_directory_permission(CAL_NOTI_CALENDAR_CHANGED, 0660);
+	_cal_server_set_directory_permission(CAL_NOTI_EVENT_CHANGED, 0660);
+	_cal_server_set_directory_permission(CAL_NOTI_TODO_CHANGED, 0660);
+}
+
 int main(int argc, char *argv[])
 {
 	INFO(COLOR_GREEN"Server start"COLOR_END);
@@ -405,6 +433,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	_cal_server_create_file();
 	_cal_server_schema_check();
 	_cal_server_update();
 

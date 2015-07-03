@@ -238,6 +238,8 @@ static int __cal_db_timezone_get_record( int id, calendar_record_h* out_record )
 		*out_record = NULL;
 		switch (dbret)
 		{
+		case CAL_DB_DONE:
+			return CALENDAR_ERROR_DB_RECORD_NOT_FOUND;
 		case CAL_DB_ERROR_NO_SPACE:
 			return CALENDAR_ERROR_FILE_NO_SPACE;
 		default:

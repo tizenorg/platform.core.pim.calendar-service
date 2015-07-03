@@ -39,36 +39,8 @@ static TLS bool event_change=false;
 static TLS bool todo_change=false;
 static TLS bool calendar_change=false;
 
-static inline int create_noti_file(const char* noti_file)
-{
-	int fd, ret;
-	fd = creat(noti_file, CAL_SECURITY_DEFAULT_PERMISSION);
-	if (-1 == fd)
-	{
-		printf("open Failed\n");
-		return -1;
-	}
-
-	ret = fchown(fd, -1, CALS_SECURITY_FILE_GROUP);
-	if (-1 == ret)
-	{
-		printf("Failed to fchown\n");
-		close(fd);
-		return -1;
-	}
-}
-
 static inline void __cal_db_util_notify_event_change(void)
 {
-	if (-1 == access (DATA_PATH, F_OK))
-	{
-	mkdir(DATA_PATH, 755);
-	}
-	if (-1 == access (CAL_DATA_PATH, F_OK))
-	{
-	mkdir(CAL_DATA_PATH, 755);
-	}
-	create_noti_file(CAL_NOTI_EVENT_CHANGED);
 	int fd = open(CAL_NOTI_EVENT_CHANGED, O_TRUNC | O_RDWR);
 	if (0 <= fd) {
 		close(fd);
@@ -78,15 +50,6 @@ static inline void __cal_db_util_notify_event_change(void)
 
 static inline void __cal_db_util_notify_todo_change(void)
 {
-    if (-1 == access (DATA_PATH, F_OK))
-   {
-	mkdir(DATA_PATH, 755);
-	}
-	if (-1 == access (CAL_DATA_PATH, F_OK))
-	{
-	mkdir(CAL_DATA_PATH, 755);
-	}
-	create_noti_file(CAL_NOTI_TODO_CHANGED);
 	int fd = open(CAL_NOTI_TODO_CHANGED, O_TRUNC | O_RDWR);
 	if (0 <= fd) {
 		close(fd);
@@ -96,15 +59,6 @@ static inline void __cal_db_util_notify_todo_change(void)
 
 static inline void __cal_db_util_notify_calendar_change(void)
 {
-	if (-1 == access (DATA_PATH, F_OK))
-	{
-		mkdir(DATA_PATH, 755);
-	}
-	if (-1 == access (CAL_DATA_PATH, F_OK))
-	{
-		mkdir(CAL_DATA_PATH, 755);
-	}
-	create_noti_file(CAL_NOTI_CALENDAR_CHANGED);
 	int fd = open(CAL_NOTI_CALENDAR_CHANGED, O_TRUNC | O_RDWR);
 	if (0 <= fd) {
 		close(fd);

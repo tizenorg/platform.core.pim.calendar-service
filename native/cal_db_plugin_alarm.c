@@ -68,7 +68,6 @@ static void __cal_db_alarm_get_stmt(sqlite3_stmt *stmt,calendar_record_h record)
 	alarm = (cal_alarm_s*)(record);
 
 	index = 0;
-	alarm->id = sqlite3_column_int(stmt, index++);
 	alarm->parent_id = sqlite3_column_int(stmt, index++);
 	alarm->remind_tick = sqlite3_column_int(stmt, index++);
 	alarm->remind_tick_unit = sqlite3_column_int(stmt, index++);
@@ -77,7 +76,7 @@ static void __cal_db_alarm_get_stmt(sqlite3_stmt *stmt,calendar_record_h record)
 	alarm->alarm_description = SAFE_STRDUP(temp);
 
 	alarm->alarm.type = sqlite3_column_int(stmt, index++);
-
+	index++; /* alarm_id */
 	temp = sqlite3_column_text(stmt, index++);
 	alarm->alarm_summary = SAFE_STRDUP(temp);
 
@@ -119,6 +118,7 @@ static void __cal_db_alarm_get_stmt(sqlite3_stmt *stmt,calendar_record_h record)
 			}
 		}
 	}
+	alarm->id = sqlite3_column_int(stmt, index++);
 }
 
 static int __cal_db_alarm_get_all_records(int offset, int limit, calendar_list_h* out_list )
@@ -141,19 +141,7 @@ static int __cal_db_alarm_get_all_records(int offset, int limit, calendar_list_h
 	if (limit > 0) {
 		snprintf(limitquery, sizeof(limitquery), "LIMIT %d", limit);
 	}
-	snprintf(query, sizeof(query),
-			"SELECT rowid, "
-			"event_id, "
-			"remind_tick,"
-			"remind_tick_unit, "
-			"alarm_description, "
-			"alarm_type, "
-			"alarm_summary, "
-			"alarm_action, "
-			"alarm_attach, "
-			"alarm_utime, "
-			"alarm_datetime "
-			"FROM %s %s %s ",
+	snprintf(query, sizeof(query), "SELECT *, rowid FROM %s %s %s",
 			CAL_TABLE_ALARM,limitquery,offsetquery);
 
 	stmt = _cal_db_util_query_prepare(query);
@@ -324,19 +312,7 @@ static int __cal_db_alarm_get_records_with_query(calendar_query_h query, int off
 		CAL_FREE(projection);
 	}
 	else {
-		_cal_db_append_string(&query_str,
-				"SELECT rowid, "
-				"event_id, "
-				"remind_tick,"
-				"remind_tick_unit, "
-				"alarm_description, "
-				"alarm_type, "
-				"alarm_summary, "
-				"alarm_action, "
-				"alarm_attach, "
-				"alarm_utime, "
-				"alarm_datetime "
-				"FROM ");
+		_cal_db_append_string(&query_str, "SELECT *, rowid FROM ");
 		_cal_db_append_string(&query_str, table_name);
 	}
 	CAL_FREE(table_name);

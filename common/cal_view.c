@@ -686,7 +686,7 @@ const cal_property_info_s   __property_attendee[] =
 	{CAL_PROPERTY_ATTENDEE_DELEGATOR_URI,       "attendee_delegator_uri"},
 	{CAL_PROPERTY_ATTENDEE_NAME,                "attendee_name"},
 	{CAL_PROPERTY_ATTENDEE_MEMBER,              "attendee_member"},
-	{CAL_PROPERTY_ATTENDEE_PARENT_ID,           "parent_id"},
+	{CAL_PROPERTY_ATTENDEE_PARENT_ID,           "event_id"},
 };
 
 const cal_property_info_s   __property_alarm[] =
@@ -694,7 +694,7 @@ const cal_property_info_s   __property_alarm[] =
 	{CAL_PROPERTY_ALARM_TICK,               "remind_tick"},
 	{CAL_PROPERTY_ALARM_TICK_UNIT,          "remind_tick_unit"},
 	{CAL_PROPERTY_ALARM_DESCRIPTION,        "alarm_description"},
-	{CAL_PROPERTY_ALARM_PARENT_ID,          "parent_id"},
+	{CAL_PROPERTY_ALARM_PARENT_ID,          "event_id"},
 	{CAL_PROPERTY_ALARM_SUMMARY,            "alarm_summary"},
 	{CAL_PROPERTY_ALARM_ACTION,             "alarm_action"},
 	{CAL_PROPERTY_ALARM_ATTACH,             "alarm_attach"},

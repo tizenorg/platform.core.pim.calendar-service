@@ -60,7 +60,6 @@ static void __cal_db_attendee_get_stmt(sqlite3_stmt *stmt,calendar_record_h reco
 	attendee = (cal_attendee_s*)(record);
 	index = 0;
 
-	attendee->id = sqlite3_column_int(stmt, index++);
 	attendee->parent_id = sqlite3_column_int(stmt, index++);
 
 	temp = sqlite3_column_text(stmt, index++);
@@ -93,6 +92,8 @@ static void __cal_db_attendee_get_stmt(sqlite3_stmt *stmt,calendar_record_h reco
 
 	temp = sqlite3_column_text(stmt, index++);
 	attendee->attendee_member = SAFE_STRDUP(temp);
+
+	attendee->id = sqlite3_column_int(stmt, index++);
 }
 
 static int __cal_db_attendee_get_all_records(int offset, int limit, calendar_list_h* out_list)
@@ -115,23 +116,7 @@ static int __cal_db_attendee_get_all_records(int offset, int limit, calendar_lis
 	if (offset > 0)	{
 		snprintf(offsetquery, sizeof(offsetquery), "OFFSET %d ", offset);
 	}
-	snprintf(query, sizeof(query),
-			"SELECT rowid, "
-			"event_id, "
-			"attendee_name, "
-			"attendee_email, "
-			"attendee_number, "
-			"attendee_status, "
-			"attendee_ct_index, "
-			"attendee_role, "
-			"attendee_rsvp, "
-			"attendee_group, "
-			"attendee_delegator_uri, "
-			"attendee_uid, "
-			"attendee_cutype, "
-			"attendee_delegatee_uri, "
-			"attendee_member "
-			"FROM %s %s %s",
+	snprintf(query, sizeof(query), "SELECT *, rowid FROM %s %s %s ",
 			CAL_TABLE_ATTENDEE, limitquery, offsetquery);
 
 	stmt = _cal_db_util_query_prepare(query);
@@ -292,23 +277,7 @@ static int __cal_db_attendee_get_records_with_query(calendar_query_h query, int 
 		CAL_FREE(projection);
 	}
 	else {
-		_cal_db_append_string(&query_str,
-				"SELECT rowid, "
-				"event_id, "
-				"attendee_name, "
-				"attendee_email, "
-				"attendee_number, "
-				"attendee_status, "
-				"attendee_ct_index, "
-				"attendee_role, "
-				"attendee_rsvp, "
-				"attendee_group, "
-				"attendee_delegator_uri, "
-				"attendee_uid, "
-				"attendee_cutype, "
-				"attendee_delegatee_uri, "
-				"attendee_member "
-				" FROM");
+		_cal_db_append_string(&query_str, "SELECT *, rowid FROM ");
 		_cal_db_append_string(&query_str, table_name);
 	}
 	CAL_FREE(table_name);

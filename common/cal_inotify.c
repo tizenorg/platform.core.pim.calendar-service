@@ -225,6 +225,7 @@ int _cal_inotify_initialize(void)
 	_cal_mutex_unlock(CAL_MUTEX_INOTIFY);
 #endif
 	inoti_fd = inotify_init();
+
 	if (inoti_fd == -1)
 	{
 		ERR("Failed to init inotify(err:%d)", errno);
@@ -297,7 +298,7 @@ int _cal_inotify_subscribe(cal_noti_type_e type, const char *path, calendar_db_c
 
 	if (inoti_fd < 0)
 	{
-		ERR("Invalid argument: iinoti_fd(%d) is invalid", inoti_fd);
+		ERR("Invalid argument: inoti_fd(%d) is invalid", inoti_fd);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -464,7 +465,7 @@ int _cal_inotify_unsubscribe_with_data(const char *path, calendar_db_changed_cb 
 
 	if (inoti_fd < 0)
 	{
-		ERR("Invalid argument: iinoti_fd(%d) is invalid", inoti_fd);
+		ERR("Invalid argument: inoti_fd(%d) is invalid", inoti_fd);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 

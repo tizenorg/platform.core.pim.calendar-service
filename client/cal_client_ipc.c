@@ -113,6 +113,7 @@ API int calendar_connect(void)
 			return ret;
 		}
 
+		_cal_inotify_initialize();
 		_cal_view_initialize();
 		_cal_client_reminder_create_for_subscribe();
 	}
