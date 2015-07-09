@@ -1725,7 +1725,22 @@ static void __work_component_property_dtend(char *value, calendar_record_h recor
 		break;
 	}
 }
+static void __work_component_property_attendee_mailto(calendar_record_h attendee, char *value)
+{
+	RET_IF(NULL == value);
+	RET_IF('\0' == *value);
+	RET_IF(NULL == attendee);
 
+	int ret = 0;
+	char *mailto = NULL;
+	ret = calendar_record_get_str(attendee, _calendar_attendee.email, &mailto);
+	WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_str() Fail");
+	if (mailto)
+		return;
+
+	ret = cal_record_set_str(attendee, _calendar_attendee.email, value);
+	WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail");
+}
 static void __work_component_property_attendee_cutype(calendar_record_h attendee, char *value)
 {
 	int ret = 0;
@@ -1734,20 +1749,40 @@ static void __work_component_property_attendee_cutype(calendar_record_h attendee
 	RET_IF('\0' == *value);
 	RET_IF(NULL == attendee);
 
-	if (CAL_STRING_EQUAL == strncmp(value, "INDIVIDUAL", strlen("INDIVIDUAL")))
+	const char *prop = NULL;
+	if (CAL_STRING_EQUAL == strncmp(value, "INDIVIDUAL", strlen("INDIVIDUAL"))) {
 		ret = cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_CUTYPE_INDIVIDUAL);
-	else if (CAL_STRING_EQUAL == strncmp(value, "GROUP", strlen("GROUP")))
-		ret = cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_CUTYPE_GROUP);
-	else if (CAL_STRING_EQUAL == strncmp(value, "RESOURCE", strlen("RESOURCE")))
-		ret = cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_CUTYPE_RESOURCE);
-	else if (CAL_STRING_EQUAL == strncmp(value, "ROOM", strlen("ROOM")))
-		ret = cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_CUTYPE_ROOM);
-	else if (CAL_STRING_EQUAL == strncmp(value, "UNKNOWN", strlen("UNKNOWN")))
-		ret = cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_CUTYPE_UNKNOWN);
-	else
-		ERR("Invalid value[%s]", value);
+		if (strlen(value) > strlen("INDIVIDUAL"))
+			prop = "INDIVIDUAL";
 
+	} else if (CAL_STRING_EQUAL == strncmp(value, "GROUP", strlen("GROUP"))) {
+		ret = cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_CUTYPE_GROUP);
+		if (strlen(value) > strlen("GROUP"))
+			prop = "GROUP";
+
+	} else if (CAL_STRING_EQUAL == strncmp(value, "RESOURCE", strlen("RESOURCE"))) {
+		ret = cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_CUTYPE_RESOURCE);
+		if (strlen(value) > strlen("RESOURCE"))
+			prop = "RESOURCE";
+
+	} else if (CAL_STRING_EQUAL == strncmp(value, "ROOM", strlen("ROOM"))) {
+		ret = cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_CUTYPE_ROOM);
+		if (strlen(value) > strlen("ROOM"))
+			prop = "ROOM";
+
+	} else if (CAL_STRING_EQUAL == strncmp(value, "UNKNOWN", strlen("UNKNOWN"))) {
+		ret = cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_CUTYPE_UNKNOWN);
+		if (strlen(value) > strlen("UNKNOWN"))
+			prop = "UNKNOWN";
+
+	} else {
+		ERR("Invalid value[%s]", value);
+	}
 	WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
+
+	/* check mailto */
+	if (prop && CAL_STRING_EQUAL == strncmp(value + strlen(prop), ":MAILTO", strlen(":MAILTO")))
+		__work_component_property_attendee_mailto(attendee, value + strlen(prop) + strlen(":MAILTO") +1);
 }
 static void __work_component_property_attendee_member(calendar_record_h attendee, char *value)
 {
@@ -1760,56 +1795,94 @@ static void __work_component_property_attendee_member(calendar_record_h attendee
 }
 static void __work_component_property_attendee_role(calendar_record_h attendee, char *value)
 {
+	int ret = 0;
+
 	RET_IF(NULL == value);
 	RET_IF('\0' == *value);
 	RET_IF(NULL == attendee);
 
-	int ret = 0;
+	const char *prop = NULL;
 	if (CAL_STRING_EQUAL == strncmp(value, "REQ-PARTICIPANT", strlen("REQ-PARTICIPANT"))) {
 		ret = cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_ROLE_REQ_PARTICIPANT);
-		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
+		if (strlen(value) > strlen("REQ-PARTICIPANT"))
+			prop = "REQ-PARTICIPANT";
 	}
 	else if (CAL_STRING_EQUAL == strncmp(value, "OPT-PARTICIPANT", strlen("OPT-PARTICIPANT"))) {
 		ret = cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_ROLE_OPT_PARTICIPANT);
-		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
+		if (strlen(value) > strlen("OPT-PARTICIPANT"))
+			prop = "OPT-PARTICIPANT";
 	}
 	else if (CAL_STRING_EQUAL == strncmp(value, "NON-PARTICIPANT", strlen("NON-PARTICIPANT"))) {
 		ret = cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_ROLE_NON_PARTICIPANT);
-		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
+		if (strlen(value) > strlen("NON-PARTICIPANT"))
+			prop = "NON-PARTICIPANT";
 	}
 	else if (CAL_STRING_EQUAL == strncmp(value, "CHAIR", strlen("CHAIR"))) {
 		ret = cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_ROLE_CHAIR);
-		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
+		if (strlen(value) > strlen("CHAIR"))
+			prop = "CHAIR";
 	}
 	else {
 		ERR("Invalid value[%s]", value);
 	}
+	WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
+
+	/* check mailto */
+	if (prop && CAL_STRING_EQUAL == strncmp(value + strlen(prop), ":MAILTO", strlen(":MAILTO")))
+		__work_component_property_attendee_mailto(attendee, value + strlen(prop) + strlen(":MAILTO") +1);
 }
 static void __work_component_property_attendee_partstat(calendar_record_h attendee, char *value)
 {
+	int ret = 0;
+
 	RET_IF(NULL == value);
 	RET_IF('\0' == *value);
 	RET_IF(NULL == attendee);
 
-	int ret = 0;
-	if (CAL_STRING_EQUAL == strncmp(value, "NEEDS-ACTION", strlen("NEEDS-ACTION")))
+	const char *prop = NULL;
+	if (CAL_STRING_EQUAL == strncmp(value, "NEEDS-ACTION", strlen("NEEDS-ACTION"))) {
 		ret = cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_STATUS_PENDING);
-	else if (CAL_STRING_EQUAL == strncmp(value, "ACCEPTED", strlen("ACCEPTED")))
-		ret = cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_STATUS_ACCEPTED);
-	else if (CAL_STRING_EQUAL == strncmp(value, "DECLINED", strlen("DECLINED")))
-		ret = cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_STATUS_DECLINED);
-	else if (CAL_STRING_EQUAL == strncmp(value, "TENTATIVE", strlen("TENTATIVE")))
-		ret = cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_STATUS_TENTATIVE);
-	else if (CAL_STRING_EQUAL == strncmp(value, "DELEGATED", strlen("DELEGATED")))
-		ret = cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_STATUS_DELEGATED);
-	else if (CAL_STRING_EQUAL == strncmp(value, "COMPLETED", strlen("COMPLETED")))
-		ret = cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_STATUS_COMPLETED);
-	else if (CAL_STRING_EQUAL == strncmp(value, "IN-PROCESS", strlen("IN-PROCESS")))
-		ret = cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_STATUS_IN_PROCESS);
-	else
-		ERR("Invalid value[%s]", value);
+		if (strlen(value) > strlen("NEEDS-ACTION"))
+			prop = "NEEDS-ACTION";
 
+	} else if (CAL_STRING_EQUAL == strncmp(value, "ACCEPTED", strlen("ACCEPTED"))) {
+		ret = cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_STATUS_ACCEPTED);
+		if (strlen(value) > strlen("ACCEPTED"))
+			prop = "ACCEPTED";
+
+	} else if (CAL_STRING_EQUAL == strncmp(value, "DECLINED", strlen("DECLINED"))) {
+		ret = cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_STATUS_DECLINED);
+		if (strlen(value) > strlen("DECLINED"))
+			prop = "DECLINED";
+
+	} else if (CAL_STRING_EQUAL == strncmp(value, "TENTATIVE", strlen("TENTATIVE"))) {
+		ret = cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_STATUS_TENTATIVE);
+		if (strlen(value) > strlen("TENTATIVE"))
+			prop = "TENTATIVE";
+
+	} else if (CAL_STRING_EQUAL == strncmp(value, "DELEGATED", strlen("DELEGATED"))) {
+		ret = cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_STATUS_DELEGATED);
+		if (strlen(value) > strlen("DELEGATED"))
+			prop = "DELEGATED";
+
+	} else if (CAL_STRING_EQUAL == strncmp(value, "COMPLETED", strlen("COMPLETED"))) {
+		ret = cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_STATUS_COMPLETED);
+		if (strlen(value) > strlen("COMPLETED"))
+			prop = "COMPLETED";
+
+	} else if (CAL_STRING_EQUAL == strncmp(value, "IN-PROCESS", strlen("IN-PROCESS"))) {
+		ret = cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_STATUS_IN_PROCESS);
+		if (strlen(value) > strlen("IN-PROCESS"))
+			prop = "IN-PROCESS";
+
+	} else {
+		ERR("Invalid value[%s]", value);
+	}
 	WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
+
+	/* check mailto */
+	if (prop && CAL_STRING_EQUAL == strncmp(value + strlen(prop), ":MAILTO", strlen(":MAILTO")))
+		__work_component_property_attendee_mailto(attendee, value + strlen(prop) + strlen(":MAILTO") +1);
 }
 static void __work_component_property_attendee_rsvp(calendar_record_h attendee, char *value)
 {
@@ -1863,16 +1936,7 @@ static void __work_component_property_attendee_dir(calendar_record_h attendee, c
 {
 	return;
 }
-static void __work_component_property_attendee_mailto(calendar_record_h attendee, char *value)
-{
-	RET_IF(NULL == value);
-	RET_IF('\0' == *value);
-	RET_IF(NULL == attendee);
 
-	int ret = 0;
-	ret = cal_record_set_str(attendee, _calendar_attendee.email, value);
-	WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail");
-}
 /*
  * example
  * ATTENDEE;ROLE=REQ-PARTICIPANT;DELEGATED-FROM="MAILTO:bob@host.com";PARTSTAT=ACCEPTED;CN=Jane Doe:MAILTO:jdoe@host1.com
@@ -1921,8 +1985,8 @@ static void __work_component_property_attendee(char *value, calendar_record_h re
 			__work_component_property_attendee_cn(attendee, t[i] + strlen("CN") +1);
 		else if (CAL_STRING_EQUAL == strncmp(t[i], "DIR", strlen("DIR")))
 			__work_component_property_attendee_dir(attendee, t[i] + strlen("DIR") +1);
-		else if (CAL_STRING_EQUAL == strncmp(t[0], "MAILTO", strlen("MAILTO")))
-			__work_component_property_attendee_mailto(attendee, t[i] + strlen("MAILTO") +1);
+		else if (CAL_STRING_EQUAL == strncmp(t[i], ":MAILTO", strlen(":MAILTO")))
+			__work_component_property_attendee_mailto(attendee, t[i] + strlen(":MAILTO") +1);
 		else
 			ERR("Invalid value[%s]", t[i]);
 
