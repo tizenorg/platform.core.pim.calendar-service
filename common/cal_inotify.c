@@ -66,14 +66,11 @@ void cal_inotify_call_pending_callback(void)
 	GSList *cursor = NULL;
 
 	cursor = noti_list;
-	while (cursor)
-	{
+	while (cursor) {
 		noti = (noti_info *)cursor->data;
-		if (noti->callback && noti->blocked)
-		{
+		if (noti->callback && noti->blocked) {
 			noti->blocked = false;
-			switch (noti->noti_type)
-			{
+			switch (noti->noti_type) {
 			case CAL_NOTI_TYPE_CALENDAR:
 				noti->callback(CALENDAR_VIEW_CALENDAR, noti->cb_data);
 				break;
@@ -101,11 +98,9 @@ static inline void _handle_callback(GSList *noti_list, int wd, uint32_t mask)
 	while (cursor)
 	{
 		noti = (noti_info *)cursor->data;
-		if (noti->wd == wd)
-		{
+		if (noti->wd == wd) {
 #ifdef CAL_IPC_CLIENT
-			if (cal_client_ipc_is_call_inprogress())
-			{
+			if (cal_client_ipc_is_call_inprogress()) {
 				noti->blocked = true;
 				continue;
 			}
@@ -139,39 +134,30 @@ static gboolean _inotify_gio_cb(GIOChannel *src, GIOCondition cond, gpointer dat
 
 	fd = g_io_channel_unix_get_fd(src);
 
-	while (0 < (ret = read(fd, &ie, sizeof(ie))))
-	{
-		if (sizeof(ie) == ret)
-		{
+	while (0 < (ret = read(fd, &ie, sizeof(ie)))) {
+		if (sizeof(ie) == ret) {
 			if (noti_list)
 				_handle_callback(noti_list, ie.wd, ie.mask);
 
-			while (0 != ie.len)
-			{
+			while (0 != ie.len) {
 				ret = read(fd, name, (ie.len<sizeof(name))?ie.len:sizeof(name));
-				if (-1 == ret)
-				{
+				if (-1 == ret) {
 					if (EINTR == errno)
 						continue;
 					else
 						return TRUE;
 				}
 				if (ie.len < ret)
-				{
 					ie.len = 0;
-				}
 				else
-				{
 					ie.len -= ret;
-				}
 			}
 		}
 		else {
 			while (ret < sizeof(ie)) {
 				int read_size;
 				read_size = read(fd, name, sizeof(ie)-ret);
-				if (-1 == read_size)
-				{
+				if (-1 == read_size) {
 					if (EINTR == errno)
 						continue;
 					else
@@ -571,4 +557,3 @@ void cal_inotify_finalize(void)
 		inoti_fd = -1;
 	}
 }
-

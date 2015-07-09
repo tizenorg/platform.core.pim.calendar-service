@@ -35,12 +35,10 @@ extern "C" {
 
 void cal_time_get_registered_tzid_with_offset(int offset, char *registered_tzid, int tzid_size);
 UCalendar *cal_time_open_ucal(int calendar_system_type, const char *tzid, int wkst);
-char* cal_time_extract_by(int calendar_system_type, const char *tzid, int wkst, calendar_time_s *ct, int field);
 char* cal_time_convert_ltos(const char *tzid, long long int lli, int is_allday);
 long long int cal_time_convert_itol(const char *tzid, int y, int m, int d, int h, int min, int s);
 long long int cal_time_get_now(void);
 int cal_time_get_next_date(calendar_time_s *today, calendar_time_s *next);
-char* cal_time_get_timezone(void);
 void cal_time_u_cleanup(void);
 void cal_time_get_tz_offset(const char *tz, time_t *zone_offset, time_t *dst_offset);
 bool cal_time_in_dst(const char *tz, long long int t);

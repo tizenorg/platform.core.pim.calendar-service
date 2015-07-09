@@ -20,8 +20,4 @@
 #ifndef __CALENDAR_SVC_QUERY_H__
 #define __CALENDAR_SVC_QUERY_H__
 
-#include "calendar_query.h"
-
-int cal_query_clone(calendar_query_h query, calendar_query_h* out_query);
-
 #endif  /* __CALENDAR_SVC_QUERY_H__ */

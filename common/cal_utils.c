@@ -22,12 +22,6 @@
 #include <glib/gprintf.h>
 #include "cal_internal.h"
 
-void cal_free(void *ptr)
-{
-	RET_IF(NULL == ptr);
-	free(ptr);
-}
-
 char* cal_strdup(const char *src)
 {
 	if (src)

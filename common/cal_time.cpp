@@ -96,64 +96,6 @@ UCalendar *cal_time_open_ucal(int calendar_system_type, const char *tzid, int wk
 	return ucal;
 }
 
-static void cal_time_set_caltime(UCalendar *ucal, calendar_time_s *ct)
-{
-	UErrorCode status = U_ZERO_ERROR;
-
-	switch (ct->type) {
-	case CALENDAR_TIME_UTIME:
-		ucal_setMillis(ucal, sec2ms(ct->time.utime), &status);
-		break;
-	case CALENDAR_TIME_LOCALTIME:
-		ucal_setDateTime(ucal, ct->time.date.year, ct->time.date.month -1, ct->time.date.mday,
-				ct->time.date.hour, ct->time.date.minute, ct->time.date.second, &status);
-		break;
-	default:
-		ERR("Invalid dtstart type. Current time is used in default");
-		return;
-	}
-	RETM_IF(U_FAILURE(status), "ucal_setMillis() Fail(%s)", u_errorName(status));
-}
-
-char* cal_time_extract_by(int calendar_system_type, const char *tzid, int wkst, calendar_time_s *ct, int field)
-{
-	int vali;
-	char buf[8] = {0};
-	char weeks[7][3] = {"SU", "MO", "TU", "WE", "TH", "FR", "SA"};
-	UCalendar *ucal = NULL;
-	UErrorCode status = U_ZERO_ERROR;
-
-	ucal = cal_time_open_ucal(calendar_system_type, tzid, wkst);
-	if (NULL == ucal) {
-		ERR("cal_time_open_ucal() Fail");
-		return NULL;
-	}
-	cal_time_set_caltime(ucal, ct);
-
-	switch (field) {
-	case CAL_MONTH:
-		vali = ucal_get(ucal, UCAL_MONTH, &status) + 1;
-		snprintf(buf, sizeof(buf), "%d", vali);
-		break;
-
-	case CAL_DATE:
-		vali = ucal_get(ucal, UCAL_DATE, &status);
-		snprintf(buf, sizeof(buf), "%d", vali);
-		break;
-
-	case CAL_DAY_OF_WEEK:
-		vali = ucal_get(ucal, UCAL_DAY_OF_WEEK, &status);
-		snprintf(buf, sizeof(buf), "%s", weeks[vali - 1]);
-		break;
-
-	default:
-		break;
-
-	}
-	ucal_close(ucal);
-	return cal_strdup(buf);
-}
-
 char* cal_time_convert_ltos(const char *tzid, long long int lli, int is_allday)
 {
 	int y, mon, d, h, min, s;
@@ -281,20 +223,6 @@ int cal_time_get_next_date(calendar_time_s *today, calendar_time_s *next)
 	CAL_FREE(utzid);
 
 	return CALENDAR_ERROR_NONE;
-}
-
-/*
- * Read link of /opt/etc/localtime,
- * and get timezone "Asia/Seoul" from the string (ig. "/usr/share/zoneinfo/Asia/Seoul")
- */
-char* cal_time_get_timezone(void)
-{
-	char buf[CAL_STR_MIDDLE_LEN] = {0};
-	ssize_t len = readlink("/opt/etc/localtime", buf, sizeof(buf)-1);
-	RETVM_IF(-1 == len, NULL, "readlink() Fail");
-
-	buf[len] = '\0';
-	return cal_strdup(buf + strlen("/usr/share/zoneinfo/"));
 }
 
 void cal_time_u_cleanup(void)

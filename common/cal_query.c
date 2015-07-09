@@ -165,34 +165,3 @@ API int calendar_query_destroy(calendar_query_h query)
 
 	return CALENDAR_ERROR_NONE;
 }
-
-int cal_query_clone(calendar_query_h query, calendar_query_h* out_query)
-{
-	cal_query_s *que;
-	cal_query_s *out_que;
-	cal_filter_s *out_filter = NULL;
-	int ret = CALENDAR_ERROR_NONE;
-
-	RETV_IF(NULL == query, CALENDAR_ERROR_INVALID_PARAMETER);
-	que = (cal_query_s *)query;
-
-	ret = calendar_query_create(que->view_uri, out_query);
-	RETV_IF(CALENDAR_ERROR_NONE != ret, CALENDAR_ERROR_OUT_OF_MEMORY);
-	out_que = (cal_query_s *)*out_query;
-
-	if (que->filter) {
-		cal_filter_clone((calendar_filter_h)que->filter, (calendar_filter_h*)&out_filter);
-	}
-
-	if (0 < que->projection_count) {
-		out_que->projection = calloc(que->projection_count, sizeof(unsigned int));
-		RETVM_IF(NULL == out_que->projection, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc() Fail");
-		memcpy(out_que->projection, que->projection , sizeof(unsigned int) * que->projection_count);
-		out_que->projection_count = que->projection_count;
-	}
-	out_que->sort_property_id = que->sort_property_id;
-	out_que->asc = que->asc;
-
-	return CALENDAR_ERROR_NONE;
-}
-

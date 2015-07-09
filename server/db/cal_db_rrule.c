@@ -26,63 +26,6 @@
 #include "cal_time.h"
 #include "cal_utils.h"
 
-void cal_db_rrule_set_default(calendar_record_h record)
-{
-	cal_event_s *event = NULL;
-	RET_IF(NULL == record);
-
-	event = (cal_event_s *)record;
-
-	switch (event->freq) {
-	case CALENDAR_RECURRENCE_NONE:
-		break;
-	case CALENDAR_RECURRENCE_DAILY:
-		break;
-	case CALENDAR_RECURRENCE_WEEKLY:
-		if (event->byday && 0 < strlen(event->byday))
-			break;
-
-		event->byday = cal_time_extract_by(event->system_type, event->start_tzid, event->wkst,
-				&event->start, CAL_DAY_OF_WEEK);
-		DBG("Not enough field in weekly, so set byda[%s]", event->byday);
-		break;
-
-	case CALENDAR_RECURRENCE_MONTHLY:
-		if (event->bymonthday && 0 < strlen(event->bymonthday)) {
-			break;
-		}
-		else if (event->byday && 0 < strlen(event->byday)) {
-			break;
-		}
-
-		event->bymonthday = cal_time_extract_by(event->system_type, event->start_tzid, event->wkst,
-				&event->start, CAL_DATE);
-		DBG("Not enough field in monthly, so set bymonthday[%s]", event->bymonthday);
-		break;
-
-	case CALENDAR_RECURRENCE_YEARLY:
-		if (event->bymonth && 0 < strlen(event->bymonth)) {
-			break;
-		}
-		else if (event->byyearday && 0 < strlen(event->byyearday)) {
-			break;
-		}
-		else if (event->byweekno && 0 < strlen(event->byweekno)) {
-			break;
-		}
-
-		event->bymonth = cal_time_extract_by(event->system_type, event->start_tzid, event->wkst,
-				&event->start, CAL_MONTH);
-		event->bymonthday = cal_time_extract_by(event->system_type, event->start_tzid, event->wkst,
-				&event->start, CAL_DATE);
-		DBG("Not enough field in yearly, so set bymonth[%s] bymonthday[%s]",
-				event->bymonth, event->bymonthday);
-		break;
-
-	default:
-		break;
-	}
-}
 
 void cal_db_rrule_get_rrule_from_event(calendar_record_h event, cal_rrule_s **rrule)
 {
