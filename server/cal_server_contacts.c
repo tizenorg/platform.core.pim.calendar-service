@@ -300,7 +300,11 @@ static int _cal_server_contacts_sync(void)
 	DBG("contacts count(%d)", count);
 
 	ret = cal_db_util_begin_trans();
-	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_db_util_begin_trans() Fail(%d)", ret);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_begin_trans() Fail(%d)", ret);
+		contacts_list_destroy(contacts_list, true);
+		return ret;
+	}
 
 	snprintf(query, sizeof(query), "UPDATE %s SET contacts_ver=%d", CAL_TABLE_VERSION, latest_ver);
 	ret = cal_db_util_query_exec(query);
