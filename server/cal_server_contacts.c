@@ -146,12 +146,22 @@ static int cal_server_contacts_delete_event(int contact_id)
 	int ret = 0;;
 
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
-	snprintf(query, sizeof(query), "SELECT id FROM %s WHERE contact_id=%d", CAL_TABLE_SCHEDULE, contact_id);
-	int event_id = 0;
-	ret = cal_db_util_query_get_first_int_result(query, NULL, &event_id);
-	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_db_util_query_get_first_int_result() Fail(%d)", ret);
+	sqlite3_stmt *stmt = NULL;
 
-	cal_db_event_delete_record(event_id);
+	snprintf(query, sizeof(query), "SELECT id FROM %s WHERE contact_id=%d",
+			CAL_TABLE_SCHEDULE, contact_id);
+	ret = cal_db_util_query_prepare(query, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
+		SECURE("query[%s]", query);
+		return ret;
+	}
+	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
+		int event_id = sqlite3_column_int(stmt, 0);
+		cal_db_delete_record(zone_name, _calendar_event._uri, event_id);
+	}
+	sqlite3_finalize(stmt);
+
 	return CALENDAR_ERROR_NONE;
 }
 
