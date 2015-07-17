@@ -71,6 +71,7 @@ int cal_client_reminder_destroy_for_subscribe(void)
 	cal_mutex_lock(CAL_MUTEX_PIMS_IPC_PUBSUB);
 
 	if (1 == _ipc_pubsub_count) {
+		cal_client_ipc_unset_disconnected_cb(__ipc);
 		pims_ipc_destroy_for_subscribe(__ipc);
 		__ipc = NULL;
 	}

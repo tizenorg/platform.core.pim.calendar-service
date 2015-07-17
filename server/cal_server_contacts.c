@@ -158,7 +158,7 @@ static int cal_server_contacts_delete_event(int contact_id)
 	}
 	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		int event_id = sqlite3_column_int(stmt, 0);
-		cal_db_delete_record(zone_name, _calendar_event._uri, event_id);
+		cal_db_delete_record(_calendar_event._uri, event_id);
 	}
 	sqlite3_finalize(stmt);
 

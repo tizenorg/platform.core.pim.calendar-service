@@ -158,7 +158,7 @@ int cal_client_ipc_connect(calendar_h handle, unsigned int id)
 	cal_ipc_s *ipc_data = NULL;
 	char key[CAL_STR_MIDDLE_LEN] = {0};
 
-	RETV_IF(_cal_ipc_disconnected, CALENDAR_ERROR_IPC);
+	//RETV_IF(_cal_ipc_disconnected, CALENDAR_ERROR_IPC);
 	RETV_IF(NULL == handle, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	snprintf(key, sizeof(key), "%u", id);
