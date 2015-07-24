@@ -22,6 +22,6 @@
 
 int cal_server_contacts(void);
 void cal_server_contacts_delete(int account_id);
-void cal_server_contacts_sync_start(void);
+void cal_server_contacts_sync_start(void *user_data);
 
 #endif /* __CAL_SERVER_CONTACTS_H__ */

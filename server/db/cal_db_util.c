@@ -51,6 +51,9 @@ static inline void _cal_db_util_notify_event_change(void)
 		close(fd);
 		event_change = false;
 	}
+	else {
+		ERR("open() Fail");
+	}
 }
 
 static inline void _cal_db_util_notify_todo_change(void)
@@ -60,6 +63,9 @@ static inline void _cal_db_util_notify_todo_change(void)
 		close(fd);
 		todo_change = false;
 	}
+	else {
+		ERR("open() Fail");
+	}
 }
 
 static inline void _cal_db_util_notify_calendar_change(void)
@@ -68,6 +74,9 @@ static inline void _cal_db_util_notify_calendar_change(void)
 	if (0 <= fd) {
 		close(fd);
 		calendar_change = false;
+	}
+	else {
+		ERR("open() Fail");
 	}
 }
 
