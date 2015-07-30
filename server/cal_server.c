@@ -393,13 +393,17 @@ static int __server_main(void)
 
 static void _cal_server_create_directory(const char* directory, mode_t mode)
 {
-	if (-1 == access (directory, F_OK)) {
-		mkdir(directory, mode);
-	}
+	int ret = 0;
+	if (0 == access (directory, F_OK))
+		return;
+
+	DBG("No directory[%s]", directory);
+	mkdir(directory, mode);
 }
 
 static void _cal_server_set_directory_permission(const char* file, mode_t mode)
 {
+	DBG("set permission[%s]", file);
 	int fd, ret;
 	fd = creat(file, mode);
 	if (0 <= fd) {
