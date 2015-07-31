@@ -3,7 +3,7 @@ Summary:    DB library for calendar
 Version:    0.1.140
 Release:    1
 Group:      System/Libraries
-License:    Apache 2.0
+License:    Apache-2.0
 Source0:    %{name}-%{version}.tar.gz
 Source1:    calendar-serviced.service
 Source2:    calendar-serviced.socket
