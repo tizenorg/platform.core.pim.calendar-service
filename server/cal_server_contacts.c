@@ -564,7 +564,7 @@ static gpointer _cal_server_contacts_sync_main(gpointer user_data)
 		 * while syncing with contacts, calendar-service could be stopped by on-demand.
 		 * so, on-demand timeout is stopped.
 		 */
-		cal_ondemand_stop();
+		cal_ondemand_hold();
 
 		ret = cal_connect();
 		if (CALENDAR_ERROR_NONE != ret) {
@@ -587,6 +587,7 @@ static gpointer _cal_server_contacts_sync_main(gpointer user_data)
 
 		g_mutex_lock(&_cal_server_contacts_sync_mutex);
 		DBG("wait");
+		cal_ondemand_release();
 		cal_ondemand_start();
 		g_cond_wait(&_cal_server_contacts_sync_cond, &_cal_server_contacts_sync_mutex);
 		g_mutex_unlock(&_cal_server_contacts_sync_mutex);
