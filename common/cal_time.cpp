@@ -33,6 +33,7 @@
 #include <unicode/udat.h>
 #include <unicode/rbtz.h>
 #include <unicode/uclean.h>
+#include <pthread.h>
 
 #include "calendar.h"
 #include "cal_internal.h"
@@ -46,6 +47,7 @@
 #define ms2sec(ms) (long long int)(ms / 1000.0)
 #define sec2ms(s) (s * 1000.0)
 
+static pthread_mutex_t cal_mutex_gmt = PTHREAD_MUTEX_INITIALIZER;
 static UCalendar *_g_ucal_gmt = NULL;
 
 void cal_time_get_registered_tzid_with_offset(int offset, char *registered_tzid, int tzid_size)
@@ -269,27 +271,33 @@ int cal_time_init(void)
 {
 	UCalendar *ucal = NULL;
 
+	pthread_mutex_lock(&cal_mutex_gmt);
 	if (NULL == _g_ucal_gmt) {
 		ucal = cal_time_open_ucal(-1, NULL, -1);
 		RETVM_IF(NULL == ucal, CALENDAR_ERROR_SYSTEM, "cal_time_open_ucal() Fail");
 		_g_ucal_gmt = ucal;
 	}
+	pthread_mutex_unlock(&cal_mutex_gmt);
 	return CALENDAR_ERROR_NONE;
 }
 
 void cal_time_fini(void)
 {
+	pthread_mutex_lock(&cal_mutex_gmt);
 	if (_g_ucal_gmt) {
 		ucal_close(_g_ucal_gmt);
 		_g_ucal_gmt = NULL;
 	}
+	pthread_mutex_unlock(&cal_mutex_gmt);
 }
 
 static UCalendar* __get_gmt_ucal(void)
 {
+	pthread_mutex_lock(&cal_mutex_gmt);
 	if (NULL == _g_ucal_gmt) {
 		cal_time_init();
 	}
+	pthread_mutex_unlock(&cal_mutex_gmt);
 	return _g_ucal_gmt;
 }
 
