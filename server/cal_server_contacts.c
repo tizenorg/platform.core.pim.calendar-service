@@ -156,45 +156,51 @@ static int cal_server_contacts_delete_event(int contact_id)
 
 static int cal_server_contacts_insert_event(int id)
 {
-	int ret;
-	int index;
-	int type;
-	int date;
-	int address_book_id = 0;
+	int ret = 0;
 	int account_id = 0;
-	contacts_record_h ctevent = NULL;
-	contacts_record_h address_book = NULL;
+
 	contacts_record_h contact = NULL;
-	calendar_record_h out_event = NULL;
-
-	contacts_db_get_record(_contacts_contact._uri, id, &contact);
-
+	ret = contacts_db_get_record(_contacts_contact._uri, id, &contact);
+	if (CONTACTS_ERROR_NONE != ret) {
+		ERR("contacts_db_get_record() Fail(%d)", ret);
+		return CALENDAR_ERROR_SYSTEM;
+	}
+	int address_book_id = 0;
 	ret = contacts_record_get_int(contact, _contacts_contact.address_book_id, &address_book_id);
-	if (ret != CONTACTS_ERROR_NONE) {
-		DBG("get fail");
-	} else if (address_book_id > 0) { // default phone addressbook is 0
+	if (CONTACTS_ERROR_NONE != ret) {
+		ERR("contacts_record_get_int() Fail(%d)", ret);
+		contacts_record_destroy(contact, true);
+		return CALENDAR_ERROR_SYSTEM;
+	}
+	if (address_book_id > 0) { // default phone addressbook is 0
+		DBG("address_book_id(%d)", address_book_id);
+		contacts_record_h address_book = NULL;
 		ret = contacts_db_get_record(_contacts_address_book._uri, address_book_id, &address_book);
 		if (CONTACTS_ERROR_NONE != ret) {
-			DBG("contacts_db_get_record(%d)", address_book_id);
-		} else {
-			contacts_record_get_int(address_book, _contacts_address_book.account_id, &account_id);
-			DBG("account_id[%d]",account_id);
-			contacts_record_destroy(address_book, true);
+			DBG("contacts_db_get_record() Fail(%d)", ret);
+			contacts_record_destroy(contact, true);
+			return CALENDAR_ERROR_SYSTEM;
 		}
+		ret = contacts_record_get_int(address_book, _contacts_address_book.account_id, &account_id);
+		contacts_record_destroy(address_book, true);
+		if (CONTACTS_ERROR_NONE != ret) {
+			DBG("contacts_record_get_inti() Fail(%d)", ret);
+			contacts_record_destroy(contact, true);
+			return CALENDAR_ERROR_SYSTEM;
+		}
+		DBG("account_id[%d]",account_id);
 	}
 
-	index = 0;
-	while (CONTACTS_ERROR_NONE == contacts_record_get_child_record_at_p(contact, _contacts_contact.event, index++, &ctevent)) {
-		ret = contacts_record_get_int(ctevent, _contacts_event.type, &type);
-		if (CONTACTS_ERROR_NONE != ret) {
-			ERR("Failed to get _contacts_event.type");
-			break;
-		}
-		ret = contacts_record_get_int(ctevent, _contacts_event.date, &date);
-		if (CONTACTS_ERROR_NONE != ret) {
-			ERR("Failed to get _contacts_event.date");
-			break;
-		}
+	int index = 0;
+	contacts_record_h contact_event = NULL;
+	while (CONTACTS_ERROR_NONE == contacts_record_get_child_record_at_p(contact, _contacts_contact.event, index++, &contact_event)) {
+		int type = 0;
+		ret = contacts_record_get_int(contact_event, _contacts_event.type, &type);
+		BREAK_IF(CONTACTS_ERROR_NONE != ret, "Failed to get _contacts_event.type");
+
+		int date = 0;
+		ret = contacts_record_get_int(contact_event, _contacts_event.date, &date);
+		BREAK_IF(CONTACTS_ERROR_NONE != ret, "Failed to get _contacts_event.date");
 
 		bool is_proper_type = true;
 		char *caltype = NULL;
@@ -209,9 +215,10 @@ static int cal_server_contacts_insert_event(int id)
 			caltype = "other";
 			break;
 		case CONTACTS_EVENT_TYPE_CUSTOM:
-			ret = contacts_record_get_str_p(ctevent, _contacts_event.label, &caltype);
-			if (CALENDAR_ERROR_NONE != ret) {
+			ret = contacts_record_get_str_p(contact_event, _contacts_event.label, &caltype);
+			if (CONTACTS_ERROR_NONE != ret) {
 				ERR("Failed to get _contacts_event.label");
+				is_proper_type = false;
 				break;
 			}
 			break;
@@ -226,18 +233,16 @@ static int cal_server_contacts_insert_event(int id)
 
 		char *display = NULL;
 		ret = contacts_record_get_str_p(contact, _contacts_contact.display_name, &display);
-		if (CALENDAR_ERROR_NONE != ret) {
-			ERR("Failed to get _contacts_contact.display_name");
-			break;
-		}
+		BREAK_IF(CONTACTS_ERROR_NONE != ret, "Failed to get _contacts_contact.display_name");
 		SEC_DBG("id(%d) display[%s] type(%d)", id, display, type);
 
+		calendar_record_h out_event = NULL;
 		_cal_server_contacts_set_new_event(id, display, date, caltype, account_id, &out_event);
 		cal_db_event_insert_record(out_event, -1, NULL);
 	}
 
 	contacts_record_destroy(contact, true);
-	return CALENDAR_ERROR_NONE;
+	return ret;
 }
 
 static void __contacts_changed_cb(const char* view_uri, void *user_data)

@@ -105,6 +105,13 @@
 		return (val); \
 	} \
 } while (0)
+#define BREAK_IF(expr, fmt, arg...) do { \
+	if (expr) { \
+		ERR(fmt, ##arg); \
+		break; \
+	} \
+} while (0)
+
 
 #define CAL_START_TIMESTAMP struct timeval timeval_s = {0}; \
 	struct timeval timeval_e = {0}; \
