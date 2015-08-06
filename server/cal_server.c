@@ -418,7 +418,9 @@ static void _cal_server_set_directory_permission(const char* file, mode_t mode)
 
 static void _cal_server_create_file(void)
 {
+	_cal_server_create_directory(DATA_PATH, 0775);
 	_cal_server_create_directory(CAL_DATA_PATH, 0775);
+
 	_cal_server_set_directory_permission(CAL_NOTI_CALENDAR_CHANGED, 0660);
 	_cal_server_set_directory_permission(CAL_NOTI_EVENT_CHANGED, 0660);
 	_cal_server_set_directory_permission(CAL_NOTI_TODO_CHANGED, 0660);
