@@ -834,11 +834,6 @@ static void __get_caltime(char *p, calendar_time_s *caltime, struct user_data *u
 			if (NULL == ud->timezone_tzid || '\0' == *ud->timezone_tzid) {
 				/* Without tzid is localtime */
 				caltime->type = CALENDAR_TIME_LOCALTIME;
-				if (ud->is_allday) {
-					caltime->time.date.hour = 0;
-					caltime->time.date.minute = 0;
-					caltime->time.date.second = 0;
-				}
 				DBG(CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS,
 						caltime->time.date.year, caltime->time.date.month, caltime->time.date.mday,
 						caltime->time.date.hour, caltime->time.date.minute, caltime->time.date.second);
