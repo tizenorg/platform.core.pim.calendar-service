@@ -240,7 +240,7 @@ static int  _cal_vcalendar_make_time(cal_make_s *b, char *tzid, calendar_time_s 
 			}
 			break;
 		case CALENDAR_TIME_LOCALTIME:
-			snprintf(buf, sizeof(buf), CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS,
+			snprintf(buf, sizeof(buf), ":"CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS,
 					t->time.date.year, t->time.date.month, t->time.date.mday,
 					t->time.date.hour, t->time.date.minute, t->time.date.second);
 			break;
