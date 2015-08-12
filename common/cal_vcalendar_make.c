@@ -263,30 +263,33 @@ static void __encode_escaped_char(char *p, char **r)
 
 	DBG("Before [%s]", p);
 	while ('\0' != *p) {
-		if ('\r' == *p && '\n' == *(p + 1)) break;
+		if ('\r' == *p && '\n' == *(p + 1))
+			break;
 		switch (*p) {
 		case '\n':
 			*q = '\\';
-			*(q +1) = 'n';
 			q++;
+			*q = 'n';
 			break;
 		case ';':
 			*q = '\\';
-			*(q +1) = ';';
 			q++;
+			*q = ';';
 			break;
 		case ',':
 			*q = '\\';
-			*(q +1) = ',';
 			q++;
+			*q = ',';
 			break;
 		case '\\':
 			*q = '\\';
-			*(q +1) = '\\';
 			q++;
+			*q = '\\';
+			break;
+		default:
+			*q = *p;
 			break;
 		}
-		*q = *p;
 		q++;
 		p++;
 	}

@@ -586,7 +586,6 @@ static char* __decode_charset(char *p)
 			DBG("skip param[%s]", t[i]);
 		}
 	}
-	__decode_escaped_char(p + len_param + 1);
 	DBG("[%s]", p + len_param + 1);
 	g_strfreev(s);
 	/* param end */
@@ -963,6 +962,7 @@ static void __work_component_property_uid(char *value, calendar_record_h record,
 
 	int ret = 0;
 	value = __decode_charset(value);
+	__decode_escaped_char(value);
 	switch (ud->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = cal_record_set_str(record, _calendar_event.uid, value);
@@ -1059,6 +1059,7 @@ static void __work_component_property_description(char *value, calendar_record_h
 
 	int ret = 0;
 	value = __decode_charset(value);
+	__decode_escaped_char(value);
 	switch (ud->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = cal_record_set_str(record, _calendar_event.description, value);
@@ -1100,6 +1101,7 @@ static void __work_component_property_location(char *value, calendar_record_h re
 
 	int ret = 0;
 	value = __decode_charset(value);
+	__decode_escaped_char(value);
 	switch (ud->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = cal_record_set_str(record, _calendar_event.location, value);
@@ -1236,6 +1238,7 @@ static void __work_component_property_summary(char *value, calendar_record_h rec
 
 	int ret = 0;
 	value = __decode_charset(value);
+	__decode_escaped_char(value);
 	switch (ud->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = cal_record_set_str(record, _calendar_event.summary, value);
@@ -2009,6 +2012,7 @@ static void __work_component_property_categories(char *value, calendar_record_h 
 
 	int ret = 0;
 	value = __decode_charset(value);
+	__decode_escaped_char(value);
 	switch (ud->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
 		ret = cal_record_set_str(record, _calendar_event.categories, value);
