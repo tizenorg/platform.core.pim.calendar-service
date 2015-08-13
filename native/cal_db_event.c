@@ -708,8 +708,11 @@ int cal_db_event_insert_record(calendar_record_h record, int original_event_id, 
 		event->freq, is_allday);
 
 	stmt = cal_db_util_query_prepare(query);
-	RETVM_IF(NULL == stmt, CALENDAR_ERROR_DB_FAILED,
-			"cal_db_util_query_prepare() Failed");
+	if (NULL == stmt) {
+		ERR("cal_db_util_query_prepare() Fail");
+		ERR("[%s]", query);
+		return CALENDAR_ERROR_DB_FAILED;
+	}
 
 	index = 1;
 

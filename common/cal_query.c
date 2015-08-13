@@ -84,6 +84,7 @@ API int calendar_query_set_projection(calendar_query_h query, unsigned int prope
 	CAL_FREE(que->projection);
 
 	que->projection = calloc(count, sizeof(unsigned int));
+	RETVM_IF(NULL == que->projection, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc() Fail");
 	memcpy(que->projection, property_ids, sizeof(unsigned int) * count);
 	que->projection_count = count;
 
@@ -192,6 +193,7 @@ int cal_query_clone(calendar_query_h query, calendar_query_h* out_query)
 	if (que->projection_count > 0)
 	{
 		out_que->projection = calloc(que->projection_count, sizeof(unsigned int));
+		RETVM_IF(NULL == out_que->projection, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc() Fail");
 		memcpy(out_que->projection, que->projection , sizeof(unsigned int) * que->projection_count);
 		out_que->projection_count = que->projection_count;
 	}

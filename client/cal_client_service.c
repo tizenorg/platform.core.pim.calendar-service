@@ -27,7 +27,7 @@ API int calendar_connect(void)
 
 API int calendar_disconnect(void)
 {
-	return cal_client_destroy();
+	return cal_client_disconnect();
 }
 
 API int calendar_connect_on_thread(void)

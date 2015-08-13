@@ -337,6 +337,11 @@ static void _cal_server_alarm_get_upcoming_specific_utime(time_t utime, bool get
 
 	while (CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
 		struct _alarm_data_s *ad = calloc(1, sizeof(struct _alarm_data_s));
+		if (NULL == ad) {
+			ERR("calloc() Fail");
+			sqlite3_finalize(stmt);
+			return;
+		}
 
 		int index = 0;
 		ad->event_id = sqlite3_column_int(stmt, index++);
@@ -378,6 +383,11 @@ static void _cal_server_alarm_get_upcoming_specific_localtime(const char *dateti
 
 	while (CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
 		struct _alarm_data_s *ad = calloc(1, sizeof(struct _alarm_data_s));
+		if (NULL == ad) {
+			ERR("calloc() Fail");
+			sqlite3_finalize(stmt);
+			return;
+		}
 
 		int index = 0;
 		ad->event_id = sqlite3_column_int(stmt, index++);
@@ -431,6 +441,11 @@ static void _cal_server_alarm_get_upcoming_nonspecific_event_utime(time_t utime,
 
 	while (CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
 		struct _alarm_data_s *ad = calloc(1, sizeof(struct _alarm_data_s));
+		if (NULL == ad) {
+			ERR("calloc() Fail");
+			sqlite3_finalize(stmt);
+			return;
+		}
 
 		int index = 0;
 		ad->event_id = sqlite3_column_int(stmt, index++);
@@ -473,6 +488,11 @@ static void _cal_server_alarm_get_upcoming_nonspecific_event_localtime(const cha
 
 	while (CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
 		struct _alarm_data_s *ad = calloc(1, sizeof(struct _alarm_data_s));
+		if (NULL == ad) {
+			ERR("calloc() Fail");
+			sqlite3_finalize(stmt);
+			return;
+		}
 
 		int index = 0;
 		ad->event_id = sqlite3_column_int(stmt, index++);
@@ -527,6 +547,11 @@ static void _cal_server_alarm_get_upcoming_nonspecific_todo_utime(time_t utime, 
 
 	while (CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
 		struct _alarm_data_s *ad = calloc(1, sizeof(struct _alarm_data_s));
+		if (NULL == ad) {
+			ERR("calloc() Fail");
+			sqlite3_finalize(stmt);
+			return;
+		}
 
 		int index = 0;
 		ad->event_id = sqlite3_column_int(stmt, index++);
@@ -570,6 +595,11 @@ static void _cal_server_alarm_get_upcoming_nonspecific_todo_localtime(const char
 
 	while (CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
 		struct _alarm_data_s *ad = calloc(1, sizeof(struct _alarm_data_s));
+		if (NULL == ad) {
+			ERR("calloc() Fail");
+			sqlite3_finalize(stmt);
+			return;
+		}
 
 		int index = 0;
 		ad->event_id = sqlite3_column_int(stmt, index++);
@@ -914,9 +944,8 @@ static int _alert_cb(alarm_id_t alarm_id, void *data)
 ////////////////////////////////////////////////////////////////////
 static void _cal_server_alarm_timechange_cb(keynode_t *node, void *data)
 {
-	CAL_FN_CALL();
 	int t = 0;
-	int ret;
+	int ret = 0;
 
 	if (node) {
 		t = vconf_keynode_get_int(node);

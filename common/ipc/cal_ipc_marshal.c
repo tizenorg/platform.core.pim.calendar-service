@@ -1,4 +1,4 @@
-/*
+	/*
  * Calendar Service
  *
  * Copyright (c) 2012 - 2013 Samsung Electronics Co., Ltd. All rights reserved.
@@ -640,43 +640,55 @@ int cal_ipc_unmarshal_caltime(const pims_ipc_data_h data, calendar_time_s *pout)
 
 int cal_ipc_unmarshal_record_common(const pims_ipc_data_h ipc_data, cal_record_s* common)
 {
-	void *tmp = NULL;
 	unsigned int size = 0;
-	const char* str = NULL;
+	void *ret_pims = NULL;
 
 	RETV_IF(ipc_data==NULL,CALENDAR_ERROR_NO_DATA);
-	tmp = pims_ipc_data_get(ipc_data,&size);
-	if ( tmp == NULL) {
-		ERR("pims_ipc_data_get fail");
+	ret_pims = pims_ipc_data_get(ipc_data,&size);
+	if (NULL == ret_pims) {
+		ERR("pims_ipc_data_get Fail");
 		return CALENDAR_ERROR_NO_DATA;
 	}
-	else {
-		common->type = *(cal_record_type_e*)tmp;
-	}
-
+	common->type = *(cal_record_type_e*)ret_pims;
 	common->plugin_cb = cal_record_get_plugin_cb(common->type);
 
-	str = (char*)pims_ipc_data_get(ipc_data,&size);
-	common->view_uri = cal_view_get_uri(str);
+	ret_pims = pims_ipc_data_get(ipc_data,&size);
+	if (NULL == ret_pims) {
+		ERR("pims_ipc_data_get Fail");
+		return CALENDAR_ERROR_NO_DATA;
+	}
+	char *uri = (char*)ret_pims;
+	common->view_uri = cal_view_get_uri(uri);
 
-	tmp = pims_ipc_data_get(ipc_data,&size);
-
-	common->properties_max_count = *(unsigned int*)tmp;
-	if (common->properties_max_count > 0)
-	{
+	ret_pims = pims_ipc_data_get(ipc_data,&size);
+	if (NULL == ret_pims) {
+		ERR("pims_ipc_data_get Fail");
+		return CALENDAR_ERROR_NO_DATA;
+	}
+	common->properties_max_count = *(unsigned int*)ret_pims;
+	if (common->properties_max_count > 0) {
 		unsigned char *tmp_properties_flags;
-		tmp_properties_flags = (unsigned char*)pims_ipc_data_get(ipc_data,&size);
+		ret_pims = pims_ipc_data_get(ipc_data,&size);
+		if (NULL == ret_pims) {
+			ERR("pims_ipc_data_get Fail");
+			return CALENDAR_ERROR_NO_DATA;
+		}
+		tmp_properties_flags = (unsigned char*)ret_pims;
 		common->properties_flags = calloc(common->properties_max_count, sizeof(char));
 		if (common->properties_flags == NULL) {
-			ERR("calloc fail");
+			ERR("calloc() Fail");
 			return CALENDAR_ERROR_OUT_OF_MEMORY;
 		}
 		memcpy(common->properties_flags,tmp_properties_flags,sizeof(char)*common->properties_max_count);
 	}
 
-	tmp = pims_ipc_data_get(ipc_data,&size);
-	common->property_flag = *(unsigned char*)tmp;
-
+	ret_pims = pims_ipc_data_get(ipc_data,&size);
+	if (NULL == ret_pims) {
+		ERR("pims_ipc_data_get() Fail");
+		g_free(common->properties_flags);
+		return CALENDAR_ERROR_IPC;
+	}
+	common->property_flag = *(unsigned char*)ret_pims;
 	return CALENDAR_ERROR_NONE;
 }
 
@@ -1110,4 +1122,3 @@ int cal_ipc_unmarshal_child_list(const pims_ipc_data_h ipc_data, calendar_list_h
 
 	return CALENDAR_ERROR_NONE;
 }
-

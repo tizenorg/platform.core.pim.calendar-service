@@ -296,8 +296,7 @@ static inline char* __remove_invalid_space(char *src)
 
 static inline char* __crlf(char *p)
 {
-	CAL_FN_CALL();
-
+	RETV_IF(NULL == p, NULL);
 	while (VCAL_LF != *p) {
 		if ('\0' == *p) {
 			return NULL;
@@ -305,31 +304,6 @@ static inline char* __crlf(char *p)
 		p++;
 	}
 	return p +1;
-}
-
-static void __get_rest_string(char *p, char **value)
-{
-	RET_IF(NULL == p);
-	RET_IF('\0' == *p);
-	RET_IF(NULL == value);
-
-	int i = 0;
-	while (VCAL_LF != *(p +i)) {
-		if ('\0' == *(p + i)) {
-			return;
-		}
-		if (VCAL_CR == *(p + i -1)) {
-			break;
-		} else {
-			i++;
-			break;
-		}
-		i++;
-	}
-	char *v = calloc(i, sizeof(char));
-	RETM_IF(NULL == v, "calloc() is failed");
-	snprintf(v, i, "%s", p);
-	*value = strdup(v);
 }
 
 static char* __get_value(char *cursor, char **value)
@@ -360,7 +334,7 @@ static char* __get_value(char *cursor, char **value)
 	} else {
 		memcpy(p, cursor + offset, i);
 	}
-	*value = strdup(p);
+	*value = p;
 	DBG("offset(%d) len(%d) value[%s]", offset, i, *value);
 
 	return cursor + offset + i +1;
@@ -393,6 +367,8 @@ static char* __check_word(char *src, const char *word)
  */
 static inline void __adjust_tzid(char *p)
 {
+	RET_IF(NULL == p);
+
 	DBG("Before [%s]", p);
 	int i = 0;
 	while (*(p +i)) {
@@ -647,7 +623,7 @@ static char* __decode_datetime(char *p, struct user_data *ud)
 			__adjust_tzid(tzid);
 			DBG("[%s]", tzid);
 			if (false == cal_time_is_available_tzid(tzid)) {
-				ERR("---Invalid tzid[%s]", tzid);
+				ERR("check tzid[%s]: INVALID", tzid);
 				if (ud->timezone_tzid && *ud->timezone_tzid) {
 					ud->datetime_tzid = strdup(ud->timezone_tzid);
 					free(tzid);
@@ -657,7 +633,7 @@ static char* __decode_datetime(char *p, struct user_data *ud)
 					free(tzid);
 				}
 			} else {
-				DBG("---Vaild tzid[%s]", tzid);
+				DBG("check tzid[%s]: VALID", tzid);
 				ud->datetime_tzid = tzid;
 			}
 		} else {
@@ -796,12 +772,12 @@ static char* __get_index(char *cursor, const char **array, int len, int *index)
 	return cursor + strlen(array[i]);
 }
 
-static int __get_version(char *value, int *version)
+static void __get_version(char *value, int *version)
 {
 	CAL_FN_CALL();
 
-	RETV_IF(NULL == value, CALENDAR_ERROR_INVALID_PARAMETER);
-	RETV_IF(NULL == version, CALENDAR_ERROR_INVALID_PARAMETER);
+	RET_IF(NULL == value);
+	RET_IF(NULL == version);
 
 	if (!strncmp(value, ":1.0", strlen(":1.0"))) {
 		*version = 1;
@@ -836,6 +812,7 @@ static void __get_caltime(char *p, calendar_time_s *caltime, struct user_data *u
 				&(caltime->time.date.hour), &(caltime->time.date.minute), &(caltime->time.date.second));
 		if (NULL == ud->datetime_tzid || '\0' == *ud->datetime_tzid) {
 			if (NULL == ud->timezone_tzid || '\0' == *ud->timezone_tzid) {
+				/* Without tzid is localtime */
 				caltime->type = CALENDAR_TIME_LOCALTIME;
 				if (ud->is_allday) {
 					caltime->time.date.hour = 0;
@@ -845,6 +822,7 @@ static void __get_caltime(char *p, calendar_time_s *caltime, struct user_data *u
 				DBG("%04d%02d%02dT%02d%02d%02d", caltime->time.date.year, caltime->time.date.month, caltime->time.date.mday,
 						caltime->time.date.hour, caltime->time.date.minute, caltime->time.date.second);
 			} else {
+				/* No 'Z' with tzid means utime */
 				caltime->type = CALENDAR_TIME_UTIME;
 				caltime->time.utime = cal_time_convert_itol(ud->timezone_tzid,
 					caltime->time.date.year, caltime->time.date.month, caltime->time.date.mday,
@@ -852,6 +830,7 @@ static void __get_caltime(char *p, calendar_time_s *caltime, struct user_data *u
 				DBG("timezone_tzid[%s] (%lld)", ud->timezone_tzid, caltime->time.utime);
 			}
 		} else {
+			/* No 'Z' with tzid means utime */
 			caltime->type = CALENDAR_TIME_UTIME;
 			caltime->time.utime = cal_time_convert_itol(ud->datetime_tzid,
 					caltime->time.date.year, caltime->time.date.month, caltime->time.date.mday,
@@ -2969,7 +2948,7 @@ static void __work_component_property_vtimezone_daylight_tzoffsetto(char *value,
 	int offset = h * 60 + m;
 	if ('-' == c) offset *= -1;
 
-	int ret = ret = cal_record_set_int(record, _calendar_timezone.day_light_bias, offset);
+	int ret = cal_record_set_int(record, _calendar_timezone.day_light_bias, offset);
 	WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Failed(%d)", ret);
 }
 static void __work_component_property_vtimezone_daylight_tzname(char *value, calendar_record_h record, struct user_data *ud)
@@ -3208,6 +3187,7 @@ int cal_vcalendar_parse_vcalendar_object(char *stream, calendar_list_h list, vca
 	DBG("count(%d)", count);
 	if (0 == count)
 		DBG("No record");
+	g_free(ud);
 
 	return CALENDAR_ERROR_NONE;
 }

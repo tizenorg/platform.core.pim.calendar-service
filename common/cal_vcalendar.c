@@ -110,9 +110,12 @@ static const char* __calendar_vcalendar_get_vcalendar_object(const char *origina
 
 				len = (int)vcal_cursor - (int)vcal_start;
 				vcalendar_object = calloc(len + 1, sizeof(char));
+				if (NULL == vcalendar_object) {
+					ERR("calloc() Fail");
+					return NULL;
+				}
 				memcpy(vcalendar_object, vcal_start, len);
 				*pvcalendar_object = vcalendar_object;
-
 				return vcal_cursor;
 			}
 			new_line = false;
@@ -201,8 +204,21 @@ API int calendar_vcalendar_parse_to_calendar_foreach(const char *vcalendar_file_
 	len = 0;
 	buf_size = ICALENAR_BUFFER_MAX;
 	stream = malloc(ICALENAR_BUFFER_MAX);
+	if (NULL == stream) {
+		ERR("calloc() Fail");
+		fclose(file);
+		calendar_list_destroy(list, true);
+		return CALENDAR_ERROR_OUT_OF_MEMORY;
+	}
 
 	foreach_data = calloc(1, sizeof(vcalendar_foreach_s));
+	if (NULL == foreach_data) {
+		ERR("calloc() Fail");
+		free(stream);
+		fclose(file);
+		calendar_list_destroy(list, true);
+		return CALENDAR_ERROR_OUT_OF_MEMORY;
+	}
 	foreach_data->callback = callback;
 	foreach_data->user_data = user_data;
 	foreach_data->ret = true;

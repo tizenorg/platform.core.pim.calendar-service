@@ -35,14 +35,14 @@ int cal_client_connect(void)
 	int ret = 0;
 
 	cal_mutex_lock(CAL_MUTEX_CONNECTION);
-	ret = cal_client_ipc_connect();
-	if (CALENDAR_ERROR_NONE != ret) {
-		ERR("cal_client_ipc_connect() Fail(%d)", ret);
-		cal_mutex_unlock(CAL_MUTEX_CONNECTION);
-		return ret;
-	}
-
 	if (0 == cal_connection) {
+		ret = cal_client_ipc_connect();
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("cal_client_ipc_connect() Fail(%d)", ret);
+			cal_mutex_unlock(CAL_MUTEX_CONNECTION);
+			return ret;
+		}
+
 		g_type_init(); // for alarmmgr
 		cal_inotify_initialize();
 		if (CALENDAR_ERROR_NONE != ret) {
@@ -65,16 +65,17 @@ int cal_client_disconnect(void)
 	int ret = 0;
 
 	cal_mutex_lock(CAL_MUTEX_CONNECTION);
-	ret = cal_client_ipc_connect();
-	if (CALENDAR_ERROR_NONE != ret) {
-		ERR("cal_client_ipc_connect() Fail(%d)", ret);
-		cal_mutex_unlock(CAL_MUTEX_CONNECTION);
-		return ret;
-	}
-
 	if (1 == cal_connection) {
-		DBG("[System] disonneted successfully");
 		cal_client_reminder_destroy_for_subscribe();
+
+		ret = cal_client_ipc_disconnect();
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("cal_client_ipc_disconnect() Fail(%d)", ret);
+			cal_mutex_unlock(CAL_MUTEX_CONNECTION);
+			return ret;
+		}
+
+		DBG("[System] disonneted successfully");
 		cal_view_finalize();
 		cal_inotify_finalize();
 	}
@@ -98,14 +99,14 @@ int cal_client_connect_on_thread(void)
 	int ret = 0;
 
 	cal_mutex_lock(CAL_MUTEX_CONNECTION);
-	ret = cal_client_ipc_connect_on_thread();
-	if (CALENDAR_ERROR_NONE != ret) {
-		ERR("cal_client_ipc_connect_on_thread() Fail(%d)", ret);
-		cal_mutex_unlock(CAL_MUTEX_CONNECTION);
-		return ret;
-	}
-
 	if (0 == cal_connection_on_thread) {
+		ret = cal_client_ipc_connect_on_thread();
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("cal_client_ipc_connect_on_thread() Fail(%d)", ret);
+			cal_mutex_unlock(CAL_MUTEX_CONNECTION);
+			return ret;
+		}
+
 		ret = cal_inotify_initialize();
 		if (CALENDAR_ERROR_NONE != ret) {
 			ERR("cal_inotify_initialize() Fail(%d)", ret);
@@ -131,14 +132,16 @@ int cal_client_disconnect_on_thread(void)
 	int ret = 0;
 
 	cal_mutex_lock(CAL_MUTEX_CONNECTION);
-	ret = cal_client_ipc_disconnect_on_thread();
-	if (CALENDAR_ERROR_NONE != ret) {
-		ERR("cal_client_ipc_disconnect_on_thread() Fail(%d)", ret);
-		cal_mutex_unlock(CAL_MUTEX_CONNECTION);
-		return ret;
-	}
-
 	if (1 == cal_connection_on_thread) {
+		cal_client_reminder_destroy_for_subscribe();
+
+		ret = cal_client_ipc_disconnect_on_thread();
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("cal_client_ipc_disconnect_on_thread() Fail(%d)", ret);
+			cal_mutex_unlock(CAL_MUTEX_CONNECTION);
+			return ret;
+		}
+
 		DBG("[System] disonneted on thread successfully");
 		cal_view_finalize();
 		cal_inotify_finalize();

@@ -30,7 +30,7 @@
 // For Security
 #define CALS_SECURITY_FILE_GROUP 6003
 
-static TLS sqlite3 *calendar_db_handle = NULL;
+static TLS sqlite3 *cal_db = NULL;
 static TLS int transaction_cnt = 0;
 static TLS int transaction_ver = 0;
 static TLS bool version_up = false;
@@ -115,7 +115,7 @@ int cal_db_util_open(void)
 {
 	int ret = 0;
 
-	if (!calendar_db_handle) {
+	if (!cal_db) {
 		if (-1 == access (DB_PATH, F_OK))
 		{
 			mkdir(DB_PATH, 755);
@@ -124,7 +124,7 @@ int cal_db_util_open(void)
 		{
 			mkdir(DB_PATH, 755);
 		}
-		ret = db_util_open(CAL_DB_FILE, &calendar_db_handle, 0);
+		ret = db_util_open(CAL_DB_FILE, &cal_db, 0);
 		RETVM_IF(SQLITE_OK != ret, CALENDAR_ERROR_DB_FAILED,
 				"db_util_open() Failed(%d).", ret);
 	}
@@ -135,10 +135,10 @@ int cal_db_util_close(void)
 {
 	int ret = 0;
 
-	if (calendar_db_handle) {
-		ret = db_util_close(calendar_db_handle);
+	if (cal_db) {
+		ret = db_util_close(cal_db);
 		WARN_IF(SQLITE_OK != ret, "db_util_close() Failed(%d)", ret);
-		calendar_db_handle = NULL;
+		cal_db = NULL;
 		DBG("The database disconnected really.");
 	}
 
@@ -147,7 +147,7 @@ int cal_db_util_close(void)
 
 int cal_db_util_last_insert_id(void)
 {
-	return sqlite3_last_insert_rowid(calendar_db_handle);
+	return sqlite3_last_insert_rowid(cal_db);
 }
 
 #define __CAL_QUERY_RETRY_TIME 2
@@ -160,15 +160,15 @@ int cal_db_util_query_get_first_int_result(const char *query, GSList *bind_text,
 	struct timeval from, now, diff;
 	bool retry = false;
 	sqlite3_stmt *stmt = NULL;
-	RETVM_IF(NULL == calendar_db_handle, CALENDAR_ERROR_DB_FAILED, "Database is not opended");
+	RETVM_IF(NULL == cal_db, CALENDAR_ERROR_DB_FAILED, "Database is not opended");
 
 	gettimeofday(&from, NULL);
 	do
 	{
-		ret = sqlite3_prepare_v2(calendar_db_handle, query, strlen(query), &stmt, NULL);
+		ret = sqlite3_prepare_v2(cal_db, query, strlen(query), &stmt, NULL);
 		if (SQLITE_BUSY == ret || SQLITE_LOCKED == ret)
 		{
-			ERR("sqlite3_prepare_v2(%s) failed(%s).", query, sqlite3_errmsg(calendar_db_handle));
+			ERR("sqlite3_prepare_v2(%s) failed(%s).", query, sqlite3_errmsg(cal_db));
 			gettimeofday(&now, NULL);
 			timersub(&now, &from, &diff);
 			retry = (diff.tv_sec < __CAL_QUERY_RETRY_TIME) ? true : false;
@@ -185,7 +185,7 @@ int cal_db_util_query_get_first_int_result(const char *query, GSList *bind_text,
 
 	if (SQLITE_OK != ret)
 	{
-		ERR("sqlite3_prepare_v2(%s) failed(%s).", query, sqlite3_errmsg(calendar_db_handle));
+		ERR("sqlite3_prepare_v2(%s) failed(%s).", query, sqlite3_errmsg(cal_db));
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 
@@ -215,7 +215,7 @@ int cal_db_util_query_get_first_int_result(const char *query, GSList *bind_text,
 			}
 			else if (SQLITE_BUSY == ret || SQLITE_LOCKED == ret)
 			{
-				ERR("sqlite3_step fail(%d, %s)", ret, sqlite3_errmsg(calendar_db_handle));
+				ERR("sqlite3_step fail(%d, %s)", ret, sqlite3_errmsg(cal_db));
 				gettimeofday(&now, NULL);
 				timersub(&now, &from, &diff);
 				retry = (diff.tv_sec < __CAL_QUERY_RETRY_TIME) ? true : false;
@@ -226,7 +226,7 @@ int cal_db_util_query_get_first_int_result(const char *query, GSList *bind_text,
 			}
 			else
 			{
-				ERR("sqlite3_step() failed(%d, %s).", ret, sqlite3_errmsg(calendar_db_handle));
+				ERR("sqlite3_step() failed(%d, %s).", ret, sqlite3_errmsg(cal_db));
 				retry = false;
 			}
 		}
@@ -244,7 +244,7 @@ cal_db_util_error_e cal_db_util_query_exec(char *query)
 	int ret;
 	sqlite3_stmt *stmt = NULL;
 
-	RETVM_IF(NULL == calendar_db_handle, CALENDAR_ERROR_DB_FAILED, "Database is not opended");
+	RETVM_IF(NULL == cal_db, CALENDAR_ERROR_DB_FAILED, "Database is not opended");
 
 	stmt = cal_db_util_query_prepare(query);
 	RETVM_IF(NULL == stmt, CAL_DB_ERROR_FAIL, "cal_db_util_query_prepare() Failed");
@@ -270,11 +270,11 @@ sqlite3_stmt* cal_db_util_query_prepare(char *query)
 	sqlite3_stmt *stmt = NULL;
 
 	RETV_IF(NULL == query, NULL);
-	RETV_IF(NULL == calendar_db_handle, NULL);
+	RETV_IF(NULL == cal_db, NULL);
 
 	gettimeofday(&from, NULL);
 	do {
-		ret = sqlite3_prepare_v2(calendar_db_handle, query, strlen(query), &stmt, NULL);
+		ret = sqlite3_prepare_v2(cal_db, query, strlen(query), &stmt, NULL);
 		if (SQLITE_BUSY == ret || SQLITE_LOCKED == ret) {
 			gettimeofday(&now, NULL);
 			timersub(&now, &from, &diff);

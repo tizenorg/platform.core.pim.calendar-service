@@ -153,29 +153,6 @@ static int _cal_db_instance_parse_byint(char *byint, int *by, int *len)
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_db_instance_parse_bystr(char *bystr, char **by, int *len)
-{
-	RETV_IF(NULL == bystr, CALENDAR_ERROR_INVALID_PARAMETER);
-	RETV_IF('\0' == *bystr, CALENDAR_ERROR_INVALID_PARAMETER);
-
-	char **t = NULL;
-	t = g_strsplit_set(bystr, " ,", -1);
-	RETVM_IF(NULL == t, CALENDAR_ERROR_OUT_OF_MEMORY, "g_strsplit_set() is failed");
-
-	int length = g_strv_length(t);
-	int i;
-	int index = 0;
-	for (i = 0 ; i < length; i++)
-	{
-		if (NULL == t[i] || 0 == strlen(t[i])) continue;
-		by[index] = strdup(t[i]);
-		index++;
-	}
-	g_strfreev(t);
-	if (len) *len = index;
-	return CALENDAR_ERROR_NONE;
-}
-
 static void __set_time_to_ucal(int calendar_system_type, UCalendar *ucal, calendar_time_s *t)
 {
 	RET_IF(NULL == ucal);
@@ -665,23 +642,26 @@ static int __get_until_from_range(cal_event_s *event, calendar_time_s *until)
 
 /*
  * Return true when index meets bysetpos value.
- * ig. when bysetpos=2 and 3, index 1 returns false(skip), index 2 and 3 returns true(selected).
+ * ig. when bysetpos=2 and 3, index 1 returns true(skip), index 2 and 3 returns false(selected).
  */
-static bool __check_bysetpos(int index, int *bysetpos, int bysetpos_len, int dates_len)
+static bool __check_bysetpos_to_skip(int index, int *bysetpos, int bysetpos_len, int dates_len)
 {
 	int i;
+	if (0 == bysetpos_len)
+		return false;
+
 	for (i = 0; i < bysetpos_len; i++) {
 		if (bysetpos[i] > 0) {
 			if (bysetpos[i] == (index + 1)) {
-				return true;
+				return false;
 			}
 		} else {
 			if ((index - dates_len) == bysetpos[i]) {
-				return true;
+				return false;
 			}
 		}
 	}
-	return false;
+	return true;
 }
 
 static bool __check_before_dtstart(long long int current_utime, long long int dtstart_utime)
@@ -846,7 +826,7 @@ static int _cal_db_instance_publish_yearly_yday(UCalendar *ucal, cal_event_s *ev
 		for (i = 0; i < byyearday_len; i++)
 		{
 			ucal_set(ucal, UCAL_DAY_OF_YEAR, byyearday[i]);
-			if (true == __check_bysetpos(i, bysetpos, bysetpos_len, byyearday_len)) {
+			if (true == __check_bysetpos_to_skip(i, bysetpos, bysetpos_len, byyearday_len)) {
 				continue;
 			}
 			current_utime = ms2sec(ucal_getMillis(ucal, &ec));
@@ -953,7 +933,7 @@ static int _cal_db_instance_publish_yearly_weekno(UCalendar *ucal, cal_event_s *
 					week_count++;
 					ucal_set(ucal, UCAL_WEEK_OF_YEAR, byweekno[i] + extra_weekno);
 					ucal_set(ucal, UCAL_DAY_OF_WEEK, j + 1);
-					if (true == __check_bysetpos(i + week_count - 1, bysetpos, bysetpos_len, byweekno_len + byday_len - 1)) {
+					if (true == __check_bysetpos_to_skip(i + week_count - 1, bysetpos, bysetpos_len, byweekno_len + byday_len - 1)) {
 						continue;
 					}
 					current_utime = ms2sec(ucal_getMillis(ucal, &ec));
@@ -1084,7 +1064,7 @@ static int _cal_db_instance_publish_yearly_wday(UCalendar *ucal, cal_event_s *ev
 						ucal_set(ucal, UCAL_MONTH, false == has_bymonth ? 0 : bymonth[i] - 1);
 						ucal_set(ucal, UCAL_DAY_OF_WEEK_IN_MONTH, nth);
 					}
-					if (true == __check_bysetpos(j, bysetpos, bysetpos_len, bymonth_len + byday_len - 1)) {
+					if (true == __check_bysetpos_to_skip(j, bysetpos, bysetpos_len, bymonth_len + byday_len - 1)) {
 						continue;
 					}
 					current_utime = ms2sec(ucal_getMillis(ucal, &ec));
@@ -1132,7 +1112,7 @@ static int _cal_db_instance_publish_yearly_wday(UCalendar *ucal, cal_event_s *ev
 							DBG("get wday(%d) != want wday(%d)", w, k + 1);
 							continue;
 						}
-						if (true == __check_bysetpos(j, bysetpos, bysetpos_len, bymonthday_len)) {
+						if (true == __check_bysetpos_to_skip(j, bysetpos, bysetpos_len, bymonthday_len)) {
 							continue;
 						}
 						current_utime = ms2sec(ucal_getMillis(ucal, &ec));
@@ -1174,7 +1154,7 @@ static int _cal_db_instance_publish_yearly_wday(UCalendar *ucal, cal_event_s *ev
 							int get_month = ucal_get(ucal, UCAL_MONTH, &ec) + 1;
 							if (bymonth[i] != get_month) { j = 6; break; }
 
-							if (true == __check_bysetpos(index, bysetpos, bysetpos_len, dates_len)) {
+							if (true == __check_bysetpos_to_skip(index, bysetpos, bysetpos_len, dates_len)) {
 								continue;
 							}
 							current_utime = ms2sec(ucal_getMillis(ucal, &ec));
@@ -1276,7 +1256,6 @@ static int _cal_db_instance_publish_yearly_mday(UCalendar *ucal, cal_event_s *ev
 						continue;
 					}
 				} else if (bymonthday[i] < 0) {
-					// goto end of the month
 					ucal_set(ucal, UCAL_MONTH, bymonth[j] - 1);
 					ucal_set(ucal, UCAL_DATE, 1);
 					ucal_add(ucal, UCAL_MONTH, 1, &ec);
@@ -1286,7 +1265,7 @@ static int _cal_db_instance_publish_yearly_mday(UCalendar *ucal, cal_event_s *ev
 					DBG("Invalid bymonthday(%d)", bymonthday[i]);
 					continue;
 				}
-				if (true == __check_bysetpos(i, bysetpos, bysetpos_len, bymonthday_len)) {
+				if (true == __check_bysetpos_to_skip(i, bysetpos, bysetpos_len, bymonthday_len)) {
 					DBG("no bysetpos");
 					continue;
 				}
@@ -1424,7 +1403,7 @@ static int _cal_db_instance_publish_monthly_wday(UCalendar *ucal, cal_event_s *e
 					ucal_set(ucal, UCAL_DAY_OF_WEEK, wday_int);
 					ucal_set(ucal, UCAL_DAY_OF_WEEK_IN_MONTH, nth);
 				}
-				if (true == __check_bysetpos(i, bysetpos, bysetpos_len, byday_len)) {
+				if (true == __check_bysetpos_to_skip(i, bysetpos, bysetpos_len, byday_len)) {
 					continue;
 				}
 				current_utime = ms2sec(ucal_getMillis(ucal, &ec));
@@ -1471,7 +1450,7 @@ static int _cal_db_instance_publish_monthly_wday(UCalendar *ucal, cal_event_s *e
 						DBG("get wday(%d) != want wday(%d)", w, k + 1);
 						continue;
 					}
-					if (true == __check_bysetpos(j, bysetpos, bysetpos_len, bymonthday_len)) {
+					if (true == __check_bysetpos_to_skip(j, bysetpos, bysetpos_len, bymonthday_len)) {
 						continue;
 					}
 					current_utime = ms2sec(ucal_getMillis(ucal, &ec));
@@ -1514,7 +1493,7 @@ static int _cal_db_instance_publish_monthly_wday(UCalendar *ucal, cal_event_s *e
 						int get_month = ucal_get(ucal, UCAL_MONTH, &ec) + 1;
 						if (month != get_month) { j = 6; break; }
 
-						if (true == __check_bysetpos(index, bysetpos, bysetpos_len, dates_len)) {
+						if (true == __check_bysetpos_to_skip(index, bysetpos, bysetpos_len, dates_len)) {
 							continue;
 						}
 						current_utime = ms2sec(ucal_getMillis(ucal, &ec));
@@ -1601,7 +1580,6 @@ static int _cal_db_instance_publish_monthly_mday(UCalendar *ucal, cal_event_s *e
 					continue;
 				}
 			} else if (bymonthday[i] < 0) {
-				// goto end of the month
 				ucal_set(ucal, UCAL_DATE, 1);
 				ucal_add(ucal, UCAL_MONTH, 1, &ec);
 				ucal_add(ucal, UCAL_DAY_OF_YEAR, bymonthday[i], &ec);
@@ -1610,7 +1588,7 @@ static int _cal_db_instance_publish_monthly_mday(UCalendar *ucal, cal_event_s *e
 				DBG("Invalid bymonthday(%d)", bymonthday[i]);
 				continue;
 			}
-			if (true == __check_bysetpos(i, bysetpos, bysetpos_len, bymonthday_len)) {
+			if (true == __check_bysetpos_to_skip(i, bysetpos, bysetpos_len, bymonthday_len)) {
 				continue;
 			}
 			current_utime = ms2sec(ucal_getMillis(ucal, &ec));
@@ -1707,7 +1685,7 @@ static int _cal_db_instance_publish_weekly_wday(UCalendar *ucal, cal_event_s *ev
 			int wday_int = (byday_start -1 +i) %7 + 1;
 			ucal_set(ucal, UCAL_DAY_OF_WEEK, wday_int);
 
-			if (true == __check_bysetpos(index, bysetpos, bysetpos_len, byday_len)) {
+			if (true == __check_bysetpos_to_skip(index, bysetpos, bysetpos_len, byday_len)) {
 				continue;
 			}
 			current_utime = ms2sec(ucal_getMillis(ucal, &ec));

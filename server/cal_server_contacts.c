@@ -497,7 +497,8 @@ void cal_server_contacts_sync_start(void)
 	if (_cal_server_contacts_sync_thread == NULL) {
 		g_mutex_init(&_cal_server_contacts_sync_mutex);
 		g_cond_init(&_cal_server_contacts_sync_cond);
-		_cal_server_contacts_sync_thread = g_thread_new(CAL_SERVER_CONTACTS_SYNC_THREAD_NAME, _cal_server_contacts_sync_main,NULL);
+		_cal_server_contacts_sync_thread = g_thread_new(CAL_SERVER_CONTACTS_SYNC_THREAD_NAME,
+				_cal_server_contacts_sync_main, NULL);
 	}
 
 	// don't use mutex.
@@ -505,4 +506,3 @@ void cal_server_contacts_sync_start(void)
 
 	return;
 }
-

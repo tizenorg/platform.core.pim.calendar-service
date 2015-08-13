@@ -98,93 +98,111 @@ void cal_time_get_registered_tzid_with_offset(int offset, char *registered_tzid,
 int cal_time_get_timezone_from_table(const char *tzid, calendar_record_h *timezone, int *timezone_id)
 {
 	int ret = CALENDAR_ERROR_NONE;
-	int count = 0;
-	int _timezone_id = 0;
-	calendar_record_h _timezone = NULL;
-	calendar_filter_h filter = NULL;
+
+	RETV_IF(NULL == tzid, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF('\0' == *tzid, CALENDAR_ERROR_INVALID_PARAMETER);
+
 	calendar_query_h query = NULL;
-	calendar_list_h list = NULL;
-
-	if (NULL == tzid || strlen(tzid) == 0)
-	{
-		DBG("tzid is NULL");
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
-
-	ret = calendar_connect();
-	if (CALENDAR_ERROR_NONE != ret)
-	{
-		ERR("calendar_connect() failed");
+	ret = calendar_query_create(_calendar_timezone._uri, &query);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("calendar_query_create() Fail(%d)", ret);
 		return ret;
 	}
 
-	ret = calendar_query_create(_calendar_timezone._uri, &query);
-	if (CALENDAR_ERROR_NONE != ret) goto ERROR_CONNECT;
-
+	calendar_filter_h filter = NULL;
 	ret = calendar_filter_create(_calendar_timezone._uri, &filter);
-	if (CALENDAR_ERROR_NONE != ret) goto ERROR_QUERY;
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("calendar_filter_create() Fail(%d)", ret);
+		calendar_query_destroy(query);
+		return ret;
+	}
 
 	ret = calendar_filter_add_str(filter, _calendar_timezone.standard_name, CALENDAR_MATCH_EXACTLY, tzid);
-	if (CALENDAR_ERROR_NONE != ret) goto ERROR_FILTER;
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("calendar_filter_add_str() Fail(%d)", ret);
+		calendar_filter_destroy(filter);
+		calendar_query_destroy(query);
+		return ret;
+	}
 
 	ret = calendar_query_set_filter(query, filter);
-	if (CALENDAR_ERROR_NONE != ret) goto ERROR_FILTER;
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("calendar_query_set_filter() Fail(%d)", ret);
+		calendar_filter_destroy(filter);
+		calendar_query_destroy(query);
+		return ret;
+	}
 
+	calendar_list_h list = NULL;
 	ret = calendar_db_get_records_with_query(query, 0, 0, &list);
-	if (CALENDAR_ERROR_NONE != ret) goto ERROR_LIST;
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("calendar_db_get_records_with_query() Fail(%d)", ret);
+		calendar_filter_destroy(filter);
+		calendar_query_destroy(query);
+		return ret;
+	}
 
+	int count = 0;
 	ret = calendar_list_get_count(list, &count);
-	if (CALENDAR_ERROR_NONE != ret) goto ERROR_LIST;
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("calendar_list_get_count() Fail(%d)", ret);
+		calendar_list_destroy(list, true);
+		calendar_filter_destroy(filter);
+		calendar_query_destroy(query);
+		return ret;
+	}
 	DBG("tzid count(%d)", count);
-	if (count <= 0)
-	{
+
+	if (count <= 0) {
 		DBG("No count");
 		calendar_list_destroy(list, false);
 		calendar_filter_destroy(filter);
 		calendar_query_destroy(query);
-		calendar_disconnect();
 		return CALENDAR_ERROR_NONE;
 	}
 
 	ret = calendar_list_first(list);
-	if (CALENDAR_ERROR_NONE != ret) goto ERROR_LIST;
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("calendar_list_first() Fail(%d)", ret);
+		calendar_list_destroy(list, false);
+		calendar_filter_destroy(filter);
+		calendar_query_destroy(query);
+		return ret;
+	}
 
+	calendar_record_h _timezone = NULL;
 	ret = calendar_list_get_current_record_p(list, &_timezone);
-	if (CALENDAR_ERROR_NONE != ret) goto ERROR_LIST;
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("calendar_list_get_current_record_p() Fail(%d)", ret);
+		calendar_list_destroy(list, false);
+		calendar_filter_destroy(filter);
+		calendar_query_destroy(query);
+		return ret;
+	}
 
+	int _timezone_id = 0;
 	ret = calendar_record_get_int(_timezone, _calendar_timezone.id, &_timezone_id);
-	if (CALENDAR_ERROR_NONE != ret) goto ERROR_LIST;
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("calendar_record_get_int() Fail(%d)", ret);
+		calendar_list_destroy(list, false);
+		calendar_filter_destroy(filter);
+		calendar_query_destroy(query);
+		return ret;
+	}
 
 	calendar_list_destroy(list, false);
 	calendar_filter_destroy(filter);
 	calendar_query_destroy(query);
-	calendar_disconnect();
 
 	if (timezone)
-	{
 		*timezone = _timezone;
-	}
 	else
-	{
 		calendar_record_destroy(_timezone, true);
-	}
-	if (timezone_id) *timezone_id = _timezone_id;
+
+	if (timezone_id)
+		*timezone_id = _timezone_id;
 
 	return CALENDAR_ERROR_NONE;
-
-ERROR_LIST:
-	ERR("list error");
-	calendar_list_destroy(list, true);
-ERROR_FILTER:
-	ERR("filter error");
-	calendar_filter_destroy(filter);
-ERROR_QUERY:
-	ERR("queryerror");
-	calendar_query_destroy(query);
-ERROR_CONNECT:
-	calendar_disconnect();
-
-	return ret;
 }
 
 static int _cal_time_get_like_utzid(UChar *utzid, int len, const char *tzid, calendar_record_h timezone, char **like_tzid)
@@ -296,9 +314,14 @@ static int _cal_time_get_like_utzid(UChar *utzid, int len, const char *tzid, cal
 			}
 		}
 
-		if (is_found)
-		{
+		if (is_found) {
 			_like_tzid = (char *)calloc(unicode_tzid->length() +1, sizeof(char));
+			if (NULL == _like_tzid) {
+				ERR("calloc() Fail");
+				delete _timezone;
+				delete s;
+				return CALENDAR_ERROR_OUT_OF_MEMORY;
+			}
 			for (i = 0; i < unicode_tzid->length(); i++)
 			{
 				_like_tzid[i] = unicode_tzid->charAt(i);
@@ -940,7 +963,6 @@ void cal_time_get_datetime(long long int t, int *y, int *m, int *d, int *h, int 
 {
 	UErrorCode status = U_ZERO_ERROR;
 	UCalendar *ucal = __get_gmt_ucal();
-
 	ucal_setMillis(ucal, sec2ms(t), &status);
 	if (y) *y = ucal_get(ucal, UCAL_YEAR, &status);
 	if (m) *m = ucal_get(ucal, UCAL_MONTH, &status) + 1;
@@ -948,7 +970,7 @@ void cal_time_get_datetime(long long int t, int *y, int *m, int *d, int *h, int 
 	if (h) *h = ucal_get(ucal, UCAL_HOUR_OF_DAY, &status);
 	if (n) *n = ucal_get(ucal, UCAL_MINUTE, &status);
 	if (s) *s = ucal_get(ucal, UCAL_SECOND, &status);
-	DBG("%04d%02d%02dT%02d%02d%02d", *y, *m, *d, *h, *n, *s);
+	ucal_close(ucal);
 }
 
 void cal_time_get_local_datetime(char *tzid, long long int t, int *y, int *m, int *d, int *h, int *n, int *s)

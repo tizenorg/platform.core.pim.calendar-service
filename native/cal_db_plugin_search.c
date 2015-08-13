@@ -501,7 +501,7 @@ static int _cal_db_search_make_projection(calendar_query_h query, char **project
 		}
 	}
 
-	*projection = strdup(out_projection);
+	*projection = g_strdup(out_projection);
 
 	return CALENDAR_ERROR_NONE;
 }

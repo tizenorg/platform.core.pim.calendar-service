@@ -55,24 +55,24 @@ int cal_client_ipc_connect(void)
 	int ret = CALENDAR_ERROR_NONE;
 	pims_ipc_data_h outdata = NULL;
 
-	if (NULL == cal_ipc) {
-		char sock_file[CAL_PATH_MAX_LEN] = {0};
-		snprintf(sock_file, sizeof(sock_file), CAL_SOCK_PATH"/.%s", getuid(), CAL_IPC_SERVICE);
-		cal_ipc = pims_ipc_create(sock_file);
-		if (NULL == cal_ipc) {
-			if (EACCES == errno) {
-				ERR("[GLOBAL_IPC_CHANNEL] pims_ipc_create() Fail(%d)", CALENDAR_ERROR_PERMISSION_DENIED);
-				return CALENDAR_ERROR_PERMISSION_DENIED;
-			}
-			else {
-				ERR("[GLOBAL_IPC_CHANNEL] pims_ipc_create() Fail(%d)", CALENDAR_ERROR_IPC);
-				return CALENDAR_ERROR_IPC;
-			}
-		}
-	}
-	else {
-		DBG("[GLOBAL_IPC_CHANNEL] calendar already connected");
+	if (cal_ipc) {
+		CAL_DBG("[GLOBAL_IPC_CHANNEL] calendar already connected");
 		return CALENDAR_ERROR_NONE;
+	}
+
+	char sock_file[CAL_PATH_MAX_LEN] = {0};
+	snprintf(sock_file, sizeof(sock_file), CAL_SOCK_PATH"/.%s", getuid(), CAL_IPC_SERVICE);
+	cal_ipc = pims_ipc_create(sock_file);
+	DBG("[%s]", sock_file);
+	if (NULL == cal_ipc) {
+		if (EACCES == errno) {
+			ERR("[GLOBAL_IPC_CHANNEL] pims_ipc_create() Fail(%d)", CALENDAR_ERROR_PERMISSION_DENIED);
+			return CALENDAR_ERROR_PERMISSION_DENIED;
+		}
+		else {
+			ERR("[GLOBAL_IPC_CHANNEL] pims_ipc_create() Fail(%d)", CALENDAR_ERROR_IPC);
+			return CALENDAR_ERROR_IPC;
+		}
 	}
 
 	if (pims_ipc_call(cal_ipc, CAL_IPC_MODULE, CAL_IPC_SERVER_CONNECT, NULL, &outdata) != 0) {
@@ -138,6 +138,11 @@ int cal_client_ipc_connect_on_thread(void)
 	CAL_FN_CALL();
 
 	// ipc create
+	if (cal_ipc_thread) {
+		CAL_DBG("calendar already connected");
+		return CALENDAR_ERROR_NONE;
+	}
+
 	if (cal_ipc_thread == NULL) {
 		char sock_file[CAL_PATH_MAX_LEN] = {0};
 		snprintf(sock_file, sizeof(sock_file), CAL_SOCK_PATH"/.%s", getuid(), CAL_IPC_SERVICE);

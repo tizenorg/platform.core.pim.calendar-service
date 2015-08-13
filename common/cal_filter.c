@@ -103,6 +103,7 @@ static int _cal_filter_create_attribute(cal_composite_filter_s *com_filter, unsi
 			CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter :Please check the operator of filter");
 
 	filter = calloc(1, sizeof(cal_attribute_filter_s));
+	RETVM_IF(NULL == filter, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc() Fail");
 	filter->filter_type = filter_type;
 	filter->property_id = property_id;
 	filter->match = match;
