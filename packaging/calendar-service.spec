@@ -87,7 +87,6 @@ cp LICENSE.APLv2 %{buildroot}/usr/share/license/%{name}
 %defattr(-,root,root,-)
 %{_bindir}/calendar-serviced*
 %{_libdir}/libcalendar-service2.so.*
-%config(noreplace) /opt/usr/dbspace/.calendar-svc.db*
 %{_unitdir_user}/default.target.wants/calendar-serviced.service
 %{_unitdir_user}/calendar-serviced.service
 %{_unitdir_user}/sockets.target.wants/calendar-serviced.socket
