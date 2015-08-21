@@ -212,21 +212,20 @@ int cal_db_alarm_get_records(int parent, cal_list_s *list)
 				switch (strlen((const char*)temp)) {
 				case 8:
 					sscanf((const char *)temp, CAL_DATETIME_FORMAT_YYYYMMDD, &y, &m, &d);
-					alarm->alarm.time.date.year = y;
-					alarm->alarm.time.date.month = m;
-					alarm->alarm.time.date.mday = d;
 					break;
-
 				case 15:
 					sscanf((const char *)temp, CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS, &y, &m, &d, &h, &n, &s);
-					alarm->alarm.time.date.year = y;
-					alarm->alarm.time.date.month = m;
-					alarm->alarm.time.date.mday = d;
-					alarm->alarm.time.date.hour = h;
-					alarm->alarm.time.date.minute = n;
-					alarm->alarm.time.date.second = s;
+					break;
+				case 19:
+					sscanf((const char *)temp, CAL_FORMAT_LOCAL_DATETIME, &y, &m, &d, &h, &n, &s);
 					break;
 				}
+				alarm->alarm.time.date.year = y;
+				alarm->alarm.time.date.month = m;
+				alarm->alarm.time.date.mday = d;
+				alarm->alarm.time.date.hour = h;
+				alarm->alarm.time.date.minute = n;
+				alarm->alarm.time.date.second = s;
 			}
 		}
 		calendar_list_add((calendar_list_h)list, record);
