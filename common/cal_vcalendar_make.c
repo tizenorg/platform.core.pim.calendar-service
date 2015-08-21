@@ -797,9 +797,7 @@ static void __make_dtstart(cal_make_s *b, calendar_record_h record)
 		RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_caltime() Fail(%d)", ret);
 		break;
 	}
-	if (tzid && *tzid) {
-		_cal_vcalendar_make_time(b, tzid, &ct, "DTSTART");
-	}
+	_cal_vcalendar_make_time(b, tzid, &ct, "DTSTART");
 }
 
 static void __make_dtend(cal_make_s *b, calendar_record_h record)
@@ -816,18 +814,14 @@ static void __make_dtend(cal_make_s *b, calendar_record_h record)
 		RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_str_p() Fail(%d)", ret);
 		ret = calendar_record_get_caltime(record, _calendar_event.end_time, &ct);
 		RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_caltime() Fail(%d)", ret);
-		if (tzid && *tzid) {
-			_cal_vcalendar_make_time(b, tzid, &ct, "DTEND");
-		}
+		_cal_vcalendar_make_time(b, tzid, &ct, "DTEND");
 		break;
 	case CALENDAR_BOOK_TYPE_TODO:
 		ret = calendar_record_get_str_p(record, _calendar_todo.due_tzid, &tzid);
 		RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_str_p() Fail(%d)", ret);
 		ret = calendar_record_get_caltime(record, _calendar_todo.due_time, &ct);
 		RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_caltime() Fail(%d)", ret);
-		if (tzid && *tzid) {
-			_cal_vcalendar_make_time(b, tzid, &ct, "DUE");
-		}
+		_cal_vcalendar_make_time(b, tzid, &ct, "DUE");
 		break;
 	}
 }
