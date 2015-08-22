@@ -274,7 +274,10 @@ int cal_time_init(void)
 	pthread_mutex_lock(&cal_mutex_gmt);
 	if (NULL == _g_ucal_gmt) {
 		ucal = cal_time_open_ucal(-1, NULL, -1);
-		RETVM_IF(NULL == ucal, CALENDAR_ERROR_SYSTEM, "cal_time_open_ucal() Fail");
+		if (NULL == ucal) {
+			pthread_mutex_unlock(&cal_mutex_gmt);
+			return CALENDAR_ERROR_SYSTEM;
+		}
 		_g_ucal_gmt = ucal;
 	}
 	pthread_mutex_unlock(&cal_mutex_gmt);
@@ -293,11 +296,9 @@ void cal_time_fini(void)
 
 static UCalendar* __get_gmt_ucal(void)
 {
-	pthread_mutex_lock(&cal_mutex_gmt);
 	if (NULL == _g_ucal_gmt) {
 		cal_time_init();
 	}
-	pthread_mutex_unlock(&cal_mutex_gmt);
 	return _g_ucal_gmt;
 }
 
@@ -373,7 +374,7 @@ void cal_time_get_nth_wday(long long int t, int *nth, int *wday)
 void cal_time_get_datetime(long long int t, int *y, int *m, int *d, int *h, int *n, int *s)
 {
 	UErrorCode status = U_ZERO_ERROR;
-	UCalendar *ucal = __get_gmt_ucal();
+	UCalendar *ucal = cal_time_open_ucal(-1, NULL, -1);
 	if (NULL == ucal) {
 		ERR("__get_gmt_ucal() Fail");
 		return;
