@@ -34,7 +34,7 @@ API int calendar_list_create(calendar_list_h* out_list)
 
 	l = calloc(1, sizeof(cal_list_s));
 	if (l == NULL) {
-		ERR("Failed to calloc");
+		ERR("calloc() Fail");
 		return CALENDAR_ERROR_OUT_OF_MEMORY;
 	}
 
@@ -334,7 +334,7 @@ int cal_list_clear(cal_list_s *list_s)
 	while (CALENDAR_ERROR_NONE == calendar_list_get_current_record_p(list, &record)) {
 		ret = calendar_list_remove(list, record);
 		if (CALENDAR_ERROR_NONE != ret) {
-			ERR("calendar_list_remove() Failed(%d)", ret);
+			ERR("calendar_list_remove() Fail(%d)", ret);
 			break;
 		}
 	}

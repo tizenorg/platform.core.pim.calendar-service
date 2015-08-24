@@ -166,7 +166,7 @@ static int _cal_db_timezone_insert_record(calendar_record_h record, int* id)
 			timezone->calendar_id);
 
 	stmt = cal_db_util_query_prepare(query);
-	RETVM_IF(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "cal_db_util_query_prepare() Failed");
+	RETVM_IF(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "cal_db_util_query_prepare() Fail");
 
 	if (timezone->standard_name)
 		cal_db_util_stmt_bind_text(stmt, 1, timezone->standard_name);
@@ -178,7 +178,7 @@ static int _cal_db_timezone_insert_record(calendar_record_h record, int* id)
 	if (CAL_DB_DONE != dbret)
 	{
 		sqlite3_finalize(stmt);
-		ERR("cal_db_util_stmt_step() Failed(%d)", dbret);
+		ERR("cal_db_util_stmt_step() Fail(%d)", dbret);
 		switch (dbret)
 		{
 		case CAL_DB_ERROR_NO_SPACE:
@@ -220,7 +220,7 @@ static int _cal_db_timezone_get_record(int id, calendar_record_h* out_record)
 	stmt = cal_db_util_query_prepare(query);
 	if (NULL == stmt)
 	{
-		ERR("cal_db_util_query_prepare() Failed");
+		ERR("cal_db_util_query_prepare() Fail");
 		calendar_record_destroy(*out_record, true);
 		*out_record = NULL;
 		return CALENDAR_ERROR_DB_FAILED;
@@ -298,7 +298,7 @@ static int _cal_db_timezone_update_record(calendar_record_h record)
 			timezone_info->index);
 
 	stmt = cal_db_util_query_prepare(query);
-	RETVM_IF(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "cal_qcal_db_util_query_prepareuery_prepare() Failed");
+	RETVM_IF(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "cal_qcal_db_util_query_prepareuery_prepare() Fail");
 
 	if (timezone_info->standard_name)
 		cal_db_util_stmt_bind_text(stmt, 1, timezone_info->standard_name);
@@ -310,7 +310,7 @@ static int _cal_db_timezone_update_record(calendar_record_h record)
 	if (CAL_DB_DONE != dbret)
 	{
 		sqlite3_finalize(stmt);
-		ERR("cal_db_util_stmt_step() Failed(%d)", dbret);
+		ERR("cal_db_util_stmt_step() Fail(%d)", dbret);
 		switch (dbret)
 		{
 		case CAL_DB_ERROR_NO_SPACE:
@@ -334,7 +334,7 @@ static int _cal_db_timezone_delete_record(int id)
 	dbret = cal_db_util_query_exec(query);
 	if(CAL_DB_OK != dbret)
 	{
-		ERR("cal_db_util_query_exec() Failed(%d)", dbret);
+		ERR("cal_db_util_query_exec() Fail(%d)", dbret);
 		switch (dbret)
 		{
 		case CAL_DB_ERROR_NO_SPACE:
@@ -393,7 +393,7 @@ static int _cal_db_timezone_replace_record(calendar_record_h record, int id)
 			id);
 
 	stmt = cal_db_util_query_prepare(query);
-	RETVM_IF(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "cal_qcal_db_util_query_prepareuery_prepare() Failed");
+	RETVM_IF(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "cal_qcal_db_util_query_prepareuery_prepare() Fail");
 
 	if (timezone_info->standard_name)
 		cal_db_util_stmt_bind_text(stmt, 1, timezone_info->standard_name);
@@ -405,7 +405,7 @@ static int _cal_db_timezone_replace_record(calendar_record_h record, int id)
 	sqlite3_finalize(stmt);
 	if (CAL_DB_DONE != dbret)
 	{
-		ERR("cal_db_util_stmt_step() Failed(%d)", dbret);
+		ERR("cal_db_util_stmt_step() Fail(%d)", dbret);
 		switch (dbret)
 		{
 		case CAL_DB_ERROR_NO_SPACE:
@@ -451,7 +451,7 @@ static int _cal_db_timezone_get_all_records(int offset, int limit, calendar_list
 
 	if (NULL == stmt)
 	{
-		ERR("cal_db_util_query_prepare() Failed");
+		ERR("cal_db_util_query_prepare() Fail");
 		calendar_list_destroy(*out_list, true);
 		*out_list = NULL;
 		return CALENDAR_ERROR_DB_FAILED;
@@ -576,7 +576,7 @@ static int _cal_db_timezone_get_records_with_query(calendar_query_h query, int o
 			bind_text = NULL;
 		}
 		CAL_FREE(query_str);
-		ERR("cal_db_util_query_prepare() Failed");
+		ERR("cal_db_util_query_prepare() Fail");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 
@@ -599,7 +599,7 @@ static int _cal_db_timezone_get_records_with_query(calendar_query_h query, int o
 			bind_text = NULL;
 		}
 		CAL_FREE(query_str);
-		ERR("calendar_list_create() Failed");
+		ERR("calendar_list_create() Fail");
 		sqlite3_finalize(stmt);
 		return ret;
 	}
@@ -1026,7 +1026,7 @@ static int _cal_db_timezone_update_projection(calendar_record_h record)
 	DBG("%s",query);
 	stmt = cal_db_util_query_prepare(query);
 	if (NULL == stmt) {
-		ERR("cal_db_util_query_prepare() Failed");
+		ERR("cal_db_util_query_prepare() Fail");
 		CAL_FREE(set);
 		if(bind_text)
 		{
@@ -1050,7 +1050,7 @@ static int _cal_db_timezone_update_projection(calendar_record_h record)
 	if (CAL_DB_DONE != dbret)
 	{
 		sqlite3_finalize(stmt);
-		ERR("cal_db_util_stmt_step() Failed(%d)", dbret);
+		ERR("cal_db_util_stmt_step() Fail(%d)", dbret);
 
 		CAL_FREE(set);
 		if(bind_text)

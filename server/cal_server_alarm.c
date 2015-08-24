@@ -73,7 +73,7 @@ static int _cal_server_alarm_unset_alerted_alarmmgr_id(int alarm_id)
 	dbret = cal_db_util_query_exec(query);
 	if (CAL_DB_OK != dbret)
 	{
-		ERR("cal_db_util_query_exec() Failed(%d)", dbret);
+		ERR("cal_db_util_query_exec() Fail(%d)", dbret);
 		switch (dbret)
 		{
 		case CAL_DB_ERROR_NO_SPACE:
@@ -127,7 +127,7 @@ static int _cal_server_alarm_update_alarm_id(int alarm_id, int event_id, int tic
 	dbret = cal_db_util_query_exec(query);
 	if (CAL_DB_OK != dbret)
 	{
-		ERR("cal_db_util_query_exec() Failed(%d)", dbret);
+		ERR("cal_db_util_query_exec() Fail(%d)", dbret);
 		switch (dbret)
 		{
 		case CAL_DB_ERROR_NO_SPACE:
@@ -216,7 +216,7 @@ static int _cal_server_alarm_get_alert_time(int alarm_id, time_t *tt_alert)
 
 	sqlite3_stmt *stmt = NULL;
 	stmt = cal_db_util_query_prepare(query);
-	RETVM_IF(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "cal_db_util_query_prepare() Failed");
+	RETVM_IF(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "cal_db_util_query_prepare() Fail");
 
 	int event_id = 0;
 	int unit = 0;
@@ -330,7 +330,7 @@ static void _cal_server_alarm_get_upcoming_specific_utime(time_t utime, bool get
 	sqlite3_stmt *stmt = NULL;
 	stmt = cal_db_util_query_prepare(query_specific_utime);
 	if (NULL == stmt) {
-		ERR("cal_db_util_query_prepare() Failed");
+		ERR("cal_db_util_query_prepare() Fail");
 		ERR("[%s]", query_specific_utime);
 		return;
 	}
@@ -376,7 +376,7 @@ static void _cal_server_alarm_get_upcoming_specific_localtime(const char *dateti
 	sqlite3_stmt *stmt = NULL;
 	stmt = cal_db_util_query_prepare(query_specific_localtime);
 	if (NULL == stmt) {
-		ERR("cal_db_util_query_prepare() Failed");
+		ERR("cal_db_util_query_prepare() Fail");
 		ERR("[%s]", query_specific_localtime);
 		return;
 	}
@@ -434,7 +434,7 @@ static void _cal_server_alarm_get_upcoming_nonspecific_event_utime(time_t utime,
 	sqlite3_stmt *stmt = NULL;
 	stmt = cal_db_util_query_prepare(query_nonspecific_event_utime);
 	if (NULL == stmt) {
-		ERR("cal_db_util_query_prepare() Failed");
+		ERR("cal_db_util_query_prepare() Fail");
 		ERR("[%s]", query_nonspecific_event_utime);
 		return;
 	}
@@ -481,7 +481,7 @@ static void _cal_server_alarm_get_upcoming_nonspecific_event_localtime(const cha
 	sqlite3_stmt *stmt = NULL;
 	stmt = cal_db_util_query_prepare(query_nonspecific_event_localtime);
 	if (NULL == stmt) {
-		ERR("cal_db_util_query_prepare() Failed");
+		ERR("cal_db_util_query_prepare() Fail");
 		ERR("[%s]", query_nonspecific_event_localtime);
 		return;
 	}
@@ -540,7 +540,7 @@ static void _cal_server_alarm_get_upcoming_nonspecific_todo_utime(time_t utime, 
 	sqlite3_stmt *stmt = NULL;
 	stmt = cal_db_util_query_prepare(query_nonspecific_todo_utime);
 	if (NULL == stmt) {
-		ERR("cal_db_util_query_prepare() Failed");
+		ERR("cal_db_util_query_prepare() Fail");
 		ERR("[%s]", query_nonspecific_todo_utime);
 		return;
 	}
@@ -588,7 +588,7 @@ static void _cal_server_alarm_get_upcoming_nonspecific_todo_localtime(const char
 	sqlite3_stmt *stmt = NULL;
 	stmt = cal_db_util_query_prepare(query_nonspecific_todo_localtime);
 	if (NULL == stmt) {
-		ERR("cal_db_util_query_prepare() Failed");
+		ERR("cal_db_util_query_prepare() Fail");
 		ERR("[%s]", query_nonspecific_todo_localtime);
 		return;
 	}
@@ -749,7 +749,7 @@ static bool __app_matched_cb(app_control_h app_control, const char *package, voi
 	int ret = 0;
 	char *mime = NULL;
 	ret = app_control_get_mime(app_control, &mime);
-	RETVM_IF(APP_CONTROL_ERROR_NONE != ret, true, "app_control_get_mime() is failed(%d)", ret);
+	RETVM_IF(APP_CONTROL_ERROR_NONE != ret, true, "app_control_get_mime() Fail(%d)", ret);
 
 	const char *reminder_mime = "application/x-tizen.calendar.reminder";
 	if (strncmp(mime, reminder_mime, strlen(reminder_mime))) { // not same
@@ -776,7 +776,7 @@ static bool __app_matched_cb(app_control_h app_control, const char *package, voi
 	char **ids = NULL;
 	ids = calloc(len, sizeof(char *));
 	if (NULL == ids) {
-		ERR("calloc() is failed");
+		ERR("calloc() Fail");
 		app_control_destroy(b);
 		return CALENDAR_ERROR_DB_FAILED;
 	}
@@ -953,7 +953,7 @@ static void _cal_server_alarm_timechange_cb(keynode_t *node, void *data)
 	else
 	{
 		ret = vconf_get_int(VCONFKEY_SYSTEM_TIMECHANGE, &t);
-		WARN_IF(0 < ret, "vconf_get_int() Failed");
+		WARN_IF(0 < ret, "vconf_get_int() Fail");
 	}
 
 	if (t < 0)

@@ -44,7 +44,7 @@ int calendar_db_delete_account(int account_id)
 	stmt = cal_db_util_query_prepare(query);
 	if (NULL == stmt)
 	{
-		ERR("cal_db_util_query_prepare() Failed");
+		ERR("cal_db_util_query_prepare() Fail");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 

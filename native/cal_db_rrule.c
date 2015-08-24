@@ -97,7 +97,7 @@ void cal_db_rrule_get_rrule_from_event(calendar_record_h event, cal_rrule_s **rr
 	}
 
 	_rrule = calloc(1, sizeof(cal_rrule_s));
-	RETM_IF(_rrule == NULL, "Failed to calloc");
+	RETM_IF(_rrule == NULL, "calloc() Fail");
 
 	_rrule->freq = _event->freq;
 
@@ -190,7 +190,7 @@ void cal_db_rrule_get_rrule_from_todo(calendar_record_h todo, cal_rrule_s **rrul
 	_todo = (cal_todo_s *)todo;
 
 	_rrule = calloc(1, sizeof(cal_rrule_s));
-	RETM_IF(_rrule == NULL,	"Failed to calloc");
+	RETM_IF(_rrule == NULL,	"calloc() Fail");
 
 	_rrule->freq = _todo->freq;
 	_rrule->range_type = _todo->range_type;
@@ -248,7 +248,7 @@ int _cal_db_rrule_insert_record(int id, cal_rrule_s *rrule)
 	stmt = cal_db_util_query_prepare(query);
 	if (NULL == stmt) {
 		DBG("query[%s]", query);
-		ERR("cal_db_util_query_prepare() Failed");
+		ERR("cal_db_util_query_prepare() Fail");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 
@@ -305,7 +305,7 @@ int _cal_db_rrule_insert_record(int id, cal_rrule_s *rrule)
 	dbret = cal_db_util_stmt_step(stmt);
 	sqlite3_finalize(stmt);
 	if (CAL_DB_OK != dbret) {
-		ERR("cal_db_util_stmt_step() Failed(%d)", dbret);
+		ERR("cal_db_util_stmt_step() Fail(%d)", dbret);
 		switch (dbret) {
 		case CAL_DB_ERROR_NO_SPACE:
 			return CALENDAR_ERROR_FILE_NO_SPACE;
@@ -337,7 +337,7 @@ int cal_db_rrule_get_rrule(int id, cal_rrule_s **rrule)
 
 	stmt = cal_db_util_query_prepare(query);
 	if (NULL == stmt) {
-		ERR("cal_db_util_query_prepare() Failed");
+		ERR("cal_db_util_query_prepare() Fail");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 
@@ -356,7 +356,7 @@ int cal_db_rrule_get_rrule(int id, cal_rrule_s **rrule)
 
 	_rrule = calloc(1, sizeof(cal_rrule_s));
 	RETVM_IF(_rrule == NULL, CALENDAR_ERROR_OUT_OF_MEMORY,
-			"Failed to calloc");
+			"calloc() Fail");
 
 	index = 0;
 	sqlite3_column_int(stmt, index++); // id
@@ -428,7 +428,7 @@ static int _cal_db_rrule_delete_record(int id)
 
 	dbret = cal_db_util_query_exec(query);
 	if(CAL_DB_DONE != dbret) {
-		ERR("cal_db_util_query_exec() Failed");
+		ERR("cal_db_util_query_exec() Fail");
 		switch (dbret)
 		{
 		case CAL_DB_ERROR_NO_SPACE:
@@ -500,7 +500,7 @@ static int _cal_db_rrule_update_record(int id, cal_rrule_s *rrule)
 	stmt = cal_db_util_query_prepare(query);
 	if (NULL == stmt) {
 		DBG("query[%s]", query);
-		ERR("cal_db_util_query_prepare() Failed");
+		ERR("cal_db_util_query_prepare() Fail");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 
@@ -556,7 +556,7 @@ static int _cal_db_rrule_update_record(int id, cal_rrule_s *rrule)
 	dbret = cal_db_util_stmt_step(stmt);
 	sqlite3_finalize(stmt);
 	if (CAL_DB_DONE != dbret) {
-		ERR("sqlite3_step() Failed(%d)", dbret);
+		ERR("sqlite3_step() Fail(%d)", dbret);
 		switch (dbret) {
 		case CAL_DB_ERROR_NO_SPACE:
 			return CALENDAR_ERROR_FILE_NO_SPACE;

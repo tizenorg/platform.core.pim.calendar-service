@@ -137,7 +137,7 @@ static int _cal_db_instance_parse_byint(char *byint, int *by, int *len)
 
 	char **t = NULL;
 	t = g_strsplit_set(byint, " ,", -1);
-	RETVM_IF(NULL == t, CALENDAR_ERROR_OUT_OF_MEMORY, "g_strsplit_set() is failed");
+	RETVM_IF(NULL == t, CALENDAR_ERROR_OUT_OF_MEMORY, "g_strsplit_set() Fail");
 
 	int length = g_strv_length(t);
 	int i;
@@ -216,7 +216,7 @@ static int __get_exdate_list(UCalendar *ucal, cal_event_s *event, GList **l, int
 
 	char **t = NULL;
 	t = g_strsplit_set(event->exdate, " ,", -1);
-	RETVM_IF(NULL == t, CALENDAR_ERROR_OUT_OF_MEMORY, "g_strsplit_set() is failed");;
+	RETVM_IF(NULL == t, CALENDAR_ERROR_OUT_OF_MEMORY, "g_strsplit_set() Fail");;
 
 	DBG("[%s]", event->exdate);
 	int len = 0;
@@ -288,7 +288,7 @@ static int _cal_db_instance_update_exdate_mod(int original_event_id, char *recur
 
 	DBG("recurrence_id[%s]", recurrence_id);
 	t = g_strsplit_set(recurrence_id, " ,", -1);
-	RETVM_IF(NULL == t, CALENDAR_ERROR_OUT_OF_MEMORY, "g_strsplit_set() is failed");;
+	RETVM_IF(NULL == t, CALENDAR_ERROR_OUT_OF_MEMORY, "g_strsplit_set() Fail");;
 
 	for (i = 0; t[i]; i++)
 	{

@@ -422,12 +422,12 @@ API int calendar_db_get_changes_by_version(const char* view_uri, int calendar_bo
 	SEC_DBG("query[%s]", query);
 
 	ret = calendar_list_create(record_list);
-	RETVM_IF(ret != CALENDAR_ERROR_NONE, ret, "calendar_list_create() Failed");
+	RETVM_IF(ret != CALENDAR_ERROR_NONE, ret, "calendar_list_create() Fail");
 
 	stmt = cal_db_util_query_prepare(query);
 	if (NULL == stmt)
 	{
-		ERR("cal_db_util_query_prepare() Failed");
+		ERR("cal_db_util_query_prepare() Fail");
 		calendar_list_destroy(*record_list, true);
 		*record_list = NULL;
 		return CALENDAR_ERROR_DB_FAILED;
@@ -1320,12 +1320,12 @@ API int calendar_db_get_changes_exception_by_version(const char* view_uri, int o
 	SEC_DBG("query[%s]", query);
 
 	ret = calendar_list_create(record_list);
-	RETVM_IF(ret != CALENDAR_ERROR_NONE, ret, "calendar_list_create() Failed");
+	RETVM_IF(ret != CALENDAR_ERROR_NONE, ret, "calendar_list_create() Fail");
 
 	stmt = cal_db_util_query_prepare(query);
 	if (NULL == stmt)
 	{
-		ERR("cal_db_util_query_prepare() Failed");
+		ERR("cal_db_util_query_prepare() Fail");
 		calendar_list_destroy(*record_list, true);
 		*record_list = NULL;
 		return CALENDAR_ERROR_DB_FAILED;

@@ -245,7 +245,7 @@ int cal_inotify_initialize(void)
 	inoti_handler = _inotify_attach_handler(inoti_fd);
 	if (inoti_handler <= 0)
 	{
-		ERR("_inotify_attach_handler() Failed");
+		ERR("_inotify_attach_handler() Fail");
 		close(inoti_fd);
 		inoti_fd = -1;
 		inoti_handler = 0;

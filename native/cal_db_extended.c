@@ -122,7 +122,7 @@ int cal_db_extended_insert_record(calendar_record_h record, int record_id, calen
 	stmt = cal_db_util_query_prepare(query);
 	if (NULL == stmt)
 	{
-		ERR("cal_db_util_query_prepare() Failed");
+		ERR("cal_db_util_query_prepare() Fail");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 
@@ -136,7 +136,7 @@ int cal_db_extended_insert_record(calendar_record_h record, int record_id, calen
 	if (CAL_DB_DONE != dbret)
 	{
 		sqlite3_finalize(stmt);
-		ERR("cal_db_util_stmt_step() Failed(%d)", dbret);
+		ERR("cal_db_util_stmt_step() Fail(%d)", dbret);
 		switch (dbret)
 		{
 		case CAL_DB_ERROR_NO_SPACE:
@@ -163,7 +163,7 @@ int cal_db_extended_insert_record(calendar_record_h record, int record_id, calen
 		dbret = cal_db_util_query_exec(query);
 		if(CAL_DB_OK != dbret)
 		{
-			ERR("cal_db_util_query_exec() Failed(%d)", dbret);
+			ERR("cal_db_util_query_exec() Fail(%d)", dbret);
 			switch (dbret)
 			{
 			case CAL_DB_ERROR_NO_SPACE:
@@ -192,7 +192,7 @@ int cal_db_extended_insert_records(cal_list_s *list_s, int record_id, calendar_r
 	calendar_list_first(list);
 	while (CALENDAR_ERROR_NONE == calendar_list_get_current_record_p(list, &record)) {
 		ret = cal_db_extended_insert_record(record, record_id, record_type, NULL);
-		RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_db_extended_insert_record() Failed(%d)", ret);
+		RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_db_extended_insert_record() Fail(%d)", ret);
 		calendar_list_next(list);
 	}
 	return CALENDAR_ERROR_NONE;

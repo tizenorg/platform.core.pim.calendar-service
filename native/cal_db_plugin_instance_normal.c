@@ -83,7 +83,7 @@ static int _cal_db_instance_normal_delete_record(int id)
 	dbret = cal_db_util_query_exec(query);
 	if (dbret != CAL_DB_OK)
 	{
-		ERR("cal_db_util_query_exec() Failed(%d)", dbret);
+		ERR("cal_db_util_query_exec() Fail(%d)", dbret);
 		switch (dbret)
 		{
 		case CAL_DB_ERROR_NO_SPACE:
@@ -122,7 +122,7 @@ static int _cal_db_instance_normal_get_all_records(int offset, int limit, calend
 	if (NULL == stmt)
 	{
 		SEC_ERR("[%s]", query_str);
-		ERR("cal_db_util_query_prepare() Failed");
+		ERR("cal_db_util_query_prepare() Fail");
 		calendar_list_destroy(*out_list, true);
 		*out_list = NULL;
 		CAL_FREE(query_str);
@@ -263,7 +263,7 @@ static int _cal_db_instance_normal_get_records_with_query(calendar_query_h query
 			bind_text = NULL;
 		}
 		CAL_FREE(query_str);
-		ERR("cal_db_util_query_prepare() Failed");
+		ERR("cal_db_util_query_prepare() Fail");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 	DBG("%s",query_str);
@@ -287,7 +287,7 @@ static int _cal_db_instance_normal_get_records_with_query(calendar_query_h query
 			g_slist_free_full(bind_text, free);
 			bind_text = NULL;
 		}
-		ERR("calendar_list_create() Failed");
+		ERR("calendar_list_create() Fail");
 		sqlite3_finalize(stmt);
 		CAL_FREE(query_str);
 		return ret;

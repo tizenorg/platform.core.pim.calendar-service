@@ -313,7 +313,7 @@ static int _cal_db_attendee_get_records_with_query(calendar_query_h query, int o
 			bind_text = NULL;
 		}
 		CAL_FREE(query_str);
-		ERR("cal_db_util_query_prepare() Failed");
+		ERR("cal_db_util_query_prepare() Fail");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 	DBG("%s",query_str);
@@ -332,7 +332,7 @@ static int _cal_db_attendee_get_records_with_query(calendar_query_h query, int o
 			bind_text = NULL;
 		}
 		CAL_FREE(query_str);
-		ERR("calendar_list_create() Failed");
+		ERR("calendar_list_create() Fail");
 		sqlite3_finalize(stmt);
 		return ret;
 	}

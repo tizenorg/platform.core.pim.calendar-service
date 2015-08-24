@@ -145,7 +145,7 @@ static int _cal_db_alarm_get_all_records(int offset, int limit, calendar_list_h*
 
 	stmt = cal_db_util_query_prepare(query);
 	if (NULL == stmt)	{
-		ERR("cal_db_util_query_prepare() Failed");
+		ERR("cal_db_util_query_prepare() Fail");
 		calendar_list_destroy(*out_list, true);
 		*out_list = NULL;
 		return CALENDAR_ERROR_DB_FAILED;
@@ -348,7 +348,7 @@ static int _cal_db_alarm_get_records_with_query(calendar_query_h query, int offs
 			bind_text = NULL;
 		}
 		CAL_FREE(query_str);
-		ERR("cal_db_util_query_prepare() Failed");
+		ERR("cal_db_util_query_prepare() Fail");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 	DBG("%s",query_str);
@@ -367,7 +367,7 @@ static int _cal_db_alarm_get_records_with_query(calendar_query_h query, int offs
 			bind_text = NULL;
 		}
 		CAL_FREE(query_str);
-		ERR("calendar_list_create() Failed");
+		ERR("calendar_list_create() Fail");
 		sqlite3_finalize(stmt);
 		return ret;
 	}

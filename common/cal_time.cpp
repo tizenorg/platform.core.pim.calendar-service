@@ -414,7 +414,7 @@ int cal_time_get_like_tzid(const char *tzid, calendar_record_h timezone, char **
 	utzid = (UChar *)calloc(strlen(tzid) + 1, sizeof(UChar));
 	if (utzid == NULL)
 	{
-		ERR("Failed to calloc");
+		ERR("calloc() Fail");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 	u_uastrcpy(utzid, tzid);
@@ -470,7 +470,7 @@ char* cal_time_extract_by(int calendar_system_type, const char *tzid, int wkst, 
 
 	ucal = cal_time_open_ucal(calendar_system_type, tzid, wkst);
 	if (NULL == ucal) {
-		ERR("cal_time_open_ucal() is failed");
+		ERR("cal_time_open_ucal() Fail");
 		return NULL;
 	}
 	cal_time_set_caltime(ucal, ct);
@@ -516,7 +516,7 @@ char* cal_time_convert_ltos(const char *tzid, long long int lli, int is_allday)
 	ucal = cal_time_get_ucal(tzid, -1);
 	ucal_setMillis(ucal, sec2ms(lli), &status);
 	if (U_FAILURE(status)) {
-		ERR("ucal_setMillis failed (%s)", u_errorName(status));
+		ERR("ucal_setMillFail (%s)", u_errorName(status));
 		ucal_close(ucal);
 		return NULL;
 	}
@@ -658,7 +658,7 @@ int cal_time_get_next_date(calendar_time_s *today, calendar_time_s *next)
 	utzid = (UChar *)calloc(strlen(tzid) + 1, sizeof(UChar));
 	if (utzid == NULL)
 	{
-		ERR("Failed to calloc");
+		ERR("calloc() Fail");
 		return CALENDAR_ERROR_OUT_OF_MEMORY;
 	}
 	u_uastrcpy(utzid, tzid);
@@ -866,7 +866,7 @@ int cal_time_init(void)
 
 	if (NULL == _g_ucal_gmt) {
 		ucal = cal_time_get_ucal(NULL, -1);
-		RETVM_IF(NULL == ucal, CALENDAR_ERROR_SYSTEM, "cal_time_get_ucal() is failed");
+		RETVM_IF(NULL == ucal, CALENDAR_ERROR_SYSTEM, "cal_time_get_ucal() Fail");
 		_g_ucal_gmt = ucal;
 	}
 	return CALENDAR_ERROR_NONE;

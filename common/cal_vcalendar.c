@@ -47,7 +47,7 @@ API int calendar_vcalendar_make_from_records(calendar_list_h list, char **vcalen
 
 	b = cal_vcalendar_make_new();
 	RETVM_IF(!b, CALENDAR_ERROR_OUT_OF_MEMORY,
-			"cal_vcalendar_make_new() Failed");
+			"cal_vcalendar_make_new() Fail");
 
 	ret = cal_vcalendar_make_vcalendar(b, list);
 
@@ -60,7 +60,7 @@ API int calendar_vcalendar_make_from_records(calendar_list_h list, char **vcalen
 	cal_vcalendar_make_free(&b);
 
 	if (!ical) {
-		ERR("Failed to get ical data");
+		ERR("cal_vcalendar_make_get_data() Fail");
 		return CALENDAR_ERROR_OUT_OF_MEMORY;
 	}
 
@@ -146,7 +146,7 @@ API int calendar_vcalendar_parse_to_calendar(const char* vcalendar_stream, calen
 
 	int ret = 0;
 	ret = calendar_list_create(&list);
-	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "Failed to calendar_list_create()");
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "calendar_list_create() Fail(%d)", ret);
 
 	cal_time_init();
 
@@ -190,7 +190,7 @@ API int calendar_vcalendar_parse_to_calendar_foreach(const char *vcalendar_file_
 	int ret = 0;
 	calendar_list_h list = NULL;
 	ret = calendar_list_create(&list);
-	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "Failed to calendar_list_create()");
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "calendar_list_create() Fail(%d)", ret);
 
 	file = fopen(vcalendar_file_path, "r");
 	if (file == NULL) {

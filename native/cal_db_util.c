@@ -126,7 +126,7 @@ int cal_db_util_open(void)
 		}
 		ret = db_util_open(CAL_DB_FILE, &cal_db, 0);
 		RETVM_IF(SQLITE_OK != ret, CALENDAR_ERROR_DB_FAILED,
-				"db_util_open() Failed(%d).", ret);
+				"db_util_open() Fail(%d).", ret);
 	}
 	return CALENDAR_ERROR_NONE;
 }
@@ -137,7 +137,7 @@ int cal_db_util_close(void)
 
 	if (cal_db) {
 		ret = db_util_close(cal_db);
-		WARN_IF(SQLITE_OK != ret, "db_util_close() Failed(%d)", ret);
+		WARN_IF(SQLITE_OK != ret, "db_util_close() Fail(%d)", ret);
 		cal_db = NULL;
 		DBG("The database disconnected really.");
 	}
@@ -247,13 +247,13 @@ cal_db_util_error_e cal_db_util_query_exec(char *query)
 	RETVM_IF(NULL == cal_db, CALENDAR_ERROR_DB_FAILED, "Database is not opended");
 
 	stmt = cal_db_util_query_prepare(query);
-	RETVM_IF(NULL == stmt, CAL_DB_ERROR_FAIL, "cal_db_util_query_prepare() Failed");
+	RETVM_IF(NULL == stmt, CAL_DB_ERROR_FAIL, "cal_db_util_query_prepare() Fail");
 
 	ret = cal_db_util_stmt_step(stmt);
 
 	if (CAL_DB_DONE != ret) {
 		sqlite3_finalize(stmt);
-		ERR("cal_db_util_stmt_step() Failed(%d)", ret);
+		ERR("cal_db_util_stmt_step() Fail(%d)", ret);
 		SEC_ERR("[ %s ]", query);
 		return ret;
 	}
@@ -341,7 +341,7 @@ cal_db_util_error_e cal_db_util_stmt_step(sqlite3_stmt *stmt)
 		ret = CAL_DB_DONE;
 		break;
 	default:
-		ERR("sqlite3_step() Failed(%d)", ret);
+		ERR("sqlite3_step() Fail(%d)", ret);
 		ret = CAL_DB_ERROR_FAIL;
 		break;
 	}
@@ -363,7 +363,7 @@ int cal_db_util_begin_trans(void)
 			ret = cal_db_util_query_exec("BEGIN IMMEDIATE TRANSACTION");
 			progress *= 2;
 		}
-		RETVM_IF(CAL_DB_OK != ret, ret, "cal_query_exec() Failed(%d)", ret);
+		RETVM_IF(CAL_DB_OK != ret, ret, "cal_query_exec() Fail(%d)", ret);
 
 		transaction_cnt = 0;
 		const char *query = "SELECT ver FROM "CAL_TABLE_VERSION;
@@ -405,7 +405,7 @@ int cal_db_util_end_trans(bool is_success)
 		snprintf(query, sizeof(query), "UPDATE %s SET ver = %d",
 				CAL_TABLE_VERSION, transaction_ver);
 		ret = cal_db_util_query_exec(query);
-		WARN_IF(CAL_DB_OK != ret, "cal_query_exec(version up) Failed(%d).", ret);
+		WARN_IF(CAL_DB_OK != ret, "cal_query_exec(version up) Fail(%d).", ret);
 	}
 
 	INFO("start commit");
@@ -421,10 +421,10 @@ int cal_db_util_end_trans(bool is_success)
 
 	if (CAL_DB_OK != ret) {
 		int tmp_ret;
-		ERR("cal_query_exec() Failed(%d)", ret);
+		ERR("cal_query_exec() Fail(%d)", ret);
 		_cal_db_util_cancel_changes();
 		tmp_ret = cal_db_util_query_exec("ROLLBACK TRANSACTION");
-		WARN_IF(CAL_DB_OK != tmp_ret, "cal_query_exec(ROLLBACK) Failed(%d).", tmp_ret);
+		WARN_IF(CAL_DB_OK != tmp_ret, "cal_query_exec(ROLLBACK) Fail(%d).", tmp_ret);
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 	if (event_change) _cal_db_util_notify_event_change();

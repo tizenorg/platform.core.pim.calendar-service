@@ -122,7 +122,7 @@ static int _cal_server_calendar_delete_step1(__calendar_delete_data_s* data)
 		stmt = cal_db_util_query_prepare(query);
 		if (NULL == stmt)
 		{
-			ERR("cal_db_util_query_prepare() Failed");
+			ERR("cal_db_util_query_prepare() Fail");
 			return CALENDAR_ERROR_DB_FAILED;
 		}
 		while(CAL_DB_ROW == cal_db_util_stmt_step(stmt))
@@ -181,7 +181,7 @@ static int _cal_server_calendar_delete_step2(__calendar_delete_data_s* data)
 	stmt = cal_db_util_query_prepare(query);
 	if (NULL == stmt)
 	{
-		ERR("cal_db_util_query_prepare() Failed");
+		ERR("cal_db_util_query_prepare() Fail");
 		cal_db_util_end_trans(false);
 		return CALENDAR_ERROR_DB_FAILED;
 	}

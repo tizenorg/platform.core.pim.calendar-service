@@ -393,7 +393,7 @@ int cal_client_db_replace_record(calendar_record_h record, int record_id)
 	return ret;
 }
 
-int cal_client_db_get_record( const char* view_uri, int id, calendar_record_h* out_record )
+int cal_client_db_get_record(const char* view_uri, int id, calendar_record_h* out_record)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	pims_ipc_data_h indata = NULL;
@@ -460,7 +460,7 @@ int cal_client_db_get_record( const char* view_uri, int id, calendar_record_h* o
 	return ret;
 }
 
-int cal_client_db_get_all_records( const char* view_uri, int offset, int limit, calendar_list_h* out_list )
+int cal_client_db_get_all_records(const char* view_uri, int offset, int limit, calendar_list_h* out_list)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	pims_ipc_data_h indata = NULL;
@@ -661,7 +661,7 @@ int cal_client_db_clean_after_sync(int book_id, int calendar_db_version)
 	return ret;
 }
 
-int cal_client_db_get_count( const char* view_uri, int *out_count )
+int cal_client_db_get_count(const char* view_uri, int *out_count)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	pims_ipc_data_h indata = NULL;
@@ -721,7 +721,7 @@ int cal_client_db_get_count( const char* view_uri, int *out_count )
 	return ret;
 }
 
-int cal_client_db_get_count_with_query( calendar_query_h query, int *out_count )
+int cal_client_db_get_count_with_query(calendar_query_h query, int *out_count)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	pims_ipc_data_h indata = NULL;
@@ -780,7 +780,7 @@ int cal_client_db_get_count_with_query( calendar_query_h query, int *out_count )
 	return ret;
 }
 
-int cal_client_db_insert_records( calendar_list_h record_list, int** record_id_array, int* count)
+int cal_client_db_insert_records(calendar_list_h record_list, int** record_id_array, int* count)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	pims_ipc_data_h indata = NULL;
@@ -1099,7 +1099,7 @@ int cal_client_db_replace_records(calendar_list_h record_list, int *record_id_ar
 	return ret;
 }
 
-int cal_client_db_get_changes_by_version(const char* view_uri, int calendar_book_id, int calendar_db_version, calendar_list_h* record_list, int* current_calendar_db_version )
+int cal_client_db_get_changes_by_version(const char* view_uri, int calendar_book_id, int calendar_db_version, calendar_list_h* record_list, int* current_calendar_db_version)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	pims_ipc_data_h indata = NULL;
@@ -1225,7 +1225,7 @@ int cal_client_db_get_current_version(int* calendar_db_version)
 	return ret;
 }
 
-int cal_client_db_add_changed_cb(const char* view_uri, calendar_db_changed_cb callback, void* user_data )
+int cal_client_db_add_changed_cb(const char* view_uri, calendar_db_changed_cb callback, void* user_data)
 {
 	CAL_FN_CALL();
 	int ret;
@@ -1250,12 +1250,12 @@ int cal_client_db_add_changed_cb(const char* view_uri, calendar_db_changed_cb ca
 		ERR("Invalid view_uri(%s)", view_uri);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_inotify_subscribe() Failed(%d)", ret);
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_inotify_subscribe() Fail(%d)", ret);
 
 	return CALENDAR_ERROR_NONE;
 }
 
-int cal_client_db_remove_changed_cb( const char* view_uri, calendar_db_changed_cb callback, void* user_data )
+int cal_client_db_remove_changed_cb(const char* view_uri, calendar_db_changed_cb callback, void* user_data)
 {
 	CAL_FN_CALL();
 	int ret;
@@ -1280,7 +1280,7 @@ int cal_client_db_remove_changed_cb( const char* view_uri, calendar_db_changed_c
 		ERR("Invalid view_uri(%s)", view_uri);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
-	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_inotify_unsubscribe_with_data() Failed(%d)", ret);
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_inotify_unsubscribe_with_data() Fail(%d)", ret);
 
 	return CALENDAR_ERROR_NONE;
 }

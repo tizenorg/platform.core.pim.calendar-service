@@ -149,11 +149,11 @@ int cal_client_ipc_connect_on_thread(void)
 		cal_ipc_thread = pims_ipc_create(sock_file);
 		if (cal_ipc_thread == NULL) {
 			if (errno == EACCES) {
-				ERR("pims_ipc_create() Failed(%d)", CALENDAR_ERROR_PERMISSION_DENIED);
+				ERR("pims_ipc_create() Fail(%d)", CALENDAR_ERROR_PERMISSION_DENIED);
 				ret = CALENDAR_ERROR_PERMISSION_DENIED;
 				goto ERROR_RETURN;
 			} else {
-				ERR("pims_ipc_create() Failed(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
+				ERR("pims_ipc_create() Fail(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
 				ret = CALENDAR_ERROR_OUT_OF_MEMORY;
 				goto ERROR_RETURN;
 			}

@@ -69,7 +69,7 @@ static int _cal_record_search_create(calendar_record_h* out_record)
 	int ret= CALENDAR_ERROR_NONE;
 
 	temp = calloc(1, sizeof(cal_search_s));
-	RETVM_IF(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc(cal_search_s:sch) Failed(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
+	RETVM_IF(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc(cal_search_s:sch) Fail(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
 
 	*out_record = (calendar_record_h)temp;
 
@@ -108,7 +108,7 @@ static int _cal_record_search_clone(calendar_record_h record, calendar_record_h*
 	src_data = (cal_search_s*)(record);
 
 	out_data = calloc(1, sizeof(cal_search_s));
-	RETVM_IF(NULL == out_data, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc(cal_search_s) Failed(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
+	RETVM_IF(NULL == out_data, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc(cal_search_s) Fail(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
 
 	CAL_RECORD_COPY_COMMON(&(out_data->common), &(src_data->common));
 
@@ -339,7 +339,7 @@ static int _cal_record_search_set_str(calendar_record_h record, unsigned int pro
 	}
 
 	data = calloc(1, sizeof(cal_search_value_s));
-	RETVM_IF(NULL == data, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc(cal_search_s) Failed");
+	RETVM_IF(NULL == data, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc(cal_search_s) Fail");
 	data->property_id = property_id;
 	data->value.s = SAFE_STRDUP(value);
 	rec->values = g_slist_append(rec->values, data);
@@ -372,7 +372,7 @@ static int _cal_record_search_set_int(calendar_record_h record, unsigned int pro
 	}
 
 	data = calloc(1, sizeof(cal_search_value_s));
-	RETVM_IF(NULL == data, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc(cal_search_s) Failed");
+	RETVM_IF(NULL == data, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc(cal_search_s) Fail");
 	data->property_id = property_id;
 	(data->value.i) = value;
 	rec->values = g_slist_append(rec->values, data);
@@ -405,7 +405,7 @@ static int _cal_record_search_set_double(calendar_record_h record, unsigned int 
 	}
 
 	data = calloc(1, sizeof(cal_search_value_s));
-	RETVM_IF(NULL == data, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc(cal_search_s) Failed");
+	RETVM_IF(NULL == data, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc(cal_search_s) Fail");
 	data->property_id = property_id;
 	(data->value.d) = value;
 	rec->values = g_slist_append(rec->values, data);
@@ -438,7 +438,7 @@ static int _cal_record_search_set_lli(calendar_record_h record, unsigned int pro
 	}
 
 	data = calloc(1, sizeof(cal_search_value_s));
-	RETVM_IF(NULL == data, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc(cal_search_s) Failed");
+	RETVM_IF(NULL == data, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc(cal_search_s) Fail");
 	data->property_id = property_id;
 	(data->value.lli) = value;
 	rec->values = g_slist_append(rec->values, data);
@@ -471,7 +471,7 @@ static int _cal_record_search_set_caltime(calendar_record_h record, unsigned int
 	}
 
 	data = calloc(1, sizeof(cal_search_value_s));
-	RETVM_IF(NULL == data, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc(cal_search_s) Failed");
+	RETVM_IF(NULL == data, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc(cal_search_s) Fail");
 	data->property_id = property_id;
 	(data->value.caltime) = value;
 	rec->values = g_slist_append(rec->values, data);

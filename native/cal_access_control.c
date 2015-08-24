@@ -287,13 +287,13 @@ int cal_is_owner(int calendarbook_id)
 			"WHERE id = %d", calendarbook_id);
 	stmt = cal_db_util_query_prepare(query);
 	if (NULL == stmt) {
-		ERR("DB error : cal_db_util_query_prepare() Failed()");
+		ERR("DB error : cal_db_util_query_prepare() Fail()");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 
 	ret = cal_db_util_stmt_step(stmt);
 	if (CAL_DB_ROW != ret) {
-		ERR("cal_db_util_stmt_step() Failed(%d)", ret);
+		ERR("cal_db_util_stmt_step() Fail(%d)", ret);
 		sqlite3_finalize(stmt);
 		return CALENDAR_ERROR_DB_FAILED;
 	}

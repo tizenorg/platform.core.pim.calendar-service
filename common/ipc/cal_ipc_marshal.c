@@ -488,7 +488,7 @@ int cal_ipc_unmarshal_char(const pims_ipc_data_h ipc_data, char** ppbufchar)
 	RETV_IF(NULL == ppbufchar, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	tmp = pims_ipc_data_get(ipc_data,&size);
-	if ( tmp == NULL) {
+	if (tmp == NULL) {
 		ERR("pims_ipc_data_get fail");
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}

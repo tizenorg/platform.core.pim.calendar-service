@@ -66,7 +66,7 @@ int cal_db_event_update_original_event_version(int original_event_id, int versio
 
 		dbret = cal_db_util_query_exec(query);
 		if (CAL_DB_DONE != dbret) {
-			ERR("cal_db_util_query_exec() Failed");
+			ERR("cal_db_util_query_exec() Fail");
 			switch (dbret) {
 			case CAL_DB_ERROR_NO_SPACE:
 				return CALENDAR_ERROR_FILE_NO_SPACE;
@@ -156,7 +156,7 @@ GList* cal_db_event_get_list_with_uid(char *uid, int parent_id)
 			CAL_TABLE_SCHEDULE, uid, parent_id);
 	stmt = cal_db_util_query_prepare(query);
 	if (NULL == stmt) {
-		ERR("cal_db_util_query_prepare() is failed");
+		ERR("cal_db_util_query_prepare() Fail");
 		return NULL;
 	}
 	GList *l = NULL;
@@ -178,7 +178,7 @@ void cal_db_event_update_child_origina_event_id(int child_id, int parent_id)
 	cal_db_util_error_e dbret = CAL_DB_OK;
 	dbret = cal_db_util_query_exec(query);
 	if (CAL_DB_DONE != dbret) {
-		ERR("cal_db_util_query_exec() Failed(%d)", dbret);
+		ERR("cal_db_util_query_exec() Fail(%d)", dbret);
 	}
 }
 
@@ -190,7 +190,7 @@ char* cal_db_event_get_recurrence_id_from_exception(int child_id)
 			CAL_TABLE_SCHEDULE, child_id);
 	stmt = cal_db_util_query_prepare(query);
 	if (NULL == stmt) {
-		ERR("cal_db_util_query_prepare() is failed");
+		ERR("cal_db_util_query_prepare() Fail");
 	}
 
 	char *recurrence_id = NULL;
@@ -209,7 +209,7 @@ static void __get_tzid_and_range(char *p, char **out_tzid, int *out_range)
 
 	char **s = NULL;
 	s = g_strsplit(p, ";", -1);
-	RETM_IF(NULL == s, "g_strsplit() is failed");
+	RETM_IF(NULL == s, "g_strsplit() Fail");
 
 	int count = g_strv_length(s);
 	int i;
@@ -243,7 +243,7 @@ static void cal_db_event_apply_recurrence_id_child(int child_id, cal_event_s *ev
 	int ret = 0;
 	calendar_record_h record = NULL;
 	ret = cal_db_get_record(_calendar_event._uri, child_id, &record);
-	RETM_IF(CALENDAR_ERROR_NONE != ret, "cal_db_get_record() is failed(%d)", ret);
+	RETM_IF(CALENDAR_ERROR_NONE != ret, "cal_db_get_record() Fail(%d)", ret);
 
 	if (true == is_prior) {
 		cal_record_set_caltime(record, _calendar_event.start_time, event->start);
@@ -304,7 +304,7 @@ static void __get_next_instance_caltime(int parent_id, calendar_time_s *caltime,
 				"ORDER BY dtstart_utime ASC LIMIT 1",
 				CAL_TABLE_NORMAL_INSTANCE, parent_id, caltime->time.utime);
 		stmt = cal_db_util_query_prepare(query);
-		RETM_IF(NULL == stmt, "cal_db_util_query_prepare() is failed");
+		RETM_IF(NULL == stmt, "cal_db_util_query_prepare() Fail");
 
 		while (CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
 			dtstart->type = CALENDAR_TIME_UTIME;
@@ -322,7 +322,7 @@ static void __get_next_instance_caltime(int parent_id, calendar_time_s *caltime,
 				caltime->time.date.year, caltime->time.date.month, caltime->time.date.mday,
 				caltime->time.date.hour, caltime->time.date.minute, caltime->time.date.second);
 		stmt = cal_db_util_query_prepare(query);
-		RETM_IF(NULL == stmt, "cal_db_util_query_prepare() is failed");
+		RETM_IF(NULL == stmt, "cal_db_util_query_prepare() Fail");
 
 		if (CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
 			char *temp = NULL;
@@ -357,7 +357,7 @@ static void __get_last_instance_caltime(int parent_id, int type, calendar_time_s
 				"ORDER BY dtstart_utime DESC LIMIT 1",
 				CAL_TABLE_NORMAL_INSTANCE, parent_id);
 		stmt = cal_db_util_query_prepare(query);
-		RETM_IF(NULL == stmt, "cal_db_util_query_prepare() is failed");
+		RETM_IF(NULL == stmt, "cal_db_util_query_prepare() Fail");
 		while (CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
 			dtstart->type = CALENDAR_TIME_UTIME;
 			dtstart->time.utime = sqlite3_column_int64(stmt, 0);
@@ -369,7 +369,7 @@ static void __get_last_instance_caltime(int parent_id, int type, calendar_time_s
 				"ORDER BY dtstart_datetime DESC LIMIT 1",
 				CAL_TABLE_ALLDAY_INSTANCE, parent_id);
 		stmt = cal_db_util_query_prepare(query);
-		RETM_IF(NULL == stmt, "cal_db_util_query_prepare() is failed");
+		RETM_IF(NULL == stmt, "cal_db_util_query_prepare() Fail");
 
 		if (CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
 			char *temp = NULL;
@@ -406,7 +406,7 @@ static void __del_recurence_id_instance(calendar_time_s *rectime, int parent_id)
 	dbret = cal_db_util_query_exec(query);
 	if (dbret != CAL_DB_OK) {
 		ERR("query[ %s ]", query);
-		ERR("cal_db_util_query_exec() is failed(%d)", dbret);
+		ERR("cal_db_util_query_exec() Fail(%d)", dbret);
 	}
 	// debug
 	int y = 0, m = 0, d = 0;
@@ -433,7 +433,7 @@ static void __set_original_event_id_in_child(int child_id, int parent_id)
 	cal_db_util_error_e dbret = CAL_DB_OK;
 	dbret = cal_db_util_query_exec(query);
 	if (dbret != CAL_DB_OK) {
-		ERR("cal_db_util_query_exec() is failed(%d)", dbret);
+		ERR("cal_db_util_query_exec() Fail(%d)", dbret);
 	}
 }
 
@@ -452,7 +452,7 @@ void cal_db_event_apply_recurrence_id(int parent_id, cal_event_s *event, char *r
 
 	char **t = NULL;
 	t =  g_strsplit(recurrence_id, ":", -1);
-	RETM_IF(NULL == t, "g_strsplit() is failed");
+	RETM_IF(NULL == t, "g_strsplit() Fail");
 
 	if ('\0' == *t[0]) { // no param
 		g_strfreev(t);
@@ -584,7 +584,7 @@ static int __get_parent_id_with_uid(char *uid, int child_id)
 	snprintf(query, sizeof(query), "SELECT id FROM %s WHERE original_event_id=-1 AND id!=%d AND uid='%s'",
 			CAL_TABLE_SCHEDULE, child_id, uid);
 	stmt = cal_db_util_query_prepare(query);
-	RETVM_IF(NULL == stmt, -1, "cal_db_util_query_prepare() is failed");
+	RETVM_IF(NULL == stmt, -1, "cal_db_util_query_prepare() Fail");
 	if (CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
 		parent_id = sqlite3_column_int64(stmt, 0);
 	}
@@ -807,7 +807,7 @@ int cal_db_event_insert_record(calendar_record_h record, int original_event_id, 
 	dbret = cal_db_util_stmt_step(stmt);
 	if (CAL_DB_DONE != dbret) {
 		sqlite3_finalize(stmt);
-		ERR("cal_db_util_stmt_step() Failed(%d)", dbret);
+		ERR("cal_db_util_stmt_step() Fail(%d)", dbret);
 		switch (dbret) {
 		case CAL_DB_ERROR_NO_SPACE:
 			return CALENDAR_ERROR_FILE_NO_SPACE;
@@ -873,7 +873,7 @@ int cal_db_event_insert_record(calendar_record_h record, int original_event_id, 
 			int parent_id = 0;
 			parent_id = __get_parent_id_with_uid(event->uid, event_id);
 			if (parent_id < 0) {
-				ERR("__get_parent_id_with_uid() is failed");
+				ERR("__get_parent_id_with_uid() Fail");
 				break;
 			}
 			calendar_record_h parent = NULL;
@@ -887,7 +887,7 @@ int cal_db_event_insert_record(calendar_record_h record, int original_event_id, 
 	if (event->alarm_list->count)	{
 		DBG("insert alarm");
 		ret = cal_db_alarm_insert_records(event->alarm_list, event_id);
-		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_db_alarm_insert_records() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_db_alarm_insert_records() Fail(%d)", ret);
 	}
 	else {
 		DBG("No alarm");
@@ -896,7 +896,7 @@ int cal_db_event_insert_record(calendar_record_h record, int original_event_id, 
 	if (0 < event->attendee_list->count) {
 		DBG("insert attendee");
 		ret = cal_db_attendee_insert_records(event->attendee_list, event_id);
-		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_db_attendee_insert_records() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_db_attendee_insert_records() Fail(%d)", ret);
 	}
 	else {
 		DBG("No attendee");
@@ -905,7 +905,7 @@ int cal_db_event_insert_record(calendar_record_h record, int original_event_id, 
 	if (original_event_id <= 0 && 0 < event->exception_list->count) {
 		DBG("insert exception");
 		ret = cal_db_event_insert_records(event->exception_list, event_id);
-		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_db_event_insert_records() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_db_event_insert_records() Fail(%d)", ret);
 	}
 	else {
 		DBG("No exception");
@@ -914,7 +914,7 @@ int cal_db_event_insert_record(calendar_record_h record, int original_event_id, 
 	if (0 < event->extended_list->count) {
 		DBG("insert extended");
 		ret = cal_db_extended_insert_records(event->extended_list, event_id, CALENDAR_RECORD_TYPE_EVENT);
-		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_db_extended_insert_records() Failed(%d)", ret);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_db_extended_insert_records() Fail(%d)", ret);
 	}
 	else {
 		DBG("No extended");
@@ -944,7 +944,7 @@ int cal_db_event_insert_records(cal_list_s *list_s, int original_event_id)
 	calendar_list_first(list);
 	while (CALENDAR_ERROR_NONE == calendar_list_get_current_record_p(list, &record)) {
 		ret = cal_db_event_insert_record(record, original_event_id, NULL);
-		RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_db_extended_insert_record() Failed(%d)", ret);
+		RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_db_extended_insert_record() Fail(%d)", ret);
 		calendar_list_next(list);
 	}
 	return CALENDAR_ERROR_NONE;

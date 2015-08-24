@@ -80,7 +80,7 @@ static int _cal_db_alarm_insert_record(calendar_record_h record, int parent_id)
 
 	stmt = cal_db_util_query_prepare(query);
 	if (NULL == stmt) {
-		DBG("cal_db_util_query_prepare() Failed");
+		DBG("cal_db_util_query_prepare() Fail");
 		DBG("query[%s]", query);
 		return CALENDAR_ERROR_DB_FAILED;
 	}
@@ -121,7 +121,7 @@ static int _cal_db_alarm_insert_record(calendar_record_h record, int parent_id)
 	sqlite3_finalize(stmt);
 
 	if (CAL_DB_DONE != dbret) {
-		ERR("cal_db_util_stmt_step() Failed(%d)", dbret);
+		ERR("cal_db_util_stmt_step() Fail(%d)", dbret);
 		switch (dbret) {
 		case CAL_DB_ERROR_NO_SPACE:
 			return CALENDAR_ERROR_FILE_NO_SPACE;
@@ -148,7 +148,7 @@ int cal_db_alarm_insert_records(cal_list_s *list_s, int event_id)
 	calendar_list_first(list);
 	while (CALENDAR_ERROR_NONE == calendar_list_get_current_record_p(list, &record)) {
 		ret = _cal_db_alarm_insert_record(record, event_id);
-		RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_db_extended_insert_record() Failed(%d)", ret);
+		RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_db_extended_insert_record() Fail(%d)", ret);
 		calendar_list_next(list);
 	}
 	return CALENDAR_ERROR_NONE;
