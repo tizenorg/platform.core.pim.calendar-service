@@ -374,7 +374,7 @@ void cal_time_get_nth_wday(long long int t, int *nth, int *wday)
 void cal_time_get_datetime(long long int t, int *y, int *m, int *d, int *h, int *n, int *s)
 {
 	UErrorCode status = U_ZERO_ERROR;
-	UCalendar *ucal = cal_time_open_ucal(-1, NULL, -1);
+	UCalendar *ucal = __get_gmt_ucal();
 	if (NULL == ucal) {
 		ERR("__get_gmt_ucal() Fail");
 		return;
@@ -386,7 +386,6 @@ void cal_time_get_datetime(long long int t, int *y, int *m, int *d, int *h, int 
 	if (h) *h = ucal_get(ucal, UCAL_HOUR_OF_DAY, &status);
 	if (n) *n = ucal_get(ucal, UCAL_MINUTE, &status);
 	if (s) *s = ucal_get(ucal, UCAL_SECOND, &status);
-	ucal_close(ucal);
 }
 
 void cal_time_get_local_datetime(char *tzid, long long int t, int *y, int *m, int *d, int *h, int *n, int *s)
