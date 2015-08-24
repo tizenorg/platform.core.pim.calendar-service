@@ -264,21 +264,6 @@ int cal_client_ipc_call(char *module, char *function, pims_ipc_h data_in,
 	return ret;
 }
 
-int cal_client_ipc_call_async(char *module, char *function, pims_ipc_h data_in,
-		pims_ipc_call_async_cb callback, void *userdata)
-{
-	int ret = 0;
-	pims_ipc_h ipc_handle = _cal_client_ipc_get_handle();
-
-	_cal_client_ipc_lock();
-
-	ret = pims_ipc_call_async(ipc_handle, module, function, data_in, callback, userdata);
-
-	_cal_client_ipc_unlock();
-
-	return ret;
-}
-
 void cal_client_ipc_set_change_version(int version)
 {
 	if (cal_ipc_thread == NULL)

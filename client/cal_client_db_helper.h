@@ -20,5 +20,28 @@
 #ifndef __CAL_CLIENT_DB_HELPER_H__
 #define __CAL_CLIENT_DB_HELPER_H__
 
+int cal_client_db_insert_record(calendar_record_h record, int* id);
+int cal_client_db_update_record(calendar_record_h record);
+int cal_client_db_delete_record(const char* view_uri, int id);
+int cal_client_db_replace_record(calendar_record_h record, int record_id);
+int cal_client_db_get_record(const char* view_uri, int id, calendar_record_h* out_record);
+int cal_client_db_get_all_records(const char* view_uri, int offset, int limit, calendar_list_h* out_list);
+int cal_client_db_get_records_with_query(calendar_query_h query, int offset, int limit, calendar_list_h* out_list);
+int cal_client_db_clean_after_sync(int calendar_book_id, int calendar_db_version);
+int cal_client_db_get_count(const char *view_uri, int *out_count);
+int cal_client_db_get_count_with_query(calendar_query_h query, int *out_count);
+int cal_client_db_insert_records(calendar_list_h record_list, int** record_id_array, int* count);
+int cal_client_db_update_records(calendar_list_h record_list);
+int cal_client_db_delete_records(const char* view_uri, int record_id_array[], int count);
+int cal_client_db_replace_records(calendar_list_h record_list, int *record_id_array, int count);
+int cal_client_db_get_changes_by_version(const char* view_uri, int calendar_book_id, int calendar_db_version, calendar_list_h* record_list, int* current_calendar_db_version);
+int cal_client_db_get_current_version(int* calendar_db_version);
+int cal_client_db_add_changed_cb(const char* view_uri, void *callback, void* user_data);
+int cal_client_db_remove_changed_cb(const char* view_uri, void *callback, void* user_data);
+int cal_client_db_insert_vcalendars(const char* vcalendar_stream, int **record_id_array, int *count);
+int cal_client_db_replace_vcalendars(const char* vcalendar_stream, int *record_id_array, int count);
+int cal_client_db_get_last_change_version(int* last_version);
+int cal_client_db_get_changes_exception_by_version(const char* view_uri, int original_event_id, int calendar_db_version, calendar_list_h* record_list);
+
 
 #endif // __CAL_CLIENT_DB_HELPER_H__

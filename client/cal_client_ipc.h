@@ -23,15 +23,9 @@
 #include <pims-ipc.h>
 
 bool cal_client_ipc_is_call_inprogress(void);
-
-int cal_client_ipc_call(char *module, char *function, pims_ipc_h data_in,
-		pims_ipc_data_h *data_out);
-int cal_client_ipc_call_async(char *module, char *function, pims_ipc_h data_in,
-		pims_ipc_call_async_cb callback, void *userdata);
-
+int cal_client_ipc_call(char *module, char *function, pims_ipc_h data_in, pims_ipc_data_h *data_out);
 void cal_client_ipc_set_change_version(int version);
 int cal_client_ipc_get_change_version(void);
-
 int cal_client_ipc_client_check_permission(int permission, bool *result);
 
 #endif // __CAL_CLIENT_IPC_H__
