@@ -218,7 +218,7 @@ int _cal_db_rrule_insert_record(int id, cal_rrule_s *rrule)
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	char until_datetime[32] = {0};
 	sqlite3_stmt *stmt = NULL;
-	cal_db_util_error_e dbret = CAL_DB_OK;
+	int ret = 0;
 
 	RETVM_IF(rrule == NULL, CALENDAR_ERROR_INVALID_PARAMETER,
 			"Invalid argument: rrule is NULL");
@@ -245,11 +245,11 @@ int _cal_db_rrule_insert_record(int id, cal_rrule_s *rrule)
 			rrule->count, rrule->interval,
 			rrule->wkst);
 
-	stmt = cal_db_util_query_prepare(query);
-	if (NULL == stmt) {
-		ERR("cal_db_util_query_prepare() Fail");
+	ret = cal_db_util_query_prepare(query, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query);
-		return CALENDAR_ERROR_DB_FAILED;
+		return ret;
 	}
 
 	index = 1;
@@ -302,16 +302,11 @@ int _cal_db_rrule_insert_record(int id, cal_rrule_s *rrule)
 		cal_db_util_stmt_bind_text(stmt, index, rrule->bysetpos);
 	index++;
 
-	dbret = cal_db_util_stmt_step(stmt);
+	ret = cal_db_util_stmt_step(stmt);
 	sqlite3_finalize(stmt);
-	if (CAL_DB_OK != dbret) {
-		ERR("cal_db_util_stmt_step() Fail(%d)", dbret);
-		switch (dbret) {
-		case CAL_DB_ERROR_NO_SPACE:
-			return CALENDAR_ERROR_FILE_NO_SPACE;
-		default:
-			return CALENDAR_ERROR_DB_FAILED;
-		}
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_stmt_step() Fail(%d)", ret);
+		return ret;
 	}
 
 	rrule_id = cal_db_util_last_insert_id();
@@ -326,7 +321,7 @@ int cal_db_rrule_get_rrule(int id, cal_rrule_s **rrule)
 	sqlite3_stmt *stmt = NULL;
 	cal_rrule_s *_rrule = NULL;
 	const unsigned char *temp;
-	cal_db_util_error_e dbret = CAL_DB_OK;
+	int ret = 0;
 
 	snprintf(query, sizeof(query),
 			"SELECT id, event_id, freq, range_type, until_type, until_utime, "
@@ -335,25 +330,19 @@ int cal_db_rrule_get_rrule(int id, cal_rrule_s **rrule)
 			"FROM %s WHERE event_id = %d ",
 			CAL_TABLE_RRULE, id);
 
-	stmt = cal_db_util_query_prepare(query);
-	if (NULL == stmt) {
-		ERR("cal_db_util_query_prepare() Fail");
+	ret = cal_db_util_query_prepare(query, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query);
-		return CALENDAR_ERROR_DB_FAILED;
+		return ret;
 	}
 
-	dbret = cal_db_util_stmt_step(stmt);
-	if (CAL_DB_DONE == dbret) {
-		DBG("No event: id(%d)", id);
+	ret = cal_db_util_stmt_step(stmt);
+	if (CAL_SQLITE_ROW != ret) {
+		ERR("cal_db_util_stmt_step() Fail(%d)", ret);
 		SECURE("query[%s]", query);
 		sqlite3_finalize(stmt);
-		return CALENDAR_ERROR_DB_RECORD_NOT_FOUND;
-	}
-	else if (CAL_DB_ROW != dbret) {
-		ERR("query[%s]", query);
-		ERR("Failed to step stmt(%d)", dbret);
-		sqlite3_finalize(stmt);
-		return CALENDAR_ERROR_DB_FAILED;
+		return ret;
 	}
 
 	_rrule = calloc(1, sizeof(cal_rrule_s));
@@ -420,23 +409,19 @@ int cal_db_rrule_get_rrule(int id, cal_rrule_s **rrule)
 static int _cal_db_rrule_delete_record(int id)
 {
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
-	cal_db_util_error_e dbret = CAL_DB_OK;
+	int ret = 0;
 
 	snprintf(query, sizeof(query),
 			"DELETE FROM %s WHERE event_id = %d ",
 			CAL_TABLE_RRULE, id);
 
-	dbret = cal_db_util_query_exec(query);
-	if (CAL_DB_DONE != dbret) {
-		ERR("cal_db_util_query_exec() Fail");
+	ret = cal_db_util_query_exec(query);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_exec() Fail(%d)", ret);
 		SECURE("[%s]", query);
-		switch (dbret) {
-		case CAL_DB_ERROR_NO_SPACE:
-			return CALENDAR_ERROR_FILE_NO_SPACE;
-		default:
-			return CALENDAR_ERROR_DB_FAILED;
-		}
+		return ret;
 	}
+
 	return CALENDAR_ERROR_NONE;
 }
 
@@ -464,7 +449,7 @@ static int _cal_db_rrule_update_record(int id, cal_rrule_s *rrule)
 {
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	char until_datetime[32] = {0};
-	cal_db_util_error_e dbret = CAL_DB_OK;
+	int ret = 0;
 	sqlite3_stmt *stmt = NULL;
 
 	snprintf(query, sizeof(query),
@@ -497,11 +482,11 @@ static int _cal_db_rrule_update_record(int id, cal_rrule_s *rrule)
 			rrule->wkst,
 			id);
 
-	stmt = cal_db_util_query_prepare(query);
-	if (NULL == stmt) {
-		ERR("cal_db_util_query_prepare() Fail");
+	ret = cal_db_util_query_prepare(query, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query);
-		return CALENDAR_ERROR_DB_FAILED;
+		return ret;
 	}
 
 	int index = 1;
@@ -553,17 +538,13 @@ static int _cal_db_rrule_update_record(int id, cal_rrule_s *rrule)
 		cal_db_util_stmt_bind_text(stmt, index, rrule->bysetpos);
 	index++;
 
-	dbret = cal_db_util_stmt_step(stmt);
+	ret = cal_db_util_stmt_step(stmt);
 	sqlite3_finalize(stmt);
-	if (CAL_DB_DONE != dbret) {
-		ERR("sqlite3_step() Fail(%d)", dbret);
-		switch (dbret) {
-		case CAL_DB_ERROR_NO_SPACE:
-			return CALENDAR_ERROR_FILE_NO_SPACE;
-		default:
-			return CALENDAR_ERROR_DB_FAILED;
-		}
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_stmt_step() Fail(%d)", ret);
+		return ret;
 	}
+
 	return CALENDAR_ERROR_NONE;
 }
 

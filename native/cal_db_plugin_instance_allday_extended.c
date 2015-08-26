@@ -84,17 +84,17 @@ static int _cal_db_instance_allday_extended_get_all_records(int offset, int limi
 	cal_db_append_string(&query_str, limitquery);
 	cal_db_append_string(&query_str, offsetquery);
 
-	stmt = cal_db_util_query_prepare(query_str);
-	if (NULL == stmt) {
-		ERR("cal_db_util_query_prepare() Fail");
+	ret = cal_db_util_query_prepare(query_str, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query_str);
 		calendar_list_destroy(*out_list, true);
 		*out_list = NULL;
-		CAL_FREE(query_str);
-		return CALENDAR_ERROR_DB_FAILED;
+		free(query_str);
+		return ret;
 	}
 
-	while(CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
+	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		calendar_record_h record;
 		ret = calendar_record_create(_calendar_instance_localtime_calendar_book_extended._uri,&record);
 		if (CALENDAR_ERROR_NONE != ret) {
@@ -194,16 +194,16 @@ static int _cal_db_instance_allday_extended_get_records_with_query(calendar_quer
 	}
 
 	/* query */
-	stmt = cal_db_util_query_prepare(query_str);
-	if (NULL == stmt) {
+	ret = cal_db_util_query_prepare(query_str, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query_str);
 		if (bind_text) {
 			g_slist_free_full(bind_text, free);
 			bind_text = NULL;
 		}
-		CAL_FREE(query_str);
-		ERR("cal_db_util_query_prepare() Fail");
-		return CALENDAR_ERROR_DB_FAILED;
+		free(query_str);
+		return ret;
 	}
 
 	/* bind text */
@@ -226,7 +226,7 @@ static int _cal_db_instance_allday_extended_get_records_with_query(calendar_quer
 		return ret;
 	}
 
-	while(CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
+	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		calendar_record_h record;
 		ret = calendar_record_create(que->view_uri,&record);
 		if (CALENDAR_ERROR_NONE != ret) {

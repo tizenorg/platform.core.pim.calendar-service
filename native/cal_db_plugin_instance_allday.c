@@ -23,20 +23,14 @@
 #include "cal_typedef.h"
 #include "cal_view.h"
 #include "cal_record.h"
-
 #include "cal_db_util.h"
 #include "cal_db.h"
 #include "cal_db_query.h"
 #include "cal_access_control.h"
 
-//static int _cal_db_instance_allday_get_record(int id, calendar_record_h* out_record);
-//static int _cal_db_instance_allday_update_record(calendar_record_h record);
 static int _cal_db_instance_allday_delete_record(int id);
 static int _cal_db_instance_allday_get_all_records(int offset, int limit, calendar_list_h* out_list);
 static int _cal_db_instance_allday_get_records_with_query(calendar_query_h query, int offset, int limit, calendar_list_h* out_list);
-//static int _cal_db_instance_allday_insert_records(const calendar_list_h list);
-//static int _cal_db_instance_allday_update_records(const calendar_list_h list);
-//static int _cal_db_instance_allday_delete_records(int ids[], int count);
 static int _cal_db_instance_allday_get_count(int *out_count);
 static int _cal_db_instance_allday_get_count_with_query(calendar_query_h query, int *out_count);
 
@@ -70,28 +64,20 @@ cal_db_plugin_cb_s cal_db_instance_allday_plugin_cb = {
 static int _cal_db_instance_allday_delete_record(int id)
 {
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
-	cal_db_util_error_e dbret = CAL_DB_OK;
+	int ret = 0;
 
-	RETVM_IF(id < 0, CALENDAR_ERROR_INVALID_PARAMETER,
-			"Invalid argument: id(%d) < 0", id);
+	RETVM_IF(id < 0, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid argument: id(%d) < 0", id);
 
-	snprintf(query, sizeof(query),
-			"DELETE FROM %s "
-			"WHERE event_id = %d ",
-			CAL_TABLE_ALLDAY_INSTANCE,
-			id);
+	snprintf(query, sizeof(query), "DELETE FROM %s WHERE event_id = %d ",
+			CAL_TABLE_ALLDAY_INSTANCE, id);
 
-	dbret = cal_db_util_query_exec(query);
-	if (CAL_DB_OK != dbret) {
-		ERR("cal_db_util_query_exec() Fail(%d)", dbret);
+	ret = cal_db_util_query_exec(query);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_exec() Fail(%d)", ret);
 		SECURE("[%s]", query);
-		switch (dbret) {
-		case CAL_DB_ERROR_NO_SPACE:
-			return CALENDAR_ERROR_FILE_NO_SPACE;
-		default:
-			return CALENDAR_ERROR_DB_FAILED;
-		}
+		return ret;
 	}
+
 	return CALENDAR_ERROR_NONE;
 }
 
@@ -118,17 +104,17 @@ static int _cal_db_instance_allday_get_all_records(int offset, int limit, calend
 	cal_db_append_string(&query_str, limitquery);
 	cal_db_append_string(&query_str, offsetquery);
 
-	stmt = cal_db_util_query_prepare(query_str);
-	if (NULL == stmt) {
-		ERR("cal_db_util_query_prepare() Fail");
+	ret = cal_db_util_query_prepare(query_str, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query_str);
 		calendar_list_destroy(*out_list, true);
 		*out_list = NULL;
-		CAL_FREE(query_str);
-		return CALENDAR_ERROR_DB_FAILED;
+		free(query_str);
+		return ret;
 	}
 
-	while(CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
+	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		calendar_record_h record;
 		ret = calendar_record_create(_calendar_instance_localtime_calendar_book._uri,&record);
 		if (CALENDAR_ERROR_NONE != ret) {
@@ -238,16 +224,16 @@ static int _cal_db_instance_allday_get_records_with_query(calendar_query_h query
 	}
 
 	/* query */
-	stmt = cal_db_util_query_prepare(query_str);
-	if (NULL == stmt) {
+	ret = cal_db_util_query_prepare(query_str, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query_str);
 		if (bind_text) {
 			g_slist_free_full(bind_text, free);
 			bind_text = NULL;
 		}
-		CAL_FREE(query_str);
-		ERR("cal_db_util_query_prepare() Fail");
-		return CALENDAR_ERROR_DB_FAILED;
+		free(query_str);
+		return ret;
 	}
 
 	/* bind text */
@@ -270,7 +256,7 @@ static int _cal_db_instance_allday_get_records_with_query(calendar_query_h query
 		return ret;
 	}
 
-	while(CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
+	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		calendar_record_h record;
 		ret = calendar_record_create(que->view_uri,&record);
 		if (CALENDAR_ERROR_NONE != ret) {

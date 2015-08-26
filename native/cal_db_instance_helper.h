@@ -20,7 +20,7 @@
 #ifndef __CALENDAR_SVC_DB_INSTANCE_HELPER_H__
 #define __CALENDAR_SVC_DB_INSTANCE_HELPER_H__
 
-int cal_db_instance_normal_insert_record(cal_instance_normal_s *normal, int* id);
-int cal_db_instance_allday_insert_record(cal_instance_allday_s *normal, int* id);
+int cal_db_instance_helper_insert_utime_instance(int event_id, long long int s, long long int e);
+int cal_db_instance_helper_insert_localtime_instance(int event_id, const char *s, const char *e);
 
 #endif /* __CALENDAR_SVC_DB_INSTANCE_HELPER_H__ */

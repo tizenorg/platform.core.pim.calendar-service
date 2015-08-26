@@ -50,7 +50,7 @@ static int _cal_db_alarm_insert_record(calendar_record_h record, int parent_id)
 		return CALENDAR_ERROR_NONE;
 	}
 
-	cal_db_util_error_e dbret = CAL_DB_OK;
+	int ret = 0;
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	sqlite3_stmt *stmt = NULL;
 
@@ -76,11 +76,11 @@ static int _cal_db_alarm_insert_record(calendar_record_h record, int parent_id)
 			alarm->alarm_action,
 			alarm->alarm.time.utime);
 
-	stmt = cal_db_util_query_prepare(query);
-	if (NULL == stmt) {
-		DBG("cal_db_util_query_prepare() Fail");
+	ret = cal_db_util_query_prepare(query, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query);
-		return CALENDAR_ERROR_DB_FAILED;
+		return ret;
 	}
 
 	int index = 1;
@@ -115,17 +115,11 @@ static int _cal_db_alarm_insert_record(calendar_record_h record, int parent_id)
 	}
 	index++;
 
-	dbret = cal_db_util_stmt_step(stmt);
+	ret = cal_db_util_stmt_step(stmt);
 	sqlite3_finalize(stmt);
-
-	if (CAL_DB_DONE != dbret) {
-		ERR("cal_db_util_stmt_step() Fail(%d)", dbret);
-		switch (dbret) {
-		case CAL_DB_ERROR_NO_SPACE:
-			return CALENDAR_ERROR_FILE_NO_SPACE;
-		default:
-			return CALENDAR_ERROR_DB_FAILED;
-		}
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_stmt_step() Fail(%d)", ret);
+		return ret;
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -158,32 +152,26 @@ int cal_db_alarm_get_records(int parent, cal_list_s *list)
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	sqlite3_stmt *stmt = NULL;
 
-	RETVM_IF(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER,
-			"Invalid parameter: list is NULL");
+	RETVM_IF(NULL == list, CALENDAR_ERROR_INVALID_PARAMETER, "Invalid parameter: list is NULL");
 
-	snprintf(query, sizeof(query),
-			"SELECT rowid, "
-			"remind_tick,"
-			"remind_tick_unit, "
-			"alarm_description, "
-			"alarm_type, "
-			"alarm_summary, "
-			"alarm_action, "
-			"alarm_attach, "
-			"alarm_utime, "
-			"alarm_datetime "
-			"FROM %s WHERE event_id = %d ",
+	snprintf(query, sizeof(query), "SELECT rowid,remind_tick,remind_tick_unit,"
+			"alarm_description,alarm_type,alarm_summary,alarm_action,alarm_attach,"
+			"alarm_utime,alarm_datetime FROM %s WHERE event_id = %d ",
 			CAL_TABLE_ALARM, parent);
 
-	stmt = cal_db_util_query_prepare(query);
-	RETVM_IF(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "cal_db_util_query_prepare() failed");
+	ret = cal_db_util_query_prepare(query, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
+		SECURE("query[%s]", query);
+		return ret;
+	}
 
 	int index = 0;
 	const unsigned char *temp;
 	calendar_record_h record = NULL;
 	cal_alarm_s *alarm = NULL;
 
-	while (CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
+	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		ret = calendar_record_create(_calendar_alarm._uri, &record);
 		if (CALENDAR_ERROR_NONE != ret) {
 			sqlite3_finalize(stmt);
@@ -251,21 +239,18 @@ int cal_db_alarm_get_records(int parent, cal_list_s *list)
 int cal_db_alarm_delete_with_id(int parent_id)
 {
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
-	cal_db_util_error_e dbret = CAL_DB_OK;
+	int ret = 0;
 
 	snprintf(query, sizeof(query), "DELETE FROM %s WHERE event_id=%d ",
 			CAL_TABLE_ALARM, parent_id);
 
-	dbret = cal_db_util_query_exec(query);
-	if (CAL_DB_OK != dbret) {
-		ERR("cal_db_util_query_exec() failed (%d)", dbret);
-		switch (dbret) {
-		case CAL_DB_ERROR_NO_SPACE:
-			return CALENDAR_ERROR_FILE_NO_SPACE;
-		default:
-			return CALENDAR_ERROR_DB_FAILED;
-		}
+	ret = cal_db_util_query_exec(query);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_exec() Fail(%d)", ret);
+		SECURE("[%s]", query);
+		return ret;
 	}
+
 	return CALENDAR_ERROR_NONE;
 }
 

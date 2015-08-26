@@ -91,28 +91,23 @@ static void _cal_access_control_set_permission_info(calendar_permission_info_s *
 	int ret = 0;
 	sqlite3_stmt *stmt;
 	int write_index = 0;
-	snprintf(query, sizeof(query),
-			"SELECT count(id) FROM %s WHERE deleted = 0 ", CAL_TABLE_CALENDAR);
+	snprintf(query, sizeof(query), "SELECT count(id) FROM %s WHERE deleted = 0 ", CAL_TABLE_CALENDAR);
 	ret = cal_db_util_query_get_first_int_result(query, NULL, &count);
+	RETM_IF(CALENDAR_ERROR_NONE != ret, "cal_db_util_query_get_first_int_result() Fail(%d)", ret);
 
+	info->write_list = calloc(count +1, sizeof(int));
+	RETM_IF(NULL == info->write_list, "calloc() Fail");
+	info->write_list[0] = -1;
+
+	snprintf(query, sizeof(query), "SELECT id, mode, owner_label FROM %s WHERE deleted = 0 ", CAL_TABLE_CALENDAR);
+	ret = cal_db_util_query_prepare(query, &stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query);
 		return;
 	}
-	info->write_list = calloc(count +1, sizeof(int));
-	RETM_IF(NULL == info->write_list, "calloc() Fail");
-	info->write_list[0] = -1;
 
-	snprintf(query, sizeof(query),
-			"SELECT id, mode, owner_label FROM %s WHERE deleted = 0 ", CAL_TABLE_CALENDAR);
-	stmt = cal_db_util_query_prepare(query);
-	if (NULL == stmt) {
-		ERR("_cal_db_util_query_prepare() Fail");
-		return;
-	}
-
-	while (CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
+	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		int id = sqlite3_column_int(stmt, 0);
 		int mode = sqlite3_column_int(stmt, 1);
 		char *temp = (char *)sqlite3_column_text(stmt, 2);
@@ -288,15 +283,14 @@ int cal_is_owner(int calendarbook_id)
 	snprintf(query, sizeof(query),
 			"SELECT owner_label FROM "CAL_TABLE_CALENDAR" "
 			"WHERE id = %d", calendarbook_id);
-	stmt = cal_db_util_query_prepare(query);
-	if (NULL == stmt) {
-		ERR("DB error : cal_db_util_query_prepare() Fail()");
+	ret = cal_db_util_query_prepare(query, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query);
-		return CALENDAR_ERROR_DB_FAILED;
+		return ret;
 	}
 
-	ret = cal_db_util_stmt_step(stmt);
-	if (CAL_DB_ROW != ret) {
+	if (CAL_SQLITE_ROW != cal_db_util_stmt_step(stmt)) {
 		ERR("cal_db_util_stmt_step() Fail(%d)", ret);
 		sqlite3_finalize(stmt);
 		return CALENDAR_ERROR_DB_FAILED;

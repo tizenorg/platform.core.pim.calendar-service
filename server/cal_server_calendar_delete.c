@@ -97,6 +97,7 @@ static bool _cal_server_calendar_delete_step(int ret, __calendar_delete_data_s* 
 
 static int _cal_server_calendar_delete_step1(__calendar_delete_data_s* data)
 {
+	int ret = 0;
 	char query[CAL_DB_SQL_MIN_LEN] = {0,};
 	sqlite3_stmt *stmt = NULL;
 	int count = 0;
@@ -106,14 +107,13 @@ static int _cal_server_calendar_delete_step1(__calendar_delete_data_s* data)
 	if (NULL == data->calendar_id_list) {
 		/* get event_list */
 		snprintf(query, sizeof(query), "SELECT id FROM %s WHERE deleted = 1", CAL_TABLE_CALENDAR);
-
-		stmt = cal_db_util_query_prepare(query);
-		if (NULL == stmt) {
-			ERR("cal_db_util_query_prepare() Fail");
+		ret = cal_db_util_query_prepare(query, &stmt);
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 			SECURE("query[%s]", query);
-			return CALENDAR_ERROR_DB_FAILED;
+			return ret;
 		}
-		while(CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
+		while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 			int id = 0;
 			id = sqlite3_column_int(stmt, 0);
 			data->calendar_id_list = g_list_append(data->calendar_id_list, GINT_TO_POINTER(id));
@@ -143,9 +143,8 @@ static int _cal_server_calendar_delete_step1(__calendar_delete_data_s* data)
 
 static int _cal_server_calendar_delete_step2(__calendar_delete_data_s* data)
 {
-	int ret = CALENDAR_ERROR_NONE;
 	char query[CAL_DB_SQL_MIN_LEN] = {0};
-	cal_db_util_error_e dbret = CAL_DB_OK;
+	int ret = 0;
 	GList *list = NULL;
 	sqlite3_stmt *stmt = NULL;
 	int count = 0;
@@ -163,27 +162,24 @@ static int _cal_server_calendar_delete_step2(__calendar_delete_data_s* data)
 	snprintf(query, sizeof(query), "SELECT id FROM %s WHERE calendar_id = %d LIMIT %d",
 			CAL_TABLE_SCHEDULE, data->current_calendar_id, CAL_SERVER_CALENDAR_DELETE_COUNT);
 
-	stmt = cal_db_util_query_prepare(query);
-	if (NULL == stmt) {
-		ERR("cal_db_util_query_prepare() Fail");
+	ret = cal_db_util_query_prepare(query, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query);
 		cal_db_util_end_trans(false);
-		return CALENDAR_ERROR_DB_FAILED;
+		return ret;
 	}
 
-	while(CAL_DB_ROW == cal_db_util_stmt_step(stmt))
-	{
+	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		int id = 0;
 		id = sqlite3_column_int(stmt, 0);
 		list = g_list_append(list, GINT_TO_POINTER(id));
 	}
-
 	sqlite3_finalize(stmt);
 	stmt = NULL;
 
 	count = g_list_length(list);
-	if (count <= 0)
-	{
+	if (count <= 0) {
 		cal_db_util_end_trans(false);
 		return CALENDAR_ERROR_NO_DATA;
 	}
@@ -193,22 +189,13 @@ static int _cal_server_calendar_delete_step2(__calendar_delete_data_s* data)
 		int id = GPOINTER_TO_INT(cursor->data);
 		/* delete event table */
 		snprintf(query, sizeof(query), "DELETE FROM %s WHERE id=%d", CAL_TABLE_SCHEDULE, id);
-
-		dbret = cal_db_util_query_exec(query);
-		if (CAL_DB_OK != dbret) {
-			ERR("cal_db_util_query_exec() failed (%d)", dbret);
+		ret = cal_db_util_query_exec(query);
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("cal_db_util_query_exec() Fail(%d)", ret);
 			SECURE("[%s]", query);
 			cal_db_util_end_trans(false);
 			g_list_free(list);
-			switch (dbret)
-			{
-			case CAL_DB_ERROR_NO_SPACE:
-				cal_db_util_end_trans(false);
-				return CALENDAR_ERROR_FILE_NO_SPACE;
-			default:
-				cal_db_util_end_trans(false);
-				return CALENDAR_ERROR_DB_FAILED;
-			}
+			return ret;
 		}
 		cursor = g_list_next(cursor);
 	}
@@ -224,7 +211,6 @@ static int _cal_server_calendar_delete_step3(__calendar_delete_data_s* data)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	char query[CAL_DB_SQL_MIN_LEN] = {0};
-	cal_db_util_error_e dbret = CAL_DB_OK;
 
 	ret = cal_db_util_begin_trans();
 	if (CALENDAR_ERROR_NONE != ret)
@@ -237,22 +223,13 @@ static int _cal_server_calendar_delete_step3(__calendar_delete_data_s* data)
 
 	/* delete event table */
 	snprintf(query, sizeof(query), "DELETE FROM %s WHERE id=%d", CAL_TABLE_CALENDAR, data->current_calendar_id);
-
-	dbret = cal_db_util_query_exec(query);
-	if (CAL_DB_OK != dbret) {
-		ERR("cal_db_util_query_exec() failed (%d)", dbret);
+	ret = cal_db_util_query_exec(query);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_exec() Fail(%d)", ret);
 		SECURE("[%s]", query);
 		cal_db_util_end_trans(false);
-		switch (dbret) {
-		case CAL_DB_ERROR_NO_SPACE:
-			cal_db_util_end_trans(false);
-			return CALENDAR_ERROR_FILE_NO_SPACE;
-		default:
-			cal_db_util_end_trans(false);
-			return CALENDAR_ERROR_DB_FAILED;
-		}
+		return ret;
 	}
-
 	cal_db_util_end_trans(true);
 
 	return CALENDAR_ERROR_NONE;

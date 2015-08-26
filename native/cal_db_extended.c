@@ -46,15 +46,19 @@ int cal_db_extended_get_records(int record_id, calendar_record_type_e record_typ
 			record_id,
 			record_type);
 
-	stmt = cal_db_util_query_prepare(query);
-	RETVM_IF(NULL == stmt,CALENDAR_ERROR_DB_FAILED, "cal_db_util_query_prepare() failed");
+	ret = cal_db_util_query_prepare(query, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
+		SECURE("query[%s]", query);
+		return ret;
+	}
 
 	int count = 0;
 	const unsigned char *temp;
 	calendar_record_h record = NULL;
 	cal_extended_s *extended = NULL;
 
-	while (CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
+	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		ret = calendar_record_create(_calendar_extended_property._uri, &record);
 		if (CALENDAR_ERROR_NONE != ret) {
 			sqlite3_finalize(stmt);
@@ -82,22 +86,18 @@ int cal_db_extended_get_records(int record_id, calendar_record_type_e record_typ
 int cal_db_extended_delete_with_id(int record_id, calendar_record_type_e record_type)
 {
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
-	cal_db_util_error_e dbret = CAL_DB_OK;
+	int ret = 0;
 
 	snprintf(query, sizeof(query), "DELETE FROM %s WHERE record_id=%d AND record_type=%d",
 			CAL_TABLE_EXTENDED, record_id, record_type);
 
-	dbret = cal_db_util_query_exec(query);
-	if (dbret != CAL_DB_OK) {
-		ERR("cal_db_util_query_exec() failed (%d)", dbret);
+	ret = cal_db_util_query_exec(query);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_exec() Fail(%d)", ret);
 		SECURE("[%s]", query);
-		switch (dbret) {
-		case CAL_DB_ERROR_NO_SPACE:
-			return CALENDAR_ERROR_FILE_NO_SPACE;
-		default:
-			return CALENDAR_ERROR_DB_FAILED;
-		}
+		return ret;
 	}
+
 	return CALENDAR_ERROR_NONE;
 }
 
@@ -107,7 +107,7 @@ int cal_db_extended_insert_record(calendar_record_h record, int record_id, calen
 	sqlite3_stmt *stmt;
 	char query[CAL_DB_SQL_MAX_LEN];
 	cal_extended_s* extended =  (cal_extended_s*)(record);
-	cal_db_util_error_e dbret;
+	int ret;
 
 	RETV_IF(NULL == extended, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETVM_IF(record_id <= 0, CALENDAR_ERROR_INVALID_PARAMETER, "record_id(%d)", record_id);
@@ -119,11 +119,11 @@ int cal_db_extended_insert_record(calendar_record_h record, int record_id, calen
 			record_id,
 			record_type);
 
-	stmt = cal_db_util_query_prepare(query);
-	if (NULL == stmt) {
-		ERR("cal_db_util_query_prepare() Fail");
+	ret = cal_db_util_query_prepare(query, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query);
-		return CALENDAR_ERROR_DB_FAILED;
+		return ret;
 	}
 
 	if (extended->key)
@@ -132,21 +132,13 @@ int cal_db_extended_insert_record(calendar_record_h record, int record_id, calen
 	if (extended->value)
 		cal_db_util_stmt_bind_text(stmt, 2, extended->value);
 
-	dbret = cal_db_util_stmt_step(stmt);
-	if (CAL_DB_DONE != dbret)
-	{
-		sqlite3_finalize(stmt);
-		ERR("cal_db_util_stmt_step() Fail(%d)", dbret);
-		switch (dbret)
-		{
-		case CAL_DB_ERROR_NO_SPACE:
-			return CALENDAR_ERROR_FILE_NO_SPACE;
-		default:
-			return CALENDAR_ERROR_DB_FAILED;
-		}
+	ret = cal_db_util_stmt_step(stmt);
+	sqlite3_finalize(stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_stmt_step() Fail(%d)", ret);
+		return ret;
 	}
 	index = cal_db_util_last_insert_id();
-	sqlite3_finalize(stmt);
 
 	/* cal_record_set_int(record, _calendar_extended.id,index); */
 	if (id) {
@@ -156,16 +148,11 @@ int cal_db_extended_insert_record(calendar_record_h record, int record_id, calen
 	if (record_type == CALENDAR_RECORD_TYPE_EVENT || record_type == CALENDAR_RECORD_TYPE_TODO) {
 		snprintf(query, sizeof(query), "UPDATE %s SET has_extended = 1 WHERE id = %d ",
 				CAL_TABLE_SCHEDULE, record_id);
-		dbret = cal_db_util_query_exec(query);
-		if (CAL_DB_OK != dbret) {
-			ERR("cal_db_util_query_exec() Fail(%d)", dbret);
+		ret = cal_db_util_query_exec(query);
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("cal_db_util_query_exec() Fail(%d)", ret);
 			SECURE("[%s]", query);
-			switch (dbret) {
-			case CAL_DB_ERROR_NO_SPACE:
-				return CALENDAR_ERROR_FILE_NO_SPACE;
-			default:
-				return CALENDAR_ERROR_DB_FAILED;
-			}
+			return ret;
 		}
 	}
 	return CALENDAR_ERROR_NONE;

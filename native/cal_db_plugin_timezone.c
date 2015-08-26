@@ -80,7 +80,6 @@ static int _cal_db_timezone_insert_record(calendar_record_h record, int* id)
 	sqlite3_stmt *stmt;
 	cal_timezone_s* timezone =  (cal_timezone_s*)(record);
 	calendar_record_h record_calendar = NULL;
-	cal_db_util_error_e dbret = CAL_DB_OK;
 
 	RETV_IF(NULL == timezone, CALENDAR_ERROR_INVALID_PARAMETER);
 
@@ -95,26 +94,19 @@ static int _cal_db_timezone_insert_record(calendar_record_h record, int* id)
 	if (timezone->standard_name) {
 		snprintf(query, sizeof(query), "SELECT count(*), id FROM %s WHERE standard_name=? ",
 				CAL_TABLE_TIMEZONE);
-
-		stmt = cal_db_util_query_prepare(query);
-		if (NULL == stmt) {
-			ERR("cal_db_util_query_prepare() Fail");
-			return CALENDAR_ERROR_DB_FAILED;
+		ret = cal_db_util_query_prepare(query, &stmt);
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("cal_db_util_query_prepare() Fail(%d)", ret);
+			SECURE("query[%s]", query);
+			return ret;
 		}
 		cal_db_util_stmt_bind_text(stmt, 1, timezone->standard_name);
 
-		dbret = cal_db_util_stmt_step(stmt);
-		if (CAL_DB_ROW != dbret)
-		{
-			ERR("cal_db_util_stmt_step() Fail");
+		ret = cal_db_util_stmt_step(stmt);
+		if (CAL_SQLITE_ROW != ret) {
+			ERR("cal_db_util_stmt_step() Fail(%d)", ret);
 			sqlite3_finalize(stmt);
-			switch (dbret)
-			{
-			case CAL_DB_ERROR_NO_SPACE:
-				return CALENDAR_ERROR_FILE_NO_SPACE;
-			default:
-				return CALENDAR_ERROR_DB_FAILED;
-			}
+			return ret;
 		}
 
 		index = 0;
@@ -150,8 +142,12 @@ static int _cal_db_timezone_insert_record(calendar_record_h record, int* id)
 			timezone->day_light_bias,
 			timezone->calendar_id);
 
-	stmt = cal_db_util_query_prepare(query);
-	RETVM_IF(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "cal_db_util_query_prepare() Fail");
+	ret = cal_db_util_query_prepare(query, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
+		SECURE("query[%s]", query);
+		return ret;
+	}
 
 	if (timezone->standard_name)
 		cal_db_util_stmt_bind_text(stmt, 1, timezone->standard_name);
@@ -159,21 +155,13 @@ static int _cal_db_timezone_insert_record(calendar_record_h record, int* id)
 	if (timezone->day_light_name)
 		cal_db_util_stmt_bind_text(stmt, 2, timezone->day_light_name);
 
-	dbret = cal_db_util_stmt_step(stmt);
-	if (CAL_DB_DONE != dbret)
-	{
-		sqlite3_finalize(stmt);
-		ERR("cal_db_util_stmt_step() Fail(%d)", dbret);
-		switch (dbret)
-		{
-		case CAL_DB_ERROR_NO_SPACE:
-			return CALENDAR_ERROR_FILE_NO_SPACE;
-		default:
-			return CALENDAR_ERROR_DB_FAILED;
-		}
+	ret = cal_db_util_stmt_step(stmt);
+	sqlite3_finalize(stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_stmt_step() Fail(%d)", ret);
+		return ret;
 	}
 	index = cal_db_util_last_insert_id();
-	sqlite3_finalize(stmt);
 
 	if (id) {
 		*id = index;
@@ -186,7 +174,6 @@ static int _cal_db_timezone_get_record(int id, calendar_record_h* out_record)
 {
 	char query[CAL_DB_SQL_MAX_LEN];
 	sqlite3_stmt *stmt = NULL;
-	cal_db_util_error_e dbret = CAL_DB_OK;
 	int ret = 0;
 
 	ret = calendar_record_create(_calendar_timezone._uri ,out_record);
@@ -199,31 +186,24 @@ static int _cal_db_timezone_get_record(int id, calendar_record_h* out_record)
 			"calendar_id IN (select id from %s where deleted = 0)",
 			CAL_TABLE_TIMEZONE, id,
 			CAL_TABLE_CALENDAR);
-	stmt = cal_db_util_query_prepare(query);
-	if (NULL == stmt) {
+	ret = cal_db_util_query_prepare(query, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query);
 		calendar_record_destroy(*out_record, true);
 		*out_record = NULL;
-		return CALENDAR_ERROR_DB_FAILED;
+		return ret;
 	}
 
-	dbret = cal_db_util_stmt_step(stmt);
-	if (CAL_DB_ROW != dbret)
-	{
-		ERR("cal_db_util_stmt_step() Fail(%d)", dbret);
+	ret = cal_db_util_stmt_step(stmt);
+	if (CAL_SQLITE_ROW != ret) {
+		ERR("cal_db_util_stmt_step() Faile%d)", ret);
 		sqlite3_finalize(stmt);
 		calendar_record_destroy(*out_record, true);
 		*out_record = NULL;
-		switch (dbret)
-		{
-		case CAL_DB_DONE:
+		if (CALENDAR_ERROR_NONE == ret)
 			return CALENDAR_ERROR_DB_RECORD_NOT_FOUND;
-		case CAL_DB_ERROR_NO_SPACE:
-			return CALENDAR_ERROR_FILE_NO_SPACE;
-		default:
-			return CALENDAR_ERROR_DB_FAILED;
-		}
+		return ret;
 	}
 
 	_cal_db_timezone_get_stmt(stmt,*out_record);
@@ -239,7 +219,7 @@ static int _cal_db_timezone_update_record(calendar_record_h record)
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	sqlite3_stmt *stmt = NULL;
 	cal_timezone_s* timezone_info =  (cal_timezone_s*)(record);
-	cal_db_util_error_e dbret = CAL_DB_OK;
+	int ret = 0;
 
 	RETV_IF(NULL == timezone_info, CALENDAR_ERROR_INVALID_PARAMETER);
 
@@ -278,8 +258,12 @@ static int _cal_db_timezone_update_record(calendar_record_h record)
 			timezone_info->calendar_id,
 			timezone_info->index);
 
-	stmt = cal_db_util_query_prepare(query);
-	RETVM_IF(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "cal_qcal_db_util_query_prepareuery_prepare() Fail");
+	ret = cal_db_util_query_prepare(query, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
+		SECURE("query[%s]", query);
+		return ret;
+	}
 
 	if (timezone_info->standard_name)
 		cal_db_util_stmt_bind_text(stmt, 1, timezone_info->standard_name);
@@ -287,20 +271,12 @@ static int _cal_db_timezone_update_record(calendar_record_h record)
 	if (timezone_info->day_light_name)
 		cal_db_util_stmt_bind_text(stmt, 2, timezone_info->day_light_name);
 
-	dbret = cal_db_util_stmt_step(stmt);
-	if (CAL_DB_DONE != dbret)
-	{
-		sqlite3_finalize(stmt);
-		ERR("cal_db_util_stmt_step() Fail(%d)", dbret);
-		switch (dbret)
-		{
-		case CAL_DB_ERROR_NO_SPACE:
-			return CALENDAR_ERROR_FILE_NO_SPACE;
-		default:
-			return CALENDAR_ERROR_DB_FAILED;
-		}
-	}
+	ret = cal_db_util_stmt_step(stmt);
 	sqlite3_finalize(stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_stmt_step() Fail(%d)", ret);
+		return ret;
+	}
 
 	return CALENDAR_ERROR_NONE;
 }
@@ -308,20 +284,16 @@ static int _cal_db_timezone_update_record(calendar_record_h record)
 static int _cal_db_timezone_delete_record(int id)
 {
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
-	cal_db_util_error_e dbret = CAL_DB_OK;
+	int ret = 0;
 
 	snprintf(query, sizeof(query), "DELETE FROM %s WHERE id = %d", CAL_TABLE_TIMEZONE, id);
-	dbret = cal_db_util_query_exec(query);
-	if (CAL_DB_OK != dbret) {
-		ERR("cal_db_util_query_exec() Fail(%d)", dbret);
-		switch (dbret)
-		{
-		case CAL_DB_ERROR_NO_SPACE:
-			return CALENDAR_ERROR_FILE_NO_SPACE;
-		default:
-			return CALENDAR_ERROR_DB_FAILED;
-		}
+	ret = cal_db_util_query_exec(query);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_exec() Fail(%d)", ret);
+		SECURE("[%s]", query);
+		return ret;
 	}
+
 	return CALENDAR_ERROR_NONE;
 }
 
@@ -330,7 +302,7 @@ static int _cal_db_timezone_replace_record(calendar_record_h record, int id)
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	sqlite3_stmt *stmt = NULL;
 	cal_timezone_s* timezone_info =  (cal_timezone_s*)(record);
-	cal_db_util_error_e dbret = CAL_DB_OK;
+	int ret = 0;
 
 	RETV_IF(NULL == timezone_info, CALENDAR_ERROR_INVALID_PARAMETER);
 	timezone_info->index = id;
@@ -370,8 +342,12 @@ static int _cal_db_timezone_replace_record(calendar_record_h record, int id)
 			timezone_info->calendar_id,
 			id);
 
-	stmt = cal_db_util_query_prepare(query);
-	RETVM_IF(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "cal_qcal_db_util_query_prepareuery_prepare() Fail");
+	ret = cal_db_util_query_prepare(query, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
+		SECURE("query[%s]", query);
+		return ret;
+	}
 
 	if (timezone_info->standard_name)
 		cal_db_util_stmt_bind_text(stmt, 1, timezone_info->standard_name);
@@ -379,18 +355,11 @@ static int _cal_db_timezone_replace_record(calendar_record_h record, int id)
 	if (timezone_info->day_light_name)
 		cal_db_util_stmt_bind_text(stmt, 2, timezone_info->day_light_name);
 
-	dbret = cal_db_util_stmt_step(stmt);
+	ret = cal_db_util_stmt_step(stmt);
 	sqlite3_finalize(stmt);
-	if (CAL_DB_DONE != dbret)
-	{
-		ERR("cal_db_util_stmt_step() Fail(%d)", dbret);
-		switch (dbret)
-		{
-		case CAL_DB_ERROR_NO_SPACE:
-			return CALENDAR_ERROR_FILE_NO_SPACE;
-		default:
-			return CALENDAR_ERROR_DB_FAILED;
-		}
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_stmt_step() Fail(%d)", ret);
+		return ret;
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -423,16 +392,16 @@ static int _cal_db_timezone_get_all_records(int offset, int limit, calendar_list
 			limitquery,
 			offsetquery);
 
-	stmt = cal_db_util_query_prepare(query);
-
-	if (NULL == stmt) {
-		ERR("cal_db_util_query_prepare() Fail");
+	ret = cal_db_util_query_prepare(query, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
+		SECURE("query[%s]", query);
 		calendar_list_destroy(*out_list, true);
 		*out_list = NULL;
-		return CALENDAR_ERROR_DB_FAILED;
+		return ret;
 	}
 
-	while(CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
+	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		calendar_record_h record;
 		ret = calendar_record_create(_calendar_timezone._uri,&record);
 		if (CALENDAR_ERROR_NONE != ret) {
@@ -529,16 +498,16 @@ static int _cal_db_timezone_get_records_with_query(calendar_query_h query, int o
 	}
 
 	/* query */
-	stmt = cal_db_util_query_prepare(query_str);
-	if (NULL == stmt) {
+	ret = cal_db_util_query_prepare(query_str, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query_str);
 		if (bind_text) {
 			g_slist_free_full(bind_text, free);
 			bind_text = NULL;
 		}
-		CAL_FREE(query_str);
-		ERR("cal_db_util_query_prepare() Fail");
-		return CALENDAR_ERROR_DB_FAILED;
+		free(query_str);
+		return ret;
 	}
 
 	/* bind text */
@@ -560,7 +529,7 @@ static int _cal_db_timezone_get_records_with_query(calendar_query_h query, int o
 		return ret;
 	}
 
-	while(CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
+	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		calendar_record_h record;
 		ret = calendar_record_create(_calendar_timezone._uri,&record);
 		if (CALENDAR_ERROR_NONE != ret) {
@@ -929,8 +898,7 @@ static int _cal_db_timezone_update_projection(calendar_record_h record)
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	sqlite3_stmt *stmt = NULL;
 	cal_timezone_s* timezone =  (cal_timezone_s*)(record);
-	cal_db_util_error_e dbret = CAL_DB_OK;
-	int ret = CALENDAR_ERROR_NONE;
+	int ret = 0;
 	char* set = NULL;
 	GSList *bind_text = NULL;
 	GSList *cursor = NULL;
@@ -940,16 +908,17 @@ static int _cal_db_timezone_update_projection(calendar_record_h record)
 
 	snprintf(query, sizeof(query), "UPDATE %s SET %s WHERE id = %d",
 			CAL_TABLE_TIMEZONE, set, timezone->index);
-	stmt = cal_db_util_query_prepare(query);
-	if (NULL == stmt) {
-		ERR("cal_db_util_query_prepare() Fail");
+
+	ret = cal_db_util_query_prepare(query, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query);
-		CAL_FREE(set);
+		free(set);
 		if (bind_text) {
 			g_slist_free_full(bind_text, free);
 			bind_text = NULL;
 		}
-		return CALENDAR_ERROR_DB_FAILED;
+		return ret;
 	}
 
 	if (bind_text) {
@@ -959,32 +928,16 @@ static int _cal_db_timezone_update_projection(calendar_record_h record)
 		}
 	}
 
-	dbret = cal_db_util_stmt_step(stmt);
-	if (CAL_DB_DONE != dbret)
-	{
-		sqlite3_finalize(stmt);
-		ERR("cal_db_util_stmt_step() Fail(%d)", dbret);
-
-		CAL_FREE(set);
-		if (bind_text)
-		{
-			g_slist_free_full(bind_text, free);
-			bind_text = NULL;
-		}
-		switch (dbret)
-		{
-		case CAL_DB_ERROR_NO_SPACE:
-			return CALENDAR_ERROR_FILE_NO_SPACE;
-		default:
-			return CALENDAR_ERROR_DB_FAILED;
-		}
-	}
-
+	ret = cal_db_util_stmt_step(stmt);
 	sqlite3_finalize(stmt);
-	CAL_FREE(set);
+	free(set);
 	if (bind_text) {
 		g_slist_free_full(bind_text, free);
 		bind_text = NULL;
+	}
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_stmt_step() Fail(%d)", ret);
+		return ret;
 	}
 
 	return CALENDAR_ERROR_NONE;

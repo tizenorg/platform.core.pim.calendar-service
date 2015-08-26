@@ -37,15 +37,10 @@ static int _cal_db_search_get_count_with_query(calendar_query_h query, int *out_
 /*
  * static function
  */
-static void _cal_db_search_get_stmt(sqlite3_stmt *stmt,calendar_query_h query,
-		calendar_record_h record);
-static void _cal_db_search_get_property_stmt(sqlite3_stmt *stmt,
-		unsigned int property, int *stmt_count, calendar_record_h record);
-static void _cal_db_search_get_projection_stmt(sqlite3_stmt *stmt,
-		const unsigned int *projection, const int projection_count,
-		calendar_record_h record);
+static void _cal_db_search_get_stmt(sqlite3_stmt *stmt,calendar_query_h query, calendar_record_h record);
+static void _cal_db_search_get_property_stmt(sqlite3_stmt *stmt, unsigned int property, int *stmt_count, calendar_record_h record);
+static void _cal_db_search_get_projection_stmt(sqlite3_stmt *stmt, const unsigned int *projection, const int projection_count, calendar_record_h record);
 static int _cal_db_search_make_projection(calendar_query_h query, char **projection);
-
 
 cal_db_plugin_cb_s cal_db_search_plugin_cb = {
 	.is_query_only=true,
@@ -140,18 +135,17 @@ static int _cal_db_search_get_records_with_query(calendar_query_h query, int off
 	}
 
 	/* query */
-	stmt = cal_db_util_query_prepare(query_str);
-	if (NULL == stmt) {
+	ret = cal_db_util_query_prepare(query_str, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query_str);
 		if (bind_text) {
 			g_slist_free_full(bind_text, free);
 			bind_text = NULL;
 		}
-		CAL_FREE(query_str);
-		ERR("cal_db_util_query_prepare() Fail");
-		return CALENDAR_ERROR_DB_FAILED;
+		free(query_str);
+		return ret;
 	}
-	DBG("%s",query_str);
 
 	/* bind text */
 	if (bind_text) {
@@ -173,7 +167,7 @@ static int _cal_db_search_get_records_with_query(calendar_query_h query, int off
 		return ret;
 	}
 
-	while(CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
+	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		calendar_record_h record;
 		ret = calendar_record_create(que->view_uri,&record);
 		if (CALENDAR_ERROR_NONE != ret) {

@@ -88,7 +88,6 @@ static cal_db_plugin_cb_s* _cal_db_get_plugin(cal_record_type_e type)
 void cal_db_initialize_view_table(void)
 {
 	int ret = CALENDAR_ERROR_NONE;
-	cal_db_util_error_e dbret;
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 
 	ret = cal_db_util_begin_trans();
@@ -121,9 +120,8 @@ void cal_db_initialize_view_table(void)
 			CAL_TABLE_RRULE,
 			CAL_TABLE_CALENDAR,
 			CAL_SCH_TYPE_EVENT);
-	dbret = cal_db_util_query_exec(query);
-	//SEC_DBG("%s",query);
-	if (dbret != CAL_DB_OK) {
+	ret = cal_db_util_query_exec(query);
+	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("[%s]", query);
 		ERR("create view Fail");
 	}
@@ -151,9 +149,8 @@ void cal_db_initialize_view_table(void)
 			CAL_TABLE_RRULE,
 			CAL_TABLE_CALENDAR,
 			CAL_SCH_TYPE_TODO);
-	dbret = cal_db_util_query_exec(query);
-	//SEC_DBG("%s",query);
-	if (dbret != CAL_DB_OK) {
+	ret = cal_db_util_query_exec(query);
+	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("[%s]", query);
 		ERR("create view Fail");
 	}
@@ -182,9 +179,8 @@ void cal_db_initialize_view_table(void)
 			CAL_TABLE_NORMAL_INSTANCE,
 			CAL_TABLE_SCHEDULE,
 			CAL_TABLE_CALENDAR);
-	dbret = cal_db_util_query_exec(query);
-	//SEC_DBG("%s",query);
-	if (dbret != CAL_DB_OK) {
+	ret = cal_db_util_query_exec(query);
+	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("[%s]", query);
 		ERR("create view Fail");
 	}
@@ -207,9 +203,9 @@ void cal_db_initialize_view_table(void)
 			CAL_TABLE_ALLDAY_INSTANCE,
 			CAL_TABLE_SCHEDULE,
 			CAL_TABLE_CALENDAR);
-	dbret = cal_db_util_query_exec(query);
-	//SEC_DBG("%s",query);
-	if (dbret != CAL_DB_OK) {
+	ret = cal_db_util_query_exec(query);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("[%s]", query);
 		ERR("create view Fail");
 	}
 
@@ -237,9 +233,8 @@ void cal_db_initialize_view_table(void)
 			CAL_TABLE_NORMAL_INSTANCE,
 			CAL_TABLE_SCHEDULE,
 			CAL_TABLE_CALENDAR);
-	dbret = cal_db_util_query_exec(query);
-	//SEC_DBG("%s",query);
-	if (dbret != CAL_DB_OK) {
+	ret = cal_db_util_query_exec(query);
+	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("[%s]", query);
 		ERR("create view Fail");
 	}
@@ -262,8 +257,8 @@ void cal_db_initialize_view_table(void)
 			CAL_TABLE_ALLDAY_INSTANCE,
 			CAL_TABLE_SCHEDULE,
 			CAL_TABLE_CALENDAR);
-	dbret = cal_db_util_query_exec(query);
-	if (dbret != CAL_DB_OK) {
+	ret = cal_db_util_query_exec(query);
+	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("[%s]", query);
 		ERR("create view Fail");
 	}
@@ -288,8 +283,8 @@ void cal_db_initialize_view_table(void)
 			CAL_VIEW_TABLE_EVENT_CALENDAR,
 			CAL_TABLE_SCHEDULE, CAL_TABLE_CALENDAR,
 			CAL_TABLE_RRULE);
-	dbret = cal_db_util_query_exec(query);
-	if (dbret != CAL_DB_OK) {
+	ret = cal_db_util_query_exec(query);
+	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("[%s]", query);
 		ERR("create view Fail");
 	}
@@ -314,8 +309,8 @@ void cal_db_initialize_view_table(void)
 			CAL_VIEW_TABLE_TODO_CALENDAR,
 			CAL_TABLE_SCHEDULE, CAL_TABLE_CALENDAR,
 			CAL_TABLE_RRULE);
-	dbret = cal_db_util_query_exec(query);
-	if (dbret != CAL_DB_OK) {
+	ret = cal_db_util_query_exec(query);
+	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("[%s]", query);
 		ERR("create view Fail");
 	}
@@ -342,8 +337,8 @@ void cal_db_initialize_view_table(void)
 			CAL_VIEW_TABLE_EVENT_CALENDAR_ATTENDEE,
 			CAL_TABLE_SCHEDULE, CAL_TABLE_ATTENDEE, CAL_TABLE_CALENDAR,
 			CAL_TABLE_RRULE);
-	dbret = cal_db_util_query_exec(query);
-	if (dbret != CAL_DB_OK) {
+	ret = cal_db_util_query_exec(query);
+	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("[%s]", query);
 		ERR("create view Fail");
 	}
@@ -423,17 +418,15 @@ API int calendar_db_get_changes_by_version(const char* view_uri, int calendar_bo
 	ret = calendar_list_create(record_list);
 	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "calendar_list_create() Fail");
 
-	stmt = cal_db_util_query_prepare(query);
-	if (NULL == stmt)
-	{
-		ERR("cal_db_util_query_prepare() Fail");
+	ret = cal_db_util_query_prepare(query, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		calendar_list_destroy(*record_list, true);
 		*record_list = NULL;
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 
-	while(CAL_DB_ROW == cal_db_util_stmt_step(stmt))
-	{
+	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		calendar_record_h record;
 		int id = 0, calendar_id = 0,type = 0;
 		int ver = 0;
@@ -684,9 +677,8 @@ API int calendar_db_get_records_with_query(calendar_query_h query, int offset, i
 
 API int calendar_db_clean_after_sync(int calendar_book_id,  int calendar_db_version)
 {
-	int ret = CALENDAR_ERROR_NONE;
 	char query[CAL_DB_SQL_MIN_LEN] = {0};
-	cal_db_util_error_e dbret = CAL_DB_OK;
+	int ret = 0;
 	int len = 0;
 
 	RETVM_IF(calendar_book_id < 0, CALENDAR_ERROR_INVALID_PARAMETER, "calendar_id(%d) is Invalid", calendar_book_id);
@@ -715,36 +707,25 @@ API int calendar_db_clean_after_sync(int calendar_book_id,  int calendar_db_vers
 	if (0 < calendar_db_version)
 		len = snprintf(query+len, sizeof(query)-len, " AND changed_ver <= %d", calendar_db_version);
 
-	dbret = cal_db_util_query_exec(query);
-	DBG("%s",query);
-	if (dbret != CAL_DB_OK) {
-		ERR("DB Failed");
+	ret = cal_db_util_query_exec(query);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_exec() Fail(%d)", ret);
+		SECURE("[%s]", query);
 		cal_db_util_end_trans(false);
-		switch (dbret) {
-		case CAL_DB_ERROR_NO_SPACE:
-			return CALENDAR_ERROR_FILE_NO_SPACE;
-		default:
-			return CALENDAR_ERROR_DB_FAILED;
-		}
+		return ret;
 	}
-	RETVM_IF(ret < 0, ret, "cals_query_exec() Failed (%d)", ret);
 
 	/* delete delete table */
 	snprintf(query, sizeof(query), "DELETE FROM %s WHERE calendar_id = %d",
 			CAL_TABLE_DELETED, calendar_book_id);
-	dbret = cal_db_util_query_exec(query);
-	DBG("%s",query);
-	if (dbret != CAL_DB_OK)
-	{
-		ERR("DB Failed");
+	ret = cal_db_util_query_exec(query);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_exec() Fail(%d)", ret);
+		SECURE("[%s]", query);
 		cal_db_util_end_trans(false);
-		switch (dbret) {
-		case CAL_DB_ERROR_NO_SPACE:
-			return CALENDAR_ERROR_FILE_NO_SPACE;
-		default:
-			return CALENDAR_ERROR_DB_FAILED;
-		}
+		return ret;
 	}
+
 	cal_db_util_end_trans(true);
 	return CALENDAR_ERROR_NONE;
 }
@@ -1270,16 +1251,15 @@ API int calendar_db_get_changes_exception_by_version(const char* view_uri, int o
 	ret = calendar_list_create(record_list);
 	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "calendar_list_create() Fail");
 
-	stmt = cal_db_util_query_prepare(query);
-	if (NULL == stmt)
-	{
-		ERR("cal_db_util_query_prepare() Fail");
+	ret = cal_db_util_query_prepare(query, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		calendar_list_destroy(*record_list, true);
 		*record_list = NULL;
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 
-	while(CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
+	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		calendar_record_h record;
 		int id = 0, calendar_id = 0,type = 0;
 		int ver = 0;

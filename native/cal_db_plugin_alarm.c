@@ -140,16 +140,16 @@ static int _cal_db_alarm_get_all_records(int offset, int limit, calendar_list_h*
 	snprintf(query, sizeof(query), "SELECT *, rowid FROM %s %s %s",
 			CAL_TABLE_ALARM,limitquery,offsetquery);
 
-	stmt = cal_db_util_query_prepare(query);
-	if (NULL == stmt)	{
-		ERR("cal_db_util_query_prepare() Fail");
+	ret = cal_db_util_query_prepare(query, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query);
 		calendar_list_destroy(*out_list, true);
 		*out_list = NULL;
-		return CALENDAR_ERROR_DB_FAILED;
+		return ret;
 	}
 
-	while(CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
+	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		calendar_record_h record = NULL;
 		ret = calendar_record_create(_calendar_alarm._uri,&record);
 		if (CALENDAR_ERROR_NONE != ret) {
@@ -337,16 +337,16 @@ static int _cal_db_alarm_get_records_with_query(calendar_query_h query, int offs
 	}
 
 	/* query */
-	stmt = cal_db_util_query_prepare(query_str);
-	if (NULL == stmt) {
+	ret = cal_db_util_query_prepare(query_str, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query_str);
 		if (bind_text) {
 			g_slist_free_full(bind_text, free);
 			bind_text = NULL;
 		}
-		CAL_FREE(query_str);
-		ERR("cal_db_util_query_prepare() Fail");
-		return CALENDAR_ERROR_DB_FAILED;
+		free(query_str);
+		return ret;
 	}
 
 	/* bind text */
@@ -368,7 +368,7 @@ static int _cal_db_alarm_get_records_with_query(calendar_query_h query, int offs
 		return ret;
 	}
 
-	while(CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
+	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		calendar_record_h record;
 		ret = calendar_record_create(_calendar_alarm._uri,&record);
 		if (CALENDAR_ERROR_NONE != ret) {

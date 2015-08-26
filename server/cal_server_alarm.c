@@ -30,7 +30,6 @@
 #include "cal_internal.h"
 #include "cal_time.h"
 #include "cal_inotify.h"
-
 #include "cal_db_util.h"
 #include "cal_db.h"
 #include "cal_db_query.h"
@@ -54,9 +53,8 @@ struct _alarm_data_s
 /* this api is necessary for repeat instance. */
 static int _cal_server_alarm_unset_alerted_alarmmgr_id(int alarm_id)
 {
-	int ret = CALENDAR_ERROR_NONE;
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
-	cal_db_util_error_e dbret = CAL_DB_OK;
+	int ret = 0;
 
 	ret = cal_db_util_begin_trans();
 	if (CALENDAR_ERROR_NONE != ret)
@@ -69,19 +67,12 @@ static int _cal_server_alarm_unset_alerted_alarmmgr_id(int alarm_id)
 
 	snprintf(query, sizeof(query), "UPDATE %s SET alarm_id = 0 WHERE alarm_id =%d ",
 			CAL_TABLE_ALARM, alarm_id);
-
-	dbret = cal_db_util_query_exec(query);
-	if (CAL_DB_OK != dbret) {
-		ERR("cal_db_util_query_exec() Fail(%d)", dbret);
+	ret = cal_db_util_query_exec(query);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_exec() Fail(%d)", ret);
 		SECURE("[%s]", query);
-		switch (dbret) {
-		case CAL_DB_ERROR_NO_SPACE:
-			cal_db_util_end_trans(false);
-			return CALENDAR_ERROR_FILE_NO_SPACE;
-		default:
-			cal_db_util_end_trans(false);
-			return CALENDAR_ERROR_DB_FAILED;
-		}
+		cal_db_util_end_trans(false);
+		return ret;
 	}
 	cal_db_util_end_trans(true);
 	return CALENDAR_ERROR_NONE;
@@ -104,9 +95,8 @@ static int _cal_server_alarm_clear_all_cb(alarm_id_t alarm_id, void *data)
 
 static int _cal_server_alarm_update_alarm_id(int alarm_id, int event_id, int tick, int unit)
 {
-	int ret = CALENDAR_ERROR_NONE;
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
-	cal_db_util_error_e dbret = CAL_DB_OK;
+	int ret = 0;
 
 	ret = cal_db_util_begin_trans();
 	if (CALENDAR_ERROR_NONE != ret)
@@ -119,19 +109,12 @@ static int _cal_server_alarm_update_alarm_id(int alarm_id, int event_id, int tic
 	snprintf(query, sizeof(query), "UPDATE %s SET alarm_id =%d "
 			"WHERE event_id =%d AND remind_tick =%d AND remind_tick_unit =%d",
 			CAL_TABLE_ALARM, alarm_id, event_id, tick, unit);
-
-	dbret = cal_db_util_query_exec(query);
-	if (CAL_DB_OK != dbret) {
-		ERR("cal_db_util_query_exec() Fail(%d)", dbret);
+	ret = cal_db_util_query_exec(query);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_exec() Fail(%d)", ret);
 		SECURE("[%s]", query);
-		switch (dbret) {
-		case CAL_DB_ERROR_NO_SPACE:
-			cal_db_util_end_trans(false);
-			return CALENDAR_ERROR_FILE_NO_SPACE;
-		default:
-			cal_db_util_end_trans(false);
-			return CALENDAR_ERROR_DB_FAILED;
-		}
+		cal_db_util_end_trans(false);
+		return ret;
 	}
 	cal_db_util_end_trans(true);
 	return CALENDAR_ERROR_NONE;
@@ -139,16 +122,22 @@ static int _cal_server_alarm_update_alarm_id(int alarm_id, int event_id, int tic
 
 static long long int _cal_server_alarm_get_alert_utime(const char *field, int event_id, time_t current)
 {
+	int ret = 0;
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	snprintf(query, sizeof(query), "SELECT %s FROM %s "
 			"WHERE event_id=%d AND %s>%ld ORDER BY %s LIMIT 1",
 			field, CAL_TABLE_NORMAL_INSTANCE, event_id, field, current, field);
 
 	sqlite3_stmt *stmt = NULL;
-	stmt = cal_db_util_query_prepare(query);
+	ret = cal_db_util_query_prepare(query, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
+		SECURE("query[%s]", query);
+		return ret;
+	}
 
 	long long int utime = 0;
-	if (CAL_DB_ROW == cal_db_util_stmt_step(stmt))
+	if (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt))
 		utime = sqlite3_column_int(stmt, 0);
 
 	sqlite3_finalize(stmt);
@@ -157,6 +146,7 @@ static long long int _cal_server_alarm_get_alert_utime(const char *field, int ev
 
 static int _cal_server_alarm_get_alert_localtime(const char *field, int event_id, time_t current)
 {
+	int ret = 0;
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	struct tm st = {0};
 	tzset();
@@ -167,10 +157,15 @@ static int _cal_server_alarm_get_alert_localtime(const char *field, int event_id
 			field, CAL_TABLE_ALLDAY_INSTANCE, event_id, field, mod_current, field);
 
 	sqlite3_stmt *stmt = NULL;
-	stmt = cal_db_util_query_prepare(query);
+	ret = cal_db_util_query_prepare(query, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
+		SECURE("query[%s]", query);
+		return ret;
+	}
 
 	const char *datetime = NULL;
-	if (CAL_DB_ROW == cal_db_util_stmt_step(stmt))
+	if (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt))
 		datetime = (const char *)sqlite3_column_text(stmt, 0);
 
 	if (NULL == datetime || '\0' == *datetime) {
@@ -200,6 +195,7 @@ static int _cal_server_alarm_get_alert_localtime(const char *field, int event_id
  */
 static int _cal_server_alarm_get_alert_time(int alarm_id, time_t *tt_alert)
 {
+	int ret = 0;
 	RETV_IF(NULL == tt_alert, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
@@ -210,8 +206,12 @@ static int _cal_server_alarm_get_alert_time(int alarm_id, time_t *tt_alert)
 			CAL_TABLE_ALARM, CAL_TABLE_SCHEDULE, alarm_id);
 
 	sqlite3_stmt *stmt = NULL;
-	stmt = cal_db_util_query_prepare(query);
-	RETVM_IF(NULL == stmt, CALENDAR_ERROR_DB_FAILED, "cal_db_util_query_prepare() Fail");
+	ret = cal_db_util_query_prepare(query, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
+		SECURE("query[%s]", query);
+		return ret;
+	}
 
 	int event_id = 0;
 	int unit = 0;
@@ -225,7 +225,7 @@ static int _cal_server_alarm_get_alert_time(int alarm_id, time_t *tt_alert)
 	int dtend_type = 0;
 	struct tm st = {0};
 
-	if (CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
+	if (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		int index = 0;
 		event_id = sqlite3_column_int(stmt, index++);
 		unit = sqlite3_column_int(stmt, index++);
@@ -305,8 +305,9 @@ static int _cal_server_alarm_get_alert_time(int alarm_id, time_t *tt_alert)
 
 static void _cal_server_alarm_get_upcoming_specific_utime(time_t utime, bool get_all, GList **l)
 {
-	char query_specific_utime[CAL_DB_SQL_MAX_LEN] = {0};
-	snprintf(query_specific_utime, sizeof(query_specific_utime),
+	int ret = 0;
+	char query[CAL_DB_SQL_MAX_LEN] = {0};
+	snprintf(query, sizeof(query),
 			// alarm utime(normal event + todo)
 			"SELECT event_id, remind_tick_unit, remind_tick, alarm_type, alarm_utime, alarm_datetime "
 			"FROM %s "
@@ -318,14 +319,14 @@ static void _cal_server_alarm_get_upcoming_specific_utime(time_t utime, bool get
 			true == get_all ? "" : "ORDER BY alarm_utime ASC LIMIT 1");
 
 	sqlite3_stmt *stmt = NULL;
-	stmt = cal_db_util_query_prepare(query_specific_utime);
-	if (NULL == stmt) {
-		ERR("cal_db_util_query_prepare() Fail");
-		SECURE("query[%s]", query_specific_utime);
+	ret = cal_db_util_query_prepare(query, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
+		SECURE("query[%s]", query);
 		return;
 	}
 
-	while (CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
+	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		struct _alarm_data_s *ad = calloc(1, sizeof(struct _alarm_data_s));
 		if (NULL == ad) {
 			ERR("calloc() Fail");
@@ -351,8 +352,9 @@ static void _cal_server_alarm_get_upcoming_specific_utime(time_t utime, bool get
 
 static void _cal_server_alarm_get_upcoming_specific_localtime(const char *datetime, bool get_all, GList **l)
 {
-	char query_specific_localtime[CAL_DB_SQL_MAX_LEN] = {0};
-	snprintf(query_specific_localtime, sizeof(query_specific_localtime),
+	int ret = 0;
+	char query[CAL_DB_SQL_MAX_LEN] = {0};
+	snprintf(query, sizeof(query),
 			"SELECT event_id, remind_tick_unit, remind_tick, "
 			"alarm_type, alarm_utime, alarm_datetime "
 			"FROM %s "
@@ -364,14 +366,14 @@ static void _cal_server_alarm_get_upcoming_specific_localtime(const char *dateti
 			true == get_all ? "" : "ORDER BY alarm_datetime ASC LIMIT 1");
 
 	sqlite3_stmt *stmt = NULL;
-	stmt = cal_db_util_query_prepare(query_specific_localtime);
-	if (NULL == stmt) {
-		ERR("cal_db_util_query_prepare() Fail");
-		ERR("[%s]", query_specific_localtime);
+	ret = cal_db_util_query_prepare(query, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
+		SECURE("query[%s]", query);
 		return;
 	}
 
-	while (CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
+	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		struct _alarm_data_s *ad = calloc(1, sizeof(struct _alarm_data_s));
 		if (NULL == ad) {
 			ERR("calloc() Fail");
@@ -409,12 +411,13 @@ static void _cal_server_alarm_get_upcoming_specific_localtime(const char *dateti
 
 static void _cal_server_alarm_get_upcoming_nonspecific_event_utime(time_t utime, bool get_all, GList **l)
 {
-	char query_nonspecific_event_utime[CAL_DB_SQL_MAX_LEN] = {0};
+	int ret = 0;
+	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	/*
 	 * A:alarm
 	 * B:normal instance
 	 */
-	snprintf(query_nonspecific_event_utime, sizeof(query_nonspecific_event_utime),
+	snprintf(query, sizeof(query),
 			"SELECT A.event_id, A.remind_tick_unit, A.remind_tick, A.alarm_type, B.dtstart_utime, A.alarm_datetime "
 			"FROM %s as A, %s as B ON A.event_id = B.event_id "
 			"WHERE A.remind_tick_unit >%d AND (B.dtstart_utime - (A.remind_tick_unit * A.remind_tick)) %s %ld %s",
@@ -425,14 +428,14 @@ static void _cal_server_alarm_get_upcoming_nonspecific_event_utime(time_t utime,
 			true == get_all ? "" : "ORDER BY (B.dtstart_utime - (A.remind_tick_unit * A.remind_tick)) LIMIT 1");
 
 	sqlite3_stmt *stmt = NULL;
-	stmt = cal_db_util_query_prepare(query_nonspecific_event_utime);
-	if (NULL == stmt) {
-		ERR("cal_db_util_query_prepare() Fail");
-		ERR("[%s]", query_nonspecific_event_utime);
+	ret = cal_db_util_query_prepare(query, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
+		SECURE("query[%s]", query);
 		return;
 	}
 
-	while (CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
+	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		struct _alarm_data_s *ad = calloc(1, sizeof(struct _alarm_data_s));
 		if (NULL == ad) {
 			ERR("calloc() Fail");
@@ -459,12 +462,13 @@ static void _cal_server_alarm_get_upcoming_nonspecific_event_utime(time_t utime,
 
 static void _cal_server_alarm_get_upcoming_nonspecific_event_localtime(const char *datetime, bool get_all, GList **l)
 {
-	char query_nonspecific_event_localtime[CAL_DB_SQL_MAX_LEN] = {0};
+	int ret = 0;
+	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	/*
 	 * A:alarm
 	 * B:allday
 	 */
-	snprintf(query_nonspecific_event_localtime, sizeof(query_nonspecific_event_localtime),
+	snprintf(query, sizeof(query),
 			"SELECT A.event_id, A.remind_tick_unit, A.remind_tick, A.alarm_type, A.alarm_utime, B.dtstart_datetime "
 			"FROM %s as A, %s as B ON A.event_id = B.event_id "
 			"WHERE A.remind_tick_unit >%d AND "
@@ -475,14 +479,14 @@ static void _cal_server_alarm_get_upcoming_nonspecific_event_localtime(const cha
 			true == get_all ? "=" : ">",
 			true == get_all ? "" : "ORDER BY (strftime('%s', B.dtstart_datetime) - (A.remind_tick_unit * A.remind_tick)) LIMIT 1 ");
 	sqlite3_stmt *stmt = NULL;
-	stmt = cal_db_util_query_prepare(query_nonspecific_event_localtime);
-	if (NULL == stmt) {
-		ERR("cal_db_util_query_prepare() Fail");
-		ERR("[%s]", query_nonspecific_event_localtime);
+	ret = cal_db_util_query_prepare(query, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
+		SECURE("query[%s]", query);
 		return;
 	}
 
-	while (CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
+	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		struct _alarm_data_s *ad = calloc(1, sizeof(struct _alarm_data_s));
 		if (NULL == ad) {
 			ERR("calloc() Fail");
@@ -520,12 +524,13 @@ static void _cal_server_alarm_get_upcoming_nonspecific_event_localtime(const cha
 
 static void _cal_server_alarm_get_upcoming_nonspecific_todo_utime(time_t utime, bool get_all, GList **l)
 {
-	char query_nonspecific_todo_utime[CAL_DB_SQL_MAX_LEN] = {0};
+	int ret = 0;
+	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	/*
 	 * A:alarm
 	 * B:todo(normal)
 	 */
-	snprintf(query_nonspecific_todo_utime, sizeof(query_nonspecific_todo_utime),
+	snprintf(query, sizeof(query),
 			"SELECT A.event_id, A.remind_tick_unit, A.remind_tick, A.alarm_type, B.dtend_utime, A.alarm_datetime "
 			"FROM %s as A, %s as B ON A.event_id = B.id "
 			"WHERE A.remind_tick_unit >%d AND B.type =%d "
@@ -537,14 +542,14 @@ static void _cal_server_alarm_get_upcoming_nonspecific_todo_utime(time_t utime, 
 			true == get_all ? "" : "ORDER BY (B.dtend_utime - (A.remind_tick_unit * A.remind_tick)) LIMIT 1 ");
 
 	sqlite3_stmt *stmt = NULL;
-	stmt = cal_db_util_query_prepare(query_nonspecific_todo_utime);
-	if (NULL == stmt) {
-		ERR("cal_db_util_query_prepare() Fail");
-		ERR("[%s]", query_nonspecific_todo_utime);
+	ret = cal_db_util_query_prepare(query, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
+		SECURE("query[%s]", query);
 		return;
 	}
 
-	while (CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
+	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		struct _alarm_data_s *ad = calloc(1, sizeof(struct _alarm_data_s));
 		if (NULL == ad) {
 			ERR("calloc() Fail");
@@ -571,12 +576,13 @@ static void _cal_server_alarm_get_upcoming_nonspecific_todo_utime(time_t utime, 
 
 static void _cal_server_alarm_get_upcoming_nonspecific_todo_localtime(const char *datetime, bool get_all, GList **l)
 {
-	char query_nonspecific_todo_localtime[CAL_DB_SQL_MAX_LEN] = {0};
+	int ret = 0;
+	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	/*
 	 * A:alarm
 	 * B:todo(allday)
 	 */
-	snprintf(query_nonspecific_todo_localtime, sizeof(query_nonspecific_todo_localtime),
+	snprintf(query, sizeof(query),
 			"SELECT A.event_id, A.remind_tick_unit, A.remind_tick, A.alarm_type, A.alarm_utime, B.dtend_datetime "
 			"FROM %s as A, %s as B ON A.event_id = B.id "
 			"WHERE A.remind_tick_unit >%d AND B.type =%d "
@@ -588,14 +594,14 @@ static void _cal_server_alarm_get_upcoming_nonspecific_todo_localtime(const char
 			true == get_all ? "" : "ORDER BY (strftime('%s', B.dtend_datetime) - (A.remind_tick_unit * A.remind_tick)) LIMIT 1 ");
 
 	sqlite3_stmt *stmt = NULL;
-	stmt = cal_db_util_query_prepare(query_nonspecific_todo_localtime);
-	if (NULL == stmt) {
-		ERR("cal_db_util_query_prepare() Fail");
-		ERR("[%s]", query_nonspecific_todo_localtime);
+	ret = cal_db_util_query_prepare(query, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
+		SECURE("query[%s]", query);
 		return;
 	}
 
-	while (CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
+	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		struct _alarm_data_s *ad = calloc(1, sizeof(struct _alarm_data_s));
 		if (NULL == ad) {
 			ERR("calloc() Fail");

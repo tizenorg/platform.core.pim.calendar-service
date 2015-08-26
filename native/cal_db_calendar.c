@@ -41,13 +41,14 @@ int calendar_db_delete_account(int account_id)
 	snprintf(query, sizeof(query), "SELECT id FROM %s where account_id = %d and deleted = 0",
 			CAL_TABLE_CALENDAR, account_id);
 
-	stmt = cal_db_util_query_prepare(query);
-	if (NULL == stmt) {
-		ERR("cal_db_util_query_prepare() Fail");
-		return CALENDAR_ERROR_DB_FAILED;
+	ret = cal_db_util_query_prepare(query, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
+		SECURE("query[%s]", query);
+		return ret;
 	}
 
-	while(CAL_DB_ROW == cal_db_util_stmt_step(stmt)) {
+	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		int id = 0;
 		id = sqlite3_column_int(stmt, 0);
 		calendar_list = g_list_append(calendar_list, GINT_TO_POINTER(id));

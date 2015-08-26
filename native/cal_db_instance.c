@@ -271,7 +271,7 @@ static int __get_exdate_list(UCalendar *ucal, cal_event_s *event, GList **l, int
 
 static int _cal_db_instance_update_exdate_mod(int original_event_id, char *recurrence_id)
 {
-	int dbret;
+	int ret = 0;
 	int i, j;
 	char **t = NULL;
 	char *p = NULL;
@@ -326,32 +326,20 @@ static int _cal_db_instance_update_exdate_mod(int original_event_id, char *recur
 
 		case 16:
 			DBG("NORMAL instance");
-			sscanf(p, "%04d%02d%02dT%02d%02d%02dZ",
-					&y, &m, &d, &h, &n, &s);
-			snprintf(query, sizeof(query),
-					"DELETE FROM %s "
+			sscanf(p, "%04d%02d%02dT%02d%02d%02dZ", &y, &m, &d, &h, &n, &s);
+			snprintf(query, sizeof(query), "DELETE FROM %s "
 					"WHERE event_id = %d AND dtstart_utime = %lld ",
 					CAL_TABLE_NORMAL_INSTANCE,
 					original_event_id, cal_time_convert_itol(NULL, y, m, d, h, n, s));
 			DBG("(%lld)", cal_time_convert_itol(NULL, y, m, d, h, n, s));
 			break;
 		}
-
-		if (strlen(p) == strlen("YYYYMMDDTHHMMSSZ")) {
-		} else {
-
-		}
-		dbret = cal_db_util_query_exec(query);
-		if (dbret != CAL_DB_OK) {
-			ERR("cal_db_util_query_exec() failed (%d)", dbret);
+		ret = cal_db_util_query_exec(query);
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("cal_db_util_query_exec() Fail(%d)", ret);
 			SECURE("[%s]", query);
 			g_strfreev(t);
-			switch (dbret) {
-			case CAL_DB_ERROR_NO_SPACE:
-				return CALENDAR_ERROR_FILE_NO_SPACE;
-			default:
-				return CALENDAR_ERROR_DB_FAILED;
-			}
+			return ret;
 		}
 	}
 	g_strfreev(t);
@@ -392,7 +380,7 @@ static inline int _cal_db_instance_convert_mday(const char *str, int *mday)
 
 static int _cal_db_instance_del_inundant(int event_id, calendar_time_s *st, cal_event_s *event)
 {
-	cal_db_util_error_e dbret = CAL_DB_OK;
+	int ret = 0;
 	int cnt;
 	char query[CAL_DB_SQL_MAX_LEN];
 
@@ -424,16 +412,11 @@ static int _cal_db_instance_del_inundant(int event_id, calendar_time_s *st, cal_
 				event_id, cnt -1);
 	}
 
-	dbret = cal_db_util_query_exec(query);
-	if (dbret != CAL_DB_OK) {
-		ERR("cal_db_util_query_exec() Fail(%d)", dbret);
+	ret = cal_db_util_query_exec(query);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_exec() Fail(%d)", ret);
 		SECURE("[%s]", query);
-		switch (dbret) {
-		case CAL_DB_ERROR_NO_SPACE:
-			return CALENDAR_ERROR_FILE_NO_SPACE;
-		default:
-			return CALENDAR_ERROR_DB_FAILED;
-		}
+		return ret;
 	}
 	return CALENDAR_ERROR_NONE;
 }
@@ -521,7 +504,7 @@ static int _cal_db_instance_insert_record(UCalendar *ucal, long long int duratio
 		lli_s =  ms2sec(ucal_getMillis(ucal, &ec));
 		lli_e = lli_s + duration;
 		ret = cal_db_instance_helper_insert_utime_instance(event->index, lli_s, lli_e);
-		RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_db_instance_normal_insert_record() failed(%d)", ret);
+		RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_db_instance_helper_insert_utime_instance() Fail(%d)", ret);
 		break;
 
 	case CALENDAR_TIME_LOCALTIME:
@@ -1850,7 +1833,7 @@ static int _cal_db_instance_publish_record_details(UCalendar *ucal, cal_event_s 
 
 int cal_db_instance_update_exdate_del(int id, char *exdate)
 {
-	int dbret;
+	int ret = 0;
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	char **t = NULL;
 	char *p = NULL;
@@ -1903,18 +1886,12 @@ int cal_db_instance_update_exdate_del(int id, char *exdate)
 			break;
 		}
 
-		dbret = cal_db_util_query_exec(query);
-		if (dbret != CAL_DB_OK) {
-			ERR("cal_db_util_query_exec() failed (%d)", dbret);
+		ret = cal_db_util_query_exec(query);
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("cal_db_util_query_exec() Fail(%d)", ret);
 			SECURE("[%s]", query);
 			g_strfreev(t);
-			switch (dbret)
-			{
-			case CAL_DB_ERROR_NO_SPACE:
-				return CALENDAR_ERROR_FILE_NO_SPACE;
-			default:
-				return CALENDAR_ERROR_DB_FAILED;
-			}
+			return ret;
 		}
 	}
 	g_strfreev(t);
@@ -1950,38 +1927,28 @@ int cal_db_instance_get_now(long long int *current)
 int cal_db_instance_discard_record(int index)
 {
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
-	cal_db_util_error_e dbret = CAL_DB_OK;
+	int ret = 0;
 
 	DBG("delete normal");
 	snprintf(query, sizeof(query), "DELETE FROM %s WHERE event_id = %d ",
 			CAL_TABLE_NORMAL_INSTANCE, index);
 
-	dbret = cal_db_util_query_exec(query);
-	if (CAL_DB_OK != dbret) {
-		ERR("cal_db_util_query_exec() failed (%d)", dbret);
+	ret = cal_db_util_query_exec(query);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_exec() Fail(%d)", ret);
 		SECURE("[%s]", query);
-		switch (dbret) {
-		case CAL_DB_ERROR_NO_SPACE:
-			return CALENDAR_ERROR_FILE_NO_SPACE;
-		default:
-			return CALENDAR_ERROR_DB_FAILED;
-		}
+		return ret;
 	}
 
 	DBG("delete allday");
 	snprintf(query, sizeof(query), "DELETE FROM %s WHERE event_id = %d ",
 			CAL_TABLE_ALLDAY_INSTANCE, index);
 
-	dbret = cal_db_util_query_exec(query);
-	if (CAL_DB_OK != dbret) {
-		ERR("cal_db_util_query_exec() failed (%d)", dbret);
+	ret = cal_db_util_query_exec(query);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_db_util_query_exec() Fail(%d)", ret);
 		SECURE("[%s]", query);
-		switch (dbret) {
-		case CAL_DB_ERROR_NO_SPACE:
-			return CALENDAR_ERROR_FILE_NO_SPACE;
-		default:
-			return CALENDAR_ERROR_DB_FAILED;
-		}
+		return ret;
 	}
 	return CALENDAR_ERROR_NONE;
 }
