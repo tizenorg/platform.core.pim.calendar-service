@@ -52,29 +52,13 @@ void cal_server_ipc_connect(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_dat
 	int ret = CALENDAR_ERROR_NONE;
 
 	ret = calendar_connect();
-	if (ret == CALENDAR_ERROR_NONE) {
+	if (CALENDAR_ERROR_NONE == ret) {
 		char *smack_label = NULL;
 		if (0 != pims_ipc_svc_get_smack_label(ipc, &smack_label))
 			ERR("pims_ipc_svc_get_smack_label() Fail");
 		cal_access_control_set_client_info(ipc, smack_label);
 	}
-
-	if (outdata) {
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata) {
-			ERR("pims_ipc_data_create fail");
-			return;
-		}
-
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0) {
-			pims_ipc_data_destroy(*outdata);
-			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			return;
-		}
-	} else {
-		ERR("outdata is NULL");
-	}
+	_cal_server_ipc_return(outdata, ret);
 }
 
 void cal_server_ipc_disconnect(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -82,483 +66,304 @@ void cal_server_ipc_disconnect(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_
 	int ret = CALENDAR_ERROR_NONE;
 
 	ret = calendar_disconnect();
-
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
-			return;
-		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
-			pims_ipc_data_destroy(*outdata);
-			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			return;
-		}
-	}
-	else
-	{
-		ERR("outdata is NULL");
-	}
-	return;
+	_cal_server_ipc_return(outdata, ret);
 }
 
-void cal_server_ipc_check_permission(pims_ipc_h ipc, pims_ipc_data_h indata,
-		pims_ipc_data_h *outdata, void *userdata)
+void cal_server_ipc_check_permission(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
 {
 	int ret = CALENDAR_ERROR_NONE;
-	int permission;
-	bool result;
 
 	if (NULL == indata) {
+		ERR("No indata");
 		ret = CALENDAR_ERROR_INVALID_PARAMETER;
-		ERR("check permission fail.");
-		goto ERROR_RETURN;
+		_cal_server_ipc_return(outdata, ret);
+		return;
 	}
 
+	int permission;
 	ret = cal_ipc_unmarshal_int(indata, &permission);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
-		goto ERROR_RETURN;
-	}
-
-	result = cal_access_control_have_permission(ipc, permission);
-
-ERROR_RETURN:
-	*outdata = pims_ipc_data_create(0);
-	if (!*outdata) {
-		ERR("pims_ipc_data_create fail");
+		_cal_server_ipc_return(outdata, ret);
 		return;
 	}
 
-	if (pims_ipc_data_put(*outdata, (void*)&ret, sizeof(int)) != 0) {
+	bool result = cal_access_control_have_permission(ipc, permission);
+	_cal_server_ipc_return(outdata, ret);
+
+	if (0 != pims_ipc_data_put(*outdata, (void *)&result, sizeof(bool))) {
+		ERR("pims_ipc_data_put() Fail");
 		pims_ipc_data_destroy(*outdata);
 		*outdata = NULL;
-		ERR("pims_ipc_data_put fail (return value)");
+		ret = CALENDAR_ERROR_OUT_OF_MEMORY;
+		_cal_server_ipc_return(outdata, ret);
 		return;
-	}
-	if (CALENDAR_ERROR_NONE == ret) {
-		if (pims_ipc_data_put(*outdata, (void*)&result, sizeof(bool)) != 0) {
-			pims_ipc_data_destroy(*outdata);
-			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			return;
-		}
 	}
 }
 
 void cal_server_ipc_db_insert_record(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
 {
 	int ret = CALENDAR_ERROR_NONE;
-	calendar_record_h record = NULL;
-	int id = 0;
 
-	if (indata) {
-		ret = cal_ipc_unmarshal_record(indata,&record);
-		if (CALENDAR_ERROR_NONE != ret) {
-			ERR("_cal_ipc_unmarshal_record fail");
-			record = NULL;
-			goto ERROR_RETURN;
-		}
-	} else {
+	if (NULL == indata) {
+		ERR("No indata");
 		ret = CALENDAR_ERROR_INVALID_PARAMETER;
-		ERR("cal_server_ipc_db_insert_record fail");
-		goto ERROR_RETURN;
+		_cal_server_ipc_return(outdata, ret);
+		return;
 	}
+
+	calendar_record_h record = NULL;
+	ret = cal_ipc_unmarshal_record(indata, &record);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_record() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
 	if (false == cal_access_control_have_permission(ipc, CAL_PERMISSION_WRITE)) {
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
-		goto ERROR_RETURN;
+		_cal_server_ipc_return(outdata, ret);
+		return;
 	}
 
+	int id = 0;
 	ret = calendar_db_insert_record(record, &id);
+	_cal_server_ipc_return(outdata, ret);
 
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
-			goto DATA_FREE;
-		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
-			pims_ipc_data_destroy(*outdata);
-			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			goto DATA_FREE;
-		}
-		if (CALENDAR_ERROR_NONE == ret)
-		{
-			int transaction_ver = cal_db_util_get_transaction_ver();
-			if (cal_ipc_marshal_int(transaction_ver,*outdata) != CALENDAR_ERROR_NONE)
-			{
-				pims_ipc_data_destroy(*outdata);
-				*outdata = NULL;
-				ERR("cal_ipc_marshal fail");
-				ret = CALENDAR_ERROR_OUT_OF_MEMORY;
-				goto ERROR_RETURN;
-			}
-			if (cal_ipc_marshal_int(id,*outdata) != CALENDAR_ERROR_NONE)
-			{
-				pims_ipc_data_destroy(*outdata);
-				*outdata = NULL;
-				ERR("cal_ipc_marshal fail");
-				ret = CALENDAR_ERROR_OUT_OF_MEMORY;
-				goto ERROR_RETURN;
-			}
-		}
-	}
-	else
-	{
-		ERR("outdata is NULL");
-	}
-	goto DATA_FREE;
-
-ERROR_RETURN:
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
-			goto DATA_FREE;
-		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
-			pims_ipc_data_destroy(*outdata);
-			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			goto DATA_FREE;
-		}
-	}
-	else
-	{
-		ERR("outdata is NULL");
+	int transaction_ver = 0;
+	transaction_ver = cal_db_util_get_transaction_ver();
+	ret = cal_ipc_marshal_int(transaction_ver, *outdata);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_marshal_int() Fail(%d)", ret);
+		pims_ipc_data_destroy(*outdata);
+		*outdata = NULL;
+		_cal_server_ipc_return(outdata, ret);
+		calendar_record_destroy(record, true);
+		return;
 	}
 
-DATA_FREE:
-	if (record)
-	{
-		calendar_record_destroy(record,true);
+	ret = cal_ipc_marshal_int(id, *outdata);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_marshal_int() Fail(%d)", ret);
+		pims_ipc_data_destroy(*outdata);
+		*outdata = NULL;
+		_cal_server_ipc_return(outdata, ret);
 	}
-	return;
+
+	calendar_record_destroy(record, true);
 }
 
 void cal_server_ipc_db_get_record(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
 {
 	int ret = CALENDAR_ERROR_NONE;
-	char* view_uri = NULL;
-	int id = 0;
-	calendar_record_h record = NULL;
 
-	if (indata)
-	{
-		ret = cal_ipc_unmarshal_char(indata,&view_uri);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("cal_ipc_unmarshal_char fail");
-			goto ERROR_RETURN;
-		}
-		ret = cal_ipc_unmarshal_int(indata,&id);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("cal_ipc_unmarshal_int fail");
-			goto ERROR_RETURN;
-		}
-	}
-	else
-	{
+	if (NULL == indata) {
+		ERR("No indata");
 		ret = CALENDAR_ERROR_INVALID_PARAMETER;
-		ERR("cal_server_ipc_db_insert_record fail");
-		goto ERROR_RETURN;
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
+	char* view_uri = NULL;
+	ret = cal_ipc_unmarshal_char(indata, &view_uri);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_char() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		free(view_uri);
+		return;
+	}
+
+	int id = 0;
+	ret = cal_ipc_unmarshal_int(indata, &id);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		free(view_uri);
+		return;
 	}
 
 	if (false == cal_access_control_have_permission(ipc, CAL_PERMISSION_READ)) {
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
-		goto ERROR_RETURN;
+		_cal_server_ipc_return(outdata, ret);
+		free(view_uri);
+		return;
 	}
 
-	ret = calendar_db_get_record(view_uri,id,&record);
+	calendar_record_h record = NULL;
+	ret = calendar_db_get_record(view_uri, id, &record);
+	_cal_server_ipc_return(outdata, ret);
 
-ERROR_RETURN:
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
-			goto DATA_FREE;
-		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
+	if (CALENDAR_ERROR_NONE == ret) {
+		ret = cal_ipc_marshal_record(record, *outdata);
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("cal_ipc_marshal_record() Fail(%d)", ret);
 			pims_ipc_data_destroy(*outdata);
 			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			goto DATA_FREE;
-		}
-		if (CALENDAR_ERROR_NONE == ret) {
-			if (cal_ipc_marshal_record(record, *outdata) != CALENDAR_ERROR_NONE) {
-				pims_ipc_data_destroy(*outdata);
-				*outdata = NULL;
-				ERR("cal_ipc_marshal_record fail");
-				goto DATA_FREE;
-			}
+			_cal_server_ipc_return(outdata, ret);
 		}
 	}
-	else
-	{
-		ERR("outdata is NULL");
-	}
-DATA_FREE:
-	if (record)
-	{
-		calendar_record_destroy(record,true);
-	}
-	CAL_FREE(view_uri);
-	return;
+
+	calendar_record_destroy(record, true);
+	free(view_uri);
 }
 
 void cal_server_ipc_db_update_record(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
 {
 	int ret = CALENDAR_ERROR_NONE;
-	calendar_record_h record = NULL;
 
-	if (indata)
-	{
-		ret = cal_ipc_unmarshal_record(indata,&record);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("cal_ipc_unmarshal_record fail");
-			goto ERROR_RETURN;
-		}
-	}
-	else
-	{
+	if (NULL == indata) {
+		ERR("No indata");
 		ret = CALENDAR_ERROR_INVALID_PARAMETER;
-		ERR("cal_server_ipc_db_insert_record fail");
-		goto ERROR_RETURN;
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
+	calendar_record_h record = NULL;
+	ret = cal_ipc_unmarshal_record(indata, &record);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_record() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
 	}
 
 	if (false == cal_access_control_have_permission(ipc, CAL_PERMISSION_WRITE)) {
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
-		goto ERROR_RETURN;
+		_cal_server_ipc_return(outdata, ret);
+		return;
 	}
 
 	ret = calendar_db_update_record(record);
+	_cal_server_ipc_return(outdata, ret);
 
-ERROR_RETURN:
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
-			goto DATA_FREE;
-		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
+	if (CALENDAR_ERROR_NONE == ret) {
+		int transaction_ver = 0;
+		transaction_ver = cal_db_util_get_transaction_ver();
+		ret = cal_ipc_marshal_int(transaction_ver, *outdata);
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("cal_ipc_marshal_int() Fail(%d)", ret);
 			pims_ipc_data_destroy(*outdata);
 			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			goto DATA_FREE;
-		}
-		if (CALENDAR_ERROR_NONE == ret)
-		{
-			int transaction_ver = cal_db_util_get_transaction_ver();
-			if (cal_ipc_marshal_int(transaction_ver,*outdata) != CALENDAR_ERROR_NONE)
-			{
-				pims_ipc_data_destroy(*outdata);
-				ERR("cal_ipc_marshal fail");
-				ret = CALENDAR_ERROR_OUT_OF_MEMORY;
-				goto DATA_FREE;
-			}
+			_cal_server_ipc_return(outdata, ret);
 		}
 	}
-	else
-	{
-		ERR("outdata is NULL");
-	}
-DATA_FREE:
-	if (record)
-	{
-		calendar_record_destroy(record,true);
-	}
-	return;
+
+	calendar_record_destroy(record, true);
 }
 
 void cal_server_ipc_db_delete_record(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
 {
 	int ret = CALENDAR_ERROR_NONE;
-	char* view_uri = NULL;
-	int id = 0;
 
-	if (indata)
-	{
-		ret = cal_ipc_unmarshal_char(indata,&view_uri);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("cal_ipc_unmarshal_record fail");
-			goto ERROR_RETURN;
-		}
-		ret = cal_ipc_unmarshal_int(indata,&id);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("cal_ipc_unmarshal_int fail");
-			goto ERROR_RETURN;
-		}
-	}
-	else
-	{
+	if (NULL == indata) {
+		ERR("No indata");
 		ret = CALENDAR_ERROR_INVALID_PARAMETER;
-		ERR("cal_server_ipc_db_insert_record fail");
-		goto ERROR_RETURN;
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
+	char* view_uri = NULL;
+	ret = cal_ipc_unmarshal_char(indata, &view_uri);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_char() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
+	int id = 0;
+	ret = cal_ipc_unmarshal_int(indata, &id);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		free(view_uri);
+		return;
 	}
 
 	if (false == cal_access_control_have_permission(ipc, CAL_PERMISSION_WRITE)) {
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
-		goto ERROR_RETURN;
+		_cal_server_ipc_return(outdata, ret);
+		free(view_uri);
+		return;
 	}
 
-	ret = calendar_db_delete_record(view_uri,id);
+	ret = calendar_db_delete_record(view_uri, id);
+	_cal_server_ipc_return(outdata, ret);
 
-ERROR_RETURN:
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
-			goto DATA_FREE;
-		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
+	if (CALENDAR_ERROR_NONE == ret) {
+		int transaction_ver = 0;
+		transaction_ver = cal_db_util_get_transaction_ver();
+		ret = cal_ipc_marshal_int(transaction_ver, *outdata);
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("cal_ipc_marshal_int() Fail(%d)", ret);
 			pims_ipc_data_destroy(*outdata);
 			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			goto DATA_FREE;
-		}
-		if (CALENDAR_ERROR_NONE == ret)
-		{
-			int transaction_ver = cal_db_util_get_transaction_ver();
-			if (cal_ipc_marshal_int(transaction_ver,*outdata) != CALENDAR_ERROR_NONE)
-			{
-				pims_ipc_data_destroy(*outdata);
-				ERR("cal_ipc_marshal fail");
-				ret = CALENDAR_ERROR_OUT_OF_MEMORY;
-				goto DATA_FREE;
-			}
+			_cal_server_ipc_return(outdata, ret);
 		}
 	}
-	else
-	{
-		ERR("outdata is NULL");
-	}
-DATA_FREE:
 
-	CAL_FREE(view_uri);
-	return;
+	free(view_uri);
 }
 
 void cal_server_ipc_db_get_all_records(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
 {
 	int ret = CALENDAR_ERROR_NONE;
-	char* view_uri = NULL;
-	int offset = 0;
-	int limit = 0;
-	calendar_list_h list = NULL;
 
-	if (indata)
-	{
-		ret = cal_ipc_unmarshal_char(indata,&view_uri);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("cal_ipc_unmarshal_record fail");
-			goto ERROR_RETURN;
-		}
-		ret = cal_ipc_unmarshal_int(indata,&offset);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("cal_ipc_unmarshal_int fail");
-			goto ERROR_RETURN;
-		}
-		ret = cal_ipc_unmarshal_int(indata,&limit);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("cal_ipc_unmarshal_int fail");
-			goto ERROR_RETURN;
-		}
-	}
-	else
-	{
+	if (NULL == indata) {
+		ERR("No indata");
 		ret = CALENDAR_ERROR_INVALID_PARAMETER;
-		ERR("cal_server_ipc_db_insert_record fail");
-		goto ERROR_RETURN;
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
+	char* view_uri = NULL;
+	ret = cal_ipc_unmarshal_char(indata, &view_uri);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_char() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
+	int offset = 0;
+	ret = cal_ipc_unmarshal_int(indata, &offset);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		free(view_uri);
+		return;
+	}
+
+	int limit = 0;
+	ret = cal_ipc_unmarshal_int(indata, &limit);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		free(view_uri);
+		return;
 	}
 
 	if (false == cal_access_control_have_permission(ipc, CAL_PERMISSION_READ)) {
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
-		goto ERROR_RETURN;
+		_cal_server_ipc_return(outdata, ret);
+		free(view_uri);
+		return;
 	}
 
-	ret = calendar_db_get_all_records(view_uri,offset,limit,&list);
+	calendar_list_h list = NULL;
+	ret = calendar_db_get_all_records(view_uri, offset, limit, &list);
+	_cal_server_ipc_return(outdata, ret);
 
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
-			goto DATA_FREE;
-		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
+
+	if (CALENDAR_ERROR_NONE == ret) {
+		ret = cal_ipc_marshal_list(list, *outdata);
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("cal_ipc_marshal_list() Fail(%d)", ret);
 			pims_ipc_data_destroy(*outdata);
 			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			goto DATA_FREE;
-		}
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("cal_ipc_unmarshal_int fail");
-			goto DATA_FREE;
-		}
-		ret = cal_ipc_marshal_list(list,*outdata);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("cal_ipc_unmarshal_int fail");
-			goto ERROR_RETURN;
-		}
-	}
-	goto DATA_FREE;
-
-ERROR_RETURN:
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
-			goto DATA_FREE;
-		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
-			pims_ipc_data_destroy(*outdata);
-			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			goto DATA_FREE;
+			_cal_server_ipc_return(outdata, ret);
 		}
 	}
 
-DATA_FREE:
-	if (list)
-	{
-		calendar_list_destroy(list,true);
-	}
-	CAL_FREE(view_uri);
-	return;
+	calendar_list_destroy(list, true);
+	free(view_uri);
 }
 
 void cal_server_ipc_db_get_records_with_query(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -600,512 +405,270 @@ void cal_server_ipc_db_get_records_with_query(pims_ipc_h ipc, pims_ipc_data_h in
 
 	if (false == cal_access_control_have_permission(ipc, CAL_PERMISSION_READ)) {
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
-		goto ERROR_RETURN;
+		_cal_server_ipc_return(outdata, ret);
+		calendar_query_destroy(query);
+		return;
 	}
 
 	calendar_list_h list = NULL;
 	ret = calendar_db_get_records_with_query(query,offset,limit,&list);
+	_cal_server_ipc_return(outdata, ret);
 
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
-			goto DATA_FREE;
-		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
+	if (CALENDAR_ERROR_NONE == ret) {
+		ret = cal_ipc_marshal_list(list, *outdata);
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("cal_ipc_marshal_list() Fail(%d)", ret);
 			pims_ipc_data_destroy(*outdata);
 			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			goto DATA_FREE;
-		}
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("cal_ipc_unmarshal_int fail");
-			goto DATA_FREE;
-		}
-		ret = cal_ipc_marshal_list(list,*outdata);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("cal_ipc_unmarshal_int fail");
-			goto DATA_FREE;
+			ret = CALENDAR_ERROR_OUT_OF_MEMORY;
+			_cal_server_ipc_return(outdata, ret);
 		}
 	}
-	else
-	{
-		ERR("outdata is NULL");
-	}
-	goto DATA_FREE;
 
-ERROR_RETURN:
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
-			goto DATA_FREE;
-		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
-			pims_ipc_data_destroy(*outdata);
-			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			goto DATA_FREE;
-		}
-	}
-	else
-	{
-		ERR("outdata is NULL");
-	}
-DATA_FREE:
-
-	if (list)
-	{
-		calendar_list_destroy(list,true);
-	}
-	if (query)
-	{
-		calendar_query_destroy(query);
-	}
-	return;
+	calendar_list_destroy(list, true);
+	calendar_query_destroy(query);
 }
 
 void cal_server_ipc_db_clean_after_sync(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
 {
 	int ret = CALENDAR_ERROR_NONE;
-	int calendar_book_id = 0;
-	int calendar_db_version = 0;
 
-	if (indata)
-	{
-		ret = cal_ipc_unmarshal_int(indata,&calendar_book_id);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("cal_ipc_unmarshal_int fail");
-			goto ERROR_RETURN;
-		}
-		ret = cal_ipc_unmarshal_int(indata,&calendar_db_version);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("cal_ipc_unmarshal_int fail");
-			goto ERROR_RETURN;
-		}
-	}
-	else
-	{
+	if (NULL == indata) {
+		ERR("No indata");
 		ret = CALENDAR_ERROR_INVALID_PARAMETER;
-		ERR("cal_server_ipc_db_insert_record fail");
-		goto ERROR_RETURN;
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
+	int calendar_book_id = 0;
+	ret = cal_ipc_unmarshal_int(indata,&calendar_book_id);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
+	int calendar_db_version = 0;
+	ret = cal_ipc_unmarshal_int(indata, &calendar_db_version);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
 	}
 
 	if (false == cal_access_control_have_permission(ipc, CAL_PERMISSION_WRITE)) {
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
-		goto ERROR_RETURN;
+		_cal_server_ipc_return(outdata, ret);
+		return;
 	}
 
 	ret = calendar_db_clean_after_sync(calendar_book_id, calendar_db_version);
-
-ERROR_RETURN:
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
-			return;
-		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
-			pims_ipc_data_destroy(*outdata);
-			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			return;
-		}
-	}
-	else
-	{
-		ERR("outdata is NULL");
-	}
-
-	return;
+	_cal_server_ipc_return(outdata, ret);
 }
 
 void cal_server_ipc_db_get_count(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
 {
 	int ret = CALENDAR_ERROR_NONE;
-	char* view_uri = NULL;
-	int count = 0;
 
-	if (indata)
-	{
-		ret = cal_ipc_unmarshal_char(indata,&view_uri);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("cal_ipc_unmarshal_record fail");
-			goto ERROR_RETURN;
-		}
-	}
-	else
-	{
+	if (NULL == indata) {
+		ERR("No indata");
 		ret = CALENDAR_ERROR_INVALID_PARAMETER;
-		ERR("cal_server_ipc_db_insert_record fail");
-		goto ERROR_RETURN;
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
+	char* view_uri = NULL;
+	ret = cal_ipc_unmarshal_char(indata, &view_uri);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_char() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
 	}
 
 	if (false == cal_access_control_have_permission(ipc, CAL_PERMISSION_READ)) {
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
-		goto ERROR_RETURN;
+		_cal_server_ipc_return(outdata, ret);
+		return;
 	}
 
-	ret = calendar_db_get_count(view_uri,&count);
+	int count = 0;
+	ret = calendar_db_get_count(view_uri, &count);
+	_cal_server_ipc_return(outdata, ret);
 
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
-			goto DATA_FREE;
-		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
+	if (CALENDAR_ERROR_NONE == ret) {
+		ret = cal_ipc_marshal_int(count, *outdata);
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("cal_ipc_marshal_int() Fail(%d)", ret);
 			pims_ipc_data_destroy(*outdata);
 			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			goto DATA_FREE;
-		}
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			goto DATA_FREE;
-		}
-		ret = cal_ipc_marshal_int(count,*outdata);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("cal_ipc_unmarshal_int fail");
-			goto ERROR_RETURN;
+			_cal_server_ipc_return(outdata, ret);
 		}
 	}
-	else
-	{
-		ERR("outdata is NULL");
-	}
-	goto DATA_FREE;
 
-ERROR_RETURN:
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
-			goto DATA_FREE;
-		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
-			pims_ipc_data_destroy(*outdata);
-			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			goto DATA_FREE;
-		}
-	}
-	else
-	{
-		ERR("outdata is NULL");
-	}
-DATA_FREE:
-	CAL_FREE(view_uri);
-	return;
+	free(view_uri);
 }
 
 void cal_server_ipc_db_get_count_with_query(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
 {
 	int ret = CALENDAR_ERROR_NONE;
-	calendar_query_h query = NULL;
-	int count = 0;
 
-	if (indata)
-	{
-		ret = cal_ipc_unmarshal_query(indata,&query);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("cal_ipc_unmarshal_record fail");
-			goto ERROR_RETURN;
-		}
-	}
-	else
-	{
+	if (NULL == indata) {
+		ERR("No indata");
 		ret = CALENDAR_ERROR_INVALID_PARAMETER;
-		ERR("cal_server_ipc_db_insert_record fail");
-		goto ERROR_RETURN;
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
+	calendar_query_h query = NULL;
+	ret = cal_ipc_unmarshal_query(indata,&query);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_query() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
 	}
 
 	if (false == cal_access_control_have_permission(ipc, CAL_PERMISSION_READ)) {
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
-		goto ERROR_RETURN;
+		_cal_server_ipc_return(outdata, ret);
+		return;
 	}
 
-	ret = calendar_db_get_count_with_query(query,&count);
+	int count = 0;
+	ret = calendar_db_get_count_with_query(query, &count);
+	_cal_server_ipc_return(outdata, ret);
 
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
-			goto DATA_FREE;
-		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
-			pims_ipc_data_destroy(*outdata);
-			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			goto DATA_FREE;
-		}
+	if (CALENDAR_ERROR_NONE == ret) {
+		ret = cal_ipc_marshal_int(count, *outdata);
 		if (CALENDAR_ERROR_NONE != ret) {
-			goto DATA_FREE;
-		}
-		ret = cal_ipc_marshal_int(count,*outdata);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("cal_ipc_unmarshal_int fail");
-			goto ERROR_RETURN;
-		}
-	}
-	goto DATA_FREE;
-
-ERROR_RETURN:
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
-			goto DATA_FREE;
-		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
+			ERR("cal_ipc_marshal_int() Fail(%d)", ret);
 			pims_ipc_data_destroy(*outdata);
 			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			goto DATA_FREE;
+			_cal_server_ipc_return(outdata, ret);
 		}
 	}
-	else
-	{
-		ERR("outdata is NULL");
-	}
-DATA_FREE:
-	if (query)
-	{
-		calendar_query_destroy(query);
-	}
-	return;
+
+	calendar_query_destroy(query);
 }
 
 void cal_server_ipc_db_insert_records(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
 {
 	int ret = CALENDAR_ERROR_NONE;
-	int i=0;
-	int *ids = NULL;
-	int id_count = 0;
+
+	if (NULL == indata) {
+		ERR("No indata");
+		ret = CALENDAR_ERROR_INVALID_PARAMETER;
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
 
 	calendar_list_h list = NULL;
-	if (indata)
-	{
-		ret = cal_ipc_unmarshal_list(indata,&list);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("cal_ipc_unmarshal_list fail");
-			goto ERROR_RETURN;
-		}
-	}
-	else
-	{
-		ret = CALENDAR_ERROR_INVALID_PARAMETER;
-		ERR("cal_server_ipc_db_insert_record fail");
-		goto ERROR_RETURN;
+	ret = cal_ipc_unmarshal_list(indata, &list);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_list() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
 	}
 
 	if (false == cal_access_control_have_permission(ipc, CAL_PERMISSION_WRITE)) {
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
-		goto ERROR_RETURN;
+		_cal_server_ipc_return(outdata, ret);
+		return;
 	}
 
+	int *ids = NULL;
+	int id_count = 0;
 	ret = calendar_db_insert_records(list, &ids, &id_count);
+	_cal_server_ipc_return(outdata, ret);
 
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
-			goto DATA_FREE;
-		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0) {
+	if (CALENDAR_ERROR_NONE == ret) {
+		int transaction_ver = 0;
+		transaction_ver = cal_db_util_get_transaction_ver();
+		ret = cal_ipc_marshal_int(transaction_ver, *outdata);
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("cal_ipc_marshal_int() Fail(%d)", ret);
 			pims_ipc_data_destroy(*outdata);
 			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			goto DATA_FREE;
+			_cal_server_ipc_return(outdata, ret);
+			free(ids);
+			calendar_list_destroy(list, true);
+			return;
 		}
-		if (CALENDAR_ERROR_NONE == ret) {
-			int transaction_ver = cal_db_util_get_transaction_ver();
-			if (cal_ipc_marshal_int(transaction_ver,*outdata) != CALENDAR_ERROR_NONE) {
-				pims_ipc_data_destroy(*outdata);
-				ERR("cal_ipc_marshal fail");
-				ret = CALENDAR_ERROR_OUT_OF_MEMORY;
-				goto ERROR_RETURN;
-			}
-			/*
-			 * marshal : id_count+[ids]*id_count
-			 * id_count
-			 */
-			if (pims_ipc_data_put(*outdata,(void*)&id_count,sizeof(int)) != 0) {
+		/*
+		 * marshal : id_count+[ids]*id_count
+		 * id_count
+		 */
+		if (pims_ipc_data_put(*outdata, (void*)&id_count, sizeof(int)) != 0) {
+			ERR("pims_ipc_data_put() Fail");
+			pims_ipc_data_destroy(*outdata);
+			*outdata = NULL;
+			ret = CALENDAR_ERROR_INVALID_PARAMETER;
+			_cal_server_ipc_return(outdata, ret);
+			free(ids);
+			calendar_list_destroy(list, true);
+			return;
+		}
+
+		/* marshal ids */
+		int i=0;
+		for(i = 0; i < id_count; i++) {
+			if (pims_ipc_data_put(*outdata, (void*)&ids[i], sizeof(int)) != 0) {
+				ERR("pims_ipc_data_put() Fail");
 				pims_ipc_data_destroy(*outdata);
 				*outdata = NULL;
-				ERR("pims_ipc_data_put fail");
 				ret = CALENDAR_ERROR_INVALID_PARAMETER;
-				goto ERROR_RETURN;
-			}
-
-			for(i=0;i<id_count;i++) {
-				// marshal ids
-				if (pims_ipc_data_put(*outdata,(void*)&ids[i],sizeof(int)) != 0) {
-					pims_ipc_data_destroy(*outdata);
-					*outdata = NULL;
-					ERR("pims_ipc_data_put fail");
-					ret = CALENDAR_ERROR_INVALID_PARAMETER;
-					goto ERROR_RETURN;
-				}
+				_cal_server_ipc_return(outdata, ret);
+				free(ids);
+				calendar_list_destroy(list, true);
+				return;
 			}
 		}
 	}
-	else
-	{
-		ERR("outdata is NULL");
-	}
-	goto DATA_FREE;
 
-ERROR_RETURN:
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
-			goto DATA_FREE;
-		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
-			pims_ipc_data_destroy(*outdata);
-			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			goto DATA_FREE;
-		}
-	}
-	else
-	{
-		ERR("outdata is NULL");
-	}
-DATA_FREE:
-	if (list)
-	{
-		calendar_list_destroy(list,true);
-	}
-	CAL_FREE(ids);
-	return;
+	free(ids);
+	calendar_list_destroy(list, true);
 }
 
 void cal_server_ipc_db_update_records(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
 {
 	int ret = CALENDAR_ERROR_NONE;
-	calendar_list_h list = NULL;
 
-	if (indata)
-	{
-		ret = cal_ipc_unmarshal_list(indata,&list);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("cal_ipc_unmarshal_list fail");
-			goto ERROR_RETURN;
-		}
-	}
-	else
-	{
+	if (NULL == indata) {
+		ERR("No indata");
 		ret = CALENDAR_ERROR_INVALID_PARAMETER;
-		ERR("cal_server_ipc_db_insert_record fail");
-		goto ERROR_RETURN;
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
+	calendar_list_h list = NULL;
+	ret = cal_ipc_unmarshal_list(indata, &list);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_list() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
 	}
 
 	if (false == cal_access_control_have_permission(ipc, CAL_PERMISSION_WRITE)) {
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
-		goto ERROR_RETURN;
+		_cal_server_ipc_return(outdata, ret);
+		return;
 	}
 
 	ret = calendar_db_update_records(list);
+	_cal_server_ipc_return(outdata, ret);
 
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
-			goto DATA_FREE;
-		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
+	if (CALENDAR_ERROR_NONE == ret) {
+		int transaction_ver = 0;
+		transaction_ver = cal_db_util_get_transaction_ver();
+		ret = cal_ipc_marshal_int(transaction_ver, *outdata);
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("cal_ipc_marshal_int() Fail(%d)", ret);
 			pims_ipc_data_destroy(*outdata);
 			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			goto DATA_FREE;
-		}
-		if (CALENDAR_ERROR_NONE == ret)
-		{
-			int transaction_ver = cal_db_util_get_transaction_ver();
-			if (cal_ipc_marshal_int(transaction_ver,*outdata) != CALENDAR_ERROR_NONE)
-			{
-				pims_ipc_data_destroy(*outdata);
-				ERR("cal_ipc_marshal fail");
-				ret = CALENDAR_ERROR_OUT_OF_MEMORY;
-				goto DATA_FREE;
-			}
+			_cal_server_ipc_return(outdata, ret);
 		}
 	}
-	else
-	{
-		ERR("outdata is NULL");
-	}
-	goto DATA_FREE;
 
-ERROR_RETURN:
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
-			goto DATA_FREE;
-		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
-			pims_ipc_data_destroy(*outdata);
-			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			goto DATA_FREE;
-		}
-	}
-	else
-	{
-		ERR("outdata is NULL");
-	}
-DATA_FREE:
-	if (list)
-	{
-		calendar_list_destroy(list,true);
-	}
-	return;
+	calendar_list_destroy(list,true);
 }
 
 void cal_server_ipc_db_delete_records(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -1129,7 +692,7 @@ void cal_server_ipc_db_delete_records(pims_ipc_h ipc, pims_ipc_data_h indata, pi
 
 	int count = 0;
 	ret = cal_ipc_unmarshal_int(indata, &count);
-	if  (CALENDAR_ERROR_NONE != ret) {
+	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
 		g_free(view_uri);
@@ -1169,343 +732,206 @@ void cal_server_ipc_db_delete_records(pims_ipc_h ipc, pims_ipc_data_h indata, pi
 
 	if (false == cal_access_control_have_permission(ipc, CAL_PERMISSION_WRITE)) {
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
-		goto ERROR_RETURN;
+		_cal_server_ipc_return(outdata, ret);
+		free(ids);
+		free(view_uri);
+		return;
 	}
 
-	ret = calendar_db_delete_records(view_uri,ids,count);
+	ret = calendar_db_delete_records(view_uri, ids, count);
+	_cal_server_ipc_return(outdata, ret);
 
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
-			goto DATA_FREE;
-		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
+	if (CALENDAR_ERROR_NONE == ret) {
+		int transaction_ver = 0;
+		transaction_ver = cal_db_util_get_transaction_ver();
+		ret = cal_ipc_marshal_int(transaction_ver, *outdata);
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("cal_ipc_marshal_int() Fail(%d)", ret);
 			pims_ipc_data_destroy(*outdata);
 			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			goto DATA_FREE;
-		}
-		if (CALENDAR_ERROR_NONE == ret)
-		{
-			int transaction_ver = cal_db_util_get_transaction_ver();
-			if (cal_ipc_marshal_int(transaction_ver,*outdata) != CALENDAR_ERROR_NONE)
-			{
-				pims_ipc_data_destroy(*outdata);
-				ERR("cal_ipc_marshal fail");
-				ret = CALENDAR_ERROR_OUT_OF_MEMORY;
-				goto DATA_FREE;
-			}
+			ret = CALENDAR_ERROR_OUT_OF_MEMORY;
+			_cal_server_ipc_return(outdata, ret);
 		}
 	}
-	else
-	{
-		ERR("outdata is NULL");
-	}
-	goto DATA_FREE;
 
-ERROR_RETURN:
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
-			goto DATA_FREE;
-		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
-			pims_ipc_data_destroy(*outdata);
-			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			goto DATA_FREE;
-		}
-	}
-	else
-	{
-		ERR("outdata is NULL");
-	}
-DATA_FREE:
-	CAL_FREE(view_uri);
-	CAL_FREE(ids);
-	return;
+	free(ids);
+	free(view_uri);
 }
 
 void cal_server_ipc_db_get_changes_by_version(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
 {
 	int ret = CALENDAR_ERROR_NONE;
-	char* view_uri = NULL;
-	int calendar_book_id = 0;
-	int calendar_db_version = 0;
-	calendar_list_h record_list = NULL;
-	int current_calendar_db_version = 0;
 
-	if (indata)
-	{
-		ret = cal_ipc_unmarshal_char(indata,&view_uri);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("cal_ipc_unmarshal_char fail");
-			goto ERROR_RETURN;
-		}
-		ret = cal_ipc_unmarshal_int(indata,&calendar_book_id);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("cal_ipc_unmarshal_int fail");
-			goto ERROR_RETURN;
-		}
-		ret = cal_ipc_unmarshal_int(indata,&calendar_db_version);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("cal_ipc_unmarshal_int fail");
-			goto ERROR_RETURN;
-		}
-	}
-	else
-	{
+	if (NULL == indata) {
+		ERR("No indata");
 		ret = CALENDAR_ERROR_INVALID_PARAMETER;
-		ERR("cal_server_ipc_db_insert_record fail");
-		goto ERROR_RETURN;
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
+	char *view_uri = NULL;
+	ret = cal_ipc_unmarshal_char(indata, &view_uri);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_char() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
+	int calendar_book_id = 0;
+	ret = cal_ipc_unmarshal_int(indata, &calendar_book_id);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		free(view_uri);
+		return;
+	}
+
+	int calendar_db_version = 0;
+	ret = cal_ipc_unmarshal_int(indata, &calendar_db_version);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		free(view_uri);
+		return;
 	}
 
 	if (false == cal_access_control_have_permission(ipc, CAL_PERMISSION_READ)) {
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
-		goto ERROR_RETURN;
+		_cal_server_ipc_return(outdata, ret);
+		free(view_uri);
+		return;
 	}
 
-	ret = calendar_db_get_changes_by_version(view_uri,calendar_book_id,calendar_db_version,&record_list,&current_calendar_db_version);
+	calendar_list_h list = NULL;
+	int current_calendar_db_version = 0;
+	ret = calendar_db_get_changes_by_version(view_uri, calendar_book_id, calendar_db_version,
+			&list, &current_calendar_db_version);
+	_cal_server_ipc_return(outdata, ret);
 
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
-			goto DATA_FREE;
-		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
+	if (CALENDAR_ERROR_NONE == ret) {
+		ret = cal_ipc_marshal_list(list,*outdata);
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("cal_ipc_marshal_list() Fail(%d)", ret);
 			pims_ipc_data_destroy(*outdata);
 			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			goto DATA_FREE;
-		}
-		if (CALENDAR_ERROR_NONE != ret) {
-			goto DATA_FREE;
-		}
-		ret = cal_ipc_marshal_list(record_list,*outdata);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("cal_ipc_marshal_list fail");
-			goto ERROR_RETURN;
+			_cal_server_ipc_return(outdata, ret);
+			calendar_list_destroy(list, true);
+			free(view_uri);
+			return;
 		}
 
 		ret = cal_ipc_marshal_int(current_calendar_db_version,*outdata);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("cal_ipc_unmarshal_int fail");
-			goto ERROR_RETURN;
-		}
-	}
-	else
-	{
-		ERR("outdata is NULL");
-	}
-	goto DATA_FREE;
-
-ERROR_RETURN:
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
-			goto DATA_FREE;
-		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("cal_ipc_marshal_int() Fail(%d)", ret);
 			pims_ipc_data_destroy(*outdata);
 			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			goto DATA_FREE;
+			_cal_server_ipc_return(outdata, ret);
+			calendar_list_destroy(list, true);
+			free(view_uri);
+			return;
 		}
 	}
-	else
-	{
-		ERR("outdata is NULL");
-	}
-DATA_FREE:
-	if (record_list)
-	{
-		calendar_list_destroy(record_list,true);
-	}
-	CAL_FREE(view_uri);
-	return;
+
+	calendar_list_destroy(list, true);
+	free(view_uri);
 }
 
 void cal_server_ipc_db_get_current_version(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
 {
 	int ret = CALENDAR_ERROR_NONE;
-	int calendar_db_version = 0;
 
 	if (false == cal_access_control_have_permission(ipc, CAL_PERMISSION_READ)) {
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
+		_cal_server_ipc_return(outdata, ret);
 		return;
-		goto ERROR_RETURN;
 	}
 
+	int calendar_db_version = 0;
 	ret = calendar_db_get_current_version(&calendar_db_version);
+	_cal_server_ipc_return(outdata, ret);
 
-ERROR_RETURN:
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
-			return;
-		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
-			pims_ipc_data_destroy(*outdata);
-			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			return;
-		}
-		if (CALENDAR_ERROR_NONE == ret) {
-			ret = cal_ipc_marshal_int(calendar_db_version,*outdata);
-			if (CALENDAR_ERROR_NONE != ret) {
-				ERR("cal_ipc_marshal_int fail");
-				return;
-			}
+	if (CALENDAR_ERROR_NONE == ret) {
+		ret = cal_ipc_marshal_int(calendar_db_version, *outdata);
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("cal_ipc_marshal_int() Fail(%d)", ret);
+			_cal_server_ipc_return(outdata, ret);
 		}
 	}
-	else
-	{
-		ERR("outdata is NULL");
-	}
-	return;
 }
 
 void cal_server_ipc_db_insert_vcalendars(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
 {
 	int ret = CALENDAR_ERROR_NONE;
-	char *stream = NULL;
-	int count = 0;
-	int *ids = NULL;
-	int i = 0;
 
-	if (indata)
-	{
-		ret = cal_ipc_unmarshal_char(indata, &stream);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("unmarshal fail");
-			goto ERROR_RETURN;
-		}
-	}
-	else
-	{
+	if (NULL == indata) {
+		ERR("No indata");
 		ret = CALENDAR_ERROR_INVALID_PARAMETER;
-		ERR("db_insert_vcalendars fail.");
-		goto ERROR_RETURN;
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
+	char *stream = NULL;
+	ret = cal_ipc_unmarshal_char(indata, &stream);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_char() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
 	}
 
 	if (false == cal_access_control_have_permission(ipc, CAL_PERMISSION_WRITE)) {
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
-		goto ERROR_RETURN;
+		_cal_server_ipc_return(outdata, ret);
+		return;
 	}
 
+
+	int *ids = NULL;
+	int count = 0;
 	ret = calendar_db_insert_vcalendars(stream, &ids, &count);
+	_cal_server_ipc_return(outdata, ret);
 
-	if (CALENDAR_ERROR_NONE != ret)
-	{
-		ERR("calendar_db_insert_vcalendars fail");
-		goto ERROR_RETURN;
-	}
-
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
-			goto DATA_FREE;
-		}
-		// return
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
-			pims_ipc_data_destroy(*outdata);
-			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			goto DATA_FREE;
-		}
-		if (CALENDAR_ERROR_NONE == ret)
-		{
-			int transaction_ver = cal_db_util_get_transaction_ver();
-			if (cal_ipc_marshal_int(transaction_ver,*outdata) != CALENDAR_ERROR_NONE)
-			{
-				pims_ipc_data_destroy(*outdata);
-				*outdata = NULL;
-				ERR("cal_ipc_marshal fail");
-				ret = CALENDAR_ERROR_OUT_OF_MEMORY;
-				goto ERROR_RETURN;
-			}
-		}
-
-		ret = cal_ipc_marshal_int(count,*outdata);
+	if (CALENDAR_ERROR_NONE == ret) {
+		int transaction_ver = 0;
+		transaction_ver = cal_db_util_get_transaction_ver();
+		ret = cal_ipc_marshal_int(transaction_ver, *outdata);
 		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("cal_ipc_marshal() Fail(%d)", ret);
 			pims_ipc_data_destroy(*outdata);
 			*outdata = NULL;
-			ERR("cal_ipc_marshal_list fail");
-			goto ERROR_RETURN;
+			_cal_server_ipc_return(outdata, ret);
+			free(ids);
+			free(stream);
+			return;
 		}
-		for(i=0;i<count;i++)
-		{
-			ret = cal_ipc_marshal_int(ids[i],*outdata);
-			if (CALENDAR_ERROR_NONE != ret)
-			{
+
+		ret = cal_ipc_marshal_int(count, *outdata);
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("cal_ipc_marshal_int() Fail");
+			pims_ipc_data_destroy(*outdata);
+			*outdata = NULL;
+			_cal_server_ipc_return(outdata, ret);
+			free(ids);
+			free(stream);
+			return;
+		}
+
+		int i;
+		for(i = 0; i < count; i++) {
+			ret = cal_ipc_marshal_int(ids[i], *outdata);
+			if (CALENDAR_ERROR_NONE != ret) {
+				ERR("cal_ipc_marshal_int() Fail(%d)", ret);
 				pims_ipc_data_destroy(*outdata);
 				*outdata = NULL;
-				ERR("cal_ipc_marshal_list fail");
-				goto ERROR_RETURN;
+				_cal_server_ipc_return(outdata, ret);
+				free(ids);
+				free(stream);
+				return;
 			}
 		}
 	}
-	else
-	{
-		ERR("outdata is NULL");
-	}
-	goto DATA_FREE;
 
-ERROR_RETURN:
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
-			goto DATA_FREE;
-		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
-			pims_ipc_data_destroy(*outdata);
-			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			goto DATA_FREE;
-		}
-	}
-	else
-	{
-		ERR("outdata is NULL");
-	}
-DATA_FREE:
-	CAL_FREE(stream);
-	CAL_FREE(ids);
-	return;
+	free(ids);
+	free(stream);
 }
 
 void cal_server_ipc_db_replace_vcalendars(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -1532,7 +958,7 @@ void cal_server_ipc_db_replace_vcalendars(pims_ipc_h ipc, pims_ipc_data_h indata
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
-		g_free(stream);
+		free(stream);
 		return;
 	}
 
@@ -1560,154 +986,81 @@ void cal_server_ipc_db_replace_vcalendars(pims_ipc_h ipc, pims_ipc_data_h indata
 
 	if (false == cal_access_control_have_permission(ipc, CAL_PERMISSION_WRITE)) {
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
-		goto ERROR_RETURN;
+		_cal_server_ipc_return(outdata, ret);
+		free(ids);
+		free(stream);
+		return;
 	}
 
 	ret = calendar_db_replace_vcalendars(stream, ids, count);
+	_cal_server_ipc_return(outdata, ret);
 
-	if (CALENDAR_ERROR_NONE != ret)
-	{
-		ERR("calendar_db_insert_vcalendars fail");
-		goto ERROR_RETURN;
-	}
-
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
-			goto DATA_FREE;
-		}
-		// return
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
+	if (CALENDAR_ERROR_NONE == ret) {
+		int transaction_ver = 0;
+		transaction_ver = cal_db_util_get_transaction_ver();
+		ret = cal_ipc_marshal_int(transaction_ver, *outdata);
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("cal_ipc_marshal_int() Fail(%d)", ret);
 			pims_ipc_data_destroy(*outdata);
 			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			goto DATA_FREE;
-		}
-		if (CALENDAR_ERROR_NONE == ret)
-		{
-			int transaction_ver = cal_db_util_get_transaction_ver();
-			if (cal_ipc_marshal_int(transaction_ver,*outdata) != CALENDAR_ERROR_NONE)
-			{
-				pims_ipc_data_destroy(*outdata);
-				*outdata = NULL;
-				ERR("cal_ipc_marshal fail");
-				ret = CALENDAR_ERROR_OUT_OF_MEMORY;
-				goto DATA_FREE;
-			}
+			_cal_server_ipc_return(outdata, ret);
 		}
 	}
-	else
-	{
-		ERR("outdata is NULL");
-	}
-	goto DATA_FREE;
 
-ERROR_RETURN:
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
-			goto DATA_FREE;
-		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
-			pims_ipc_data_destroy(*outdata);
-			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			goto DATA_FREE;
-		}
-	}
-	else
-	{
-		ERR("outdata is NULL");
-	}
-DATA_FREE:
-	CAL_FREE(stream);
-	CAL_FREE(ids);
-	return;
+	free(ids);
+	free(stream);
 }
 
 void cal_server_ipc_db_replace_record(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
 {
 	int ret = CALENDAR_ERROR_NONE;
-	int id = 0;
-	calendar_record_h record = NULL;
 
-	if (indata)
-	{
-		ret = cal_ipc_unmarshal_record(indata,&record);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("cal_ipc_unmarshal_record fail");
-			goto ERROR_RETURN;
-		}
-		ret = cal_ipc_unmarshal_int(indata,&id);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("cal_ipc_unmarshal_record fail");
-			goto ERROR_RETURN;
-		}
+	if (NULL == indata) {
+		ERR("No indata");
+		ret = CALENDAR_ERROR_INVALID_PARAMETER;
+		_cal_server_ipc_return(outdata, ret);
+		return;
 	}
 
-	else
-	{
-		ret = CALENDAR_ERROR_INVALID_PARAMETER;
-		ERR("cal_server_ipc_db_insert_record fail");
-		goto ERROR_RETURN;
+	calendar_record_h record = NULL;
+	ret = cal_ipc_unmarshal_record(indata, &record);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_record() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
+	int id = 0;
+	ret = cal_ipc_unmarshal_int(indata, &id);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		calendar_record_destroy(record, true);
+		return;
 	}
 
 	if (false == cal_access_control_have_permission(ipc, CAL_PERMISSION_WRITE)) {
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
-		goto ERROR_RETURN;
+		calendar_record_destroy(record, true);
+		return;
 	}
 
 	ret = calendar_db_replace_record(record, id);
+	_cal_server_ipc_return(outdata, ret);
 
-ERROR_RETURN:
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
-			goto DATA_FREE;
-		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
+	if (CALENDAR_ERROR_NONE == ret) {
+		int transaction_ver = 0;
+		transaction_ver = cal_db_util_get_transaction_ver();
+		ret = cal_ipc_marshal_int(transaction_ver, *outdata);
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("cal_ipc_marshal_int() Fail");
 			pims_ipc_data_destroy(*outdata);
 			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			goto DATA_FREE;
-		}
-		if (CALENDAR_ERROR_NONE == ret)
-		{
-			int transaction_ver = cal_db_util_get_transaction_ver();
-			if (cal_ipc_marshal_int(transaction_ver,*outdata) != CALENDAR_ERROR_NONE)
-			{
-				pims_ipc_data_destroy(*outdata);
-				*outdata = NULL;
-				ERR("cal_ipc_marshal fail");
-				ret = CALENDAR_ERROR_OUT_OF_MEMORY;
-				goto DATA_FREE;
-			}
+			_cal_server_ipc_return(outdata, ret);
 		}
 	}
-	else
-	{
-		ERR("outdata is NULL");
-	}
-DATA_FREE:
-	if (record)
-	{
-		calendar_record_destroy(record,true);
-	}
-	return;
+
+	calendar_record_destroy(record, true);
 }
 
 void cal_server_ipc_db_replace_records(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -1771,175 +1124,89 @@ void cal_server_ipc_db_replace_records(pims_ipc_h ipc, pims_ipc_data_h indata, p
 
 	if (false == cal_access_control_have_permission(ipc, CAL_PERMISSION_WRITE)) {
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
-		goto ERROR_RETURN;
+		_cal_server_ipc_return(outdata, ret);
+		free(ids);
+		calendar_list_destroy(list, true);
+		return;
 	}
 
 	ret = calendar_db_replace_records(list, ids, count);
+	_cal_server_ipc_return(outdata, ret);
 
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
-			goto DATA_FREE;
-		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
+	if (CALENDAR_ERROR_NONE == ret) {
+		int transaction_ver = 0;
+		transaction_ver = cal_db_util_get_transaction_ver();
+		ret = cal_ipc_marshal_int(transaction_ver,*outdata);
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("cal_ipc_marshal_int() Fail");
 			pims_ipc_data_destroy(*outdata);
 			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			goto DATA_FREE;
-		}
-		if (CALENDAR_ERROR_NONE == ret)
-		{
-			int transaction_ver = cal_db_util_get_transaction_ver();
-			if (cal_ipc_marshal_int(transaction_ver,*outdata) != CALENDAR_ERROR_NONE)
-			{
-				pims_ipc_data_destroy(*outdata);
-				*outdata = NULL;
-				ERR("cal_ipc_marshal fail");
-				ret = CALENDAR_ERROR_OUT_OF_MEMORY;
-				goto DATA_FREE;
-			}
+			_cal_server_ipc_return(outdata, ret);
 		}
 	}
-	else
-	{
-		ERR("outdata is NULL");
-	}
-	goto DATA_FREE;
 
-ERROR_RETURN:
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
-			goto DATA_FREE;
-		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
-			pims_ipc_data_destroy(*outdata);
-			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			goto DATA_FREE;
-		}
-	}
-	else
-	{
-		ERR("outdata is NULL");
-	}
-DATA_FREE:
-	CAL_FREE(ids);
-	if (list)
-	{
-		calendar_list_destroy(list,true);
-	}
-	return;
+	free(ids);
+	calendar_list_destroy(list, true);
 }
 
 void cal_server_ipc_db_changes_exception(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
 {
 	int ret = CALENDAR_ERROR_NONE;
-	char* view_uri = NULL;
-	int original_event_id = 0;
-	int calendar_db_version = 0;
-	calendar_list_h record_list = NULL;
 
-	if (indata)
-	{
-		ret = cal_ipc_unmarshal_char(indata,&view_uri);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("cal_ipc_unmarshal_char fail");
-			goto ERROR_RETURN;
-		}
-		ret = cal_ipc_unmarshal_int(indata,&original_event_id);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("cal_ipc_unmarshal_int fail");
-			goto ERROR_RETURN;
-		}
-		ret = cal_ipc_unmarshal_int(indata,&calendar_db_version);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("cal_ipc_unmarshal_int fail");
-			goto ERROR_RETURN;
-		}
-	}
-	else
-	{
+	if (NULL == indata) {
+		ERR("No indata");
 		ret = CALENDAR_ERROR_INVALID_PARAMETER;
-		ERR("cal_server_ipc_db_insert_record fail");
-		goto ERROR_RETURN;
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
+	char* view_uri = NULL;
+	ret = cal_ipc_unmarshal_char(indata, &view_uri);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_char() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
+	int original_event_id = 0;
+	ret = cal_ipc_unmarshal_int(indata, &original_event_id);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		free(view_uri);
+		return;
+	}
+
+	int calendar_db_version = 0;
+	ret = cal_ipc_unmarshal_int(indata, &calendar_db_version);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		free(view_uri);
+		return;
 	}
 
 	if (false == cal_access_control_have_permission(ipc, CAL_PERMISSION_READ)) {
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
-		goto ERROR_RETURN;
+		_cal_server_ipc_return(outdata, ret);
+		free(view_uri);
+		return;
 	}
 
-	ret = calendar_db_get_changes_exception_by_version(view_uri,original_event_id,calendar_db_version,&record_list);
+	calendar_list_h list = NULL;
+	ret = calendar_db_get_changes_exception_by_version(view_uri, original_event_id,
+			calendar_db_version, &list);
+	_cal_server_ipc_return(outdata, ret);
 
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
-			goto DATA_FREE;
-		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
-			pims_ipc_data_destroy(*outdata);
-			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			goto DATA_FREE;
-		}
+	if (CALENDAR_ERROR_NONE == ret) {
+		ret = cal_ipc_marshal_list(list, *outdata);
 		if (CALENDAR_ERROR_NONE != ret) {
-			goto DATA_FREE;
-		}
-		ret = cal_ipc_marshal_list(record_list,*outdata);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			ERR("cal_ipc_marshal_list fail");
-			goto ERROR_RETURN;
+			ERR("cal_ipc_marshal_list() Fail(%d)", ret);
+			ret = CALENDAR_ERROR_IPC;
+			_cal_server_ipc_return(outdata, ret);
 		}
 	}
-	else
-	{
-		ERR("outdata is NULL");
-	}
-	goto DATA_FREE;
 
-ERROR_RETURN:
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata)
-		{
-			ERR("pims_ipc_data_create fail");
-			goto DATA_FREE;
-		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0)
-		{
-			pims_ipc_data_destroy(*outdata);
-			*outdata = NULL;
-			ERR("pims_ipc_data_put fail");
-			goto DATA_FREE;
-		}
-	}
-	else
-	{
-		ERR("outdata is NULL");
-	}
-DATA_FREE:
-	if (record_list)
-	{
-		calendar_list_destroy(record_list,true);
-	}
-	CAL_FREE(view_uri);
-	return;
+	calendar_list_destroy(list, true);
+	free(view_uri);
 }
