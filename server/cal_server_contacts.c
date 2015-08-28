@@ -414,9 +414,9 @@ void cal_server_contacts_delete(int account_id)
 		return ;
 	}
 
-	ret = calendar_db_get_records_with_query(query, 0, 0, &list);
+	ret = cal_db_get_records_with_query(query, 0, 0, &list);
 	if (CALENDAR_ERROR_NONE != ret) {
-		ERR("calendar_db_get_records_with_query() failed");
+		ERR("cal_db_get_records_with_query() failed");
 		calendar_list_destroy(list, true);
 		calendar_filter_destroy(filter);
 		calendar_query_destroy(query);
@@ -457,9 +457,9 @@ void cal_server_contacts_delete(int account_id)
 		} while (CALENDAR_ERROR_NO_DATA != calendar_list_next(list));
 
 		/* delete */
-		ret = calendar_db_delete_records(_calendar_event._uri, record_id_array, i);
+		ret = cal_db_delete_records(_calendar_event._uri, record_id_array, i);
 		if (CALENDAR_ERROR_NONE != ret)
-			DBG("calendar_db_delete_records() Fail(%d)", ret);
+			DBG("cal_db_delete_records() Fail(%d)", ret);
 		free(record_id_array);
 	}
 	calendar_list_destroy(list, true);

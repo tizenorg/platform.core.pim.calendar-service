@@ -74,43 +74,57 @@
 				"A.last_mod, A.rrule_id, A.recurrence_id, A.rdate, A.has_attendee, A.has_alarm, A.system_type, A.updated, "\
 				"A.sync_data1, A.sync_data2, A.sync_data3, A.sync_data4, A.has_exception, A.has_extended, A.freq, A.is_allday "
 
-typedef int (*cal_db_insert_record_cb)(calendar_record_h record, int* id);
 typedef int (*cal_db_get_record_cb)(int id, calendar_record_h* out_record);
+typedef int (*cal_db_insert_record_cb)(calendar_record_h record, int* id);
 typedef int (*cal_db_update_record_cb)(calendar_record_h record);
 typedef int (*cal_db_delete_record_cb)(int id);
-typedef int (*cal_db_get_all_records_cb)(int offset, int limit, calendar_list_h* out_list);
-typedef int (*cal_db_get_records_with_query_cb)(calendar_query_h query, int offset, int limit, calendar_list_h* out_list);
+typedef int (*cal_db_replace_record_cb)(calendar_record_h record, int record_id);
 typedef int (*cal_db_insert_records_cb)(const calendar_list_h in_list, int** ids);
 typedef int (*cal_db_update_records_cb)(const calendar_list_h in_list);
 typedef int (*cal_db_delete_records_cb)(int ids[], int count);
+typedef int (*cal_db_replace_records_cb)(calendar_list_h record_list, int *record_id_array, int count);
+typedef int (*cal_db_get_all_records_cb)(int offset, int limit, calendar_list_h* out_list);
+typedef int (*cal_db_get_records_with_query_cb)(calendar_query_h query, int offset, int limit, calendar_list_h* out_list);
 typedef int (*cal_db_get_count_cb)(int *out_count);
 typedef int (*cal_db_get_count_with_query_cb)(calendar_query_h query, int *out_count);
-typedef int (*cal_db_replace_record)(calendar_record_h record, int record_id);
-typedef int (*cal_db_replace_records)(calendar_list_h record_list, int *record_id_array, int count);
 
 typedef struct {
 	bool is_query_only;
-	cal_db_insert_record_cb insert_record;
 	cal_db_get_record_cb get_record;
+	cal_db_insert_record_cb insert_record;
 	cal_db_update_record_cb update_record;
 	cal_db_delete_record_cb delete_record;
-	cal_db_get_all_records_cb get_all_records;
-	cal_db_get_records_with_query_cb get_records_with_query;
+	cal_db_replace_record_cb replace_record;
 	cal_db_insert_records_cb insert_records;
 	cal_db_update_records_cb update_records;
 	cal_db_delete_records_cb delete_records;
+	cal_db_replace_records_cb replace_records;
+	cal_db_get_all_records_cb get_all_records;
+	cal_db_get_records_with_query_cb get_records_with_query;
 	cal_db_get_count_cb get_count;
 	cal_db_get_count_with_query_cb get_count_with_query;
-	cal_db_replace_record replace_record;
-	cal_db_replace_records replace_records;
 } cal_db_plugin_cb_s;
 
-int cal_db_open(void);
-int cal_db_close(void);
-
 void cal_db_initialize_view_table(void);
-
-int cal_db_get_record(const char* view_uri, int record_id, calendar_record_h* record);
+int cal_db_insert_record(calendar_record_h record, int* id);
+int cal_db_update_record(calendar_record_h record);
+int cal_db_delete_record(const char* view_uri, int id);
+int cal_db_replace_record(calendar_record_h record, int record_id);
+int cal_db_get_all_records(const char* view_uri, int offset, int limit, calendar_list_h* out_list);
+int cal_db_get_records_with_query(calendar_query_h query, int offset, int limit, calendar_list_h* out_list);
+int cal_db_clean_after_sync(int calendar_book_id,  int calendar_db_version);
+int cal_db_get_record(const char* view_uri, int id, calendar_record_h* out_record);
+int cal_db_get_count(const char* view_uri, int *out_count);
+int cal_db_get_count_with_query(calendar_query_h query, int *out_count);
+int cal_db_insert_records(calendar_list_h list, int** ids, int* count);
+int cal_db_update_records(calendar_list_h list);
+int cal_db_delete_records(const char* view_uri, int record_id_array[], int count);
+int cal_db_replace_records(calendar_list_h list, int *ids, int count);
+int cal_db_insert_vcalendars(const char* vcalendar_stream, int **record_id_array, int *count);
+int cal_db_replace_vcalendars(const char* vcalendar_stream, int *record_id_array, int count);
+int cal_db_get_current_version(int* current_version);
+int cal_db_get_changes_by_version(const char* view_uri, int calendar_book_id, int calendar_db_version, calendar_list_h* record_list, int *current_calendar_db_version);
+int cal_db_get_changes_exception_by_version(const char* view_uri, int original_event_id, int calendar_db_version, calendar_list_h* record_list);
 
 int cal_db_append_string(char **dst, char *src);
 cal_db_plugin_cb_s* _cal_db_get_plugin(cal_record_type_e type);

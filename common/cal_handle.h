@@ -16,9 +16,17 @@
  * limitations under the License.
  *
  */
-#ifndef __CAL_DB_PLUGIN_CALENDAR_HELPER_H__
-#define __CAL_DB_PLUGIN_CALENDAR_HELPER_H__
+#ifndef __CAL_HANDLE_H__
+#define __CAL_HANDLE_H__
 
-int cal_db_delete_account(int account_id);
+#include "calendar_types.h"
 
-#endif /* __CAL_DB_PLUGIN_CALENDAR_HELPER_H__ */
+typedef struct {
+	int version;
+	int connection_count;
+} cal_s;
+
+int cal_handle_create(calendar_h *handle);
+int cal_handle_destroy(calendar_h handle);
+
+#endif /* __CAL_HANDLE_H__ */

@@ -14,7 +14,9 @@ SET(SRCS
 	cal_client_service_helper.c
 	cal_client_db.c
 	cal_client_db_helper.c
-    cal_client_reminder.c
+	cal_client_reminder.c
+	cal_client_handle.c
+	cal_client_utils.c
 	${CMAKE_SOURCE_DIR}/common/ipc/cal_ipc_marshal.c
 	${CMAKE_SOURCE_DIR}/common/ipc/cal_ipc_marshal_alarm.c
 	${CMAKE_SOURCE_DIR}/common/ipc/cal_ipc_marshal_attendee.c
@@ -53,6 +55,7 @@ SET(SRCS
 	${CMAKE_SOURCE_DIR}/common/cal_vcalendar_make.c
 	${CMAKE_SOURCE_DIR}/common/cal_vcalendar_parse.c
 	${CMAKE_SOURCE_DIR}/common/cal_mutex.c
+	${CMAKE_SOURCE_DIR}/common/cal_handle.c
 	${CMAKE_SOURCE_DIR}/common/cal_utils.c
 	)
 

@@ -16,9 +16,13 @@
  * limitations under the License.
  *
  */
-#ifndef __CAL_DB_PLUGIN_CALENDAR_HELPER_H__
-#define __CAL_DB_PLUGIN_CALENDAR_HELPER_H__
 
-int cal_db_delete_account(int account_id);
+#ifndef __CALENDAR_SVC_ONDEMAND_H__
+#define __CALENDAR_SVC_ONDEMAND_H__
 
-#endif /* __CAL_DB_PLUGIN_CALENDAR_HELPER_H__ */
+void cal_ondemand_stop(void);
+void cal_ondemand_start(void);
+void cal_ondemand_hold(void);
+void cal_ondemand_release(void);
+
+#endif /*__CALENDAR_SVC_ONDEMAND_H__ */

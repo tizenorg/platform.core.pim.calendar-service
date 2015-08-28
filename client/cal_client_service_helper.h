@@ -17,13 +17,14 @@
  *
  */
 
-#ifndef __CAL_CLIENT_SERVER_HELPER_H__
-#define __CAL_CLIENT_SERVER_HELPER_H__
+#ifndef __CAL_CLIENT_SERVICE_HELPER_H__
+#define __CAL_CLIENT_SERVICE_HELPER_H__
 
-int cal_client_connect(void);
-int cal_client_disconnect(void);
-int cal_client_connect_on_thread(void);
-int cal_client_disconnect_on_thread(void);
-int cal_client_connect_with_flags(unsigned int flags);
+int cal_client_connect(calendar_h handle);
+int cal_client_disconnect(calendar_h handle);
+int cal_client_connect_with_flags(calendar_h handle, unsigned int flags);
+int cal_client_connect_on_thread(calendar_h handle);
+int cal_client_disconnect_on_thread(calendar_h handle);
+int cal_client_get_thread_connection_count(void);
 
 #endif /* __CAL_CLIENT_SERVICE_HELPER_H__ */

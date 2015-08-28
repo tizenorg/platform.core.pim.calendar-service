@@ -134,6 +134,7 @@ void cal_access_control_set_client_info(pims_ipc_h ipc, const char *smack_label)
 	cal_mutex_lock(CAL_MUTEX_ACCESS_CONTROL);
 
 	thread_id = (unsigned int)pthread_self();
+	info = _cal_access_control_find_permission_info(thread_id);
 	if (NULL == info) {
 		info = calloc(1, sizeof(calendar_permission_info_s));
 		if (NULL == info) {

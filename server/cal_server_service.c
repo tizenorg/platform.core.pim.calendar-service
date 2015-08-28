@@ -29,15 +29,16 @@
 static int cal_total_connection = 0;
 static TLS int cal_thread_connection = 0;
 
-API int calendar_connect(void)
+int cal_connect(void)
 {
 	CAL_FN_CALL();
 	int ret = 0;
 
 	cal_mutex_lock(CAL_MUTEX_CONNECTION);
 	if (0 == cal_total_connection) {
-		ret = cal_inotify_initialize();
+		g_type_init();	// added for alarmmgr
 		cal_view_initialize();
+		ret = cal_inotify_initialize();
 		if (CALENDAR_ERROR_NONE != ret) {
 			ERR("cal_inotify_initialize() Fail(%d)", ret);
 			cal_mutex_unlock(CAL_MUTEX_CONNECTION);
@@ -45,13 +46,12 @@ API int calendar_connect(void)
 		}
 	}
 	else {
-		DBG("System : Calendar service has been already connected");
+		DBG("[System] calendar service has been already connected");
 	}
 	cal_total_connection++;
 
 	if (0 == cal_thread_connection) {
-		g_type_init();	// added for alarmmgr
-		ret = cal_db_open();
+		ret = cal_db_util_open();
 		if (CALENDAR_ERROR_NONE != ret) {
 			ERR("_cal_db_open() Fail(%d)", ret);
 			cal_mutex_unlock(CAL_MUTEX_CONNECTION);
@@ -64,16 +64,16 @@ API int calendar_connect(void)
 	return CALENDAR_ERROR_NONE;
 }
 
-API int calendar_disconnect(void)
+int cal_disconnect(void)
 {
 	CAL_FN_CALL();
 
 	cal_mutex_lock(CAL_MUTEX_CONNECTION);
 	if (1 == cal_thread_connection) {
-		cal_db_close();
+		cal_db_util_close();
 	}
 	else if (cal_thread_connection <= 0) {
-		DBG("System : please call calendar_connect_on_thread(), cal_thread_connection count is (%d)", cal_thread_connection);
+		DBG("[System] not connected, count(%d)", cal_thread_connection);
 		cal_mutex_unlock(CAL_MUTEX_CONNECTION);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
@@ -84,10 +84,10 @@ API int calendar_disconnect(void)
 		cal_view_finalize();
 	}
 	else if (1 < cal_total_connection) {
-		DBG("System : connection count is %d", cal_total_connection);
+		DBG("[System] connection count(%d)", cal_total_connection);
 	}
 	else {
-		DBG("System : please call calendar_connect(), connection count is (%d)", cal_total_connection);
+		DBG("[System] Not connected, count(%d)", cal_total_connection);
 		cal_mutex_unlock(CAL_MUTEX_CONNECTION);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
@@ -102,7 +102,7 @@ void cal_service_internal_disconnect(void)
 	cal_mutex_lock(CAL_MUTEX_CONNECTION);
 
 	if (1 == cal_thread_connection) {
-		cal_db_close();
+		cal_db_util_close();
 		cal_thread_connection--;
 
 		if (1 <= cal_total_connection) {

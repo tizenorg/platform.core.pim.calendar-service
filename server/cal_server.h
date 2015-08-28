@@ -16,9 +16,11 @@
  * limitations under the License.
  *
  */
-#ifndef __CAL_DB_PLUGIN_CALENDAR_HELPER_H__
-#define __CAL_DB_PLUGIN_CALENDAR_HELPER_H__
 
-int cal_db_delete_account(int account_id);
+#ifndef __CAL_SERVER_H__
+#define __CAL_SERVER_H__
 
-#endif /* __CAL_DB_PLUGIN_CALENDAR_HELPER_H__ */
+void cal_server_quit_loop(void);
+int cal_server_get_timeout(void);
+
+#endif /*  __CAL_SERVER_H__ */

@@ -29,8 +29,7 @@
 #include "cal_db_plugin_calendar_helper.h"
 #include "cal_db_util.h"
 
-#ifdef CAL_IPC_SERVER
-int calendar_db_delete_account(int account_id)
+int cal_db_delete_account(int account_id)
 {
 	CAL_FN_CALL();
 	int ret = CALENDAR_ERROR_NONE;
@@ -69,7 +68,7 @@ int calendar_db_delete_account(int account_id)
 	while (cursor) {
 		int id = GPOINTER_TO_INT(cursor->data);
 
-		ret = calendar_db_delete_record(_calendar_book._uri, id);
+		ret = cal_db_delete_record(_calendar_book._uri, id);
 		if (CALENDAR_ERROR_NONE != ret) {
 			ERR("cal_db_delete_record() Fail(%d)", ret);
 			SECURE("book_id(%d)", id);
@@ -81,4 +80,3 @@ int calendar_db_delete_account(int account_id)
 	cal_db_util_end_trans(true);
 	return CALENDAR_ERROR_NONE;
 }
-#endif

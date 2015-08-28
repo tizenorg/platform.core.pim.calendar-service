@@ -18,23 +18,23 @@
  */
 
 #include <stdlib.h>
-#include <malloc.h>		// malloc_trim
-#include <pims-ipc-svc.h>
+#include <malloc.h>
+#include <glib.h>
+#include <pims-ipc-data.h>
 
-#include "calendar_service.h"
-#include "calendar_db.h"
-#include "calendar_query.h"
-#include "calendar_vcalendar.h"
+#include "calendar.h"
 #include "cal_typedef.h"
-#include "cal_db.h"
+#include "cal_internal.h"
 #include "cal_db_util.h"
 #include "cal_ipc_marshal.h"
-#include "cal_internal.h"
 #include "cal_server_ipc.h"
 #include "cal_access_control.h"
-#include "cal_mutex.h"
+#include "cal_handle.h"
 #include "cal_server_service.h"
 #include "cal_db.h"
+#include "cal_server.h"
+#include "cal_ondemand.h"
+
 
 static void _cal_server_ipc_return(pims_ipc_data_h *outdata, int ret)
 {
@@ -54,7 +54,22 @@ void cal_server_ipc_connect(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_dat
 {
 	int ret = CALENDAR_ERROR_NONE;
 
-	ret = calendar_connect();
+	if (NULL == indata) {
+		ERR("No indata");
+		ret = CALENDAR_ERROR_INVALID_PARAMETER;
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
+	calendar_h handle = NULL;
+	ret = cal_ipc_unmarshal_handle(indata, &handle);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_handle() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
+	ret = cal_connect();
 	if (CALENDAR_ERROR_NONE == ret) {
 		char *smack_label = NULL;
 		if (0 != pims_ipc_svc_get_smack_label(ipc, &smack_label))
@@ -62,14 +77,31 @@ void cal_server_ipc_connect(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_dat
 		cal_access_control_set_client_info(ipc, smack_label);
 	}
 	_cal_server_ipc_return(outdata, ret);
+	cal_handle_destroy(handle);
 }
 
 void cal_server_ipc_disconnect(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
 {
 	int ret = CALENDAR_ERROR_NONE;
 
-	ret = calendar_disconnect();
+	if (NULL == indata) {
+		ERR("No indata");
+		ret = CALENDAR_ERROR_INVALID_PARAMETER;
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
+	calendar_h handle = NULL;
+	ret = cal_ipc_unmarshal_handle(indata, &handle);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_handle() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
+	ret = cal_disconnect();
 	_cal_server_ipc_return(outdata, ret);
+	cal_handle_destroy(handle);
 }
 
 void cal_server_ipc_check_permission(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -83,7 +115,7 @@ void cal_server_ipc_check_permission(pims_ipc_h ipc, pims_ipc_data_h indata, pim
 		return;
 	}
 
-	int permission;
+	int permission = 0;
 	ret = cal_ipc_unmarshal_int(indata, &permission);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
@@ -100,7 +132,6 @@ void cal_server_ipc_check_permission(pims_ipc_h ipc, pims_ipc_data_h indata, pim
 		*outdata = NULL;
 		ret = CALENDAR_ERROR_OUT_OF_MEMORY;
 		_cal_server_ipc_return(outdata, ret);
-		return;
 	}
 }
 
@@ -115,22 +146,32 @@ void cal_server_ipc_db_insert_record(pims_ipc_h ipc, pims_ipc_data_h indata, pim
 		return;
 	}
 
+	calendar_h handle = NULL;
+	ret = cal_ipc_unmarshal_handle(indata, &handle);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_handle() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
 	calendar_record_h record = NULL;
 	ret = cal_ipc_unmarshal_record(indata, &record);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_ipc_unmarshal_record() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
+		cal_handle_destroy(handle);
 		return;
 	}
 
 	if (false == cal_access_control_have_permission(ipc, CAL_PERMISSION_WRITE)) {
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
 		_cal_server_ipc_return(outdata, ret);
+		cal_handle_destroy(handle);
 		return;
 	}
 
 	int id = 0;
-	ret = calendar_db_insert_record(record, &id);
+	ret = cal_db_insert_record(record, &id);
 	_cal_server_ipc_return(outdata, ret);
 
 	int transaction_ver = 0;
@@ -142,6 +183,7 @@ void cal_server_ipc_db_insert_record(pims_ipc_h ipc, pims_ipc_data_h indata, pim
 		*outdata = NULL;
 		_cal_server_ipc_return(outdata, ret);
 		calendar_record_destroy(record, true);
+		cal_handle_destroy(handle);
 		return;
 	}
 
@@ -154,6 +196,7 @@ void cal_server_ipc_db_insert_record(pims_ipc_h ipc, pims_ipc_data_h indata, pim
 	}
 
 	calendar_record_destroy(record, true);
+	cal_handle_destroy(handle);
 }
 
 void cal_server_ipc_db_get_record(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -167,12 +210,21 @@ void cal_server_ipc_db_get_record(pims_ipc_h ipc, pims_ipc_data_h indata, pims_i
 		return;
 	}
 
+	calendar_h handle = NULL;
+	ret = cal_ipc_unmarshal_handle(indata, &handle);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_handle() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
 	char* view_uri = NULL;
 	ret = cal_ipc_unmarshal_char(indata, &view_uri);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_ipc_unmarshal_char() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
 		free(view_uri);
+		cal_handle_destroy(handle);
 		return;
 	}
 
@@ -182,6 +234,7 @@ void cal_server_ipc_db_get_record(pims_ipc_h ipc, pims_ipc_data_h indata, pims_i
 		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
 		free(view_uri);
+		cal_handle_destroy(handle);
 		return;
 	}
 
@@ -189,11 +242,12 @@ void cal_server_ipc_db_get_record(pims_ipc_h ipc, pims_ipc_data_h indata, pims_i
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
 		_cal_server_ipc_return(outdata, ret);
 		free(view_uri);
+		cal_handle_destroy(handle);
 		return;
 	}
 
 	calendar_record_h record = NULL;
-	ret = calendar_db_get_record(view_uri, id, &record);
+	ret = cal_db_get_record(view_uri, id, &record);
 	_cal_server_ipc_return(outdata, ret);
 
 	if (CALENDAR_ERROR_NONE == ret) {
@@ -208,6 +262,7 @@ void cal_server_ipc_db_get_record(pims_ipc_h ipc, pims_ipc_data_h indata, pims_i
 
 	calendar_record_destroy(record, true);
 	free(view_uri);
+	cal_handle_destroy(handle);
 }
 
 void cal_server_ipc_db_update_record(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -221,21 +276,31 @@ void cal_server_ipc_db_update_record(pims_ipc_h ipc, pims_ipc_data_h indata, pim
 		return;
 	}
 
+	calendar_h handle = NULL;
+	ret = cal_ipc_unmarshal_handle(indata, &handle);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_handle() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
 	calendar_record_h record = NULL;
 	ret = cal_ipc_unmarshal_record(indata, &record);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_ipc_unmarshal_record() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
+		cal_handle_destroy(handle);
 		return;
 	}
 
 	if (false == cal_access_control_have_permission(ipc, CAL_PERMISSION_WRITE)) {
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
 		_cal_server_ipc_return(outdata, ret);
+		cal_handle_destroy(handle);
 		return;
 	}
 
-	ret = calendar_db_update_record(record);
+	ret = cal_db_update_record(record);
 	_cal_server_ipc_return(outdata, ret);
 
 	if (CALENDAR_ERROR_NONE == ret) {
@@ -251,6 +316,7 @@ void cal_server_ipc_db_update_record(pims_ipc_h ipc, pims_ipc_data_h indata, pim
 	}
 
 	calendar_record_destroy(record, true);
+	cal_handle_destroy(handle);
 }
 
 void cal_server_ipc_db_delete_record(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -264,11 +330,20 @@ void cal_server_ipc_db_delete_record(pims_ipc_h ipc, pims_ipc_data_h indata, pim
 		return;
 	}
 
+	calendar_h handle = NULL;
+	ret = cal_ipc_unmarshal_handle(indata, &handle);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_handle() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
 	char* view_uri = NULL;
 	ret = cal_ipc_unmarshal_char(indata, &view_uri);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_ipc_unmarshal_char() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
+		cal_handle_destroy(handle);
 		return;
 	}
 
@@ -278,6 +353,7 @@ void cal_server_ipc_db_delete_record(pims_ipc_h ipc, pims_ipc_data_h indata, pim
 		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
 		free(view_uri);
+		cal_handle_destroy(handle);
 		return;
 	}
 
@@ -285,10 +361,11 @@ void cal_server_ipc_db_delete_record(pims_ipc_h ipc, pims_ipc_data_h indata, pim
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
 		_cal_server_ipc_return(outdata, ret);
 		free(view_uri);
+		cal_handle_destroy(handle);
 		return;
 	}
 
-	ret = calendar_db_delete_record(view_uri, id);
+	ret = cal_db_delete_record(view_uri,id);
 	_cal_server_ipc_return(outdata, ret);
 
 	if (CALENDAR_ERROR_NONE == ret) {
@@ -304,6 +381,7 @@ void cal_server_ipc_db_delete_record(pims_ipc_h ipc, pims_ipc_data_h indata, pim
 	}
 
 	free(view_uri);
+	cal_handle_destroy(handle);
 }
 
 void cal_server_ipc_db_get_all_records(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -317,11 +395,20 @@ void cal_server_ipc_db_get_all_records(pims_ipc_h ipc, pims_ipc_data_h indata, p
 		return;
 	}
 
+	calendar_h handle = NULL;
+	ret = cal_ipc_unmarshal_handle(indata, &handle);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_handle() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
 	char* view_uri = NULL;
 	ret = cal_ipc_unmarshal_char(indata, &view_uri);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_ipc_unmarshal_char() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
+		cal_handle_destroy(handle);
 		return;
 	}
 
@@ -331,6 +418,7 @@ void cal_server_ipc_db_get_all_records(pims_ipc_h ipc, pims_ipc_data_h indata, p
 		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
 		free(view_uri);
+		cal_handle_destroy(handle);
 		return;
 	}
 
@@ -340,6 +428,7 @@ void cal_server_ipc_db_get_all_records(pims_ipc_h ipc, pims_ipc_data_h indata, p
 		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
 		free(view_uri);
+		cal_handle_destroy(handle);
 		return;
 	}
 
@@ -347,13 +436,13 @@ void cal_server_ipc_db_get_all_records(pims_ipc_h ipc, pims_ipc_data_h indata, p
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
 		_cal_server_ipc_return(outdata, ret);
 		free(view_uri);
+		cal_handle_destroy(handle);
 		return;
 	}
 
 	calendar_list_h list = NULL;
-	ret = calendar_db_get_all_records(view_uri, offset, limit, &list);
+	ret = cal_db_get_all_records(view_uri, offset, limit, &list);
 	_cal_server_ipc_return(outdata, ret);
-
 
 	if (CALENDAR_ERROR_NONE == ret) {
 		ret = cal_ipc_marshal_list(list, *outdata);
@@ -367,6 +456,7 @@ void cal_server_ipc_db_get_all_records(pims_ipc_h ipc, pims_ipc_data_h indata, p
 
 	calendar_list_destroy(list, true);
 	free(view_uri);
+	cal_handle_destroy(handle);
 }
 
 void cal_server_ipc_db_get_records_with_query(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -380,29 +470,40 @@ void cal_server_ipc_db_get_records_with_query(pims_ipc_h ipc, pims_ipc_data_h in
 		return;
 	}
 
+	calendar_h handle = NULL;
+	ret = cal_ipc_unmarshal_handle(indata, &handle);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_handle() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
 	calendar_query_h query = NULL;
 	ret = cal_ipc_unmarshal_query(indata, &query);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_ipc_unmarshal_query() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
+		cal_handle_destroy(handle);
 		return;
 	}
 
 	int offset = 0;
-	ret = cal_ipc_unmarshal_int(indata,&offset);
+	ret = cal_ipc_unmarshal_int(indata, &offset);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
 		calendar_query_destroy(query);
+		cal_handle_destroy(handle);
 		return;
 	}
 
 	int limit = 0;
-	ret = cal_ipc_unmarshal_int(indata,&limit);
+	ret = cal_ipc_unmarshal_int(indata, &limit);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
 		calendar_query_destroy(query);
+		cal_handle_destroy(handle);
 		return;
 	}
 
@@ -410,11 +511,12 @@ void cal_server_ipc_db_get_records_with_query(pims_ipc_h ipc, pims_ipc_data_h in
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
 		_cal_server_ipc_return(outdata, ret);
 		calendar_query_destroy(query);
+		cal_handle_destroy(handle);
 		return;
 	}
 
 	calendar_list_h list = NULL;
-	ret = calendar_db_get_records_with_query(query,offset,limit,&list);
+	ret = cal_db_get_records_with_query(query, offset, limit, &list);
 	_cal_server_ipc_return(outdata, ret);
 
 	if (CALENDAR_ERROR_NONE == ret) {
@@ -430,6 +532,7 @@ void cal_server_ipc_db_get_records_with_query(pims_ipc_h ipc, pims_ipc_data_h in
 
 	calendar_list_destroy(list, true);
 	calendar_query_destroy(query);
+	cal_handle_destroy(handle);
 }
 
 void cal_server_ipc_db_clean_after_sync(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -443,11 +546,20 @@ void cal_server_ipc_db_clean_after_sync(pims_ipc_h ipc, pims_ipc_data_h indata, 
 		return;
 	}
 
+	calendar_h handle = NULL;
+	ret = cal_ipc_unmarshal_handle(indata, &handle);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_handle() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
 	int calendar_book_id = 0;
 	ret = cal_ipc_unmarshal_int(indata,&calendar_book_id);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
+		cal_handle_destroy(handle);
 		return;
 	}
 
@@ -456,17 +568,20 @@ void cal_server_ipc_db_clean_after_sync(pims_ipc_h ipc, pims_ipc_data_h indata, 
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
+		cal_handle_destroy(handle);
 		return;
 	}
 
 	if (false == cal_access_control_have_permission(ipc, CAL_PERMISSION_WRITE)) {
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
 		_cal_server_ipc_return(outdata, ret);
+		cal_handle_destroy(handle);
 		return;
 	}
 
-	ret = calendar_db_clean_after_sync(calendar_book_id, calendar_db_version);
+	ret = cal_db_clean_after_sync(calendar_book_id, calendar_db_version);
 	_cal_server_ipc_return(outdata, ret);
+	cal_handle_destroy(handle);
 }
 
 void cal_server_ipc_db_get_count(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -480,22 +595,32 @@ void cal_server_ipc_db_get_count(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ip
 		return;
 	}
 
-	char* view_uri = NULL;
+	calendar_h handle = NULL;
+	ret = cal_ipc_unmarshal_handle(indata, &handle);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_handle() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
+	char *view_uri = NULL;
 	ret = cal_ipc_unmarshal_char(indata, &view_uri);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_ipc_unmarshal_char() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
+		cal_handle_destroy(handle);
 		return;
 	}
 
 	if (false == cal_access_control_have_permission(ipc, CAL_PERMISSION_READ)) {
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
 		_cal_server_ipc_return(outdata, ret);
+		cal_handle_destroy(handle);
 		return;
 	}
 
 	int count = 0;
-	ret = calendar_db_get_count(view_uri, &count);
+	ret = cal_db_get_count(view_uri, &count);
 	_cal_server_ipc_return(outdata, ret);
 
 	if (CALENDAR_ERROR_NONE == ret) {
@@ -509,6 +634,7 @@ void cal_server_ipc_db_get_count(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ip
 	}
 
 	free(view_uri);
+	cal_handle_destroy(handle);
 }
 
 void cal_server_ipc_db_get_count_with_query(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -522,22 +648,32 @@ void cal_server_ipc_db_get_count_with_query(pims_ipc_h ipc, pims_ipc_data_h inda
 		return;
 	}
 
+	calendar_h handle = NULL;
+	ret = cal_ipc_unmarshal_handle(indata, &handle);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_handle() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
 	calendar_query_h query = NULL;
 	ret = cal_ipc_unmarshal_query(indata,&query);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_ipc_unmarshal_query() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
+		cal_handle_destroy(handle);
 		return;
 	}
 
 	if (false == cal_access_control_have_permission(ipc, CAL_PERMISSION_READ)) {
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
 		_cal_server_ipc_return(outdata, ret);
+		cal_handle_destroy(handle);
 		return;
 	}
 
 	int count = 0;
-	ret = calendar_db_get_count_with_query(query, &count);
+	ret = cal_db_get_count_with_query(query, &count);
 	_cal_server_ipc_return(outdata, ret);
 
 	if (CALENDAR_ERROR_NONE == ret) {
@@ -551,6 +687,7 @@ void cal_server_ipc_db_get_count_with_query(pims_ipc_h ipc, pims_ipc_data_h inda
 	}
 
 	calendar_query_destroy(query);
+	cal_handle_destroy(handle);
 }
 
 void cal_server_ipc_db_insert_records(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -564,23 +701,33 @@ void cal_server_ipc_db_insert_records(pims_ipc_h ipc, pims_ipc_data_h indata, pi
 		return;
 	}
 
+	calendar_h handle = NULL;
+	ret = cal_ipc_unmarshal_handle(indata, &handle);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_handle() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
 	calendar_list_h list = NULL;
 	ret = cal_ipc_unmarshal_list(indata, &list);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_ipc_unmarshal_list() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
+		cal_handle_destroy(handle);
 		return;
 	}
 
 	if (false == cal_access_control_have_permission(ipc, CAL_PERMISSION_WRITE)) {
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
 		_cal_server_ipc_return(outdata, ret);
+		cal_handle_destroy(handle);
 		return;
 	}
 
 	int *ids = NULL;
 	int id_count = 0;
-	ret = calendar_db_insert_records(list, &ids, &id_count);
+	ret = cal_db_insert_records(list, &ids, &id_count);
 	_cal_server_ipc_return(outdata, ret);
 
 	if (CALENDAR_ERROR_NONE == ret) {
@@ -594,6 +741,7 @@ void cal_server_ipc_db_insert_records(pims_ipc_h ipc, pims_ipc_data_h indata, pi
 			_cal_server_ipc_return(outdata, ret);
 			free(ids);
 			calendar_list_destroy(list, true);
+			cal_handle_destroy(handle);
 			return;
 		}
 		/*
@@ -608,6 +756,7 @@ void cal_server_ipc_db_insert_records(pims_ipc_h ipc, pims_ipc_data_h indata, pi
 			_cal_server_ipc_return(outdata, ret);
 			free(ids);
 			calendar_list_destroy(list, true);
+			cal_handle_destroy(handle);
 			return;
 		}
 
@@ -622,6 +771,7 @@ void cal_server_ipc_db_insert_records(pims_ipc_h ipc, pims_ipc_data_h indata, pi
 				_cal_server_ipc_return(outdata, ret);
 				free(ids);
 				calendar_list_destroy(list, true);
+				cal_handle_destroy(handle);
 				return;
 			}
 		}
@@ -629,6 +779,7 @@ void cal_server_ipc_db_insert_records(pims_ipc_h ipc, pims_ipc_data_h indata, pi
 
 	free(ids);
 	calendar_list_destroy(list, true);
+	cal_handle_destroy(handle);
 }
 
 void cal_server_ipc_db_update_records(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -642,21 +793,31 @@ void cal_server_ipc_db_update_records(pims_ipc_h ipc, pims_ipc_data_h indata, pi
 		return;
 	}
 
+	calendar_h handle = NULL;
+	ret = cal_ipc_unmarshal_handle(indata, &handle);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_handle() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
 	calendar_list_h list = NULL;
 	ret = cal_ipc_unmarshal_list(indata, &list);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_ipc_unmarshal_list() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
+		cal_handle_destroy(handle);
 		return;
 	}
 
 	if (false == cal_access_control_have_permission(ipc, CAL_PERMISSION_WRITE)) {
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
 		_cal_server_ipc_return(outdata, ret);
+		cal_handle_destroy(handle);
 		return;
 	}
 
-	ret = calendar_db_update_records(list);
+	ret = cal_db_update_records(list);
 	_cal_server_ipc_return(outdata, ret);
 
 	if (CALENDAR_ERROR_NONE == ret) {
@@ -672,6 +833,7 @@ void cal_server_ipc_db_update_records(pims_ipc_h ipc, pims_ipc_data_h indata, pi
 	}
 
 	calendar_list_destroy(list,true);
+	cal_handle_destroy(handle);
 }
 
 void cal_server_ipc_db_delete_records(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -685,11 +847,20 @@ void cal_server_ipc_db_delete_records(pims_ipc_h ipc, pims_ipc_data_h indata, pi
 		return;
 	}
 
+	calendar_h handle = NULL;
+	ret = cal_ipc_unmarshal_handle(indata, &handle);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_handle() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
 	char *view_uri = NULL;
 	ret = cal_ipc_unmarshal_char(indata, &view_uri);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_ipc_unmarshal_char() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
+		cal_handle_destroy(handle);
 		return;
 	}
 
@@ -699,6 +870,7 @@ void cal_server_ipc_db_delete_records(pims_ipc_h ipc, pims_ipc_data_h indata, pi
 		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
 		g_free(view_uri);
+		cal_handle_destroy(handle);
 		return;
 	}
 
@@ -707,6 +879,7 @@ void cal_server_ipc_db_delete_records(pims_ipc_h ipc, pims_ipc_data_h indata, pi
 		ret = CALENDAR_ERROR_NO_DATA;
 		_cal_server_ipc_return(outdata, ret);
 		g_free(view_uri);
+		cal_handle_destroy(handle);
 		return;
 	}
 
@@ -717,6 +890,7 @@ void cal_server_ipc_db_delete_records(pims_ipc_h ipc, pims_ipc_data_h indata, pi
 		ret = CALENDAR_ERROR_OUT_OF_MEMORY;
 		_cal_server_ipc_return(outdata, ret);
 		free(view_uri);
+		cal_handle_destroy(handle);
 		return;
 	}
 
@@ -729,6 +903,7 @@ void cal_server_ipc_db_delete_records(pims_ipc_h ipc, pims_ipc_data_h indata, pi
 			_cal_server_ipc_return(outdata, ret);
 			free(ids);
 			free(view_uri);
+			cal_handle_destroy(handle);
 			return;
 		}
 	}
@@ -738,10 +913,11 @@ void cal_server_ipc_db_delete_records(pims_ipc_h ipc, pims_ipc_data_h indata, pi
 		_cal_server_ipc_return(outdata, ret);
 		free(ids);
 		free(view_uri);
+		cal_handle_destroy(handle);
 		return;
 	}
 
-	ret = calendar_db_delete_records(view_uri, ids, count);
+	ret = cal_db_delete_records(view_uri, ids, count);
 	_cal_server_ipc_return(outdata, ret);
 
 	if (CALENDAR_ERROR_NONE == ret) {
@@ -759,6 +935,7 @@ void cal_server_ipc_db_delete_records(pims_ipc_h ipc, pims_ipc_data_h indata, pi
 
 	free(ids);
 	free(view_uri);
+	cal_handle_destroy(handle);
 }
 
 void cal_server_ipc_db_get_changes_by_version(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -772,11 +949,20 @@ void cal_server_ipc_db_get_changes_by_version(pims_ipc_h ipc, pims_ipc_data_h in
 		return;
 	}
 
+	calendar_h handle = NULL;
+	ret = cal_ipc_unmarshal_handle(indata, &handle);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_handle() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
 	char *view_uri = NULL;
 	ret = cal_ipc_unmarshal_char(indata, &view_uri);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_ipc_unmarshal_char() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
+		cal_handle_destroy(handle);
 		return;
 	}
 
@@ -786,6 +972,7 @@ void cal_server_ipc_db_get_changes_by_version(pims_ipc_h ipc, pims_ipc_data_h in
 		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
 		free(view_uri);
+		cal_handle_destroy(handle);
 		return;
 	}
 
@@ -795,6 +982,7 @@ void cal_server_ipc_db_get_changes_by_version(pims_ipc_h ipc, pims_ipc_data_h in
 		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
 		free(view_uri);
+		cal_handle_destroy(handle);
 		return;
 	}
 
@@ -802,13 +990,13 @@ void cal_server_ipc_db_get_changes_by_version(pims_ipc_h ipc, pims_ipc_data_h in
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
 		_cal_server_ipc_return(outdata, ret);
 		free(view_uri);
+		cal_handle_destroy(handle);
 		return;
 	}
 
 	calendar_list_h list = NULL;
 	int current_calendar_db_version = 0;
-	ret = calendar_db_get_changes_by_version(view_uri, calendar_book_id, calendar_db_version,
-			&list, &current_calendar_db_version);
+	ret = cal_db_get_changes_by_version(view_uri, calendar_book_id, calendar_db_version, &list, &current_calendar_db_version);
 	_cal_server_ipc_return(outdata, ret);
 
 	if (CALENDAR_ERROR_NONE == ret) {
@@ -820,6 +1008,7 @@ void cal_server_ipc_db_get_changes_by_version(pims_ipc_h ipc, pims_ipc_data_h in
 			_cal_server_ipc_return(outdata, ret);
 			calendar_list_destroy(list, true);
 			free(view_uri);
+			cal_handle_destroy(handle);
 			return;
 		}
 
@@ -831,26 +1020,44 @@ void cal_server_ipc_db_get_changes_by_version(pims_ipc_h ipc, pims_ipc_data_h in
 			_cal_server_ipc_return(outdata, ret);
 			calendar_list_destroy(list, true);
 			free(view_uri);
+			cal_handle_destroy(handle);
 			return;
 		}
 	}
 
 	calendar_list_destroy(list, true);
 	free(view_uri);
+	cal_handle_destroy(handle);
 }
 
 void cal_server_ipc_db_get_current_version(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
 {
 	int ret = CALENDAR_ERROR_NONE;
 
-	if (false == cal_access_control_have_permission(ipc, CAL_PERMISSION_READ)) {
-		ret = CALENDAR_ERROR_PERMISSION_DENIED;
+	if (NULL == indata) {
+		ERR("No indata");
+		ret = CALENDAR_ERROR_INVALID_PARAMETER;
 		_cal_server_ipc_return(outdata, ret);
 		return;
 	}
 
+	calendar_h handle = NULL;
+	ret = cal_ipc_unmarshal_handle(indata, &handle);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_handle() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
+	if (false == cal_access_control_have_permission(ipc, CAL_PERMISSION_READ)) {
+		ret = CALENDAR_ERROR_PERMISSION_DENIED;
+		_cal_server_ipc_return(outdata, ret);
+		cal_handle_destroy(handle);
+		return;
+	}
+
 	int calendar_db_version = 0;
-	ret = calendar_db_get_current_version(&calendar_db_version);
+	ret = cal_db_get_current_version(&calendar_db_version);
 	_cal_server_ipc_return(outdata, ret);
 
 	if (CALENDAR_ERROR_NONE == ret) {
@@ -860,6 +1067,7 @@ void cal_server_ipc_db_get_current_version(pims_ipc_h ipc, pims_ipc_data_h indat
 			_cal_server_ipc_return(outdata, ret);
 		}
 	}
+	cal_handle_destroy(handle);
 }
 
 void cal_server_ipc_db_insert_vcalendars(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -873,24 +1081,33 @@ void cal_server_ipc_db_insert_vcalendars(pims_ipc_h ipc, pims_ipc_data_h indata,
 		return;
 	}
 
+	calendar_h handle = NULL;
+	ret = cal_ipc_unmarshal_handle(indata, &handle);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_handle() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
 	char *stream = NULL;
 	ret = cal_ipc_unmarshal_char(indata, &stream);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_ipc_unmarshal_char() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
+		cal_handle_destroy(handle);
 		return;
 	}
 
 	if (false == cal_access_control_have_permission(ipc, CAL_PERMISSION_WRITE)) {
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
 		_cal_server_ipc_return(outdata, ret);
+		cal_handle_destroy(handle);
 		return;
 	}
 
-
-	int *ids = NULL;
 	int count = 0;
-	ret = calendar_db_insert_vcalendars(stream, &ids, &count);
+	int *ids = NULL;
+	ret = cal_db_insert_vcalendars(stream, &ids, &count);
 	_cal_server_ipc_return(outdata, ret);
 
 	if (CALENDAR_ERROR_NONE == ret) {
@@ -904,6 +1121,7 @@ void cal_server_ipc_db_insert_vcalendars(pims_ipc_h ipc, pims_ipc_data_h indata,
 			_cal_server_ipc_return(outdata, ret);
 			free(ids);
 			free(stream);
+			cal_handle_destroy(handle);
 			return;
 		}
 
@@ -915,6 +1133,7 @@ void cal_server_ipc_db_insert_vcalendars(pims_ipc_h ipc, pims_ipc_data_h indata,
 			_cal_server_ipc_return(outdata, ret);
 			free(ids);
 			free(stream);
+			cal_handle_destroy(handle);
 			return;
 		}
 
@@ -928,6 +1147,7 @@ void cal_server_ipc_db_insert_vcalendars(pims_ipc_h ipc, pims_ipc_data_h indata,
 				_cal_server_ipc_return(outdata, ret);
 				free(ids);
 				free(stream);
+				cal_handle_destroy(handle);
 				return;
 			}
 		}
@@ -935,6 +1155,7 @@ void cal_server_ipc_db_insert_vcalendars(pims_ipc_h ipc, pims_ipc_data_h indata,
 
 	free(ids);
 	free(stream);
+	cal_handle_destroy(handle);
 }
 
 void cal_server_ipc_db_replace_vcalendars(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -948,11 +1169,20 @@ void cal_server_ipc_db_replace_vcalendars(pims_ipc_h ipc, pims_ipc_data_h indata
 		return;
 	}
 
+	calendar_h handle = NULL;
+	ret = cal_ipc_unmarshal_handle(indata, &handle);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_handle() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
 	char *stream = NULL;
 	ret = cal_ipc_unmarshal_char(indata, &stream);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_ipc_unmarshal_char() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
+		cal_handle_destroy(handle);
 		return;
 	}
 
@@ -962,6 +1192,7 @@ void cal_server_ipc_db_replace_vcalendars(pims_ipc_h ipc, pims_ipc_data_h indata
 		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
 		free(stream);
+		cal_handle_destroy(handle);
 		return;
 	}
 
@@ -972,6 +1203,7 @@ void cal_server_ipc_db_replace_vcalendars(pims_ipc_h ipc, pims_ipc_data_h indata
 		ret = CALENDAR_ERROR_OUT_OF_MEMORY;
 		_cal_server_ipc_return(outdata, ret);
 		free(stream);
+		cal_handle_destroy(handle);
 		return;
 	}
 
@@ -983,6 +1215,7 @@ void cal_server_ipc_db_replace_vcalendars(pims_ipc_h ipc, pims_ipc_data_h indata
 			_cal_server_ipc_return(outdata, ret);
 			free(ids);
 			free(stream);
+			cal_handle_destroy(handle);
 			return;
 		}
 	}
@@ -992,10 +1225,12 @@ void cal_server_ipc_db_replace_vcalendars(pims_ipc_h ipc, pims_ipc_data_h indata
 		_cal_server_ipc_return(outdata, ret);
 		free(ids);
 		free(stream);
+		cal_handle_destroy(handle);
 		return;
 	}
 
-	ret = calendar_db_replace_vcalendars(stream, ids, count);
+
+	ret = cal_db_replace_vcalendars(stream, ids, count);
 	_cal_server_ipc_return(outdata, ret);
 
 	if (CALENDAR_ERROR_NONE == ret) {
@@ -1012,6 +1247,7 @@ void cal_server_ipc_db_replace_vcalendars(pims_ipc_h ipc, pims_ipc_data_h indata
 
 	free(ids);
 	free(stream);
+	cal_handle_destroy(handle);
 }
 
 void cal_server_ipc_db_replace_record(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -1025,11 +1261,20 @@ void cal_server_ipc_db_replace_record(pims_ipc_h ipc, pims_ipc_data_h indata, pi
 		return;
 	}
 
+	calendar_h handle = NULL;
+	ret = cal_ipc_unmarshal_handle(indata, &handle);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_handle() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
 	calendar_record_h record = NULL;
 	ret = cal_ipc_unmarshal_record(indata, &record);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_ipc_unmarshal_record() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
+		cal_handle_destroy(handle);
 		return;
 	}
 
@@ -1039,16 +1284,18 @@ void cal_server_ipc_db_replace_record(pims_ipc_h ipc, pims_ipc_data_h indata, pi
 		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
 		calendar_record_destroy(record, true);
+		cal_handle_destroy(handle);
 		return;
 	}
 
 	if (false == cal_access_control_have_permission(ipc, CAL_PERMISSION_WRITE)) {
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
 		calendar_record_destroy(record, true);
+		cal_handle_destroy(handle);
 		return;
 	}
 
-	ret = calendar_db_replace_record(record, id);
+	ret = cal_db_replace_record(record, id);
 	_cal_server_ipc_return(outdata, ret);
 
 	if (CALENDAR_ERROR_NONE == ret) {
@@ -1064,6 +1311,7 @@ void cal_server_ipc_db_replace_record(pims_ipc_h ipc, pims_ipc_data_h indata, pi
 	}
 
 	calendar_record_destroy(record, true);
+	cal_handle_destroy(handle);
 }
 
 void cal_server_ipc_db_replace_records(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -1077,11 +1325,20 @@ void cal_server_ipc_db_replace_records(pims_ipc_h ipc, pims_ipc_data_h indata, p
 		return;
 	}
 
+	calendar_h handle = NULL;
+	ret = cal_ipc_unmarshal_handle(indata, &handle);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_handle() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
 	calendar_list_h list = NULL;
 	ret = cal_ipc_unmarshal_list(indata, &list);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_ipc_unmarshal_list() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
+		cal_handle_destroy(handle);
 		return;
 	}
 
@@ -1091,6 +1348,7 @@ void cal_server_ipc_db_replace_records(pims_ipc_h ipc, pims_ipc_data_h indata, p
 		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
 		calendar_list_destroy(list, true);
+		cal_handle_destroy(handle);
 		return;
 	}
 
@@ -1099,6 +1357,7 @@ void cal_server_ipc_db_replace_records(pims_ipc_h ipc, pims_ipc_data_h indata, p
 		ret = CALENDAR_ERROR_NO_DATA;
 		_cal_server_ipc_return(outdata, ret);
 		calendar_list_destroy(list, true);
+		cal_handle_destroy(handle);
 		return;
 	}
 
@@ -1109,6 +1368,7 @@ void cal_server_ipc_db_replace_records(pims_ipc_h ipc, pims_ipc_data_h indata, p
 		ret = CALENDAR_ERROR_OUT_OF_MEMORY;
 		_cal_server_ipc_return(outdata, ret);
 		calendar_list_destroy(list, true);
+		cal_handle_destroy(handle);
 		return;
 	}
 
@@ -1121,6 +1381,7 @@ void cal_server_ipc_db_replace_records(pims_ipc_h ipc, pims_ipc_data_h indata, p
 			_cal_server_ipc_return(outdata, ret);
 			free(ids);
 			calendar_list_destroy(list, true);
+			cal_handle_destroy(handle);
 			return;
 		}
 	}
@@ -1130,10 +1391,11 @@ void cal_server_ipc_db_replace_records(pims_ipc_h ipc, pims_ipc_data_h indata, p
 		_cal_server_ipc_return(outdata, ret);
 		free(ids);
 		calendar_list_destroy(list, true);
+		cal_handle_destroy(handle);
 		return;
 	}
 
-	ret = calendar_db_replace_records(list, ids, count);
+	ret = cal_db_replace_records(list, ids, count);
 	_cal_server_ipc_return(outdata, ret);
 
 	if (CALENDAR_ERROR_NONE == ret) {
@@ -1150,6 +1412,7 @@ void cal_server_ipc_db_replace_records(pims_ipc_h ipc, pims_ipc_data_h indata, p
 
 	free(ids);
 	calendar_list_destroy(list, true);
+	cal_handle_destroy(handle);
 }
 
 void cal_server_ipc_db_changes_exception(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -1163,11 +1426,20 @@ void cal_server_ipc_db_changes_exception(pims_ipc_h ipc, pims_ipc_data_h indata,
 		return;
 	}
 
-	char* view_uri = NULL;
+	calendar_h handle = NULL;
+	ret = cal_ipc_unmarshal_handle(indata, &handle);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_unmarshal_handle() Fail(%d)", ret);
+		_cal_server_ipc_return(outdata, ret);
+		return;
+	}
+
+	char *view_uri = NULL;
 	ret = cal_ipc_unmarshal_char(indata, &view_uri);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_ipc_unmarshal_char() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
+		cal_handle_destroy(handle);
 		return;
 	}
 
@@ -1177,6 +1449,7 @@ void cal_server_ipc_db_changes_exception(pims_ipc_h ipc, pims_ipc_data_h indata,
 		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
 		free(view_uri);
+		cal_handle_destroy(handle);
 		return;
 	}
 
@@ -1186,6 +1459,7 @@ void cal_server_ipc_db_changes_exception(pims_ipc_h ipc, pims_ipc_data_h indata,
 		ERR("cal_ipc_unmarshal_int() Fail(%d)", ret);
 		_cal_server_ipc_return(outdata, ret);
 		free(view_uri);
+		cal_handle_destroy(handle);
 		return;
 	}
 
@@ -1193,12 +1467,12 @@ void cal_server_ipc_db_changes_exception(pims_ipc_h ipc, pims_ipc_data_h indata,
 		ret = CALENDAR_ERROR_PERMISSION_DENIED;
 		_cal_server_ipc_return(outdata, ret);
 		free(view_uri);
+		cal_handle_destroy(handle);
 		return;
 	}
 
 	calendar_list_h list = NULL;
-	ret = calendar_db_get_changes_exception_by_version(view_uri, original_event_id,
-			calendar_db_version, &list);
+	ret = cal_db_get_changes_exception_by_version(view_uri, original_event_id, calendar_db_version, &list);
 	_cal_server_ipc_return(outdata, ret);
 
 	if (CALENDAR_ERROR_NONE == ret) {
@@ -1212,4 +1486,5 @@ void cal_server_ipc_db_changes_exception(pims_ipc_h ipc, pims_ipc_data_h indata,
 
 	calendar_list_destroy(list, true);
 	free(view_uri);
+	cal_handle_destroy(handle);
 }

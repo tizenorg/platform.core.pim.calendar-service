@@ -17,57 +17,67 @@
  *
  */
 
-#include <unistd.h>
-#include <stdlib.h>     //calloc
+#include <stdlib.h>
 #include <pims-ipc.h>
-#include <glib-object.h> //g_type_init
+#include <glib-object.h>
 #include <errno.h>
+#include <pthread.h>
 
-#include "calendar_service.h"
 #include "calendar_db.h"
 #include "calendar_types.h"
-
+#include "cal_client_service_helper.h"
+#include "cal_client_utils.h"
+#include "cal_client_ipc.h"
 #include "cal_internal.h"
 #include "cal_typedef.h"
 #include "cal_inotify.h"
 #include "cal_view.h"
-#include "cal_record.h"
-#include "cal_list.h"
-#include "cal_mutex.h"
 #include "cal_ipc.h"
+#include "cal_mutex.h"
 #include "cal_ipc_marshal.h"
-#include "cal_client_ipc.h"
-#include "cal_client_reminder.h"
+#include "cal_handle.h"
 #include "cal_utils.h"
 
-static pims_ipc_h cal_ipc = NULL;
-static TLS pims_ipc_h cal_ipc_thread = NULL;
+typedef struct {
+	pims_ipc_h ipc;
+	GList *list_handle;
+} cal_ipc_s;
 
-static int calendar_connection_count = 0;
-static int calendar_change_version = 0;
-static TLS int calendar_change_version_thread = 0;
+static GHashTable *_cal_ipc_table = NULL;
+static pthread_mutex_t cal_mutex_disconnected = PTHREAD_MUTEX_INITIALIZER;
+static bool _cal_ipc_disconnected = false;
 
-pims_ipc_h _cal_client_ipc_get_handle(void);
-void _cal_client_ipc_lock(void);
-void _cal_client_ipc_unlock(void);
-
-int cal_client_ipc_connect(void)
+static pims_ipc_h _cal_client_ipc_get_handle(void)
 {
-	int ret = CALENDAR_ERROR_NONE;
-	pims_ipc_data_h outdata = NULL;
+	cal_ipc_s *ipc_data = NULL;
+	char key[CAL_STR_MIDDLE_LEN] = {0};
+	RETVM_IF(NULL == _cal_ipc_table, NULL, "Not connected");
 
-	if (cal_ipc) {
-		CAL_DBG("[GLOBAL_IPC_CHANNEL] calendar already connected");
-		return CALENDAR_ERROR_NONE;
+	snprintf(key, sizeof(key), "%u", cal_client_get_tid());
+	ipc_data = g_hash_table_lookup(_cal_ipc_table, key);
+	if (NULL == ipc_data) {
+		snprintf(key, sizeof(key), "%u", cal_client_get_pid());
+		ipc_data = g_hash_table_lookup(_cal_ipc_table, key);
+		if (NULL == ipc_data) {
+			ERR("No ipc_data:key[%s]", key);
+			return NULL;
+		}
 	}
+	return ipc_data->ipc;
+}
+
+static int _cal_client_ipc_create(pims_ipc_h *out_ipc)
+{
+	RETV_IF(NULL == out_ipc, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	char sock_file[CAL_STR_MIDDLE_LEN] = {0};
 	snprintf(sock_file, sizeof(sock_file), CAL_SOCK_PATH"/.%s", getuid(), CAL_IPC_SERVICE);
-	cal_ipc = pims_ipc_create(sock_file);
 	DBG("[%s]", sock_file);
-	if (NULL == cal_ipc) {
-		if (EACCES == errno) {
-			ERR("[GLOBAL_IPC_CHANNEL] pims_ipc_create() Fail(%d)", CALENDAR_ERROR_PERMISSION_DENIED);
+
+	pims_ipc_h ipc = pims_ipc_create(sock_file);
+	if (NULL == ipc) {
+		if (errno == EACCES) {
+			ERR("[GLOBAL_IPC_CHANNEL] pims_ipc_create() Fail: Permission denied");
 			return CALENDAR_ERROR_PERMISSION_DENIED;
 		}
 		else {
@@ -75,216 +85,231 @@ int cal_client_ipc_connect(void)
 			return CALENDAR_ERROR_IPC;
 		}
 	}
+	*out_ipc = ipc;
+	return CALENDAR_ERROR_NONE;
+}
 
-	if (pims_ipc_call(cal_ipc, CAL_IPC_MODULE, CAL_IPC_SERVER_CONNECT, NULL, &outdata) != 0) {
-		ERR("[GLOBAL_IPC_CHANNEL] pims_ipc_call failed");
-		ret = CALENDAR_ERROR_IPC;
-		goto DATA_FREE;
+static void _cal_client_ipc_free(gpointer p)
+{
+	cal_ipc_s *ipc_data = p;
+	RET_IF(NULL == ipc_data);
+
+	if (ipc_data->ipc) {
+		cal_client_ipc_unset_disconnected_cb(ipc_data->ipc);
+		pims_ipc_destroy(ipc_data->ipc);
+	}
+	g_list_free(ipc_data->list_handle);
+	free(ipc_data);
+}
+
+static int _cal_client_ipc_connect(calendar_h handle, pims_ipc_h ipc)
+{
+	int ret = CALENDAR_ERROR_NONE;
+	pims_ipc_data_h indata = NULL;
+	pims_ipc_data_h outdata = NULL;
+
+	RETV_IF(NULL == handle, CALENDAR_ERROR_INVALID_PARAMETER);
+
+	indata = pims_ipc_data_create(0);
+	if (NULL == indata) {
+		ERR("pims_ipc_data_create() Fail");
+		return CALENDAR_ERROR_IPC;
 	}
 
-	if (outdata) {
-		unsigned int size = 0;
-		ret = *(int*) pims_ipc_data_get(outdata,&size);
-		pims_ipc_data_destroy(outdata);
+	ret = cal_ipc_marshal_handle(handle, indata);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_marshal_handle() Fail(%d)", ret);
+		pims_ipc_data_destroy(indata);
+		return ret;
+	}
 
+	/* ipc call */
+	if (pims_ipc_call(ipc, CAL_IPC_MODULE, CAL_IPC_SERVER_CONNECT, indata, &outdata) != 0) {
+		ERR("pims_ipc_call() Fail");
+		pims_ipc_data_destroy(indata);
+		return CALENDAR_ERROR_IPC;
+	}
+	pims_ipc_data_destroy(indata);
+
+	if (NULL == outdata) {
+		ERR("ipc outdata is NULL");
+		return CALENDAR_ERROR_IPC;
+	}
+
+	unsigned int size = 0;
+	ret = *(int*) pims_ipc_data_get(outdata,&size);
+	pims_ipc_data_destroy(outdata);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("calendar_connect return (%d)",ret);
+		return ret;
+	}
+	return ret;
+}
+
+static void _cal_client_ipc_disconnected_cb(void *user_data)
+{
+	DBG("disconnected");
+	cal_client_ipc_set_disconnected(true);
+}
+
+int cal_client_ipc_connect(calendar_h handle, unsigned int id)
+{
+	int ret = 0;
+	cal_ipc_s *ipc_data = NULL;
+	char key[CAL_STR_MIDDLE_LEN] = {0};
+
+	//RETV_IF(_cal_ipc_disconnected, CALENDAR_ERROR_IPC);
+	RETV_IF(NULL == handle, CALENDAR_ERROR_INVALID_PARAMETER);
+
+	snprintf(key, sizeof(key), "%u", id);
+
+	if (NULL == _cal_ipc_table)
+		_cal_ipc_table = g_hash_table_new_full(g_str_hash, g_str_equal, free, _cal_client_ipc_free);
+	else
+		ipc_data = g_hash_table_lookup(_cal_ipc_table, key);
+
+	if (NULL == ipc_data) {
+		ipc_data = calloc(1, sizeof(cal_ipc_s));
+		if (NULL == ipc_data) {
+			ERR("calloc() Fail");
+			return CALENDAR_ERROR_OUT_OF_MEMORY;
+		}
+		ret = _cal_client_ipc_create(&(ipc_data->ipc));
 		if (CALENDAR_ERROR_NONE != ret) {
-			ERR("cal_ipc_server_connect return(%d)", ret);
-			goto DATA_FREE;
+			ERR("_cal_client_ipc_create() Fail(%d)", ret);
+			_cal_client_ipc_free(ipc_data);
+			return ret;
 		}
+		g_hash_table_insert(_cal_ipc_table, cal_strdup(key), ipc_data);
+		DBG("[HASH:ipc] insert key[%s] value[%p]", key, ipc_data);
+		cal_client_ipc_set_disconnected_cb(ipc_data->ipc, _cal_client_ipc_disconnected_cb, NULL);
 	}
-	return ret;
+	_cal_client_ipc_connect(handle, ipc_data->ipc);
+	ipc_data->list_handle = g_list_append(ipc_data->list_handle, handle);
 
-DATA_FREE:
-	pims_ipc_destroy(cal_ipc);
-	cal_ipc = NULL;
-	return ret;
+	return CALENDAR_ERROR_NONE;
 }
 
-int cal_client_ipc_disconnect(void)
+int cal_client_ipc_disconnect(calendar_h handle, unsigned int id, int connection_count)
 {
 	int ret = CALENDAR_ERROR_NONE;
+	cal_ipc_s *ipc_data = NULL;
+	pims_ipc_data_h indata = NULL;
 	pims_ipc_data_h outdata = NULL;
+	char key[CAL_STR_MIDDLE_LEN] = {0};
 
-	RETVM_IF(NULL == cal_ipc, CALENDAR_ERROR_IPC, "[GLOBAL_IPC_CHANNEL] calendar not connected");
+	//RETV_IF(_cal_ipc_disconnected, CALENDAR_ERROR_IPC);
+	RETVM_IF(NULL == _cal_ipc_table, CALENDAR_ERROR_IPC, "Not connected");
+	snprintf(key, sizeof(key), "%u", id);
 
-	if (pims_ipc_call(cal_ipc, CAL_IPC_MODULE, CAL_IPC_SERVER_DISCONNECT, NULL, &outdata) != 0) {
-		ERR("[GLOBAL_IPC_CHANNEL] pims_ipc_call failed");
+	ipc_data = g_hash_table_lookup(_cal_ipc_table, key);
+	RETVM_IF(NULL == ipc_data, CALENDAR_ERROR_IPC, "Not connected");
+
+	indata = pims_ipc_data_create(0);
+	if (NULL == indata) {
+		ERR("pims_ipc_data_create() Fail");
 		return CALENDAR_ERROR_IPC;
 	}
 
-	if (outdata) {
-		unsigned int size = 0;
-		ret = *(int*) pims_ipc_data_get(outdata,&size);
-		pims_ipc_data_destroy(outdata);
-
-		if (CALENDAR_ERROR_NONE != ret)
-			ERR("[GLOBAL_IPC_CHANNEL] pims_ipc didn't destroyed!!!(%d)", ret);
-
-		pims_ipc_destroy(cal_ipc);
-		cal_ipc = NULL;
+	ret = cal_ipc_marshal_handle(handle, indata);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_marshal_handle() Fail(%d)", ret);
+		pims_ipc_data_destroy(indata);
+		return ret;
 	}
-	else {
-		ERR("pims_ipc_call out data is NULL");
+
+	/* ipc call */
+	if (pims_ipc_call(ipc_data->ipc, CAL_IPC_MODULE, CAL_IPC_SERVER_DISCONNECT, indata, &outdata) != 0) {
+		ERR("[GLOBAL_IPC_CHANNEL] pims_ipc_call() Fail");
+		pims_ipc_data_destroy(indata);
+		return CALENDAR_ERROR_IPC;
+	}
+	pims_ipc_data_destroy(indata);
+
+	if (NULL == outdata) {
+		ERR("ipc outdata is NULL");
 		return CALENDAR_ERROR_IPC;
 	}
 
-	return ret;
-}
+	/* check outdata */
+	unsigned int size = 0;
+	ret = *(int*) pims_ipc_data_get(outdata,&size);
+	pims_ipc_data_destroy(outdata);
 
-int cal_client_ipc_connect_on_thread(void)
-{
-	int ret = CALENDAR_ERROR_NONE;
-	pims_ipc_data_h outdata = NULL;
+	if (1 == connection_count)
+		g_hash_table_remove(_cal_ipc_table, key);
 
-	CAL_FN_CALL();
-
-	// ipc create
-	if (cal_ipc_thread) {
-		CAL_DBG("calendar already connected");
-		return CALENDAR_ERROR_NONE;
-	}
-
-	if (cal_ipc_thread == NULL) {
-		char sock_file[CAL_STR_MIDDLE_LEN] = {0};
-		snprintf(sock_file, sizeof(sock_file), CAL_SOCK_PATH"/.%s", getuid(), CAL_IPC_SERVICE);
-		cal_ipc_thread = pims_ipc_create(sock_file);
-		if (cal_ipc_thread == NULL) {
-			if (errno == EACCES) {
-				ERR("pims_ipc_create() Fail(%d)", CALENDAR_ERROR_PERMISSION_DENIED);
-				ret = CALENDAR_ERROR_PERMISSION_DENIED;
-				goto ERROR_RETURN;
-			} else {
-				ERR("pims_ipc_create() Fail(%d)", CALENDAR_ERROR_OUT_OF_MEMORY);
-				ret = CALENDAR_ERROR_OUT_OF_MEMORY;
-				goto ERROR_RETURN;
-			}
-		}
-	} else {
-		CAL_DBG("calendar already connected");
-		ret = CALENDAR_ERROR_NONE;
-		goto ERROR_RETURN;
-	}
-
-	// ipc call
-	if (pims_ipc_call(cal_ipc_thread, CAL_IPC_MODULE, CAL_IPC_SERVER_CONNECT, NULL, &outdata) != 0) {
-		ERR("pims_ipc_call failed");
-		ret = CALENDAR_ERROR_IPC;
-		goto ERROR_RETURN;
-	}
-
-	if (outdata) {
-		unsigned int size = 0;
-		ret = *(int*) pims_ipc_data_get(outdata,&size);
-
-		pims_ipc_data_destroy(outdata);
-
-		if (CALENDAR_ERROR_NONE != ret) {
-			ERR("calendar_connect return (%d)",ret);
-			goto ERROR_RETURN;
-		}
-	}
-	return ret;
-
-ERROR_RETURN:
-	if (cal_ipc_thread != NULL) {
-		pims_ipc_destroy(cal_ipc_thread);
-		cal_ipc_thread = NULL;
-	}
-	return ret;
-}
-
-int cal_client_ipc_disconnect_on_thread(void)
-{
-	CAL_FN_CALL();
-
-	int ret = CALENDAR_ERROR_NONE;
-	pims_ipc_data_h outdata = NULL;
-
-	RETVM_IF(NULL == cal_ipc_thread, CALENDAR_ERROR_IPC ,"calendar not connected");
-
-	if (pims_ipc_call(cal_ipc_thread, CAL_IPC_MODULE, CAL_IPC_SERVER_DISCONNECT, NULL, &outdata) != 0) {
-		ERR("pims_ipc_call failed");
-		return CALENDAR_ERROR_IPC;
-	}
-
-	if (outdata) {
-		unsigned int size = 0;
-		ret = *(int*) pims_ipc_data_get(outdata,&size);
-		pims_ipc_data_destroy(outdata);
-		if (CALENDAR_ERROR_NONE != ret)
-			ERR("[GLOBAL_IPC_CHANNEL] pims_ipc didn't destroyed(%d)", ret);
-
-		pims_ipc_destroy(cal_ipc_thread);
-		cal_ipc_thread = NULL;
-	}
 	return ret;
 }
 
 bool cal_client_ipc_is_call_inprogress(void)
 {
-	return pims_ipc_is_call_in_progress(cal_ipc);
-}
-
-pims_ipc_h _cal_client_ipc_get_handle(void)
-{
-	if (cal_ipc_thread == NULL)
-	{
-		return cal_ipc;
+	pims_ipc_h ipc = _cal_client_ipc_get_handle();
+	if (NULL == ipc) {
+		ERR("No ipc");
+		return false;
 	}
-	return cal_ipc_thread;
+	return pims_ipc_is_call_in_progress(ipc);
 }
 
-void _cal_client_ipc_lock(void)
+void cal_client_ipc_lock(void)
 {
-	if (cal_ipc_thread == NULL)
-	{
+	if (0 == cal_client_get_thread_connection_count())
 		cal_mutex_lock(CAL_MUTEX_PIMS_IPC_CALL);
-	}
 }
 
-void _cal_client_ipc_unlock(void)
+void cal_client_ipc_unlock(void)
 {
-	if (cal_ipc_thread == NULL)
-	{
+	if (0 == cal_client_get_thread_connection_count())
 		cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_CALL);
-	}
 }
 
-int cal_client_ipc_call(char *module, char *function, pims_ipc_h data_in,
-		pims_ipc_data_h *data_out)
+void cal_client_ipc_set_disconnected(bool is_disconnected)
+{
+	pthread_mutex_lock(&cal_mutex_disconnected);
+	_cal_ipc_disconnected = is_disconnected;
+	pthread_mutex_unlock(&cal_mutex_disconnected);
+}
+
+bool cal_client_ipc_get_disconnected(void)
+{
+	pthread_mutex_lock(&cal_mutex_disconnected);
+	DBG("RECOVERY(cal_ipc_disconnected(%d))", _cal_ipc_disconnected);
+	pthread_mutex_unlock(&cal_mutex_disconnected);
+	return _cal_ipc_disconnected;
+}
+
+int cal_client_ipc_call(char *module, char *function, pims_ipc_h data_in, pims_ipc_data_h *data_out)
 {
 	int ret = 0;
-	pims_ipc_h ipc_handle = _cal_client_ipc_get_handle();
 
-	_cal_client_ipc_lock();
+	if (true == cal_client_ipc_get_disconnected()) {
+		cal_client_ipc_set_disconnected(false);
+		cal_client_ipc_recovery();
+		cal_client_recovery_for_change_subscription();
+	}
 
-	ret = pims_ipc_call(ipc_handle, module, function, data_in, data_out);
+	pims_ipc_h ipc = _cal_client_ipc_get_handle();
+	RETVM_IF(NULL == ipc, CALENDAR_ERROR_IPC, "_cal_client_ipc_get_handle() Fail");
 
-	_cal_client_ipc_unlock();
-
+	cal_client_ipc_lock();
+	ret = pims_ipc_call(ipc , module, function, data_in, data_out);
+	cal_client_ipc_unlock();
 	return ret;
 }
 
-void cal_client_ipc_set_change_version(int version)
+void cal_client_ipc_set_change_version(calendar_h handle, int version)
 {
-	if (cal_ipc_thread == NULL)
-	{
-		calendar_change_version = version;
-		DBG("change_version=%d",version);
-		return ;
-	}
-	calendar_change_version_thread = version;
-	DBG("change_version=%d",version);
+	RETM_IF(NULL == handle, "handle is NULL");
+	cal_s *h = (cal_s *)handle;
+	h->version = version;
 }
 
-int cal_client_ipc_get_change_version(void)
+int cal_client_ipc_get_change_version(calendar_h handle)
 {
-	if (cal_ipc_thread == NULL)
-	{
-		return calendar_change_version;
-	}
-	return calendar_change_version_thread;
-
+	RETVM_IF(NULL == handle, CALENDAR_ERROR_INVALID_PARAMETER, "handle is NULL");
+	cal_s *h = (cal_s *)handle;
+	return h->version;
 }
 
 int cal_client_ipc_client_check_permission(int permission, bool *result)
@@ -329,4 +354,40 @@ int cal_client_ipc_client_check_permission(int permission, bool *result)
 	}
 
 	return ret;
+}
+
+int cal_client_ipc_set_disconnected_cb(pims_ipc_h ipc, void (*cb)(void *), void *user_data)
+{
+	return pims_ipc_add_server_disconnected_cb(ipc, cb, user_data);
+}
+
+int cal_client_ipc_unset_disconnected_cb(pims_ipc_h ipc)
+{
+	return pims_ipc_remove_server_disconnected_cb(ipc);
+}
+
+static void _cal_client_ipc_recovery_foreach_cb(gpointer key, gpointer value, gpointer user_data)
+{
+	int ret = 0;
+	GList *l = NULL;
+
+	RET_IF(NULL == value);
+
+	cal_ipc_s *ipc_data = value;
+
+	cal_client_ipc_unset_disconnected_cb(ipc_data->ipc);
+	ret = _cal_client_ipc_create(&(ipc_data->ipc));
+	RETM_IF(CALENDAR_ERROR_NONE != ret, "_cal_client_ipc_create() Fail(%d)", ret);
+	cal_client_ipc_set_disconnected_cb(ipc_data->ipc, _cal_client_ipc_disconnected_cb, NULL);
+
+	for (l = ipc_data->list_handle; l; l = l->next) {
+		calendar_h handle = l->data;
+		ret = _cal_client_ipc_connect(handle, ipc_data->ipc);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_client_ipc_connect() Fail(%d)", ret);
+	}
+}
+
+void cal_client_ipc_recovery(void)
+{
+	g_hash_table_foreach(_cal_ipc_table, _cal_client_ipc_recovery_foreach_cb, NULL);
 }

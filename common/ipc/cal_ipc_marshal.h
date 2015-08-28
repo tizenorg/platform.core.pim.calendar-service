@@ -20,6 +20,7 @@
 #define __CAL_IPC_MARSHAL__
 
 #include <pims-ipc-data.h>
+#include "calendar_types.h"
 #include "cal_typedef.h"
 #include "cal_record.h"
 
@@ -58,6 +59,9 @@ int cal_ipc_unmarshal_list(const pims_ipc_data_h ipc_data, calendar_list_h *list
 int cal_ipc_marshal_list(const calendar_list_h list, pims_ipc_data_h ipc_data);
 
 int cal_ipc_unmarshal_child_list(const pims_ipc_data_h ipc_data, calendar_list_h* list);
+
+int cal_ipc_marshal_handle(calendar_h handle, const pims_ipc_data_h ipc_data);
+int cal_ipc_unmarshal_handle(const pims_ipc_data_h ipc_data, calendar_h *handle);
 
 /*
  * for property_id

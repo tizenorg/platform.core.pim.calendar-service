@@ -28,10 +28,8 @@
 #include "cal_record.h"
 #include "cal_list.h"
 #include "cal_mutex.h"
-
 #include "cal_ipc.h"
 #include "cal_ipc_marshal.h"
-
 #include "cal_client_ipc.h"
 
 typedef struct {
@@ -39,23 +37,31 @@ typedef struct {
 	void *user_data;
 } callback_info_s;
 
-
+static int _ipc_pubsub_count = 0;
 static pims_ipc_h __ipc = NULL;
 static GSList *__subscribe_list = NULL;
 
 int cal_client_reminder_create_for_subscribe(void)
 {
 	cal_mutex_lock(CAL_MUTEX_PIMS_IPC_PUBSUB);
-	if (!__ipc) {
+
+	if (0 < _ipc_pubsub_count) {
+		_ipc_pubsub_count++;
+		cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+		return CALENDAR_ERROR_NONE;
+	}
+
+	if (NULL == __ipc) {
 		char sock_file[CAL_STR_MIDDLE_LEN] = {0};
 		snprintf(sock_file, sizeof(sock_file), CAL_SOCK_PATH"/.%s_for_subscribe", getuid(), CAL_IPC_SERVICE);
 		__ipc = pims_ipc_create_for_subscribe(sock_file);
-		if (!__ipc) {
-			ERR("pims_ipc_create_for_subscribe");
+		if (NULL == __ipc) {
+			ERR("pims_ipc_create_for_subscribe() Fail");
 			cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
 			return CALENDAR_ERROR_IPC;
 		}
 	}
+	_ipc_pubsub_count++;
 	cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
 	return CALENDAR_ERROR_NONE;
 }
@@ -64,9 +70,39 @@ int cal_client_reminder_destroy_for_subscribe(void)
 {
 	cal_mutex_lock(CAL_MUTEX_PIMS_IPC_PUBSUB);
 
-	pims_ipc_destroy_for_subscribe(__ipc);
-	__ipc = NULL;
+	if (1 == _ipc_pubsub_count) {
+		pims_ipc_destroy_for_subscribe(__ipc);
+		__ipc = NULL;
+	}
+	else if (1 < _ipc_pubsub_count) {
+		DBG("Already subscribed:count(%d)", _ipc_pubsub_count);
+	}
+	else {
+		DBG("[System] Not subscribed");
+		cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+		return CALENDAR_ERROR_INVALID_PARAMETER;
+	}
 
+	_ipc_pubsub_count--;
+	cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+	return CALENDAR_ERROR_NONE;
+}
+
+int cal_client_recovery_for_change_subscription(void)
+{
+	cal_mutex_lock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+	if (_ipc_pubsub_count <= 0) {
+		return CALENDAR_ERROR_NONE;
+	}
+
+	char sock_file[CAL_STR_MIDDLE_LEN] = {0};
+	snprintf(sock_file, sizeof(sock_file), CAL_SOCK_PATH"/.%s_for_subscribe", getuid(), CAL_IPC_SERVICE);
+	__ipc = pims_ipc_create_for_subscribe(sock_file);
+	if (NULL == __ipc) {
+		ERR("pims_ipc_create_for_subscribe() Fail");
+		cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+		return CALENDAR_ERROR_IPC;
+	}
 	cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
 	return CALENDAR_ERROR_NONE;
 }
@@ -80,12 +116,12 @@ static void _cal_client_reminder_subscribe_callback(pims_ipc_h ipc, pims_ipc_dat
 	if (data) {
 		len = (int)pims_ipc_data_get(data, &size);
 		if (0 == len) {
-			ERR("pims_ipc_data_get() failed");
+			ERR("pims_ipc_data_get() Fail");
 			return;
 		}
 		str = (const char *)pims_ipc_data_get(data, &size);
 		if (!str) {
-			ERR("pims_ipc_data_get() failed");
+			ERR("pims_ipc_data_get() Fail");
 			return;
 		}
 	}
@@ -103,9 +139,9 @@ static void _cal_client_reminder_subscribe_callback(pims_ipc_h ipc, pims_ipc_dat
 
 API int calendar_reminder_add_cb(calendar_reminder_cb callback, void *user_data)
 {
+	int ret = 0;;
 	GSList *it = NULL;
 	callback_info_s *cb_info = NULL;
-	int ret;
 	bool result = false;
 
 	RETV_IF(NULL == callback, CALENDAR_ERROR_INVALID_PARAMETER);
@@ -119,7 +155,7 @@ API int calendar_reminder_add_cb(calendar_reminder_cb callback, void *user_data)
 	if (!__subscribe_list) {
 		if (pims_ipc_subscribe(__ipc, CAL_IPC_MODULE_FOR_SUBSCRIPTION, (char *)CAL_NOTI_REMINDER_CAHNGED,
 					_cal_client_reminder_subscribe_callback, NULL) != 0) {
-			ERR("pims_ipc_subscribe() failed");
+			ERR("pims_ipc_subscribe() Fail");
 			cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
 			return CALENDAR_ERROR_IPC;
 		}
@@ -138,6 +174,12 @@ API int calendar_reminder_add_cb(calendar_reminder_cb callback, void *user_data)
 	}
 
 	cb_info = calloc(1, sizeof(callback_info_s));
+	if (NULL == cb_info) {
+		ERR("calloc() Fail");
+		cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+		return CALENDAR_ERROR_OUT_OF_MEMORY;
+	}
+
 	cb_info->user_data = user_data;
 	cb_info->cb = callback;
 	__subscribe_list = g_slist_append(__subscribe_list, cb_info);

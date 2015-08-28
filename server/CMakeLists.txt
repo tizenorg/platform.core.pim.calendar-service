@@ -49,7 +49,9 @@ SET(LIBSRCS
     ${CMAKE_SOURCE_DIR}/common/cal_vcalendar_make.c
     ${CMAKE_SOURCE_DIR}/common/cal_vcalendar_parse.c
 	${CMAKE_SOURCE_DIR}/common/cal_mutex.c
+	${CMAKE_SOURCE_DIR}/common/cal_handle.c
 	${CMAKE_SOURCE_DIR}/common/cal_utils.c
+	${CMAKE_SOURCE_DIR}/common/cal_ondemand.c
 	cal_access_control.c
 	cal_server_service.c
 	cal_server_ipc.c

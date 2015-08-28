@@ -42,15 +42,18 @@
 #include "cal_db_plugin_calendar_helper.h"
 #include "cal_time.h"
 
-//static GMainLoop *loop;
+#define CAL_TIMEOUT_FOR_DECLARE 1
+#define CAL_TIMEOUT_FOR_DEFAULT 0
 
 static account_subscribe_h cal_account_h = NULL;
-#ifdef CAL_MEMORY_TEST
 GMainLoop* main_loop = NULL;
-#endif /* CAL_MEMORY_TEST */
+static int cal_timeout = 0;
 
-static int __server_main();
-static bool _cal_server_account_delete_cb(const char* event_type, int account_id, void* user_data);
+void cal_server_quit_loop(void)
+{
+	g_main_loop_quit(main_loop);
+	main_loop = NULL;
+}
 
 static gboolean _cal_server_timeout_cb(gpointer argv)
 {
@@ -85,7 +88,7 @@ static bool _cal_server_account_delete_cb(const char* event_type, int account_id
 
 	if (CAL_STRING_EQUAL == strcmp(event_type, ACCOUNT_NOTI_NAME_DELETE))
 	{
-		calendar_db_delete_account(account_id);
+		cal_db_delete_account(account_id);
 		cal_server_contacts_delete(account_id);
 	}
 	return true;
@@ -150,136 +153,13 @@ DATA_FREE:
 }
 #endif /* CAL_MEMORY_TEST */
 
-static int __server_main(void)
+static void _cal_server_init(void)
 {
 	int ret;
 	int on_contact = 0;
 	int try_count = 0;
 	g_type_init();
 
-	char sock_file[CAL_STR_MIDDLE_LEN] = {0};
-	snprintf(sock_file, sizeof(sock_file), CAL_SOCK_PATH"/.%s", getuid(), CAL_IPC_SERVICE);
-	pims_ipc_svc_init(sock_file,CAL_SECURITY_FILE_GROUP, 0777);
-
-	if (pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_CONNECT, cal_server_ipc_connect, NULL) != 0)
-	{
-		ERR("pims_ipc_svc_register error");
-		return -1;
-	}
-	if (pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DISCONNECT, cal_server_ipc_disconnect, NULL) != 0)
-	{
-		ERR("pims_ipc_svc_register error");
-		return -1;
-	}
-	if (pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_CHECK_PERMISSION, cal_server_ipc_check_permission, NULL) != 0) {
-		ERR("pims_ipc_svc_register error");
-		return -1;
-	}
-	if (pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_INSERT_RECORD, cal_server_ipc_db_insert_record, NULL) != 0)
-	{
-		ERR("pims_ipc_svc_register error");
-		return -1;
-	}
-	if (pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_GET_RECORD, cal_server_ipc_db_get_record, NULL) != 0)
-	{
-		ERR("pims_ipc_svc_register error");
-		return -1;
-	}
-	if (pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_UPDATE_RECORD, cal_server_ipc_db_update_record, NULL) != 0)
-	{
-		ERR("pims_ipc_svc_register error");
-		return -1;
-	}
-	if (pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_DELETE_RECORD, cal_server_ipc_db_delete_record, NULL) != 0)
-	{
-		ERR("pims_ipc_svc_register error");
-		return -1;
-	}
-	if (pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_GET_ALL_RECORDS, cal_server_ipc_db_get_all_records, NULL) != 0)
-	{
-		ERR("pims_ipc_svc_register error");
-		return -1;
-	}
-	if (pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_GET_RECORDS_WITH_QUERY, cal_server_ipc_db_get_records_with_query, NULL) != 0)
-	{
-		ERR("pims_ipc_svc_register error");
-		return -1;
-	}
-	if (pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_CLEAN_AFTER_SYNC, cal_server_ipc_db_clean_after_sync, NULL) != 0)
-	{
-		ERR("pims_ipc_svc_register error");
-		return -1;
-	}
-	if (pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_GET_COUNT, cal_server_ipc_db_get_count, NULL) != 0)
-	{
-		ERR("pims_ipc_svc_register error");
-		return -1;
-	}
-	if (pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_GET_COUNT_WITH_QUERY, cal_server_ipc_db_get_count_with_query, NULL) != 0)
-	{
-		ERR("pims_ipc_svc_register error");
-		return -1;
-	}
-	if (pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_INSERT_RECORDS, cal_server_ipc_db_insert_records, NULL) != 0)
-	{
-		ERR("pims_ipc_svc_register error");
-		return -1;
-	}
-	if (pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_UPDATE_RECORDS, cal_server_ipc_db_update_records, NULL) != 0)
-	{
-		ERR("pims_ipc_svc_register error");
-		return -1;
-	}
-	if (pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_DELETE_RECORDS, cal_server_ipc_db_delete_records, NULL) != 0)
-	{
-		ERR("pims_ipc_svc_register error");
-		return -1;
-	}
-	if (pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_CHANGES_BY_VERSION, cal_server_ipc_db_get_changes_by_version, NULL) != 0)
-	{
-		ERR("pims_ipc_svc_register error");
-		return -1;
-	}
-	if (pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_GET_CURRENT_VERSION, cal_server_ipc_db_get_current_version, NULL) != 0)
-	{
-		ERR("pims_ipc_svc_register error");
-		return -1;
-	}
-	if (pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_INSERT_VCALENDARS, cal_server_ipc_db_insert_vcalendars, NULL) != 0)
-	{
-		ERR("pims_ipc_svc_register error");
-		return -1;
-	}
-	if (pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_REPLACE_VCALENDARS, cal_server_ipc_db_replace_vcalendars, NULL) != 0)
-	{
-		ERR("pims_ipc_svc_register error");
-		return -1;
-	}
-	if (pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_REPLACE_RECORD, cal_server_ipc_db_replace_record, NULL) != 0)
-	{
-		ERR("pims_ipc_svc_register error");
-		return -1;
-	}
-	if (pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_REPLACE_RECORDS, cal_server_ipc_db_replace_records, NULL) != 0)
-	{
-		ERR("pims_ipc_svc_register error");
-		return -1;
-	}
-	if (pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_CHANGES_EXCEPTION, cal_server_ipc_db_changes_exception, NULL) != 0)
-	{
-		ERR("pims_ipc_svc_register error");
-		return -1;
-	}
-#ifdef CAL_MEMORY_TEST
-	if (pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DESTROY, cal_server_ipc_destroy, NULL) != 0) {
-		ERR("pims_ipc_svc_register error");
-		return -1;
-	}
-#endif /* CAL_MEMORY_TEST */
-
-	snprintf(sock_file, sizeof(sock_file), CAL_SOCK_PATH"/.%s_for_subscribe", getuid(), CAL_IPC_SERVICE);
-	/* for subscribe */
-	pims_ipc_svc_init_for_publish(sock_file, CAL_SECURITY_FILE_GROUP, CAL_SECURITY_DEFAULT_PERMISSION);
 
 	//loop = g_main_loop_new(NULL, FALSE);
 
@@ -297,10 +177,10 @@ static int __server_main(void)
 		on_contact = 1;
 	}
 */
-	ret = calendar_connect();
+	ret = cal_connect();
 	if (CALENDAR_ERROR_NONE != ret)
 	{
-		ERR("calendar_connect() Failed");
+		ERR("cal_connect() Failed");
 		return ret;
 	}
 
@@ -334,27 +214,65 @@ static int __server_main(void)
 
 	cal_server_alarm_register();
 	cal_server_calendar_delete_start();
+}
 
+static void _cal_server_fini(void)
+{
+	cal_disconnect();
+//	contacts_disconnect();
+}
+
+static int _server_init_ipc(void)
+{
+	g_type_init();
+
+	char sock_file[CAL_STR_MIDDLE_LEN] = {0};
+	snprintf(sock_file, sizeof(sock_file), CAL_SOCK_PATH"/.%s", getuid(), CAL_IPC_SERVICE);
+	pims_ipc_svc_init(sock_file,CAL_SECURITY_FILE_GROUP, 0777);
+
+	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_CONNECT, cal_server_ipc_connect, NULL) != 0, -1);
+	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DISCONNECT, cal_server_ipc_disconnect, NULL) != 0, -1);
+	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_CHECK_PERMISSION, cal_server_ipc_check_permission, NULL) != 0, -1);
+	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_INSERT_RECORD, cal_server_ipc_db_insert_record, NULL) != 0, -1);
+	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_GET_RECORD, cal_server_ipc_db_get_record, NULL) != 0, -1);
+	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_UPDATE_RECORD, cal_server_ipc_db_update_record, NULL) != 0, -1);
+	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_DELETE_RECORD, cal_server_ipc_db_delete_record, NULL) != 0, -1);
+	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_GET_ALL_RECORDS, cal_server_ipc_db_get_all_records, NULL) != 0, -1);
+	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_GET_RECORDS_WITH_QUERY, cal_server_ipc_db_get_records_with_query, NULL) != 0, -1);
+	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_CLEAN_AFTER_SYNC, cal_server_ipc_db_clean_after_sync, NULL) != 0, -1);
+	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_GET_COUNT, cal_server_ipc_db_get_count, NULL) != 0, -1);
+	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_GET_COUNT_WITH_QUERY, cal_server_ipc_db_get_count_with_query, NULL) != 0, -1);
+	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_INSERT_RECORDS, cal_server_ipc_db_insert_records, NULL) != 0, -1);
+	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_UPDATE_RECORDS, cal_server_ipc_db_update_records, NULL) != 0, -1);
+	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_DELETE_RECORDS, cal_server_ipc_db_delete_records, NULL) != 0, -1);
+	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_CHANGES_BY_VERSION, cal_server_ipc_db_get_changes_by_version, NULL) != 0, -1);
+	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_GET_CURRENT_VERSION, cal_server_ipc_db_get_current_version, NULL) != 0, -1);
+	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_INSERT_VCALENDARS, cal_server_ipc_db_insert_vcalendars, NULL) != 0, -1);
+	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_REPLACE_VCALENDARS, cal_server_ipc_db_replace_vcalendars, NULL) != 0, -1);
+	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_REPLACE_RECORD, cal_server_ipc_db_replace_record, NULL) != 0, -1);
+	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_REPLACE_RECORDS, cal_server_ipc_db_replace_records, NULL) != 0, -1);
+	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_CHANGES_EXCEPTION, cal_server_ipc_db_changes_exception, NULL) != 0, -1);
 #ifdef CAL_MEMORY_TEST
-	main_loop = g_main_loop_new(NULL, FALSE);
-
-	pims_ipc_svc_run_main_loop(main_loop);
-
-	ERR("exit");
-	g_main_loop_unref(main_loop);
-#else  /* CAL_MEMORY_TEST */
-	pims_ipc_svc_run_main_loop(NULL);
+	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DESTROY, cal_server_ipc_destroy, NULL) != 0, -1);
 #endif /* CAL_MEMORY_TEST */
+
+	/* for subscribe */
+	snprintf(sock_file, sizeof(sock_file), CAL_SOCK_PATH"/.%s_for_subscribe", getuid(), CAL_IPC_SERVICE);
+	pims_ipc_svc_init_for_publish(sock_file, CAL_SECURITY_FILE_GROUP, CAL_SECURITY_DEFAULT_PERMISSION);
+
+	return CALENDAR_ERROR_NONE;
+}
+
+static int _server_main(void)
+{
+	main_loop = g_main_loop_new(NULL, FALSE);
+	pims_ipc_svc_run_main_loop(main_loop);
+	g_main_loop_unref(main_loop);
 
 	cal_time_u_cleanup();
 	cal_inotify_finalize();
-	calendar_disconnect();
 
-//	contacts_disconnect();
-	on_contact = 0;
-
-	if (cal_account_h)
-	{
+	if (cal_account_h) {
 		account_unsubscribe_notification(cal_account_h);
 		cal_account_h = NULL;
 	}
@@ -363,8 +281,6 @@ static int __server_main(void)
 	pims_ipc_svc_deinit();
 
 	cal_access_control_unset_client_info();
-	alarmmgr_fini();
-
 	return 0;
 }
 
@@ -401,24 +317,36 @@ static void _cal_server_create_file(void)
 	_cal_server_set_directory_permission(CAL_NOTI_CALENDAR_CHANGED, 0660);
 	_cal_server_set_directory_permission(CAL_NOTI_EVENT_CHANGED, 0660);
 	_cal_server_set_directory_permission(CAL_NOTI_TODO_CHANGED, 0660);
+	_cal_server_set_directory_permission(CAL_NOTI_IPC_READY, 0660);
+}
+
+int cal_server_get_timeout(void)
+{
+	return cal_timeout;
 }
 
 int main(int argc, char *argv[])
 {
-	CAL_FN_CALL();
+	INFO("server start");
 	if (getuid() == 0) {
 		gid_t glist[] = {CAL_SECURITY_FILE_GROUP};
 		if (setgroups(1, glist) < 0)
 			ERR("setgroups() Failed");
 	}
 
+	cal_timeout = argc > 1 ? atoi(argv[1]) : CAL_TIMEOUT_FOR_DEFAULT;
+	DBG("timeout set(%dsec)", cal_timeout);
+
 	_cal_server_create_file();
 	cal_server_schema_check();
 	cal_server_alarm_init();
 	cal_server_update();
+	_cal_server_init();
 
-	__server_main();
+	_server_init_ipc();
+	_server_main();
 
+	_cal_server_fini();
 	cal_server_alarm_fini();
 	return 0;
 }

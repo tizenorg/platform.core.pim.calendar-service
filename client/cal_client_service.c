@@ -17,30 +17,111 @@
  *
  */
 
+#include "calendar.h"
 #include "cal_internal.h"
+#include "cal_client_utils.h"
+#include "cal_client_handle.h"
 #include "cal_client_service_helper.h"
 
 API int calendar_connect(void)
 {
-	return cal_client_connect();
+	int ret;
+	calendar_h handle = NULL;
+	unsigned int id = cal_client_get_pid();
+
+	ret = cal_client_handle_get_p_with_id(id, &handle);
+	if (CALENDAR_ERROR_NO_DATA == ret) {
+		ret = cal_client_handle_create(id, &handle);
+		RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_client_handle_create() Fail(%d)", ret);
+	}
+	else if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_client_handle_get_p_with_id() Fail(%d)", ret);
+		return ret;
+	}
+	return cal_client_connect(handle);
 }
 
 API int calendar_disconnect(void)
 {
-	return cal_client_disconnect();
+	int ret;
+	calendar_h handle = NULL;
+	unsigned int id = cal_client_get_pid();
+
+	ret = cal_client_handle_get_p_with_id(id, &handle);
+	if (CALENDAR_ERROR_NO_DATA == ret) {
+		return CALENDAR_ERROR_NONE;
+	}
+	else if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_client_handle_get_p_with_id() Fail(%d)", ret);
+		return ret;
+	}
+	ret = cal_client_disconnect(handle);
+	WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_client_disconnect_on_thread() Fail(%d)", ret);
+
+	if (0 == ((cal_s *)handle)->connection_count) {
+		ret = cal_client_handle_remove(id, handle);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_client_handle_remove() Fail(%d)", ret);
+	}
+	return ret;
 }
 
 API int calendar_connect_on_thread(void)
 {
-	return cal_client_connect_on_thread();
+	int ret;
+	calendar_h handle = NULL;
+	unsigned int id = cal_client_get_tid();
+
+	ret = cal_client_handle_get_p_with_id(id, &handle);
+	if (CALENDAR_ERROR_NO_DATA == ret) {
+		ret = cal_client_handle_create(id, &handle);
+		RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_client_handle_create() Fail(%d)", ret);
+	}
+	else if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_client_handle_get_p_with_id() Fail(%d)", ret);
+		return ret;
+	}
+	return cal_client_connect_on_thread(handle);
 }
 
 API int calendar_disconnect_on_thread(void)
 {
-	return cal_client_disconnect_on_thread();
+	int ret;
+	calendar_h handle = NULL;
+	unsigned int id = cal_client_get_tid();
+
+	ret = cal_client_handle_get_p_with_id(id, &handle);
+	if (CALENDAR_ERROR_NO_DATA == ret) {
+		return CALENDAR_ERROR_NONE;
+	}
+	else if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_client_handle_get_p_with_id() Fail(%d)", ret);
+		return ret;
+	}
+	ret = cal_client_disconnect_on_thread(handle);
+	WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_client_disconnect_on_thread() Fail(%d)", ret);
+
+	if (0 == ((cal_s *)handle)->connection_count) {
+		ret = cal_client_handle_remove(id, handle);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_client_handle_remove() Fail(%d)", ret);
+	}
+	return ret;
 }
 
 API int calendar_connect_with_flags(unsigned int flags)
 {
-	return cal_client_connect_with_flags(flags);
+	int ret;
+	calendar_h handle = NULL;
+	unsigned int id = cal_client_get_pid();
+
+	ret = cal_client_handle_get_p_with_id(id, &handle);
+	if (CALENDAR_ERROR_NO_DATA == ret) {
+		ret = cal_client_handle_create(id, &handle);
+		RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_client_handle_create() Fail(%d)", ret);
+	}
+	else if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_client_handle_get_p_with_id() Fail(%d)", ret);
+		return ret;
+	}
+	ret = cal_client_connect_with_flags(handle, flags);
+	return ret;
 }

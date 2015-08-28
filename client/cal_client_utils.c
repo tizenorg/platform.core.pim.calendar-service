@@ -1,7 +1,7 @@
 /*
  * Calendar Service
  *
- * Copyright (c) 2012 - 2015 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2015 Samsung Electronics Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,18 @@
  * limitations under the License.
  *
  */
-#ifndef __CAL_DB_PLUGIN_CALENDAR_HELPER_H__
-#define __CAL_DB_PLUGIN_CALENDAR_HELPER_H__
 
-int cal_db_delete_account(int account_id);
+#define _GNU_SOURCE
+#include <unistd.h>
+#include <sys/syscall.h>
+#include <sys/types.h>
 
-#endif /* __CAL_DB_PLUGIN_CALENDAR_HELPER_H__ */
+inline unsigned int cal_client_get_pid(void)
+{
+	return (unsigned int)getpid();
+}
+
+inline unsigned int cal_client_get_tid(void)
+{
+	return (unsigned int)syscall(SYS_gettid);
+}

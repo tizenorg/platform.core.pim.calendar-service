@@ -30,6 +30,8 @@ void cal_inotify_call_pending_callback(void);
 int cal_inotify_initialize(void);
 int cal_inotify_subscribe(cal_noti_type_e type, const char *path, calendar_db_changed_cb callback, void *data);
 int cal_inotify_unsubscribe_with_data(const char *path, calendar_db_changed_cb callback, void *user_data);
+int cal_inotify_subscribe_ipc_ready(calendar_h handle, void (*cb)(void *), void *user_data);
+int cal_inotify_unsubscribe_ipc_ready(calendar_h handle);
 void cal_inotify_finalize(void);
 
 #endif /* __CALENDAR_SVC_INOTIFY_H__ */

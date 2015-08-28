@@ -35,14 +35,22 @@
 #include "cal_mutex.h"
 #endif
 
-typedef struct
-{
+typedef struct {
 	int wd;
 	calendar_db_changed_cb callback;
 	void *cb_data;
 	cal_noti_type_e noti_type;
 	bool blocked;
-}noti_info;
+} noti_info;
+
+typedef struct {
+	int wd;
+	int subscribe_count;
+	void (*cb)(void *);
+	void *cb_data;
+} socket_init_noti_info_s;
+
+static GHashTable *_cal_socket_init_noti_table = NULL;
 
 static int inoti_fd = -1;
 static guint inoti_handler;
@@ -227,6 +235,7 @@ int cal_inotify_initialize(void)
 #endif
 		return -1; /* CALENDAR_ERROR_FAILED_INOTIFY */
 	}
+	DBG("-----------------------------");
 
 	ret = fcntl(inoti_fd, F_SETFD, FD_CLOEXEC);
 	WARN_IF(ret < 0, "fcntl failed(%d)", ret);
@@ -266,6 +275,67 @@ static inline int _cal_inotify_add_watch(int fd, const char *notipath)
 		return -1; // CALENDAR_ERROR_FAILED_INOTIFY
 	}
 
+	return CALENDAR_ERROR_NONE;
+}
+
+int cal_inotify_subscribe_ipc_ready(calendar_h handle, void (*cb)(void *), void *user_data)
+{
+	int ret = 0;
+	socket_init_noti_info_s *sock_info = NULL;
+
+	if (NULL == _cal_socket_init_noti_table)
+		_cal_socket_init_noti_table = g_hash_table_new_full(g_str_hash, g_str_equal, free, free);
+	else
+		sock_info = g_hash_table_lookup(_cal_socket_init_noti_table, CAL_NOTI_IPC_READY);
+
+	if (NULL == sock_info) {
+		int wd = _cal_inotify_get_wd(inoti_fd, CAL_NOTI_IPC_READY);
+		if (-1 == wd) {
+			ERR("_cal_inotify_get_wd() Fail(%d):path[%s]", errno, CAL_NOTI_IPC_READY);
+			if (EACCES == errno)
+				return CALENDAR_ERROR_PERMISSION_DENIED;
+			return CALENDAR_ERROR_NONE;
+		}
+		ret = _cal_inotify_add_watch(inoti_fd, CAL_NOTI_IPC_READY);
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("_cal_inotify_add_watch() Fail(%d)", ret);
+			return ret;
+		}
+		sock_info = calloc(1, sizeof(socket_init_noti_info_s));
+		if (NULL == sock_info) {
+			ERR("calloc() Fail");
+			return CALENDAR_ERROR_OUT_OF_MEMORY;
+		}
+
+		sock_info->wd = wd;
+		sock_info->cb = cb;
+		sock_info->cb_data = user_data;
+		g_hash_table_insert(_cal_socket_init_noti_table, g_strdup(CAL_NOTI_IPC_READY), sock_info);
+	}
+	sock_info->subscribe_count++;
+	return CALENDAR_ERROR_NONE;
+}
+
+int cal_inotify_unsubscribe_ipc_ready(calendar_h handle)
+{
+	RETV_IF(NULL == _cal_socket_init_noti_table, CALENDAR_ERROR_INVALID_PARAMETER);
+
+	socket_init_noti_info_s *sock_info = NULL;
+
+	sock_info = g_hash_table_lookup(_cal_socket_init_noti_table, CAL_NOTI_IPC_READY);
+	if (NULL == sock_info) {
+		ERR("g_hash_table_lookup() Fail");
+		return CALENDAR_ERROR_INVALID_PARAMETER;
+	}
+
+	if (1 == sock_info->subscribe_count) {
+		int wd = sock_info->wd;
+		inotify_rm_watch(inoti_fd, wd);
+		g_hash_table_remove(_cal_socket_init_noti_table, CAL_NOTI_IPC_READY);
+	}
+	else {
+		sock_info->subscribe_count--;
+	}
 	return CALENDAR_ERROR_NONE;
 }
 
@@ -421,6 +491,7 @@ int cal_inotify_unsubscribe_with_data(const char *path, calendar_db_changed_cb c
 {
 	int wd;
 	int ret;
+
 
 	if (path == NULL)
 	{

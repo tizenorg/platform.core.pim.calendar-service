@@ -16,9 +16,15 @@
  * limitations under the License.
  *
  */
-#ifndef __CAL_DB_PLUGIN_CALENDAR_HELPER_H__
-#define __CAL_DB_PLUGIN_CALENDAR_HELPER_H__
 
-int cal_db_delete_account(int account_id);
+#ifndef __CAL_CLIENT_HANDLE_H__
+#define __CAL_CLIENT_HANDLE_H__
 
-#endif /* __CAL_DB_PLUGIN_CALENDAR_HELPER_H__ */
+#include "cal_handle.h"
+
+int cal_client_handle_get_p(calendar_h *handle);
+int cal_client_handle_get_p_with_id(unsigned int id, calendar_h *handle);
+int cal_client_handle_create(unsigned int id, calendar_h *out_handle);
+int cal_client_handle_remove(unsigned int id, calendar_h handle);
+
+#endif /* __CAL_CLIENT_HANDLE_H__ */

@@ -29,6 +29,8 @@ static pthread_mutex_t _cal_pims_ipc_call_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t _cal_inotify_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t _cal_pims_ipc_pubsub_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t _cal_access_control_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t _cal_timeout_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t _cal_handle_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static inline pthread_mutex_t* _cal_mutex_get_mutex(int type)
 {
@@ -52,6 +54,12 @@ static inline pthread_mutex_t* _cal_mutex_get_mutex(int type)
 		break;
 	case CAL_MUTEX_ACCESS_CONTROL:
 		ret_val = &_cal_access_control_mutex;
+		break;
+	case CAL_MUTEX_TIMEOUT:
+		ret_val = &_cal_timeout_mutex;
+		break;
+	case CAL_MUTEX_HANDLE:
+		ret_val = &_cal_handle_mutex;
 		break;
 	default:
 		ERR("unknown type(%d)", type);

@@ -32,11 +32,13 @@
 #define CAL_STR_MIDDLE_LEN 1024
 #define CAL_STR_LONG_LEN 2048
 #define CAL_STRING_EQUAL 0
+
 #define CAL_TZID_GMT "Etc/GMT"
 #define CAL_SOCK_PATH "/run/user/%d"
 #define CAL_NOTI_EVENT_CHANGED tzplatform_mkpath(TZ_USER_DATA,"calendar-svc/.CALENDAR_SVC_EVENT_CHANGED")
 #define CAL_NOTI_TODO_CHANGED tzplatform_mkpath(TZ_USER_DATA,"calendar-svc/.CALENDAR_SVC_TODO_CHANGED")
 #define CAL_NOTI_CALENDAR_CHANGED tzplatform_mkpath(TZ_USER_DATA,"calendar-svc/.CALENDAR_SVC_CALENDAR_CHANGED")
+#define CAL_NOTI_IPC_READY tzplatform_mkpath(TZ_USER_DATA,"calendar-svc/.CALENDAR_SVC_IPC_READY")
 #define CAL_NOTI_REMINDER_CAHNGED "reminder"
 #define CAL_FORMAT_LOCAL_DATETIME "%04d-%02d-%02dT%02d:%02d:%02d"
 #define CAL_DATETIME_FORMAT_YYYYMMDD "%04d%02d%02d"

@@ -21,11 +21,24 @@
 #define __CAL_CLIENT_IPC_H__
 
 #include <pims-ipc.h>
+#include "calendar_types.h"
+#include "cal_handle.h"
+
+int cal_client_ipc_connect(calendar_h handle, unsigned int id);
+int cal_client_ipc_disconnect(calendar_h handle, unsigned int id, int connection_count);
 
 bool cal_client_ipc_is_call_inprogress(void);
 int cal_client_ipc_call(char *module, char *function, pims_ipc_h data_in, pims_ipc_data_h *data_out);
-void cal_client_ipc_set_change_version(int version);
-int cal_client_ipc_get_change_version(void);
 int cal_client_ipc_client_check_permission(int permission, bool *result);
+int cal_client_ipc_get_change_version(calendar_h handle);
+void cal_client_ipc_set_change_version(calendar_h handle, int version);
+void cal_client_ipc_lock(void);
+void cal_client_ipc_unlock(void);
+
+bool cal_client_ipc_get_disconnected(void);
+int cal_client_ipc_set_disconnected_cb(pims_ipc_h ipc, void (*cb)(void *), void *user_data);
+int cal_client_ipc_unset_disconnected_cb(pims_ipc_h ipc);
+void cal_client_ipc_set_disconnected(bool is_disconnected);
+void cal_client_ipc_recovery(void);
 
 #endif /* __CAL_CLIENT_IPC_H__ */

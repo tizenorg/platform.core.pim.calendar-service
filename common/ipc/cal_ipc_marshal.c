@@ -1,4 +1,4 @@
-	/*
+/*
  * Calendar Service
  *
  * Copyright (c) 2012 - 2015 Samsung Electronics Co., Ltd. All rights reserved.
@@ -25,6 +25,7 @@
 #include "cal_record.h"
 #include "cal_internal.h"
 #include "cal_view.h"
+#include "cal_handle.h"
 #include "cal_utils.h"
 
 extern cal_ipc_marshal_record_plugin_cb_s cal_ipc_record_calendar_plugin_cb;
@@ -477,36 +478,27 @@ int cal_ipc_marshal_record(const calendar_record_h record, pims_ipc_data_h ipc_d
 
 int cal_ipc_unmarshal_char(const pims_ipc_data_h ipc_data, char** ppbufchar)
 {
-	int ret = CALENDAR_ERROR_NONE;
-
-	void *tmp = NULL;
 	unsigned int size = 0;
 	char *str = NULL;
-
 	int length = 0;
 
 	RETV_IF(NULL == ipc_data, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == ppbufchar, CALENDAR_ERROR_INVALID_PARAMETER);
 
+	void *tmp = NULL;
 	tmp = pims_ipc_data_get(ipc_data,&size);
-	if (tmp == NULL) {
-		ERR("pims_ipc_data_get fail");
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
+	RETVM_IF(NULL == tmp, CALENDAR_ERROR_INVALID_PARAMETER, "pims_ipc_data_get() Fail");
+
 	length = *(int*)tmp;
-
 	if (length == -1) {
-		ret = CALENDAR_ERROR_NONE;
 		*ppbufchar = NULL;
-		return ret;
+		return CALENDAR_ERROR_NONE;
 	}
-
 	str = (char*)pims_ipc_data_get(ipc_data,&size);
 	if (str) {
 		*ppbufchar = cal_strdup(str);
 	}
-
-	return ret;
+	return CALENDAR_ERROR_NONE;
 }
 
 int cal_ipc_unmarshal_int(const pims_ipc_data_h data, int *pout)
@@ -1145,6 +1137,31 @@ int cal_ipc_unmarshal_child_list(const pims_ipc_data_h ipc_data, calendar_list_h
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 	}
+
+	return CALENDAR_ERROR_NONE;
+}
+
+int cal_ipc_marshal_handle(calendar_h handle, const pims_ipc_data_h ipc_data)
+{
+	int ret = 0;
+	cal_s *h = (cal_s *)handle;
+	RETV_IF(NULL == handle, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == ipc_data, CALENDAR_ERROR_INVALID_PARAMETER);
+
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret , "cal_ipc_marshal_char() Fail(%d)", ret);
+	return CALENDAR_ERROR_NONE;
+}
+
+int cal_ipc_unmarshal_handle(const pims_ipc_data_h ipc_data, calendar_h *handle)
+{
+	int ret = 0;
+
+	RETV_IF(NULL == ipc_data, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == handle, CALENDAR_ERROR_INVALID_PARAMETER);
+
+	ret = cal_handle_create(handle);
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_handle_create() Fail(%d)", ret);
+	cal_s *h = (cal_s *)(*handle);
 
 	return CALENDAR_ERROR_NONE;
 }

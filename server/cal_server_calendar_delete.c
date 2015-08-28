@@ -287,7 +287,7 @@ static gpointer _cal_server_calendar_main(gpointer user_data)
 		callback_data->step = STEP_1;
 
 		/* delete */
-		ret = calendar_connect();
+		ret = cal_connect();
 		if (CALENDAR_ERROR_NONE != ret) {
 			ERR("cal_connect() Fail(%d)", ret);
 			free(callback_data);
@@ -304,7 +304,7 @@ static gpointer _cal_server_calendar_main(gpointer user_data)
 				break;
 			}
 		}
-		calendar_disconnect();
+		cal_disconnect();
 		CAL_FREE(callback_data);
 
 		g_mutex_lock(&_cal_server_calendar_delete_mutex);
