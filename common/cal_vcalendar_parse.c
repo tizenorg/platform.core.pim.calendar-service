@@ -2712,12 +2712,16 @@ static char* __work_component_vevent(char *cursor, calendar_record_h record, str
 			value = NULL;
 			break;
 		case VCAL_COMPONENT_PROPERTY_DTEND:
+			if (CAL_STRING_EQUAL != strcmp(((cal_record_s*)(record))->view_uri, _calendar_event._uri))
+				break;
 			cursor = __get_value(cursor, &value);
 			__work_component_property_dtend(value, record, ud);
 			free(value);
 			value = NULL;
 			break;
 		case VCAL_COMPONENT_PROPERTY_DUE:
+			if (CAL_STRING_EQUAL != strcmp(((cal_record_s*)(record))->view_uri, _calendar_todo._uri))
+				break;
 			cursor = __get_value(cursor, &value);
 			__work_component_property_dtend(value, record, ud);
 			free(value);
