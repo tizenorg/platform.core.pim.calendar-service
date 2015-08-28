@@ -28,14 +28,6 @@
 #include "cal_client_ipc.h"
 #include "cal_client_utils.h"
 
-static int cal_connection = 0; /* total connection count */
-static TLS int cal_connection_on_thread = 0;
-
-int cal_client_get_thread_connection_count(void)
-{
-	return cal_connection_on_thread;
-}
-
 static void _cal_client_ipc_initialized_cb(void *user_data)
 {
 	if (true == cal_client_ipc_get_disconnected()) {
@@ -45,7 +37,7 @@ static void _cal_client_ipc_initialized_cb(void *user_data)
 	}
 }
 
-int cal_client_connect(calendar_h handle)
+int cal_client_connect(calendar_h handle, unsigned int id, int *connection_count)
 {
 	CAL_FN_CALL();
 	int ret = 0;
@@ -55,7 +47,7 @@ int cal_client_connect(calendar_h handle)
 	cal_mutex_lock(CAL_MUTEX_CONNECTION);
 	cal_s *h = (cal_s *)handle;
 	if (0 == h->connection_count) {
-		ret = cal_client_ipc_connect(handle, cal_client_get_pid());
+		ret = cal_client_ipc_connect(handle,id);
 		if (CALENDAR_ERROR_NONE != ret) {
 			ERR("cal_client_ipc_connect() Fail(%d)", ret);
 			cal_mutex_unlock(CAL_MUTEX_CONNECTION);
@@ -65,7 +57,7 @@ int cal_client_connect(calendar_h handle)
 	h->connection_count++;
 	DBG("[Connection count:handle] (%d)", h->connection_count);
 
-	if (0 == cal_connection) { /* total connection */
+	if (0 == *connection_count) { /* total connection */
 		g_type_init(); /* for alarmmgr */
 		ret = cal_inotify_initialize();
 		if (CALENDAR_ERROR_NONE != ret) {
@@ -77,19 +69,19 @@ int cal_client_connect(calendar_h handle)
 		cal_view_initialize();
 		cal_client_reminder_create_for_subscribe();
 	}
-	else if (0 < cal_connection) {
+	else if (0 < *connection_count) {
 		DBG("[System] calendar service is already connected");
 	}
 
 	if (1 == h->connection_count)
 		cal_inotify_subscribe_ipc_ready(handle, _cal_client_ipc_initialized_cb, NULL);
 
-	cal_connection++;
+	(*connection_count)++;
 	cal_mutex_unlock(CAL_MUTEX_CONNECTION);
 	return CALENDAR_ERROR_NONE;
 }
 
-int cal_client_disconnect(calendar_h handle)
+int cal_client_disconnect(calendar_h handle, unsigned int id, int *connection_count)
 {
 	CAL_FN_CALL();
 	int ret = 0;
@@ -98,8 +90,9 @@ int cal_client_disconnect(calendar_h handle)
 
 	cal_mutex_lock(CAL_MUTEX_CONNECTION);
 	cal_s *h = (cal_s *)handle;
+
 	if (1 == h->connection_count) {
-		ret = cal_client_ipc_disconnect(handle, cal_client_get_pid(), cal_connection);
+		ret = cal_client_ipc_disconnect(handle, id, *connection_count);
 		if (CALENDAR_ERROR_NONE != ret) {
 			ERR("cal_client_ipc_disconnect() Fail(%d)", ret);
 			cal_mutex_unlock(CAL_MUTEX_CONNECTION);
@@ -110,14 +103,20 @@ int cal_client_disconnect(calendar_h handle)
 	h->connection_count--;
 	DBG("[Disonnection count:handle] (%d)", h->connection_count);
 
-	if (1 == cal_connection) {
+	if (0 == h->connection_count) {
+		ret = cal_client_handle_remove(cal_client_get_pid(), handle);
+		if (CALENDAR_ERROR_NONE != ret)
+			WARN("cal_client_handle_remove() Fail(%d)", ret);
+	}
+
+	if (1 == *connection_count) {
 		DBG("[System] disconnected successfully");
 		cal_client_reminder_destroy_for_subscribe();
 		cal_view_finalize();
 		cal_inotify_finalize();
 	}
-	else if (1 < cal_connection) {
-		DBG("[System] connection count(%d)", cal_connection);
+	else if (1 < *connection_count) {
+		DBG("[System] connection count(%d)", *connection_count);
 	}
 	else {
 		DBG("[System] calendar_connect() is needed");
@@ -125,12 +124,12 @@ int cal_client_disconnect(calendar_h handle)
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	cal_connection--;
+	(*connection_count)--;
 	cal_mutex_unlock(CAL_MUTEX_CONNECTION);
 	return CALENDAR_ERROR_NONE;
 }
 
-int cal_client_connect_with_flags(calendar_h handle, unsigned int flags)
+int cal_client_connect_with_flags(calendar_h handle, unsigned int id, int *connection_count, unsigned int flags)
 {
 	CAL_FN_CALL();
 	int ret = 0;
@@ -138,7 +137,7 @@ int cal_client_connect_with_flags(calendar_h handle, unsigned int flags)
 	/* If new flag is defined, error check should be updated. */
 	RETVM_IF(flags & 0x11111110, CALENDAR_ERROR_INVALID_PARAMETER, "flag is invalid(%x)", flags);
 
-	ret = cal_client_connect(handle);
+	ret = cal_client_connect(handle, id, connection_count);
 	if (CALENDAR_ERROR_NONE == ret)
 		return ret;
 
@@ -147,7 +146,7 @@ int cal_client_connect_with_flags(calendar_h handle, unsigned int flags)
 		int retry_time = 500;
 		for (i = 0; i < 9; i++) {
 			usleep(retry_time*1000);
-			ret = cal_client_connect(handle);
+			ret = cal_client_connect(handle, id, connection_count);
 			DBG("retry count(%d), ret(%x)", (i+1), ret);
 			if (CALENDAR_ERROR_NONE == ret)
 				break;
@@ -158,88 +157,4 @@ int cal_client_connect_with_flags(calendar_h handle, unsigned int flags)
 		}
 	}
 	return ret;
-}
-
-int cal_client_connect_on_thread(calendar_h handle)
-{
-	CAL_FN_CALL();
-	int ret = 0;
-
-	RETV_IF(NULL == handle, CALENDAR_ERROR_INVALID_PARAMETER);
-
-	cal_mutex_lock(CAL_MUTEX_CONNECTION);
-	cal_s *h = (cal_s *)handle;
-	if (0 == h->connection_count) {
-		ret = cal_client_ipc_connect(handle, cal_client_get_tid());
-		if (CALENDAR_ERROR_NONE != ret) {
-			ERR("cal_client_ipc_connect() Fail(%d)", ret);
-			cal_mutex_unlock(CAL_MUTEX_CONNECTION);
-			return ret;
-		}
-	}
-	h->connection_count++;
-	DBG("[Connection count:handle] (%d)", h->connection_count);
-
-	if (0 == cal_connection_on_thread) {
-		ret = cal_inotify_initialize();
-		if (CALENDAR_ERROR_NONE != ret) {
-			ERR("cal_inotify_initialize() Fail(%d)", ret);
-			cal_mutex_unlock(CAL_MUTEX_CONNECTION);
-			return ret;
-		}
-
-		cal_view_initialize();
-		cal_client_reminder_create_for_subscribe();
-	}
-	else if (0 < cal_connection_on_thread) {
-		DBG("[System] calendar service is already connected");
-	}
-
-	if (1 == h->connection_count)
-		cal_inotify_subscribe_ipc_ready(handle, _cal_client_ipc_initialized_cb, NULL);
-
-	cal_connection_on_thread++;
-	cal_mutex_unlock(CAL_MUTEX_CONNECTION);
-	return CALENDAR_ERROR_NONE;
-}
-
-int cal_client_disconnect_on_thread(calendar_h handle)
-{
-	CAL_FN_CALL();
-	int ret = 0;
-
-	RETV_IF(NULL == handle, CALENDAR_ERROR_INVALID_PARAMETER);
-
-	cal_mutex_lock(CAL_MUTEX_CONNECTION);
-	cal_s *h = (cal_s *)handle;
-	if (1 == h->connection_count) {
-		ret = cal_client_ipc_disconnect(handle, cal_client_get_tid(), cal_connection_on_thread);
-		if (CALENDAR_ERROR_NONE != ret) {
-			ERR("cal_client_ipc_disconnect() Fail(%d)", ret);
-			cal_mutex_unlock(CAL_MUTEX_CONNECTION);
-			return ret;
-		}
-		cal_inotify_unsubscribe_ipc_ready(handle);
-	}
-	h->connection_count--;
-	DBG("[Disonnection count:handle] (%d)", h->connection_count);
-
-	if (1 == cal_connection_on_thread) {
-		DBG("[System] disconnected on thread successfully");
-		cal_client_reminder_destroy_for_subscribe();
-		cal_view_finalize();
-		cal_inotify_finalize();
-	}
-	else if (1 < cal_connection_on_thread) {
-		DBG("[system] connection_on_thread count(%d)", cal_connection_on_thread);
-	}
-	else {
-		DBG("[system] calendar_connect_on_thread() is needed");
-		cal_mutex_unlock(CAL_MUTEX_CONNECTION);
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
-
-	cal_connection_on_thread--;
-	cal_mutex_unlock(CAL_MUTEX_CONNECTION);
-	return CALENDAR_ERROR_NONE;
 }

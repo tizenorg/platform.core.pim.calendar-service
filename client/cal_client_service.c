@@ -19,9 +19,12 @@
 
 #include "calendar.h"
 #include "cal_internal.h"
-#include "cal_client_utils.h"
 #include "cal_client_handle.h"
 #include "cal_client_service_helper.h"
+#include "cal_client_utils.h"
+
+static int cal_connection = 0; /* total connection count: each count from zone */
+static TLS int cal_connection_on_thread = 0;
 
 API int calendar_connect(void)
 {
@@ -38,7 +41,8 @@ API int calendar_connect(void)
 		ERR("cal_client_handle_get_p_with_id() Fail(%d)", ret);
 		return ret;
 	}
-	return cal_client_connect(handle);
+	ret = cal_client_connect(handle, id, &cal_connection);
+	return ret;
 }
 
 API int calendar_disconnect(void)
@@ -55,13 +59,8 @@ API int calendar_disconnect(void)
 		ERR("cal_client_handle_get_p_with_id() Fail(%d)", ret);
 		return ret;
 	}
-	ret = cal_client_disconnect(handle);
-	WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_client_disconnect_on_thread() Fail(%d)", ret);
-
-	if (0 == ((cal_s *)handle)->connection_count) {
-		ret = cal_client_handle_remove(id, handle);
-		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_client_handle_remove() Fail(%d)", ret);
-	}
+	ret = cal_client_disconnect(handle, id, &cal_connection);
+	WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_client_disconnect() Fail(%d)", ret);
 	return ret;
 }
 
@@ -80,7 +79,8 @@ API int calendar_connect_on_thread(void)
 		ERR("cal_client_handle_get_p_with_id() Fail(%d)", ret);
 		return ret;
 	}
-	return cal_client_connect_on_thread(handle);
+	ret = cal_client_connect(handle, id, &cal_connection_on_thread);
+	return ret;
 }
 
 API int calendar_disconnect_on_thread(void)
@@ -97,13 +97,8 @@ API int calendar_disconnect_on_thread(void)
 		ERR("cal_client_handle_get_p_with_id() Fail(%d)", ret);
 		return ret;
 	}
-	ret = cal_client_disconnect_on_thread(handle);
-	WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_client_disconnect_on_thread() Fail(%d)", ret);
-
-	if (0 == ((cal_s *)handle)->connection_count) {
-		ret = cal_client_handle_remove(id, handle);
-		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_client_handle_remove() Fail(%d)", ret);
-	}
+	ret = cal_client_disconnect(handle, id, &cal_connection_on_thread);
+	WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_client_disconnect() Fail(%d)", ret);
 	return ret;
 }
 
@@ -122,6 +117,12 @@ API int calendar_connect_with_flags(unsigned int flags)
 		ERR("cal_client_handle_get_p_with_id() Fail(%d)", ret);
 		return ret;
 	}
-	ret = cal_client_connect_with_flags(handle, flags);
+	ret = cal_client_connect_with_flags(handle, id, &cal_connection, flags);
 	return ret;
+}
+
+
+int cal_client_get_thread_connection_count(void)
+{
+	return cal_connection_on_thread;
 }

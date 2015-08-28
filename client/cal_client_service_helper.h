@@ -20,11 +20,8 @@
 #ifndef __CAL_CLIENT_SERVICE_HELPER_H__
 #define __CAL_CLIENT_SERVICE_HELPER_H__
 
-int cal_client_connect(calendar_h handle);
-int cal_client_disconnect(calendar_h handle);
-int cal_client_connect_with_flags(calendar_h handle, unsigned int flags);
-int cal_client_connect_on_thread(calendar_h handle);
-int cal_client_disconnect_on_thread(calendar_h handle);
-int cal_client_get_thread_connection_count(void);
+int cal_client_connect(calendar_h handle, unsigned int id, int *connection_count);
+int cal_client_disconnect(calendar_h handle, unsigned int id, int *connection_count);
+int cal_client_connect_with_flags(calendar_h handle, unsigned int id, int *connection_count, unsigned int flags);
 
 #endif /* __CAL_CLIENT_SERVICE_HELPER_H__ */
