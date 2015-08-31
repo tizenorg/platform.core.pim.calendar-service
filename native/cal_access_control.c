@@ -150,6 +150,7 @@ void cal_access_control_set_client_info(pims_ipc_h ipc, const char *smack_label)
 
 	free(info->smack_label);
 	info->smack_label = cal_strdup(smack_label);
+	_cal_access_control_set_permission_info(info);
 
 	/* for close DB or free access_control when client is disconnected */
 	if (info->ipc)
