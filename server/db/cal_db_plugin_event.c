@@ -316,7 +316,7 @@ static int __get_time_shifted_field(char *old_field, int old_type, int new_type,
 	if (NULL == new) {
 		ERR("calloc() Fail");
 		g_strfreev(t);
-		return CALENDAR_ERROR_DB_FAILED;
+		return CALENDAR_ERROR_OUT_OF_MEMORY;
 	}
 
 	struct tm tm = {0};
@@ -830,7 +830,7 @@ static int _cal_db_event_add_exdate(int original_event_id, char* recurrence_id)
 			if (NULL == exdate) {
 				ERR("calloc() Fail");
 				sqlite3_finalize(stmt);
-				return CALENDAR_ERROR_DB_FAILED;
+				return CALENDAR_ERROR_OUT_OF_MEMORY;
 			}
 			snprintf(exdate, len, "%s,%s", temp, recurrence_id);
 			DBG("append [%s] to aleady has exdate [%s]", temp, recurrence_id);
@@ -2592,7 +2592,7 @@ static int _cal_db_event_exdate_insert_normal(int event_id, const char* original
 	}
 
 	int *ids = calloc(len1, sizeof(int));
-	RETVM_IF(NULL == ids, CALENDAR_ERROR_DB_FAILED, "calloc() Fail");
+	RETVM_IF(NULL == ids, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc() Fail");
 
 	int exception_count = 0;
 	for(i = 0; i < len1; i++) {

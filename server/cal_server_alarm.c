@@ -770,7 +770,7 @@ static bool __app_matched_cb(app_control_h app_control, const char *package, voi
 	if (NULL == ids) {
 		ERR("calloc() Fail");
 		app_control_destroy(b);
-		return CALENDAR_ERROR_DB_FAILED;
+		return CALENDAR_ERROR_OUT_OF_MEMORY;
 	}
 	GList *l = g_list_first(alarm_list);
 	int i;
