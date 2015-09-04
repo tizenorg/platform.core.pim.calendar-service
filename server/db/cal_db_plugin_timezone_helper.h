@@ -20,6 +20,6 @@
 #ifndef __CAL_DB_PLUGIN_TIMEZONE_HELPER_H__
 #define __CAL_DB_PLUGIN_TIMEZONE_HELPER_H__
 
-void cal_db_timezone_search_with_tzid(char *tzid, int *timezone_id);
+void cal_db_timezone_search_with_tzid(int book_id, char *tzid, int *timezone_id);
 
 #endif  /* __CAL_DB_PLUGIN_TIMEZONE_HELPER_H__ */

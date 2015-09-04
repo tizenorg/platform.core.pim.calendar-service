@@ -145,6 +145,7 @@ static int _cal_client_ipc_connect(calendar_h handle, pims_ipc_h ipc)
 	}
 	return ret;
 }
+
 static void _cal_client_ipc_disconnected_cb(void *user_data)
 {
 	DBG("disconnected");
