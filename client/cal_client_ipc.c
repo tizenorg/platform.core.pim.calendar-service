@@ -231,9 +231,19 @@ int cal_client_ipc_disconnect(calendar_h handle, unsigned int id, int connection
 	}
 
 	/* check outdata */
+	void *tmp = NULL;
 	unsigned int size = 0;
-	ret = *(int*) pims_ipc_data_get(outdata,&size);
+	tmp = pims_ipc_data_get(outdata, &size);
 	pims_ipc_data_destroy(outdata);
+	if (NULL == tmp) {
+		ERR("pims_ipc_data_get() Fail");
+		return CALENDAR_ERROR_IPC;
+	}
+	ret = *(int*)tmp;
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("calendar_connect return (%d)",ret);
+		return ret;
+	}
 
 	if (1 == connection_count)
 		g_hash_table_remove(_cal_ipc_table, key);
