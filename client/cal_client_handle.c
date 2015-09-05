@@ -33,15 +33,9 @@ static GHashTable *_cal_handle_table = NULL;
 
 static int _cal_client_handle_get_key(unsigned int id, char *key, int key_len)
 {
-	int ret = 0;
-
 	RETV_IF(NULL == key, CALENDAR_ERROR_INVALID_PARAMETER);
 
-	ret = gethostname(key, key_len);
-	RETVM_IF(0 != ret, CALENDAR_ERROR_SYSTEM, "gethostname() Fail(%d)", ret);
-
-	int len = strlen(key);
-	snprintf(key +len, key_len -len, ":%u", id);
+	snprintf(key, key_len, "%d:%u", getuid(), id);
 	DBG("[%s]", key);
 	return CALENDAR_ERROR_NONE;
 }
