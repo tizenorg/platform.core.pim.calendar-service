@@ -685,8 +685,7 @@ static int _cal_server_alarm_register(GList *alarm_list)
 	time_t mod_time = (time_t)ad->alert_utime;
 	alarm_entry_t *alarm_info = NULL;
 	alarm_info = alarmmgr_create_alarm();
-	if (NULL == alarm_info)
-	{
+	if (NULL == alarm_info) {
 		ERR("Failed to create alarm");
 		return CALENDAR_ERROR_DB_FAILED;
 	}

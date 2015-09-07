@@ -43,6 +43,7 @@ struct user_data {
 	int version;
 	int type; /* event, todo */
 	bool is_allday;
+	bool has_rrule;
 };
 
 enum {
@@ -303,6 +304,85 @@ static inline char* __crlf(char *p)
 		p++;
 	}
 	return p +1;
+}
+
+static bool __check_has_rrule(char *stream)
+{
+	bool ret = false;
+	char *cursor = stream;
+	while (*cursor) {
+		if (*(cursor++) == VCAL_LF) {
+			if (*(cursor++) == 'R' &&
+					*(cursor++) == 'R' &&
+					*(cursor++) == 'U' &&
+					*(cursor++) == 'L' &&
+					*(cursor++) == 'E' &&
+					*(cursor++) == ':' ) {
+				DBG("[TEST] rrule");
+				return true;
+			}
+			else if (*(cursor-1) == 'E' &&
+					*(cursor++) == 'N' &&
+					*(cursor++) == 'D' &&
+					*(cursor++) == ':' &&
+					*(cursor++) == 'V' &&
+					*(cursor++) == 'E' &&
+					*(cursor++) == 'V' &&
+					*(cursor++) == 'E' &&
+					*(cursor++) == 'N' &&
+					*(cursor++) == 'T') {
+				DBG("[TEST] end");
+				break;
+			}
+			else {
+			}
+		}
+	}
+	return ret;
+}
+
+static void _get_caltime_diff(calendar_time_s *s, calendar_time_s *a, int *diff)
+{
+	if (s->type != a->type) {
+		ERR("Invalid to compare start type(%d) alarm type(%d)", s->type, a->type);
+		return;
+	}
+	switch (s->type) {
+	case CALENDAR_TIME_UTIME:
+		*diff = s->time.utime - a->time.utime;
+		break;
+	case CALENDAR_TIME_LOCALTIME:
+		*diff = cal_time_convert_itol(NULL, s->time.date.year, s->time.date.month,
+				s->time.date.mday, s->time.date.hour, s->time.date.minute, s->time.date.second) -
+			cal_time_convert_itol(NULL, a->time.date.year, a->time.date.month,
+					a->time.date.mday, a->time.date.hour, a->time.date.minute, a->time.date.second);
+		break;
+	}
+}
+
+static void _get_tick_unit(int t, int *tick, int *unit)
+{
+	if (0 == (t % CALENDAR_ALARM_TIME_UNIT_WEEK)) {
+		*tick = t / CALENDAR_ALARM_TIME_UNIT_WEEK;
+		*unit = CALENDAR_ALARM_TIME_UNIT_WEEK;
+	}
+	else if (0 == (t % CALENDAR_ALARM_TIME_UNIT_DAY)) {
+		*tick = t / CALENDAR_ALARM_TIME_UNIT_DAY;
+		*unit = CALENDAR_ALARM_TIME_UNIT_DAY;
+	}
+	else if (0 == (t % CALENDAR_ALARM_TIME_UNIT_HOUR)) {
+		*tick = t / CALENDAR_ALARM_TIME_UNIT_HOUR;
+		*unit = CALENDAR_ALARM_TIME_UNIT_HOUR;
+	}
+	else if (0 == (t % CALENDAR_ALARM_TIME_UNIT_MINUTE)) {
+		*tick = t / CALENDAR_ALARM_TIME_UNIT_MINUTE;
+		*unit = CALENDAR_ALARM_TIME_UNIT_MINUTE;
+	}
+	else {
+		*tick = t;
+		*unit = CALENDAR_ALARM_TIME_UNIT_SPECIFIC;
+	}
+	DBG("tick(%d), unit(%d)", *tick, *unit);
 }
 
 static char* __get_value(char *cursor, char **value)
@@ -738,27 +818,9 @@ static void __decode_duration(char *cursor, int len, int *tick, int *unit)
 			break;
 		}
 	}
-	if (0 == (t % CALENDAR_ALARM_TIME_UNIT_WEEK)) {
-		*tick = (sign * t) / CALENDAR_ALARM_TIME_UNIT_WEEK;
-		*unit = CALENDAR_ALARM_TIME_UNIT_WEEK;
-	}
-	else if (0 == (t % CALENDAR_ALARM_TIME_UNIT_DAY)) {
-		*tick = (sign * t) / CALENDAR_ALARM_TIME_UNIT_DAY;
-		*unit = CALENDAR_ALARM_TIME_UNIT_DAY;
-	}
-	else if (0 == (t % CALENDAR_ALARM_TIME_UNIT_HOUR)) {
-		*tick = (sign * t) / CALENDAR_ALARM_TIME_UNIT_HOUR;
-		*unit = CALENDAR_ALARM_TIME_UNIT_HOUR;
-	}
-	else if (0 == (t % CALENDAR_ALARM_TIME_UNIT_MINUTE)) {
-		*tick = (sign * t) / CALENDAR_ALARM_TIME_UNIT_MINUTE;
-		*unit = CALENDAR_ALARM_TIME_UNIT_MINUTE;
-	}
-	else {
-		*tick = (sign * t);
-		*unit = CALENDAR_ALARM_TIME_UNIT_SPECIFIC;
-	}
-	DBG("tick(%d), unit(%d)", *tick, *unit);
+
+	t *= sign;
+	_get_tick_unit(t, tick, unit);
 }
 
 static bool __is_digit(char *p)
@@ -2056,19 +2118,40 @@ static void __work_component_property_dalarm(char *value, calendar_record_h reco
 	int i;
 	int index = 0;
 	for (i = 0; i < len; i++) {
-		if (index) index++;
+		if (index)
+			index++;
 		if (NULL == t[i] || '\0' == *t[i])
 			continue;
 
-		if ('0' <= *t[i] && *t[i] <= '9' && strlen("PTM") < strlen(t[i])) { /* runTime */
+		if ('0' <= *t[i] && *t[i] <= '9' && strlen("PTM") < strlen(t[i])) {
+			/* runTime */
 			index = 1;
-			calendar_time_s caltime = {0};
-			__get_caltime(t[i], &caltime, ud);
-			ret = cal_record_set_caltime(alarm, _calendar_alarm.alarm_time, caltime);
-			WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_caltime() Fail(%d)", ret);
-			ret = cal_record_set_int(alarm, _calendar_alarm.tick_unit, CALENDAR_ALARM_TIME_UNIT_SPECIFIC);
-			WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
+			calendar_time_s alarm_time = {0};
+			__get_caltime(t[i], &alarm_time, ud);
+			if (true == ud->has_rrule) {
+				calendar_time_s start_time = {0};
+				ret = calendar_record_get_caltime(record, _calendar_event.start_time, &start_time);
 
+				int diff = 0;
+				_get_caltime_diff(&start_time, &alarm_time, &diff);
+				if (diff <= 0) {
+					ERR("Invalid time diff(%d)", diff);
+					continue;
+				}
+				int tick = 0;
+				int unit = 0;
+				_get_tick_unit(diff, &tick, &unit);
+				ret = cal_record_set_int(alarm, _calendar_alarm.tick, tick);
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
+				ret = cal_record_set_int(alarm, _calendar_alarm.tick_unit, unit);
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
+
+			} else {
+				ret = cal_record_set_caltime(alarm, _calendar_alarm.alarm_time, alarm_time);
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_caltime() Fail(%d)", ret);
+				ret = cal_record_set_int(alarm, _calendar_alarm.tick_unit, CALENDAR_ALARM_TIME_UNIT_SPECIFIC);
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
+			}
 		}
 		else if (4 == index) { /* displayString */
 			DBG("displayString [%s]", t[i]);
@@ -2132,18 +2215,41 @@ static void __work_component_property_malarm(char *value, calendar_record_h reco
 	int i;
 	int index = 0;
 	for (i = 0; i < len; i++) {
-		if (index) index++;
-		if (NULL == t[i] || '\0' == *t[i]) continue;
+		if (index)
+			index++;
+		if (NULL == t[i] || '\0' == *t[i])
+			continue;
 
-		if ('0' <= *t[i] && *t[i] <= '9' && strlen("PTM") < strlen(t[i])) { /* runTime */
+		if ('0' <= *t[i] && *t[i] <= '9' && strlen("PTM") < strlen(t[i])) {
+			/* runTime */
 			index = 1;
-			calendar_time_s caltime = {0};
-			__get_caltime(t[i], &caltime, ud);
-			ret = cal_record_set_caltime(alarm, _calendar_alarm.alarm_time, caltime);
-			WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_caltime() Fail(%d)", ret);
-			ret = cal_record_set_int(alarm, _calendar_alarm.tick_unit, CALENDAR_ALARM_TIME_UNIT_SPECIFIC);
-			WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
+			calendar_time_s alarm_time = {0};
+			__get_caltime(t[i], &alarm_time, ud);
+			if (true == ud->has_rrule) {
+				calendar_time_s start_time = {0};
+				ret = calendar_record_get_caltime(record, _calendar_event.start_time, &start_time);
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_caltime() Fail(%d)", ret);
 
+				int diff = 0;
+				_get_caltime_diff(&start_time, &alarm_time, &diff);
+				if (diff <= 0) {
+					ERR("Invalid time diff(%d)", diff);
+					continue;
+				}
+				int tick = 0;
+				int unit = 0;
+				_get_tick_unit(diff, &tick, &unit);
+				ret = cal_record_set_int(alarm, _calendar_alarm.tick, tick);
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
+				ret = cal_record_set_int(alarm, _calendar_alarm.tick_unit, unit);
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
+
+			} else {
+				ret = cal_record_set_caltime(alarm, _calendar_alarm.alarm_time, alarm_time);
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_caltime() Fail(%d)", ret);
+				ret = cal_record_set_int(alarm, _calendar_alarm.tick_unit, CALENDAR_ALARM_TIME_UNIT_SPECIFIC);
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
+			}
 		}
 		else if (4 == index) { /* addressString */
 			DBG("addressString [%s]", t[i]);
@@ -2215,17 +2321,40 @@ static void __work_component_property_aalarm(char *value, calendar_record_h reco
 	int i;
 	int index = 0;
 	for (i = 0; i < len; i++) {
-		if (index) index++;
-		if (NULL == t[i] || '\0' == *t[i]) continue;
+		if (index)
+			index++;
+		if (NULL == t[i] || '\0' == *t[i])
+			continue;
 
-		if ('0' <= *t[i] && *t[i] <= '9' && strlen("PTM") < strlen(t[i])) { /* runTime */
+		if ('0' <= *t[i] && *t[i] <= '9' && strlen("PTM") < strlen(t[i])) {
+			/* runTime */
 			index = 1;
-			calendar_time_s caltime = {0};
-			__get_caltime(t[i], &caltime, ud);
-			ret = cal_record_set_caltime(alarm, _calendar_alarm.alarm_time, caltime);
-			WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_caltime() Fail(%d)", ret);
-			ret = cal_record_set_int(alarm, _calendar_alarm.tick_unit, CALENDAR_ALARM_TIME_UNIT_SPECIFIC);
-			WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
+			calendar_time_s alarm_time = {0};
+			__get_caltime(t[i], &alarm_time, ud);
+			if (true == ud->has_rrule) {
+				calendar_time_s start_time = {0};
+				ret = calendar_record_get_caltime(record, _calendar_event.start_time, &start_time);
+
+				int diff = 0;
+				_get_caltime_diff(&start_time, &alarm_time, &diff);
+				if (diff <= 0) {
+					ERR("Invalid time diff(%d)", diff);
+					continue;
+				}
+				int tick = 0;
+				int unit = 0;
+				_get_tick_unit(diff, &tick, &unit);
+				ret = cal_record_set_int(alarm, _calendar_alarm.tick, tick);
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
+				ret = cal_record_set_int(alarm, _calendar_alarm.tick_unit, unit);
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
+
+			} else {
+				ret = cal_record_set_caltime(alarm, _calendar_alarm.alarm_time, alarm_time);
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_caltime() Fail(%d)", ret);
+				ret = cal_record_set_int(alarm, _calendar_alarm.tick_unit, CALENDAR_ALARM_TIME_UNIT_SPECIFIC);
+				WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
+			}
 		}
 		else if (4 == index) {
 			/* audioContent */
@@ -3164,6 +3293,7 @@ static char* __work_property_begin(char *cursor, calendar_record_h *out_record, 
 		ret = calendar_record_create(_calendar_event._uri, &record);
 		RETVM_IF(CALENDAR_ERROR_NONE != ret, NULL, "calendar_record_create() Fail(%d)", ret);
 		ud->type = CALENDAR_BOOK_TYPE_EVENT;
+		ud->has_rrule = __check_has_rrule(cursor);
 		cursor = __work_component_vevent(cursor, record, ud);
 		break;
 
@@ -3171,6 +3301,7 @@ static char* __work_property_begin(char *cursor, calendar_record_h *out_record, 
 		ret = calendar_record_create(_calendar_todo._uri, &record);
 		RETVM_IF(CALENDAR_ERROR_NONE != ret, NULL, "calendar_record_create() Fail(%d)", ret);
 		ud->type = CALENDAR_BOOK_TYPE_TODO;
+		ud->has_rrule = __check_has_rrule(cursor);
 		cursor = __work_component_vevent(cursor, record, ud); /* same as event */
 		break;
 
