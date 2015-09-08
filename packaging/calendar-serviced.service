@@ -6,6 +6,8 @@ Requires=contacts-service.service
 [Service]
 Type=simple
 ExecStart=/usr/bin/calendar-serviced
+Restart=always
+RestartSec=1
 
 [Install]
 WantedBy=default.target
