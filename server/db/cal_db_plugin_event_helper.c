@@ -88,8 +88,8 @@ int cal_db_event_check_value_validation(cal_event_s *event)
 	switch (event->start.type) {
 	case CALENDAR_TIME_UTIME:
 		if (event->end.time.utime < event->start.time.utime) {
-			ERR("normal end(%lld) < start(%lld)",
-					event->end.time.utime, event->start.time.utime);
+			ERR("normal end(%lld) < start(%lld) so set same", event->end.time.utime, event->start.time.utime);
+			event->end.time.utime =  event->start.time.utime;
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 		break;
@@ -97,19 +97,19 @@ int cal_db_event_check_value_validation(cal_event_s *event)
 	case CALENDAR_TIME_LOCALTIME:
 		/* check invalid value */
 		if (event->start.time.date.month < 1 || 12 < event->start.time.date.month) {
-			ERR("check start month(input:%d)", event->start.time.date.month);
+			ERR("Error check start month(input:%d)", event->start.time.date.month);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 		else if (event->start.time.date.mday < 1 || 31 < event->start.time.date.mday) {
-			ERR("check start mday(input:%d)", event->start.time.date.mday);
+			ERR("Error check start mday(input:%d)", event->start.time.date.mday);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 		else if (event->end.time.date.month < 1 || 12 < event->end.time.date.month) {
-			ERR("check end month(input:%d)", event->end.time.date.month);
+			ERR("Error check end month(input:%d)", event->end.time.date.month);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 		else if (event->end.time.date.mday < 1 || 31 < event->end.time.date.mday) {
-			ERR("check end mday(input:%d)", event->end.time.date.mday);
+			ERR("Error check end mday(input:%d)", event->end.time.date.mday);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 		else {
@@ -138,7 +138,14 @@ int cal_db_event_check_value_validation(cal_event_s *event)
 
 		if (1 < slli - elli) {
 			/* 1 is to ignore milliseconds */
-			ERR("allday end(%lld) < start(%lld)", elli, slli);
+			ERR("allday end(%lld) < start(%lld) so set same", elli, slli);
+			event->end.time.date.year = event->start.time.date.year;
+			event->end.time.date.year = event->start.time.date.year;
+			event->end.time.date.month = event->start.time.date.month;
+			event->end.time.date.mday = event->start.time.date.mday;
+			event->end.time.date.hour = event->start.time.date.hour;
+			event->end.time.date.minute = event->start.time.date.minute;
+			event->end.time.date.second = event->start.time.date.second;
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 		break;
@@ -651,7 +658,9 @@ int cal_db_event_insert_record(calendar_record_h record, int original_event_id, 
 	RETV_IF(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	ret = cal_db_event_check_value_validation(event);
-	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_db_event_check_value_validation() Fail");
+	if (CALENDAR_ERROR_NONE != ret) {
+		WARN("cal_db_event_check_value_validation() Fail(%d)", ret);
+	}
 
 	/* access control */
 	if (cal_access_control_have_write_permission(event->calendar_id) == false) {

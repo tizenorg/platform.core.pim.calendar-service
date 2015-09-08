@@ -480,7 +480,9 @@ static int __update_record(calendar_record_h record, int is_dirty_in_time)
 
 
 	ret = cal_db_event_check_value_validation(event);
-	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_db_event_check_value_validation() Fail(%d)", ret);
+	if (CALENDAR_ERROR_NONE != ret) {
+		WARN("cal_db_event_check_value_validation() Fail(%d)", ret);
+	}
 
 	/* access control */
 	if (cal_access_control_have_write_permission(event->calendar_id) == false) {
