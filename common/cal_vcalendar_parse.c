@@ -1734,9 +1734,16 @@ static void __work_component_property_rrule(char *value, calendar_record_h recor
 	RET_IF(NULL == record);
 	RET_IF(NULL == ud);
 
+	int version = ud->version;
+	/* check if this field has different version content */
+	if (CAL_STRING_EQUAL == strncmp(value, ":FREQ=", strlen(":FREQ=")))
+		version = VCAL_VER_2;
+	else
+		version = VCAL_VER_1;
+
 	switch (ud->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
-		switch (ud->version) {
+		switch (version) {
 		case VCAL_VER_1:
 			__work_component_property_rrule_ver_1(value, record, ud);
 			break;
