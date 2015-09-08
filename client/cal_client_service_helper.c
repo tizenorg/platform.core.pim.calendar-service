@@ -104,7 +104,7 @@ int cal_client_disconnect(calendar_h handle, unsigned int id, int *connection_co
 	DBG("[Disonnection count:handle] (%d)", h->connection_count);
 
 	if (0 == h->connection_count) {
-		ret = cal_client_handle_remove(cal_client_get_pid(), handle);
+		ret = cal_client_handle_remove(id, handle);
 		if (CALENDAR_ERROR_NONE != ret)
 			WARN("cal_client_handle_remove() Fail(%d)", ret);
 	}
