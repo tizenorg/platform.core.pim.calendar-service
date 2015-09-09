@@ -308,6 +308,8 @@ static inline char* __crlf(char *p)
 
 static bool __check_has_rrule(char *stream)
 {
+	RETV_IF(NULL == stream, false);
+
 	bool ret = false;
 	char *cursor = stream;
 	while (*cursor) {
