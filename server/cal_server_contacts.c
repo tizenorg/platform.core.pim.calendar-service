@@ -180,7 +180,7 @@ static int cal_server_contacts_delete_event(int contact_id, int **out_array, int
 			break;
 		}
 
-		if (max_count < index) {
+		if (max_count <= index) {
 			max_count *= 2;
 			array = realloc(array, max_count *sizeof(int));
 			if (NULL == array) {
