@@ -59,9 +59,9 @@ int cal_client_connect(calendar_h handle, unsigned int id, int *connection_count
 
 	if (0 == *connection_count) { /* total connection */
 		g_type_init(); /* for alarmmgr */
-		ret = cal_inotify_initialize();
+		ret = cal_inotify_init();
 		if (CALENDAR_ERROR_NONE != ret) {
-			ERR("cal_inotify_initialize() Fail(%d)", ret);
+			ERR("cal_inotify_init() Fail(%d)", ret);
 			cal_mutex_unlock(CAL_MUTEX_CONNECTION);
 			return ret;
 		}
@@ -113,7 +113,7 @@ int cal_client_disconnect(calendar_h handle, unsigned int id, int *connection_co
 		DBG("[System] disconnected successfully");
 		cal_client_reminder_destroy_for_subscribe();
 		cal_view_finalize();
-		cal_inotify_finalize();
+		cal_inotify_deinit();
 	}
 	else if (1 < *connection_count) {
 		DBG("[System] connection count(%d)", *connection_count);

@@ -195,7 +195,7 @@ static inline int _inotify_attach_handler(int fd)
 	return ret;
 }
 
-int cal_inotify_initialize(void)
+int cal_inotify_init(void)
 {
 	int ret;
 
@@ -526,7 +526,7 @@ static void __clear_nslot_list(gpointer data, gpointer user_data)
 	free(data);
 }
 
-void cal_inotify_finalize(void)
+void cal_inotify_deinit(void)
 {
 #ifdef CAL_IPC_CLIENT
 	cal_mutex_lock(CAL_MUTEX_INOTIFY);

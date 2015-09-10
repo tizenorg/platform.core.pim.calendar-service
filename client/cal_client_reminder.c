@@ -143,10 +143,13 @@ API int calendar_reminder_add_cb(calendar_reminder_cb callback, void *user_data)
 	GSList *it = NULL;
 	callback_info_s *cb_info = NULL;
 	bool result = false;
+	calendar_h handle = NULL;
+	ret = cal_client_handle_get_p(&handle);
+	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_client_handle_get_p() Fail(%d)", ret);
 
 	RETV_IF(NULL == callback, CALENDAR_ERROR_INVALID_PARAMETER);
 
-	ret = cal_client_ipc_client_check_permission(CAL_PERMISSION_READ, &result);
+	ret = cal_client_ipc_client_check_permission(handle, CAL_PERMISSION_READ, &result);
 	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "ctsvc_ipc_client_check_permission() Fail(%d)", ret);
 	RETVM_IF(result == false, CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied (calendar read)");
 

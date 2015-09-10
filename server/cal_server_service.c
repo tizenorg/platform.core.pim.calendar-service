@@ -38,9 +38,9 @@ int cal_connect(void)
 	if (0 == cal_total_connection) {
 		g_type_init();	// added for alarmmgr
 		cal_view_initialize();
-		ret = cal_inotify_initialize();
+		ret = cal_inotify_init();
 		if (CALENDAR_ERROR_NONE != ret) {
-			ERR("cal_inotify_initialize() Fail(%d)", ret);
+			ERR("cal_inotify_init() Fail(%d)", ret);
 			cal_mutex_unlock(CAL_MUTEX_CONNECTION);
 			return ret;
 		}
@@ -80,7 +80,7 @@ int cal_disconnect(void)
 	cal_thread_connection--;
 
 	if (1 == cal_total_connection) {
-		cal_inotify_finalize();
+		cal_inotify_deinit();
 		cal_view_finalize();
 	}
 	else if (1 < cal_total_connection) {

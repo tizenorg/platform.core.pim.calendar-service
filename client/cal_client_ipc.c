@@ -25,6 +25,7 @@
 
 #include "calendar_db.h"
 #include "calendar_types.h"
+#include "cal_client_service.h"
 #include "cal_client_service_helper.h"
 #include "cal_client_utils.h"
 #include "cal_client_ipc.h"
@@ -312,7 +313,7 @@ int cal_client_ipc_get_change_version(calendar_h handle)
 	return h->version;
 }
 
-int cal_client_ipc_client_check_permission(int permission, bool *result)
+int cal_client_ipc_client_check_permission(calendar_h handle, int permission, bool *result)
 {
 	pims_ipc_data_h indata = NULL;
 	pims_ipc_data_h outdata = NULL;
@@ -325,6 +326,13 @@ int cal_client_ipc_client_check_permission(int permission, bool *result)
 	if (NULL == indata) {
 		ERR("pims_ipc_data_create() Fail");
 		return CALENDAR_ERROR_OUT_OF_MEMORY;
+	}
+
+	ret = cal_ipc_marshal_handle(handle, indata);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("cal_ipc_marshal_handle() Fail(%d)", ret);
+		pims_ipc_data_destroy(indata);
+		return ret;
 	}
 
 	ret = cal_ipc_marshal_int(permission, indata);

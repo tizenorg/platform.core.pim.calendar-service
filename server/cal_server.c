@@ -94,65 +94,6 @@ static bool _cal_server_account_delete_cb(const char* event_type, int account_id
 	return true;
 }
 
-#ifdef CAL_MEMORY_TEST
-static gboolean  _cal_server_ipc_destroy_idle(void* user_data)
-{
-	ERR();
-	g_main_loop_quit(main_loop);
-}
-
-void cal_server_ipc_destroy(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
-{
-	ERR();
-	int ret = CALENDAR_ERROR_NONE;
-
-	/* kill daemon destroy */
-	g_timeout_add_seconds(1, &_cal_server_ipc_destroy_idle, NULL);
-
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata) {
-			ERR("pims_ipc_data_create Fail");
-			goto DATA_FREE;
-		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0) {
-			pims_ipc_data_destroy(*outdata);
-			*outdata = NULL;
-			ERR("pims_ipc_data_put Fail");
-			goto DATA_FREE;
-		}
-
-	}
-	else {
-		ERR("outdata is NULL");
-	}
-	goto DATA_FREE;
-
-ERROR_RETURN:
-	if (outdata)
-	{
-		*outdata = pims_ipc_data_create(0);
-		if (!*outdata) {
-			ERR("pims_ipc_data_create Fail");
-			goto DATA_FREE;
-		}
-		if (pims_ipc_data_put(*outdata,(void*)&ret,sizeof(int)) != 0) {
-			pims_ipc_data_destroy(*outdata);
-			*outdata = NULL;
-			ERR("pims_ipc_data_put Fail");
-			goto DATA_FREE;
-		}
-	}
-	else {
-		ERR("outdata is NULL");
-	}
-DATA_FREE:
-
-	return;
-}
-#endif /* CAL_MEMORY_TEST */
-
 static void _cal_server_init(void)
 {
 	int ret;
@@ -216,71 +157,25 @@ static void _cal_server_init(void)
 	cal_server_calendar_delete_start();
 }
 
-static void _cal_server_fini(void)
+static void _cal_server_deinit(void)
 {
 	cal_disconnect();
-//	contacts_disconnect();
-}
-
-static int _server_init_ipc(void)
-{
-	g_type_init();
-
-	char sock_file[CAL_STR_MIDDLE_LEN] = {0};
-	snprintf(sock_file, sizeof(sock_file), CAL_SOCK_PATH"/.%s", getuid(), CAL_IPC_SERVICE);
-	pims_ipc_svc_init(sock_file,CAL_SECURITY_FILE_GROUP, 0777);
-
-	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_CONNECT, cal_server_ipc_connect, NULL) != 0, -1);
-	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DISCONNECT, cal_server_ipc_disconnect, NULL) != 0, -1);
-	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_CHECK_PERMISSION, cal_server_ipc_check_permission, NULL) != 0, -1);
-	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_INSERT_RECORD, cal_server_ipc_db_insert_record, NULL) != 0, -1);
-	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_GET_RECORD, cal_server_ipc_db_get_record, NULL) != 0, -1);
-	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_UPDATE_RECORD, cal_server_ipc_db_update_record, NULL) != 0, -1);
-	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_DELETE_RECORD, cal_server_ipc_db_delete_record, NULL) != 0, -1);
-	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_GET_ALL_RECORDS, cal_server_ipc_db_get_all_records, NULL) != 0, -1);
-	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_GET_RECORDS_WITH_QUERY, cal_server_ipc_db_get_records_with_query, NULL) != 0, -1);
-	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_CLEAN_AFTER_SYNC, cal_server_ipc_db_clean_after_sync, NULL) != 0, -1);
-	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_GET_COUNT, cal_server_ipc_db_get_count, NULL) != 0, -1);
-	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_GET_COUNT_WITH_QUERY, cal_server_ipc_db_get_count_with_query, NULL) != 0, -1);
-	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_INSERT_RECORDS, cal_server_ipc_db_insert_records, NULL) != 0, -1);
-	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_UPDATE_RECORDS, cal_server_ipc_db_update_records, NULL) != 0, -1);
-	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_DELETE_RECORDS, cal_server_ipc_db_delete_records, NULL) != 0, -1);
-	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_CHANGES_BY_VERSION, cal_server_ipc_db_get_changes_by_version, NULL) != 0, -1);
-	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_GET_CURRENT_VERSION, cal_server_ipc_db_get_current_version, NULL) != 0, -1);
-	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_INSERT_VCALENDARS, cal_server_ipc_db_insert_vcalendars, NULL) != 0, -1);
-	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_REPLACE_VCALENDARS, cal_server_ipc_db_replace_vcalendars, NULL) != 0, -1);
-	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_REPLACE_RECORD, cal_server_ipc_db_replace_record, NULL) != 0, -1);
-	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_REPLACE_RECORDS, cal_server_ipc_db_replace_records, NULL) != 0, -1);
-	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DB_CHANGES_EXCEPTION, cal_server_ipc_db_changes_exception, NULL) != 0, -1);
-#ifdef CAL_MEMORY_TEST
-	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DESTROY, cal_server_ipc_destroy, NULL) != 0, -1);
-#endif /* CAL_MEMORY_TEST */
-
-	/* for subscribe */
-	snprintf(sock_file, sizeof(sock_file), CAL_SOCK_PATH"/.%s_for_subscribe", getuid(), CAL_IPC_SERVICE);
-	pims_ipc_svc_init_for_publish(sock_file, CAL_SECURITY_FILE_GROUP, CAL_SECURITY_DEFAULT_PERMISSION);
-
-	return CALENDAR_ERROR_NONE;
-}
-
-static int _server_main(void)
-{
-	main_loop = g_main_loop_new(NULL, FALSE);
-	pims_ipc_svc_run_main_loop(main_loop);
-	g_main_loop_unref(main_loop);
-
-	cal_time_u_cleanup();
-	cal_inotify_finalize();
 
 	if (cal_account_h) {
 		account_unsubscribe_notification(cal_account_h);
 		cal_account_h = NULL;
 	}
 
-	pims_ipc_svc_deinit_for_publish();
-	pims_ipc_svc_deinit();
-
 	cal_access_control_unset_client_info();
+}
+
+static int _cal_server_main(void)
+{
+	main_loop = g_main_loop_new(NULL, FALSE);
+	cal_server_ipc_run(main_loop);
+
+	g_main_loop_unref(main_loop);
+
 	return 0;
 }
 
@@ -342,12 +237,17 @@ int main(int argc, char *argv[])
 	cal_server_alarm_init();
 	cal_server_update();
 	_cal_server_init();
+	cal_server_ipc_init();
 
-	_server_init_ipc();
-	_server_main();
+	_cal_server_main();
 
-	_cal_server_fini();
-	cal_server_alarm_fini();
+	cal_time_u_cleanup();
+
+	cal_server_ipc_deinit();
+	_cal_server_deinit();
+	cal_server_alarm_deinit();
+	cal_inotify_deinit();
+
 	return 0;
 }
 

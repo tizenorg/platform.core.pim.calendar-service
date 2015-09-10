@@ -963,7 +963,7 @@ void cal_server_alarm_register(void)
 	cal_server_alarm_register_next_alarm(time(NULL));
 }
 
-void cal_server_alarm_fini(void)
+void cal_server_alarm_deinit(void)
 {
 	alarmmgr_fini();
 }

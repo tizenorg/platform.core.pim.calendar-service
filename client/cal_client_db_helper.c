@@ -1655,7 +1655,7 @@ int cal_client_db_get_last_change_version(calendar_h handle, int* last_version)
 	*last_version = 0;
 
 	bool result = false;
-	ret = cal_client_ipc_client_check_permission(CAL_PERMISSION_READ, &result);
+	ret = cal_client_ipc_client_check_permission(handle, CAL_PERMISSION_READ, &result);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_client_ipc_client_check_permission() Fail (%d)", ret);
 		return ret;

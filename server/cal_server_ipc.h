@@ -47,4 +47,8 @@ void cal_server_ipc_db_replace_record(pims_ipc_h ipc, pims_ipc_data_h indata, pi
 void cal_server_ipc_db_replace_records(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata);
 void cal_server_ipc_db_changes_exception(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata);
 
+int cal_server_ipc_init(void);
+void cal_server_ipc_deinit(void);
+void cal_server_ipc_run(GMainLoop *loop);
+
 #endif /* __CAL_SERVER_IPC_H__ */
