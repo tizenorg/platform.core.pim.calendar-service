@@ -480,6 +480,8 @@ static void __unfolding(char *p)
 				p += 3;
 			else if (VCAL_CR == *(p +1) && VCAL_LF == *(p +2) && ' ' == *(p +3)) /* ver1.0:in spec case */
 				p += 4;
+			else if (VCAL_CR == *(p +1) && VCAL_LF == *(p +2)) /* galaxy wants this format */
+				p += 3;
 			else ;
 			break;
 
