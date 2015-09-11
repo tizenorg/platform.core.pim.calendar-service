@@ -81,7 +81,8 @@ int cal_db_event_check_value_validation(cal_event_s *event)
 	RETV_IF(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	if (event->start.type != event->end.type) {
-		ERR("start type(%d) is not same as end type(%d)", event->start.type, event->end.type);
+		ERR("normal end(%lld) < start(%lld)",
+				event->end.time.utime, event->start.time.utime);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -139,13 +140,6 @@ int cal_db_event_check_value_validation(cal_event_s *event)
 		if (1 < slli - elli) {
 			/* 1 is to ignore milliseconds */
 			ERR("allday end(%lld) < start(%lld) so set same", elli, slli);
-			event->end.time.date.year = event->start.time.date.year;
-			event->end.time.date.year = event->start.time.date.year;
-			event->end.time.date.month = event->start.time.date.month;
-			event->end.time.date.mday = event->start.time.date.mday;
-			event->end.time.date.hour = event->start.time.date.hour;
-			event->end.time.date.minute = event->start.time.date.minute;
-			event->end.time.date.second = event->start.time.date.second;
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
 		break;
@@ -659,7 +653,8 @@ int cal_db_event_insert_record(calendar_record_h record, int original_event_id, 
 
 	ret = cal_db_event_check_value_validation(event);
 	if (CALENDAR_ERROR_NONE != ret) {
-		WARN("cal_db_event_check_value_validation() Fail(%d)", ret);
+		ERR("cal_db_event_check_value_validation() Fail(%d)", ret);
+		return ret;
 	}
 
 	/* access control */

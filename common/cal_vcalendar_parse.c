@@ -343,8 +343,12 @@ static bool __check_has_rrule(char *stream)
 	return ret;
 }
 
-static void _get_caltime_diff(calendar_time_s *s, calendar_time_s *a, int *diff)
+static void _sub_caltime(calendar_time_s *s, calendar_time_s *a, int *diff)
 {
+	RET_IF(NULL == s);
+	RET_IF(NULL == a);
+	RET_IF(NULL == diff);
+
 	if (s->type != a->type) {
 		ERR("Invalid to compare start type(%d) alarm type(%d)", s->type, a->type);
 		return;
@@ -1068,8 +1072,8 @@ static void __work_component_property_dtstart(char *value, calendar_record_h rec
 	RET_IF(NULL == ud);
 
 	value = __decode_datetime(value, ud);
-	calendar_time_s caltime = {0};
-	__get_caltime(value, &caltime, ud);
+	calendar_time_s dtstart = {0};
+	__get_caltime(value, &dtstart, ud);
 
 	int ret = 0;
 	char *tzid = NULL;
@@ -1081,7 +1085,7 @@ static void __work_component_property_dtstart(char *value, calendar_record_h rec
 			ret = cal_record_set_str(record, _calendar_event.start_tzid, tzid);
 			WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
 		}
-		ret = cal_record_set_caltime(record, _calendar_event.start_time, caltime);
+		ret = cal_record_set_caltime(record, _calendar_event.start_time, dtstart);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_caltime() Fail(%d)", ret);
 		break;
 	case CALENDAR_BOOK_TYPE_TODO:
@@ -1089,10 +1093,29 @@ static void __work_component_property_dtstart(char *value, calendar_record_h rec
 			ret = cal_record_set_str(record, _calendar_todo.start_tzid, tzid);
 			WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
 		}
-		ret = cal_record_set_caltime(record, _calendar_todo.start_time, caltime);
+		ret = cal_record_set_caltime(record, _calendar_todo.start_time, dtstart);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_caltime() Fail(%d)", ret);
 		break;
 	}
+
+	/* check if dtend is earlier than dtstart. */
+	if (CALENDAR_BOOK_TYPE_TODO == ud->type) /* skip in todo */
+		return;
+
+	calendar_time_s dtend = {0};
+	ret = calendar_record_get_caltime(record, _calendar_event.end_time, &dtend);
+	WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_caltime() Fail(%d)", ret);
+
+	if (0 == dtend.time.utime) /* not set yet */
+		return;
+
+	int diff = 0;
+	_sub_caltime(&dtstart, &dtend, &diff);
+	if (diff <= 0) /* proper data */
+		return;
+
+	WARN("dtend < dtstart so set end time to start");
+	dtend = dtstart;
 }
 
 static void __work_component_property_created(char *value, calendar_record_h record, struct user_data *ud)
@@ -1770,12 +1793,34 @@ static void __work_component_property_dtend(char *value, calendar_record_h recor
 	RET_IF(NULL == ud);
 
 	value = __decode_datetime(value, ud);
-	calendar_time_s caltime = {0};
-	__get_caltime(value, &caltime, ud);
+	calendar_time_s dtend = {0};
+	__get_caltime(value, &dtend, ud);
 
 	int ret = 0;
 	char *tzid = NULL;
 	tzid = ud->datetime_tzid ? ud->datetime_tzid : (ud->timezone_tzid ? ud->timezone_tzid : NULL);
+
+
+	/* check if dtend is earlier than dtstart. */
+	do {
+		if (CALENDAR_BOOK_TYPE_TODO == ud->type) /* skip in todo */
+			break;
+
+		calendar_time_s dtstart = {0};
+		ret = calendar_record_get_caltime(record, _calendar_event.start_time, &dtstart);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_caltime() Fail(%d)", ret);
+
+		if (0 == dtstart.time.utime) /* not set yet */
+			break;
+
+		int diff = 0;
+		_sub_caltime(&dtstart, &dtend, &diff);
+		if (diff <= 0) /* proper data */
+			break;
+
+		WARN("dtend < dtstart so set end time to start");
+		dtend = dtstart;
+	} while (0);
 
 	switch (ud->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
@@ -1783,7 +1828,7 @@ static void __work_component_property_dtend(char *value, calendar_record_h recor
 			ret = cal_record_set_str(record, _calendar_event.end_tzid, tzid);
 			WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
 		}
-		ret = cal_record_set_caltime(record, _calendar_event.end_time, caltime);
+		ret = cal_record_set_caltime(record, _calendar_event.end_time, dtend);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_caltime() Fail(%d)", ret);
 		break;
 	case CALENDAR_BOOK_TYPE_TODO:
@@ -1791,11 +1836,12 @@ static void __work_component_property_dtend(char *value, calendar_record_h recor
 			ret = cal_record_set_str(record, _calendar_todo.due_tzid, tzid);
 			WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
 		}
-		ret = cal_record_set_caltime(record, _calendar_todo.due_time, caltime);
+		ret = cal_record_set_caltime(record, _calendar_todo.due_time, dtend);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_caltime() Fail(%d)", ret);
 		break;
 	}
 }
+
 static void __work_component_property_attendee_mailto(calendar_record_h attendee, char *value)
 {
 	RET_IF(NULL == value);
@@ -2144,7 +2190,7 @@ static void __work_component_property_dalarm(char *value, calendar_record_h reco
 				ret = calendar_record_get_caltime(record, _calendar_event.start_time, &start_time);
 
 				int diff = 0;
-				_get_caltime_diff(&start_time, &alarm_time, &diff);
+				_sub_caltime(&start_time, &alarm_time, &diff);
 				if (diff <= 0) {
 					ERR("Invalid time diff(%d)", diff);
 					continue;
@@ -2242,7 +2288,7 @@ static void __work_component_property_malarm(char *value, calendar_record_h reco
 				WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_caltime() Fail(%d)", ret);
 
 				int diff = 0;
-				_get_caltime_diff(&start_time, &alarm_time, &diff);
+				_sub_caltime(&start_time, &alarm_time, &diff);
 				if (diff <= 0) {
 					ERR("Invalid time diff(%d)", diff);
 					continue;
@@ -2347,7 +2393,7 @@ static void __work_component_property_aalarm(char *value, calendar_record_h reco
 				ret = calendar_record_get_caltime(record, _calendar_event.start_time, &start_time);
 
 				int diff = 0;
-				_get_caltime_diff(&start_time, &alarm_time, &diff);
+				_sub_caltime(&start_time, &alarm_time, &diff);
 				if (diff <= 0) {
 					ERR("Invalid time diff(%d)", diff);
 					continue;
