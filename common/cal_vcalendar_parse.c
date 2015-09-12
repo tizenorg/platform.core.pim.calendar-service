@@ -140,14 +140,17 @@ enum {
 };
 
 enum {
+	VCAL_ENCODING_NONE,
 	VCAL_ENCODING_BASE64,
 	VCAL_ENCODING_QUOTED_PRINTABLE,
 	VCAL_ENCODING_MAX,
 };
 
 enum {
+	VCAL_CHARSET_NONE,
 	VCAL_CHARSET_UTF_8,
 	VCAL_CHARSET_UTF_16,
+	VCAL_CHARSET_ISO_8859_1,
 	VCAL_CHARSET_UTF_MAX,
 };
 
@@ -517,7 +520,6 @@ static void __decode_escaped_char(char *p)
 	RET_IF(NULL == p);
 	RET_IF('\0' == *p);
 
-	DBG("Before [%s]", p);
 	char *q = p;
 	while ('\0' != *p) {
 		if ('\\' == *p && *(p +1)) {
@@ -638,6 +640,41 @@ static void __decode_quoted_printable(char *p)
 	DBG("After[%s]", p);
 }
 
+static void __decode_iso8859_1_to_utf8(char *p)
+{
+	RET_IF(NULL == p);
+
+	char *src = NULL;
+	char *dst = NULL;
+
+	DBG("Before [%s]", p);
+	int len = strlen(p);
+	len *= 2;
+	p = realloc(p, len);
+	if (NULL == p) {
+		ERR("realloc() Fail");
+		return;
+	}
+
+	/* check enough space */
+	for (src = dst = p; *src; src++, dst++) {
+		if (*src & 0x80) {
+			++dst;
+		}
+	}
+
+	while (dst > src) {
+		if (*src & 0x80) {
+			*dst-- = 0x80 | (*src & 0x3f);
+			*dst-- = 0xc0 | (*((unsigned char *)src--) >> 6);
+		}
+		else {
+			*dst-- = *src--;
+		}
+	}
+	DBG("After [%s]", p);
+}
+
 static char* __decode_charset(char *p)
 {
 	char **t = NULL;
@@ -646,7 +683,7 @@ static char* __decode_charset(char *p)
 
 	if ('\0' == *t[0]) { /* no param */
 		g_strfreev(t);
-		return p + 1;
+		return cal_strdup(p + 1);
 	}
 
 	/* param start */
@@ -661,25 +698,61 @@ static char* __decode_charset(char *p)
 	}
 	int count_param = g_strv_length(s);
 	DBG("count_param(%d)", count_param);
+
+	int charset = VCAL_CHARSET_NONE;
+	int encoding = VCAL_ENCODING_NONE;
+
 	int i;
 	for (i = 0; i < count_param; i++) {
-		if (NULL == s[i] || '\0' == *s[i]) continue;
-		if (CAL_STRING_EQUAL == strncmp(s[i], "ENCODING=BASE64", strlen("ENCODING=BASE64"))) {
-			__decode_base64(p + len_param + 1);
+		if (NULL == s[i] || '\0' == *s[i])
+			continue;
+
+		if (CAL_STRING_EQUAL == strncmp(s[i], "CHARSET=", strlen("CHARSET="))) {
+			int key_len = strlen("CHARSET=");
+			if (CAL_STRING_EQUAL == strcmp(s[i] + key_len, "UTF-8"))
+				charset = VCAL_CHARSET_UTF_8;
+			else if (CAL_STRING_EQUAL == strcmp(s[i] + key_len, "ISO-8859-1"))
+				charset = VCAL_CHARSET_ISO_8859_1;
+			else
+				WARN("Not support charset[%s]", s[i] + key_len);
 		}
-		else if (CAL_STRING_EQUAL == strncmp(s[i], "ENCODING=QUOTED-PRINTABLE", strlen("ENCODING=QUOTED-PRINTABLE"))) {
-			__decode_quoted_printable(p + len_param + 1);
+		else if (CAL_STRING_EQUAL == strncmp(s[i], "ENCODING=", strlen("ENCODING="))) {
+			int key_len = strlen("ENCODING=");
+			if (CAL_STRING_EQUAL == strcmp(s[i] + key_len, "BASE64"))
+				encoding = VCAL_ENCODING_BASE64;
+			else if (CAL_STRING_EQUAL == strcmp(s[i] + key_len, "QUOTED-PRINTABLE"))
+				encoding = VCAL_ENCODING_QUOTED_PRINTABLE;
+			else
+				WARN("Not support encoding[%s]", s[i] + key_len);
 		}
 		else {
-			DBG("skip param[%s]", t[i]);
+			WARN("[%s]", s[i]);
 		}
 	}
-	DBG("[%s]", p + len_param + 1);
 	g_strfreev(s);
 	/* param end */
 
+	char *ret_str = strdup(t[1]);
 	g_strfreev(t);
-	return p + len_param + 1;
+
+	switch (encoding) {
+	case VCAL_ENCODING_BASE64:
+		__decode_base64(ret_str);
+		break;
+	case VCAL_ENCODING_QUOTED_PRINTABLE:
+		__decode_quoted_printable(ret_str);
+		break;
+	}
+
+	switch (charset) {
+	case VCAL_CHARSET_UTF_8:
+		break;
+	case VCAL_CHARSET_ISO_8859_1:
+		__decode_iso8859_1_to_utf8(ret_str);
+		break;
+	}
+
+	return ret_str;
 }
 
 static char* __decode_datetime(char *p, struct user_data *ud)
@@ -1031,18 +1104,19 @@ static void __work_component_property_uid(char *value, calendar_record_h record,
 	RET_IF(NULL == ud);
 
 	int ret = 0;
-	value = __decode_charset(value);
-	__decode_escaped_char(value);
+	char *s = __decode_charset(value);
+	__decode_escaped_char(s);
 	switch (ud->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
-		ret = cal_record_set_str(record, _calendar_event.uid, value);
+		ret = cal_record_set_str(record, _calendar_event.uid, s);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
 		break;
 	case CALENDAR_BOOK_TYPE_TODO:
-		ret = cal_record_set_str(record, _calendar_todo.uid, value);
+		ret = cal_record_set_str(record, _calendar_todo.uid, s);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
 		break;
 	}
+	free(s);
 }
 
 static void __work_component_property_recurrence_id(char *value, calendar_record_h record, struct user_data *ud)
@@ -1147,18 +1221,19 @@ static void __work_component_property_description(char *value, calendar_record_h
 	RET_IF(NULL == ud);
 
 	int ret = 0;
-	value = __decode_charset(value);
-	__decode_escaped_char(value);
+	char *s = __decode_charset(value);
+	__decode_escaped_char(s);
 	switch (ud->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
-		ret = cal_record_set_str(record, _calendar_event.description, value);
+		ret = cal_record_set_str(record, _calendar_event.description, s);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
 		break;
 	case CALENDAR_BOOK_TYPE_TODO:
-		ret = cal_record_set_str(record, _calendar_todo.description, value);
+		ret = cal_record_set_str(record, _calendar_todo.description, s);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
 		break;
 	}
+	free(s);
 }
 
 static void __work_component_property_last_modified(char *value, calendar_record_h record, struct user_data *ud)
@@ -1189,18 +1264,19 @@ static void __work_component_property_location(char *value, calendar_record_h re
 	RET_IF(NULL == ud);
 
 	int ret = 0;
-	value = __decode_charset(value);
-	__decode_escaped_char(value);
+	char *s = __decode_charset(value);
+	__decode_escaped_char(s);
 	switch (ud->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
-		ret = cal_record_set_str(record, _calendar_event.location, value);
+		ret = cal_record_set_str(record, _calendar_event.location, s);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
 		break;
 	case CALENDAR_BOOK_TYPE_TODO:
-		ret = cal_record_set_str(record, _calendar_todo.location, value);
+		ret = cal_record_set_str(record, _calendar_todo.location, s);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
 		break;
 	}
+	free(s);
 }
 
 static int __decode_priority(char *value, struct user_data *ud)
@@ -1326,18 +1402,19 @@ static void __work_component_property_summary(char *value, calendar_record_h rec
 	RET_IF(NULL == ud);
 
 	int ret = 0;
-	value = __decode_charset(value);
-	__decode_escaped_char(value);
+	char *s = __decode_charset(value);
+	__decode_escaped_char(s);
 	switch (ud->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
-		ret = cal_record_set_str(record, _calendar_event.summary, value);
+		ret = cal_record_set_str(record, _calendar_event.summary, s);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
 		break;
 	case CALENDAR_BOOK_TYPE_TODO:
-		ret = cal_record_set_str(record, _calendar_todo.summary, value);
+		ret = cal_record_set_str(record, _calendar_todo.summary, s);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
 		break;
 	}
+	free(s);
 }
 
 static bool __is_wday_string(char *p)
@@ -2130,18 +2207,19 @@ static void __work_component_property_categories(char *value, calendar_record_h 
 	RET_IF(NULL == ud);
 
 	int ret = 0;
-	value = __decode_charset(value);
-	__decode_escaped_char(value);
+	char *s = __decode_charset(value);
+	__decode_escaped_char(s);
 	switch (ud->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
-		ret = cal_record_set_str(record, _calendar_event.categories, value);
+		ret = cal_record_set_str(record, _calendar_event.categories, s);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
 		break;
 	case CALENDAR_BOOK_TYPE_TODO:
-		ret = cal_record_set_str(record, _calendar_todo.categories, value);
+		ret = cal_record_set_str(record, _calendar_todo.categories, s);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
 		break;
 	}
+	free(s);
 }
 
 /*
