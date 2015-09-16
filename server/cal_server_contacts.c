@@ -346,11 +346,13 @@ static void _cal_server_contacts_get_event_list(contacts_list_h contacts_list,
 			}
 			if (NULL == array) {
 				ERR("calloc() Fail");
+				free(delete_array);
 				break;
 			}
 			memcpy(array +count, delete_array, delete_count *sizeof(int));
 			count += delete_count;
 		}
+		free(delete_array);
 	} while (CONTACTS_ERROR_NONE == contacts_list_next(contacts_list));
 	*out_delete = array;
 	*out_count = count;

@@ -640,9 +640,9 @@ static void __decode_quoted_printable(char *p)
 	DBG("After[%s]", p);
 }
 
-static void __decode_iso8859_1_to_utf8(char *p)
+static char* __decode_iso8859_1_to_utf8(char *p)
 {
-	RET_IF(NULL == p);
+	RETV_IF(NULL == p, NULL);
 
 	char *src = NULL;
 	char *dst = NULL;
@@ -650,14 +650,16 @@ static void __decode_iso8859_1_to_utf8(char *p)
 	DBG("Before [%s]", p);
 	int len = strlen(p);
 	len *= 2;
-	p = realloc(p, len);
-	if (NULL == p) {
+
+	char *out_p = NULL;
+	out_p = realloc(p, len);
+	if (NULL == out_p) {
 		ERR("realloc() Fail");
-		return;
+		return NULL;
 	}
 
 	/* check enough space */
-	for (src = dst = p; *src; src++, dst++) {
+	for (src = dst = out_p; *src; src++, dst++) {
 		if (*src & 0x80) {
 			++dst;
 		}
@@ -672,7 +674,8 @@ static void __decode_iso8859_1_to_utf8(char *p)
 			*dst-- = *src--;
 		}
 	}
-	DBG("After [%s]", p);
+	DBG("After [%s]", out_p);
+	return out_p;
 }
 
 static char* __decode_charset(char *p)
@@ -748,7 +751,7 @@ static char* __decode_charset(char *p)
 	case VCAL_CHARSET_UTF_8:
 		break;
 	case VCAL_CHARSET_ISO_8859_1:
-		__decode_iso8859_1_to_utf8(ret_str);
+		ret_str = __decode_iso8859_1_to_utf8(ret_str);
 		break;
 	}
 
