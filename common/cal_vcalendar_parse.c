@@ -371,6 +371,10 @@ static void _sub_caltime(calendar_time_s *s, calendar_time_s *a, int *diff)
 
 static void _get_tick_unit(int t, int *tick, int *unit)
 {
+	if (0 == t) {
+		return;
+	}
+
 	if (0 == (t % CALENDAR_ALARM_TIME_UNIT_WEEK)) {
 		*tick = t / CALENDAR_ALARM_TIME_UNIT_WEEK;
 		*unit = CALENDAR_ALARM_TIME_UNIT_WEEK;
@@ -2225,6 +2229,37 @@ static void __work_component_property_categories(char *value, calendar_record_h 
 	free(s);
 }
 
+static void _set_alarm_tick_unit(calendar_record_h alarm, calendar_time_s alarm_time, int diff)
+{
+	int ret = 0;
+
+	RET_IF(NULL == alarm);
+
+	if (diff < 0) {
+		DBG("set specific alarm");
+		ret = cal_record_set_caltime(alarm, _calendar_alarm.alarm_time, alarm_time);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_caltime() Fail(%d)", ret);
+		ret = cal_record_set_int(alarm, _calendar_alarm.tick_unit, CALENDAR_ALARM_TIME_UNIT_SPECIFIC);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
+	}
+	else if (0 == diff) {
+		DBG("set alarm in start time");
+		ret = cal_record_set_int(alarm, _calendar_alarm.tick, 0);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
+		ret = cal_record_set_int(alarm, _calendar_alarm.tick_unit, CALENDAR_ALARM_TIME_UNIT_HOUR);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
+	}
+	else {
+		int tick = 0;
+		int unit = 0;
+		_get_tick_unit(diff, &tick, &unit);
+		ret = cal_record_set_int(alarm, _calendar_alarm.tick, tick);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
+		ret = cal_record_set_int(alarm, _calendar_alarm.tick_unit, unit);
+		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
+	}
+}
+
 /*
  * for ver 1.0
  * dalarmparts	= 0*3(strnosemi ";") strnosemi; runTime, snoozeTime, repeatCount, displayString
@@ -2272,23 +2307,10 @@ static void __work_component_property_dalarm(char *value, calendar_record_h reco
 
 				int diff = 0;
 				_sub_caltime(&start_time, &alarm_time, &diff);
-				if (diff <= 0) {
-					ERR("Invalid time diff(%d)", diff);
-					continue;
-				}
-				int tick = 0;
-				int unit = 0;
-				_get_tick_unit(diff, &tick, &unit);
-				ret = cal_record_set_int(alarm, _calendar_alarm.tick, tick);
-				WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
-				ret = cal_record_set_int(alarm, _calendar_alarm.tick_unit, unit);
-				WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
+				_set_alarm_tick_unit(alarm, alarm_time, diff);
 
 			} else {
-				ret = cal_record_set_caltime(alarm, _calendar_alarm.alarm_time, alarm_time);
-				WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_caltime() Fail(%d)", ret);
-				ret = cal_record_set_int(alarm, _calendar_alarm.tick_unit, CALENDAR_ALARM_TIME_UNIT_SPECIFIC);
-				WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
+				_set_alarm_tick_unit(alarm, alarm_time, -1); /* -1 goes to specific time */
 			}
 		}
 		else if (4 == index) { /* displayString */
@@ -2370,23 +2392,10 @@ static void __work_component_property_malarm(char *value, calendar_record_h reco
 
 				int diff = 0;
 				_sub_caltime(&start_time, &alarm_time, &diff);
-				if (diff <= 0) {
-					ERR("Invalid time diff(%d)", diff);
-					continue;
-				}
-				int tick = 0;
-				int unit = 0;
-				_get_tick_unit(diff, &tick, &unit);
-				ret = cal_record_set_int(alarm, _calendar_alarm.tick, tick);
-				WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
-				ret = cal_record_set_int(alarm, _calendar_alarm.tick_unit, unit);
-				WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
+				_set_alarm_tick_unit(alarm, alarm_time, diff);
 
 			} else {
-				ret = cal_record_set_caltime(alarm, _calendar_alarm.alarm_time, alarm_time);
-				WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_caltime() Fail(%d)", ret);
-				ret = cal_record_set_int(alarm, _calendar_alarm.tick_unit, CALENDAR_ALARM_TIME_UNIT_SPECIFIC);
-				WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
+				_set_alarm_tick_unit(alarm, alarm_time, -1); /* -1 goes to specific time */
 			}
 		}
 		else if (4 == index) { /* addressString */
@@ -2475,23 +2484,10 @@ static void __work_component_property_aalarm(char *value, calendar_record_h reco
 
 				int diff = 0;
 				_sub_caltime(&start_time, &alarm_time, &diff);
-				if (diff <= 0) {
-					ERR("Invalid time diff(%d)", diff);
-					continue;
-				}
-				int tick = 0;
-				int unit = 0;
-				_get_tick_unit(diff, &tick, &unit);
-				ret = cal_record_set_int(alarm, _calendar_alarm.tick, tick);
-				WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
-				ret = cal_record_set_int(alarm, _calendar_alarm.tick_unit, unit);
-				WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
+				_set_alarm_tick_unit(alarm, alarm_time, diff);
 
 			} else {
-				ret = cal_record_set_caltime(alarm, _calendar_alarm.alarm_time, alarm_time);
-				WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_caltime() Fail(%d)", ret);
-				ret = cal_record_set_int(alarm, _calendar_alarm.tick_unit, CALENDAR_ALARM_TIME_UNIT_SPECIFIC);
-				WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
+				_set_alarm_tick_unit(alarm, alarm_time, -1); /* -1 goes to specific time */
 			}
 		}
 		else if (4 == index) {
