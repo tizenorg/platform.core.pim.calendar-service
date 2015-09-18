@@ -609,9 +609,9 @@ static void _cal_vcalendar_make_rrule_append_setpos(calendar_record_h record, ch
 					is_extracted = true;
 					is_working = true;
 					char num[CAL_STR_SHORT_LEN32] = {0};
-					snprintf(num, digit +1, "%s%s", byday +i -digit, (-1 == sign) ? "- ": "+ ");
+					snprintf(num, digit +1, "%s", byday +i -digit);
 					if (NULL == strstr(buf, num)) {
-						blen += snprintf(buf +blen, buf_len -blen, "%s", num);
+						blen += snprintf(buf +blen, buf_len -blen, "%s%c ", num, (-1 == sign) ? '-': '+');
 					}
 					digit = 0;
 					sign = 0;
@@ -626,6 +626,10 @@ static void _cal_vcalendar_make_rrule_append_setpos(calendar_record_h record, ch
 	}
 }
 
+/*
+ * 2WE 3FR in ver2.0 is not converted to ver1.0
+ * because three is no +2 WE +3 FR.
+ */
 void _cal_vcalendar_make_rrule_append_text_wday(int rrule_type, char *buf, int buf_len, char *wday)
 {
 	RET_IF(NULL == buf);
@@ -643,6 +647,7 @@ void _cal_vcalendar_make_rrule_append_text_wday(int rrule_type, char *buf, int b
 		return;
 	}
 	length = g_strv_length(t);
+
 	for (i = 0; i < length; i++) {
 		if (*t[i] == '\0')
 			continue;
