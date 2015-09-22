@@ -299,7 +299,7 @@ int cal_db_util_query_get_first_int_result(const char *query, GSList *bind_text,
 	do {
 		ret = sqlite3_prepare_v2(cal_db, query, strlen(query), &stmt, NULL);
 		if (SQLITE_BUSY == ret || SQLITE_LOCKED == ret) {
-			ERR("sqlite3_prepare_v2(%s) Fail(%s).", query, sqlite3_errmsg(cal_db));
+			ERR("sqlite3_prepare_v2() Fail:[%s]", sqlite3_errmsg(cal_db));
 			SECURE("[%s]", query);
 			gettimeofday(&now, NULL);
 			timersub(&now, &from, &diff);
