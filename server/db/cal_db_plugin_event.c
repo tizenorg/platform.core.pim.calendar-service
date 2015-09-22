@@ -837,7 +837,7 @@ static int _cal_db_event_add_exdate(int original_event_id, char* recurrence_id)
 				return CALENDAR_ERROR_OUT_OF_MEMORY;
 			}
 			snprintf(exdate, len, "%s,%s", temp, recurrence_id);
-			DBG("append [%s] to aleady has exdate [%s]", temp, recurrence_id);
+			DBG("append [%s] to already has exdate [%s]", temp, recurrence_id);
 		}
 	}
 	else {

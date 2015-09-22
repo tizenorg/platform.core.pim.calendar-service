@@ -1907,9 +1907,40 @@ int cal_db_instance_publish_record(calendar_record_h record)
 	cal_event_s *event = NULL;
 	event = (cal_event_s *)(record);
 
-	UCalendar *ucal = cal_time_open_ucal(event->system_type,
-			event->start.type == CALENDAR_TIME_UTIME ? event->start_tzid : NULL,
-			event->wkst);
+	char *tzid = NULL;
+	int offset = 0;
+	int sign = 0;
+	char buf[CAL_STR_SHORT_LEN32] = {0};
+	switch (event->start.type) {
+	case CALENDAR_TIME_UTIME:
+		if (NULL == event->start_tzid) {
+			tzid = NULL;
+			break;
+		}
+		if (true == cal_time_is_available_tzid(event->start_tzid)) {
+			tzid = event->start_tzid;
+			break;
+		}
+		cal_db_timezone_get_offset(event->calendar_id, event->start_tzid, &offset);
+		if (0 == offset) {
+			tzid = NULL;
+			break;
+		}
+		DBG("offset(%d)", offset);
+		sign = offset < 0 ? -1 : 1;
+		offset /= 60;
+		offset *= sign;
+		snprintf(buf, sizeof(buf), "Etc/GMT%c%d", sign < 0 ? '-' : '+', offset);
+		tzid = buf;
+		DBG("set tzid[%s]", buf);
+		break;
+
+	case CALENDAR_TIME_LOCALTIME:
+		tzid = NULL;
+		break;
+	}
+
+	UCalendar *ucal = cal_time_open_ucal(event->system_type, tzid, event->wkst);
 
 	_cal_db_instance_publish_record_details(ucal, event);
 	_cal_db_instance_del_inundant(event->index, &event->start, event);

@@ -408,6 +408,8 @@ void cal_time_get_local_datetime(char *tzid, long long int t, int *y, int *m, in
 
 bool cal_time_is_available_tzid(char *tzid)
 {
+	RETV_IF(NULL == tzid, false);
+
 	UErrorCode ec = U_ZERO_ERROR;
 	StringEnumeration* s = TimeZone::createEnumeration();
 	int32_t s_count = s->count(ec);

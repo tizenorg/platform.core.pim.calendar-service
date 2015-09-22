@@ -21,5 +21,6 @@
 #define __CAL_DB_PLUGIN_TIMEZONE_HELPER_H__
 
 void cal_db_timezone_search_with_tzid(int book_id, char *tzid, int *timezone_id);
+void cal_db_timezone_get_offset(int book_id, char *tzid, int *offset);
 
 #endif  /* __CAL_DB_PLUGIN_TIMEZONE_HELPER_H__ */

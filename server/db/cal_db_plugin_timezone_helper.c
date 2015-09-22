@@ -29,7 +29,17 @@ void cal_db_timezone_search_with_tzid(int book_id, char *tzid, int *timezone_id)
 	RET_IF(NULL == timezone_id);
 
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
-	snprintf(query, sizeof(query), "SELECT id FROM %s WHERE calendar_id=%d AND standard_name='%s'"
-			, CAL_TABLE_TIMEZONE, book_id, tzid);
+	snprintf(query, sizeof(query), "SELECT id FROM %s "
+			"WHERE calendar_id=%d AND standard_name='%s'",
+			CAL_TABLE_TIMEZONE, book_id, tzid);
 	cal_db_util_query_get_first_int_result(query, NULL, timezone_id);
+}
+
+void cal_db_timezone_get_offset(int book_id, char *tzid, int *offset)
+{
+	char query[CAL_DB_SQL_MAX_LEN] = {0};
+	snprintf(query, sizeof(query), "SELECT tz_offset_from_gmt FROM %s "
+			"WHERE calendar_id=%d AND standard_name='%s'",
+			CAL_TABLE_TIMEZONE, book_id, tzid);
+	cal_db_util_query_get_first_int_result(query, NULL, offset);
 }
