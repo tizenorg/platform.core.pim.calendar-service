@@ -79,7 +79,7 @@ cal_db_plugin_cb_s cal_db_calendar_plugin_cb = {
 	.replace_records = _cal_db_calendar_replace_records
 };
 
-static bool _cal_db_calendar_check_value_validation(cal_calendar_s* calendar)
+static bool _cal_db_calendar_check_value_validation(cal_book_s* calendar)
 {
 	RETVM_IF(NULL == calendar, CALENDAR_ERROR_INVALID_PARAMETER, "calendar is NULL");
 
@@ -101,7 +101,7 @@ static int _cal_db_calendar_insert_record(calendar_record_h record, int* id)
 	char query[CAL_DB_SQL_MAX_LEN];
 	int index = 0;
 	sqlite3_stmt *stmt;
-	cal_calendar_s* calendar =  (cal_calendar_s*)(record);
+	cal_book_s* calendar =  (cal_book_s*)(record);
 	int ret = 0;
 	char *client_label = NULL;
 
@@ -224,7 +224,7 @@ static int _cal_db_calendar_update_record(calendar_record_h record)
 	//int rc = -1;
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	sqlite3_stmt *stmt = NULL;
-	cal_calendar_s* calendar =  (cal_calendar_s*)(record);
+	cal_book_s* calendar =  (cal_book_s*)(record);
 	int ret = 0;
 
 	RETV_IF(NULL == calendar, CALENDAR_ERROR_INVALID_PARAMETER);
@@ -362,7 +362,7 @@ static int _cal_db_calendar_replace_record(calendar_record_h record, int id)
 {
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	sqlite3_stmt *stmt = NULL;
-	cal_calendar_s* calendar =  (cal_calendar_s*)(record);
+	cal_book_s* calendar =  (cal_book_s*)(record);
 	int ret = 0;
 
 	RETV_IF(NULL == calendar, CALENDAR_ERROR_INVALID_PARAMETER);
@@ -863,7 +863,7 @@ static int _cal_db_calendar_get_count_with_query(calendar_query_h query, int *ou
 
 static void _cal_db_calendar_get_stmt(sqlite3_stmt *stmt,calendar_record_h record)
 {
-	cal_calendar_s* calendar =  (cal_calendar_s*)(record);
+	cal_book_s* calendar =  (cal_book_s*)(record);
 	int count = 0;
 	const unsigned char *temp;
 
@@ -914,7 +914,7 @@ static void _cal_db_calendar_get_stmt(sqlite3_stmt *stmt,calendar_record_h recor
 static void _cal_db_calendar_get_property_stmt(sqlite3_stmt *stmt,
 		unsigned int property, int stmt_count, calendar_record_h record)
 {
-	cal_calendar_s* calendar =  (cal_calendar_s*)(record);
+	cal_book_s* calendar =  (cal_book_s*)(record);
 	const unsigned char *temp;
 
 	switch (property) {
@@ -993,7 +993,7 @@ static int _cal_db_calendar_update_projection(calendar_record_h record)
 {
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	sqlite3_stmt *stmt = NULL;
-	cal_calendar_s* calendar =  (cal_calendar_s*)(record);
+	cal_book_s* calendar =  (cal_book_s*)(record);
 	int ret = 0;
 	char* set = NULL;
 	GSList *bind_text = NULL;

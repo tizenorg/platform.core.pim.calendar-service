@@ -32,11 +32,11 @@ cal_ipc_marshal_record_plugin_cb_s cal_ipc_record_calendar_plugin_cb = {
 static int _cal_ipc_unmarshal_calendar(pims_ipc_data_h ipc_data, calendar_record_h record)
 {
 	int ret = 0;
-	cal_calendar_s* pcalendar = NULL;
+	cal_book_s* pcalendar = NULL;
 	RETV_IF(NULL == ipc_data, CALENDAR_ERROR_NO_DATA);
 	RETV_IF(NULL == record, CALENDAR_ERROR_NO_DATA);
 
-	pcalendar = (cal_calendar_s*) record;
+	pcalendar = (cal_book_s*) record;
 
 	ret = cal_ipc_unmarshal_int(ipc_data, &pcalendar->index);
 	if (CALENDAR_ERROR_NONE != ret) {
@@ -125,7 +125,7 @@ static int _cal_ipc_unmarshal_calendar(pims_ipc_data_h ipc_data, calendar_record
 static int _cal_ipc_marshal_calendar(const calendar_record_h record, pims_ipc_data_h ipc_data)
 {
 	int ret = 0;
-	cal_calendar_s* pcalendar = (cal_calendar_s*)record;
+	cal_book_s* pcalendar = (cal_book_s*)record;
 	RETV_IF(NULL == ipc_data, CALENDAR_ERROR_NO_DATA);
 	RETV_IF(NULL == pcalendar, CALENDAR_ERROR_NO_DATA);
 

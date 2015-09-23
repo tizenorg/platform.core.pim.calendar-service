@@ -297,7 +297,7 @@ typedef struct
 	char *sync_data3;
 	char *sync_data4;
 	int mode;
-} cal_calendar_s;
+} cal_book_s;
 
 
 /* type for timezone information save */
