@@ -31,6 +31,16 @@
 
 static GHashTable *_cal_handle_table = NULL;
 
+static void _foreach_cb(gpointer key, gpointer value, gpointer user_data)
+{
+	DBG("[hash check]--------- key[%s] value[%p]", key, value);
+}
+static void _print_hash(GHashTable *table)
+{
+	if (table)
+		g_hash_table_foreach(table, _foreach_cb, NULL);
+}
+
 static int _cal_client_handle_get_key(unsigned int id, char *key, int key_len)
 {
 	RETV_IF(NULL == key, CALENDAR_ERROR_INVALID_PARAMETER);
@@ -60,14 +70,21 @@ int cal_client_handle_get_p(calendar_h *out_handle)
 	cal_mutex_unlock(CAL_MUTEX_HANDLE);
 
 	if (NULL == handle && tid != pid) {
-		DBG("g_hash_table_lookup() Fail:No handle:key[%s]", key);
 		ret = _cal_client_handle_get_key(pid, key, sizeof(key));
-		RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "_cal_client_handle_get_key() Fail(%d)", ret);
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("_cal_client_handle_get_key() Fail(%d):No handle(key[%s])", ret, key);
+			_print_hash(_cal_handle_table);
+			return ret;
+		}
 
 		cal_mutex_lock(CAL_MUTEX_HANDLE);
 		handle = g_hash_table_lookup(_cal_handle_table, key);
 		cal_mutex_unlock(CAL_MUTEX_HANDLE);
-		RETVM_IF(NULL == handle, CALENDAR_ERROR_NO_DATA, "g_hash_table_lookup() Fail");
+		if (NULL == handle) {
+			ERR("g_hash_table_lookup() Fail:No handle(key[%s])", key);
+			_print_hash(_cal_handle_table);
+			return CALENDAR_ERROR_NO_DATA;
+		}
 	}
 	*out_handle = handle;
 	return CALENDAR_ERROR_NONE;
@@ -90,6 +107,7 @@ int cal_client_handle_get_p_with_id(unsigned int id, calendar_h *out_handle)
 	cal_mutex_unlock(CAL_MUTEX_HANDLE);
 	if (NULL == handle) {
 		ERR("g_hash_table_lookup() Fail:No handle:key[%s]", key);
+		_print_hash(_cal_handle_table);
 		return CALENDAR_ERROR_NO_DATA;
 	}
 	*out_handle = handle;
@@ -147,6 +165,7 @@ int cal_client_handle_remove(unsigned int id, calendar_h handle)
 
 	cal_mutex_lock(CAL_MUTEX_HANDLE);
 	g_hash_table_remove(_cal_handle_table, key);
+	DBG("[HASH:handle] remove [%s]", key);
 	if (0 == g_hash_table_size(_cal_handle_table)) {
 		g_hash_table_destroy(_cal_handle_table);
 		_cal_handle_table = NULL;
@@ -156,3 +175,9 @@ int cal_client_handle_remove(unsigned int id, calendar_h handle)
 	return CALENDAR_ERROR_NONE;
 }
 
+void cal_client_handle_set_version(calendar_h handle, int version)
+{
+	RET_IF(NULL == handle);
+	cal_s *h = (cal_s *)handle;
+	h->version = version;
+}

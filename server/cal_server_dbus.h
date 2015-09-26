@@ -17,10 +17,11 @@
  *
  */
 
-#ifndef __CAL_SERVER_REMINDER_H__
-#define __CAL_SERVER_REMINDER_H__
+#ifndef __CAL_SERVER_DBUS_H__
+#define __CAL_SERVER_DBUS_H__
 
-void cal_server_reminder_publish(char *p, int p_len);
-int cal_server_reminder_add_callback_data(char **p, char *key, char *value);
+unsigned int cal_server_dbus_init(void);
+void cal_server_dbus_deinit(unsigned int id);
+int cal_dbus_publish_reminder(int stream_size, char *stream);
 
-#endif  /* __CAL_SERVER_REMINDER_H__ */
+#endif  /* __CAL_SERVER_DBUS_H__ */

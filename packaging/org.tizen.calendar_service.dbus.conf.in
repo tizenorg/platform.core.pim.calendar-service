@@ -1,0 +1,86 @@
+<?xml version="1.0"?>
+<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-BUS Bus Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
+<busconfig>
+    <policy user="root">
+        <allow own="org.tizen.calendar_service.dbus"/>
+		<allow send_destination="@DBUS_INTERFACE@" send_interface="@DBUS_INTERFACE@"/>
+		<allow receive_sender="@DBUS_INTERFACE@"/>
+    </policy>
+    <policy user="system">
+        <allow own="org.tizen.calendar_service.dbus"/>
+		<allow send_destination="@DBUS_INTERFACE@" send_interface="@DBUS_INTERFACE@"/>
+		<allow receive_sender="@DBUS_INTERFACE@"/>
+    </policy>
+    <policy group="users">
+        <allow own="org.tizen.calendar_service.dbus"/>
+		<allow send_destination="@DBUS_INTERFACE@" send_interface="@DBUS_INTERFACE@"/>
+    </policy>
+	<policy at_console="true">
+		<allow send_destination="@DBUS_INTERFACE@" send_interface="@DBUS_INTERFACE@"/>
+	</policy>
+    <policy context="default">
+        <allow send_destination="org.tizen.calendar_service.dbus"/>
+		<check send_destination="@DBUS_INTERFACE@"
+				send_interface="@DBUS_INTERFACE@" send_member="insert_record"
+				privilege="http://tizen.org/privilege/calendar.write"/>
+		<check send_destination="@DBUS_INTERFACE@"
+				send_interface="@DBUS_INTERFACE@" send_member="update_record"
+				privilege="http://tizen.org/privilege/calendar.write"/>
+		<check send_destination="@DBUS_INTERFACE@"
+				send_interface="@DBUS_INTERFACE@" send_member="delete_record"
+				privilege="http://tizen.org/privilege/calendar.write"/>
+		<check send_destination="@DBUS_INTERFACE@"
+				send_interface="@DBUS_INTERFACE@" send_member="replace_record"
+				privilege="http://tizen.org/privilege/calendar.write"/>
+		<check send_destination="@DBUS_INTERFACE@"
+				send_interface="@DBUS_INTERFACE@" send_member="insert_records"
+				privilege="http://tizen.org/privilege/calendar.write"/>
+		<check send_destination="@DBUS_INTERFACE@"
+				send_interface="@DBUS_INTERFACE@" send_member="update_records"
+				privilege="http://tizen.org/privilege/calendar.write"/>
+		<check send_destination="@DBUS_INTERFACE@"
+				send_interface="@DBUS_INTERFACE@" send_member="delete_records"
+				privilege="http://tizen.org/privilege/calendar.write"/>
+		<check send_destination="@DBUS_INTERFACE@"
+				send_interface="@DBUS_INTERFACE@" send_member="replace_records"
+				privilege="http://tizen.org/privilege/calendar.write"/>
+		<check send_destination="@DBUS_INTERFACE@"
+				send_interface="@DBUS_INTERFACE@" send_member="get_record"
+				privilege="http://tizen.org/privilege/calendar.read"/>
+		<check send_destination="@DBUS_INTERFACE@"
+				send_interface="@DBUS_INTERFACE@" send_member="get_all_records"
+				privilege="http://tizen.org/privilege/calendar.read"/>
+		<check send_destination="@DBUS_INTERFACE@"
+				send_interface="@DBUS_INTERFACE@" send_member="get_records_with_query"
+				privilege="http://tizen.org/privilege/calendar.read"/>
+		<check send_destination="@DBUS_INTERFACE@"
+				send_interface="@DBUS_INTERFACE@" send_member="get_count"
+				privilege="http://tizen.org/privilege/calendar.read"/>
+		<check send_destination="@DBUS_INTERFACE@"
+				send_interface="@DBUS_INTERFACE@" send_member="get_count_with_query"
+				privilege="http://tizen.org/privilege/calendar.read"/>
+		<check send_destination="@DBUS_INTERFACE@"
+				send_interface="@DBUS_INTERFACE@" send_member="get_current_version"
+				privilege="http://tizen.org/privilege/calendar.read"/>
+		<check send_destination="@DBUS_INTERFACE@"
+				send_interface="@DBUS_INTERFACE@" send_member="get_changes_by_version"
+				privilege="http://tizen.org/privilege/calendar.read"/>
+		<check send_destination="@DBUS_INTERFACE@"
+				send_interface="@DBUS_INTERFACE@" send_member="get_last_change_version"
+				privilege="http://tizen.org/privilege/calendar.read"/>
+		<check send_destination="@DBUS_INTERFACE@"
+				send_interface="@DBUS_INTERFACE@" send_member="get_changes_exception_by_version"
+				privilege="http://tizen.org/privilege/calendar.read"/>
+		<check send_destination="@DBUS_INTERFACE@"
+				send_interface="@DBUS_INTERFACE@" send_member="clean_after_sync"
+				privilege="http://tizen.org/privilege/calendar.write"/>
+		<check send_destination="@DBUS_INTERFACE@"
+				send_interface="@DBUS_INTERFACE@" send_member="insert_vcalendars"
+				privilege="http://tizen.org/privilege/calendar.write"/>
+		<check send_destination="@DBUS_INTERFACE@"
+				send_interface="@DBUS_INTERFACE@" send_member="replace_vcalendars"
+				privilege="http://tizen.org/privilege/calendar.write"/>
+    </policy>
+</busconfig>
+

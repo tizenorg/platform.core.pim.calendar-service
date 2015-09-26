@@ -1,9 +1,9 @@
 [Unit]
-Description=Calendar Service daemon
+Description=Calendar Service Alarm
 
 [Service]
 Type=simple
-BusName=org.tizen.calendar_service.dbus
+BusName=ALARM.acalendar-service
 Environment="TIMEOUT=0"
 ExecStart=/usr/bin/calendar-serviced $TIMEOUT
 

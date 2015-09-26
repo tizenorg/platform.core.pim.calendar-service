@@ -26,5 +26,6 @@ int cal_client_handle_get_p(calendar_h *handle);
 int cal_client_handle_get_p_with_id(unsigned int id, calendar_h *handle);
 int cal_client_handle_create(unsigned int id, calendar_h *out_handle);
 int cal_client_handle_remove(unsigned int id, calendar_h handle);
+void cal_client_handle_set_version(calendar_h handle, int version);
 
 #endif /* __CAL_CLIENT_HANDLE_H__ */

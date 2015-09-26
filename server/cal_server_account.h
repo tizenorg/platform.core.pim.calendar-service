@@ -17,15 +17,10 @@
  *
  */
 
-#ifndef __CALENDAR_SVC_INOTIFY_H__
-#define __CALENDAR_SVC_INOTIFY_H__
+#ifndef __CALENDAR_SVC_ACCOUNT_H__
+#define __CALENDAR_SVC_ACCOUNT_H__
 
-#include "calendar_db.h"
-#include "cal_typedef.h"
+int cal_server_account_init(void);
+void cal_server_account_deinit(void);
 
-int cal_inotify_init(void);
-int cal_inotify_subscribe(cal_noti_type_e type, const char *path, void *cb, void *data);
-int cal_inotify_unsubscribe(const char *path, void *cb, void *user_data);
-void cal_inotify_deinit(void);
-
-#endif /* __CALENDAR_SVC_INOTIFY_H__ */
+#endif /*__CALENDAR_SVC_ACCOUNT_H__ */

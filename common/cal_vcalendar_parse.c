@@ -349,7 +349,6 @@ static bool __check_has_rrule(char *stream)
 					*(cursor++) == 'L' &&
 					*(cursor++) == 'E' &&
 					*(cursor++) == ':' ) {
-				DBG("[TEST] rrule");
 				return true;
 			}
 			else if (*(cursor-1) == 'E' &&
@@ -362,7 +361,6 @@ static bool __check_has_rrule(char *stream)
 					*(cursor++) == 'E' &&
 					*(cursor++) == 'N' &&
 					*(cursor++) == 'T') {
-				DBG("[TEST] end");
 				break;
 			}
 			else {

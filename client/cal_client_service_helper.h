@@ -22,6 +22,7 @@
 
 int cal_client_connect(calendar_h handle, unsigned int id, int *connection_count);
 int cal_client_disconnect(calendar_h handle, unsigned int id, int *connection_count);
-int cal_client_connect_with_flags(calendar_h handle, unsigned int id, int *connection_count, unsigned int flags);
+int cal_client_connect_with_flags(calendar_h handle, unsigned int id,
+		int *connection_count, unsigned int flags);
 
 #endif /* __CAL_CLIENT_SERVICE_HELPER_H__ */

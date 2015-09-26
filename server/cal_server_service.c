@@ -95,8 +95,8 @@ int cal_disconnect(void)
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 	cal_total_connection--;
-	cal_mutex_unlock(CAL_MUTEX_CONNECTION);
 
+	cal_mutex_unlock(CAL_MUTEX_CONNECTION);
 	return CALENDAR_ERROR_NONE;
 }
 

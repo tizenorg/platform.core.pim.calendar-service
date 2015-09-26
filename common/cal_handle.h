@@ -28,5 +28,6 @@ typedef struct {
 
 int cal_handle_create(calendar_h *handle);
 int cal_handle_destroy(calendar_h handle);
+int cal_handle_get_version(calendar_h handle, int *out_version);
 
 #endif /* __CAL_HANDLE_H__ */

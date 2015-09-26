@@ -23,11 +23,12 @@
 #include "cal_client_service_helper.h"
 #include "cal_client_utils.h"
 
-static int cal_connection = 0; /* total connection count: each count from zone */
-static TLS int cal_connection_on_thread = 0;
+static int connection_count = 0;
+static TLS int connection_count_on_thread = 0;
 
 API int calendar_connect(void)
 {
+	CAL_FN_CALL();
 	int ret;
 	calendar_h handle = NULL;
 	unsigned int id = cal_client_get_pid();
@@ -41,7 +42,7 @@ API int calendar_connect(void)
 		ERR("cal_client_handle_get_p_with_id() Fail(%d)", ret);
 		return ret;
 	}
-	ret = cal_client_connect(handle, id, &cal_connection);
+	ret = cal_client_connect(handle, id, &connection_count);
 	return ret;
 }
 
@@ -59,7 +60,7 @@ API int calendar_disconnect(void)
 		ERR("cal_client_handle_get_p_with_id() Fail(%d)", ret);
 		return ret;
 	}
-	ret = cal_client_disconnect(handle, id, &cal_connection);
+	ret = cal_client_disconnect(handle, id, &connection_count);
 	WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_client_disconnect() Fail(%d)", ret);
 	return ret;
 }
@@ -79,7 +80,7 @@ API int calendar_connect_on_thread(void)
 		ERR("cal_client_handle_get_p_with_id() Fail(%d)", ret);
 		return ret;
 	}
-	ret = cal_client_connect(handle, id, &cal_connection_on_thread);
+	ret = cal_client_connect(handle, id, &connection_count_on_thread);
 	return ret;
 }
 
@@ -97,7 +98,7 @@ API int calendar_disconnect_on_thread(void)
 		ERR("cal_client_handle_get_p_with_id() Fail(%d)", ret);
 		return ret;
 	}
-	ret = cal_client_disconnect(handle, id, &cal_connection_on_thread);
+	ret = cal_client_disconnect(handle, id, &connection_count_on_thread);
 	WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_client_disconnect() Fail(%d)", ret);
 	return ret;
 }
@@ -117,12 +118,6 @@ API int calendar_connect_with_flags(unsigned int flags)
 		ERR("cal_client_handle_get_p_with_id() Fail(%d)", ret);
 		return ret;
 	}
-	ret = cal_client_connect_with_flags(handle, id, &cal_connection, flags);
+	ret = cal_client_connect_with_flags(handle, id, &connection_count, flags);
 	return ret;
-}
-
-
-int cal_client_get_thread_connection_count(void)
-{
-	return cal_connection_on_thread;
 }

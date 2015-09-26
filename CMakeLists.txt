@@ -6,6 +6,8 @@ INCLUDE(FindPkgConfig)
 SET(EXTRA_CFLAGS "-Wall -Werror-implicit-function-declaration -fvisibility=hidden")
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS}")
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EXTRA_CFLAGS}")
+SET(INTERFACE_PREFIX "org.tizen.calendar_service")
+SET(DBUS_INTERFACE "${INTERFACE_PREFIX}.dbus")
 
 SET(CLIENT calendar-service2)
 SET(DAEMON calendar-serviced)
@@ -14,5 +16,9 @@ ADD_DEFINITIONS("-DPREFIX=\"${PREFIX}\"")
 
 EXECUTE_PROCESS(COMMAND build-util/generator.sh)
 
+CONFIGURE_FILE(${DBUS_INTERFACE}.conf.in ${DBUS_INTERFACE}.conf @ONLY)
+INSTALL(FILES ${DBUS_INTERFACE}.conf DESTINATION ${SYSCONF_INSTALL_DIR}/dbus-1/system.d/)
+
+ADD_SUBDIRECTORY(common)
 ADD_SUBDIRECTORY(client)
 ADD_SUBDIRECTORY(server)

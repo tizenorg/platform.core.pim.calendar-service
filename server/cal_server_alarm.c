@@ -33,7 +33,7 @@
 #include "cal_db_util.h"
 #include "cal_db.h"
 #include "cal_db_query.h"
-#include "cal_server_reminder.h"
+#include "cal_server_dbus.h"
 
 #define CAL_SEARCH_LOOP_MAX 4
 
@@ -734,6 +734,8 @@ struct alarm_ud {
 
 static bool __app_matched_cb(app_control_h app_control, const char *package, void *user_data)
 {
+	CAL_FN_CALL();
+
 	int ret = 0;
 	struct alarm_ud *au = (struct alarm_ud *)user_data;
 
@@ -816,6 +818,7 @@ static bool __app_matched_cb(app_control_h app_control, const char *package, voi
 
 static void _cal_server_alarm_noti_with_control(GList *alarm_list)
 {
+	CAL_FN_CALL();
 	RETM_IF(NULL == alarm_list, "No alarm list");
 
 	app_control_h app_control = NULL;
@@ -856,8 +859,7 @@ static void _cal_server_alarm_noti_with_callback(GList *alarm_list)
 		len += snprintf(extra+len, sizeof(extra)-len, "&%s=%d", "tick", ad->tick);
 		len += snprintf(extra+len, sizeof(extra)-len, "&%s=%d", "unit", ad->unit);
 		len += snprintf(extra+len, sizeof(extra)-len, "&%s=%d", "type", ad->record);
-
-		cal_server_reminder_publish(extra, len);
+		cal_dbus_publish_reminder(len, extra);
 
 		l = g_list_next(l);
 	}
@@ -920,7 +922,7 @@ void _cal_server_alarm_set_timechange(void)
 			_cal_server_alarm_timechange_cb, NULL);
 }
 
-static void __changed_cb(const char* view_uri, void* data)
+static void _changed_cb(const char* view_uri, void* data)
 {
 	CAL_FN_CALL();
 	cal_server_alarm_register_next_alarm(time(NULL));
@@ -933,24 +935,28 @@ static int _cal_server_alarm_set_inotify(calendar_db_changed_cb callback)
 	return 0;
 }
 
-void cal_server_alarm_init(void)
-{
-	int ret = 0;
-	_cal_server_alarm_set_timechange();
-
-	ret = alarmmgr_init("calendar-service");
-	RETM_IF(ret < 0, "alarmmgr_init() Fail(%d)", ret);
-}
-
-void cal_server_alarm_register(void)
+int cal_server_alarm_init(void)
 {
 	CAL_FN_CALL();
+
 	int ret = 0;
+	_cal_server_alarm_set_timechange();
+	_cal_server_alarm_set_inotify(_changed_cb);
+
+	ret = alarmmgr_init("calendar-service");
+	if (ret < 0) {
+		ERR("alarmmgr_init() Fail(%d)", ret);
+		return CALENDAR_ERROR_SYSTEM;
+	}
 
 	ret = alarmmgr_set_cb(_alert_cb, NULL);
-	RETM_IF(ret < 0, "alarmmgr_set_cb() Fail(%d)", ret);
-	_cal_server_alarm_set_inotify(__changed_cb);
+	if (ret < 0) {
+		ERR("alarmmgr_set_cb() Fail(%d)", ret);
+		return CALENDAR_ERROR_SYSTEM;
+	}
+
 	cal_server_alarm_register_next_alarm(time(NULL));
+	return CALENDAR_ERROR_NONE;
 }
 
 void cal_server_alarm_deinit(void)

@@ -1,0 +1,153 @@
+<node>
+	<interface name="org.tizen.calendar_service.dbus">
+		<method name="register_resource">
+			<arg type="i" name="ret" direction="out"/>
+		</method>
+		<method name="unregister_resource">
+			<arg type="i" name="ret" direction="out"/>
+		</method>
+		<method name="insert_record">
+			<arg type="(ii)" name="handle" direction="in"/>
+			<arg type="(iv)" name="record" direction="in"/>
+			<arg type="i" name="id" direction="out"/>
+			<arg type="i" name="version" direction="out"/>
+			<arg type="i" name="ret" direction="out"/>
+		</method>
+		<method name="update_record">
+			<arg type="(ii)" name="handle" direction="in"/>
+			<arg type="(iv)" name="record" direction="in"/>
+			<arg type="i" name="version" direction="out"/>
+			<arg type="i" name="ret" direction="out"/>
+		</method>
+		<method name="delete_record">
+			<arg type="(ii)" name="handle" direction="in"/>
+			<arg type="s" name="view_uri" direction="in"/>
+			<arg type="i" name="id" direction="in"/>
+			<arg type="i" name="version" direction="out"/>
+			<arg type="i" name="ret" direction="out"/>
+		</method>
+		<method name="replace_record">
+			<arg type="(ii)" name="handle" direction="in"/>
+			<arg type="(iv)" name="record" direction="in"/>
+			<arg type="i" name="id" direction="in"/>
+			<arg type="i" name="version" direction="out"/>
+			<arg type="i" name="ret" direction="out"/>
+		</method>
+		<method name="insert_records">
+			<arg type="(ii)" name="handle" direction="in"/>
+			<arg type="(iv)" name="list" direction="in"/>
+			<arg type="ai" name="ids" direction="out"/>
+			<arg type="i" name="count" direction="out"/>
+			<arg type="i" name="version" direction="out"/>
+			<arg type="i" name="ret" direction="out"/>
+		</method>
+		<method name="update_records">
+			<arg type="(ii)" name="handle" direction="in"/>
+			<arg type="(iv)" name="list" direction="in"/>
+			<arg type="i" name="version" direction="out"/>
+			<arg type="i" name="ret" direction="out"/>
+		</method>
+		<method name="delete_records">
+			<arg type="(ii)" name="handle" direction="in"/>
+			<arg type="s" name="view_uri" direction="in"/>
+			<arg type="ai" name="ids" direction="in"/>
+			<arg type="i" name="count" direction="in"/>
+			<arg type="i" name="version" direction="out"/>
+			<arg type="i" name="ret" direction="out"/>
+		</method>
+		<method name="replace_records">
+			<arg type="(ii)" name="handle" direction="in"/>
+			<arg type="(iv)" name="list" direction="in"/>
+			<arg type="ai" name="ids" direction="in"/>
+			<arg type="i" name="count" direction="in"/>
+			<arg type="i" name="version" direction="out"/>
+			<arg type="i" name="ret" direction="out"/>
+		</method>
+		<method name="get_record">
+			<arg type="(ii)" name="handle" direction="in"/>
+			<arg type="s" name="view_uri" direction="in"/>
+			<arg type="i" name="id" direction="in"/>
+			<arg type="(iv)" name="record" direction="out"/>
+			<arg type="i" name="ret" direction="out"/>
+		</method>
+		<method name="get_all_records">
+			<arg type="(ii)" name="handle" direction="in"/>
+			<arg type="s" name="view_uri" direction="in"/>
+			<arg type="i" name="offset" direction="in"/>
+			<arg type="i" name="limit" direction="in"/>
+			<arg type="(iv)" name="list" direction="out"/>
+			<arg type="i" name="ret" direction="out"/>
+		</method>
+		<method name="get_records_with_query">
+			<arg type="(ii)" name="handle" direction="in"/>
+			<arg type="(siviviii)" name="query" direction="in"/>
+			<arg type="i" name="offset" direction="in"/>
+			<arg type="i" name="limit" direction="in"/>
+			<arg type="(iv)" name="list" direction="out"/>
+			<arg type="i" name="ret" direction="out"/>
+		</method>
+		<method name="get_count">
+			<arg type="(ii)" name="handle" direction="in"/>
+			<arg type="s" name="view_uri" direction="in"/>
+			<arg type="i" name="ret" direction="out"/>
+			<arg type="i" name="count" direction="out"/>
+		</method>
+		<method name="get_count_with_query">
+			<arg type="(ii)" name="handle" direction="in"/>
+			<arg type="(siviviii)" name="query" direction="in"/>
+			<arg type="i" name="ret" direction="out"/>
+			<arg type="i" name="count" direction="out"/>
+		</method>
+		<method name="get_current_version">
+			<arg type="(ii)" name="handle" direction="in"/>
+			<arg type="i" name="version" direction="out"/>
+			<arg type="i" name="ret" direction="out"/>
+		</method>
+		<method name="add_changed_cb">
+		</method>
+		<method name="remove_changed_cb">
+		</method>
+		<method name="get_changes_by_version">
+			<arg type="(ii)" name="handle" direction="in"/>
+			<arg type="s" name="view_uri" direction="in"/>
+			<arg type="i" name="book_id" direction="in"/>
+			<arg type="i" name="db_version" direction="in"/>
+			<arg type="(iv)" name="list" direction="out"/>
+			<arg type="i" name="version" direction="out"/>
+			<arg type="i" name="ret" direction="out"/>
+		</method>
+		<method name="get_last_change_version">
+		</method>
+		<method name="get_changes_exception_by_version">
+			<arg type="(ii)" name="handle" direction="in"/>
+			<arg type="s" name="view_uri" direction="in"/>
+			<arg type="i" name="parent_id" direction="in"/>
+			<arg type="i" name="db_version" direction="in"/>
+			<arg type="(iv)" name="list" direction="out"/>
+			<arg type="i" name="ret" direction="out"/>
+		</method>
+		<method name="clean_after_sync">
+			<arg type="(ii)" name="handle" direction="in"/>
+			<arg type="i" name="book_id" direction="in"/>
+			<arg type="i" name="db_version" direction="in"/>
+			<arg type="i" name="ret" direction="out"/>
+		</method>
+		<method name="insert_vcalendars">
+			<arg type="(ii)" name="handle" direction="in"/>
+			<arg type="s" name="stream" direction="in"/>
+			<arg type="ai" name="ids" direction="out"/>
+			<arg type="i" name="count" direction="out"/>
+			<arg type="i" name="version" direction="out"/>
+			<arg type="i" name="ret" direction="out"/>
+		</method>
+		<method name="replace_vcalendars">
+			<arg type="(ii)" name="handle" direction="in"/>
+			<arg type="s" name="stream" direction="in"/>
+			<arg type="ai" name="ids" direction="in"/>
+			<arg type="i" name="count" direction="in"/>
+			<arg type="i" name="ret" direction="out"/>
+			<arg type="i" name="version" direction="out"/>
+		</method>
+	</interface>
+</node>
+

@@ -1,13 +1,15 @@
 Name:       calendar-service
 Summary:    DB library for calendar
-Version:    0.1.153
+Version:    0.1.154
 Release:    1
 Group:      System/Libraries
 License:    Apache-2.0
 Source0:    %{name}-%{version}.tar.gz
-Source1:    calendar-serviced.service
-Source2:    calendar-serviced.socket
-Source3:    ALARM.acalendar-service.service
+Source1:    %{name}d.service
+Source2:	org.tizen.calendar_service.dbus.service
+Source3:    ALARM.a%{name}.service
+Source4:	org.tizen.calendar_service.dbus.conf.in
+Source5:	%{name}-alarm.service
 
 %if "%{?tizen_profile_name}" == "wearable"
 ExcludeArch: %{arm} %ix86 x86_64
@@ -28,7 +30,6 @@ BuildRequires: pkgconfig(glib-2.0)
 BuildRequires: pkgconfig(dlog)
 BuildRequires: pkgconfig(vconf)
 BuildRequires: pkgconfig(icu-i18n)
-BuildRequires: pkgconfig(pims-ipc)
 BuildRequires: pkgconfig(accounts-svc)
 BuildRequires: pkgconfig(contacts-service2)
 BuildRequires: pkgconfig(alarm-service)
@@ -52,7 +53,7 @@ DB library for calendar (developement files)
 
 %prep
 %setup -q
-
+cp %{SOURCE4} .
 
 %build
 export CFLAGS="$CFLAGS -DTIZEN_DEBUG_ENABLE"
@@ -60,10 +61,10 @@ export CXXFLAGS="$CXXFLAGS -DTIZEN_DEBUG_ENABLE"
 export FFLAGS="$FFLAGS -DTIZEN_DEBUG_ENABLE"
 
 MAJORVER=`echo %{version} | awk 'BEGIN {FS="."}{print $1}'`
+
 %cmake . -DBIN_INSTALL_DIR:PATH=%{_bindir} \
 		-DMAJORVER=${MAJORVER} \
 		-DFULLVER=%{version}
-
 
 make %{?jobs:-j%jobs}
 
@@ -71,19 +72,19 @@ make %{?jobs:-j%jobs}
 %make_install
 
 mkdir -p %{buildroot}%{_unitdir_user}/default.target.wants
-install -m 0644 %SOURCE1 %{buildroot}%{_unitdir_user}/calendar-serviced.service
-ln -s ../calendar-serviced.service %{buildroot}%{_unitdir_user}/default.target.wants/calendar-serviced.service
+install -m 0644 %SOURCE1 %{buildroot}%{_unitdir_user}/%{name}d.service
+ln -s ../%{name}d.service %{buildroot}%{_unitdir_user}/default.target.wants/%{name}d.service
+install -m 0644 %SOURCE5 %{buildroot}%{_unitdir_user}/%{name}-alarm.service
 
-mkdir -p %{buildroot}%{_unitdir_user}/sockets.target.wants
-install -m 0644 %SOURCE2 %{buildroot}%{_unitdir_user}/calendar-serviced.socket
-ln -s ../calendar-serviced.socket %{buildroot}%{_unitdir_user}/sockets.target.wants/calendar-serviced.socket
+mkdir -p %{buildroot}%{_datadir}/license
+cp LICENSE.APLv2 %{buildroot}%{_datadir}/license/%{name}
 
-mkdir -p %{buildroot}/usr/share/license
-cp LICENSE.APLv2 %{buildroot}/usr/share/license/%{name}
+mkdir -p %{buildroot}%{_datadir}/dbus-1/system-services
+install -m 0644 %SOURCE2 %{buildroot}%{_datadir}/dbus-1/system-services/org.tizen.calendar_service.dbus.service
 
 # alarm dbus service file
-mkdir -p %{buildroot}/usr/share/dbus-1/system-services
-cp -a %SOURCE3 %{buildroot}/usr/share/dbus-1/system-services
+mkdir -p %{buildroot}%{_datadir}/dbus-1/system-services
+cp -a %SOURCE3 %{buildroot}%{_datadir}/dbus-1/system-services
 
 %post
 /sbin/ldconfig
@@ -94,13 +95,14 @@ cp -a %SOURCE3 %{buildroot}/usr/share/dbus-1/system-services
 %manifest calendar-service.manifest
 %defattr(-,root,root,-)
 %{_bindir}/calendar-serviced*
-%{_libdir}/libcalendar-service2.so.*
-%{_unitdir_user}/default.target.wants/calendar-serviced.service
-%{_unitdir_user}/calendar-serviced.service
-%{_unitdir_user}/sockets.target.wants/calendar-serviced.socket
-%{_unitdir_user}/calendar-serviced.socket
-/usr/share/license/%{name}
-/usr/share/dbus-1/system-services/ALARM.acalendar-service.service
+%{_libdir}/lib%{name}2.so.*
+%{_unitdir_user}/default.target.wants/%{name}d.service
+%{_unitdir_user}/%{name}d.service
+%{_unitdir_user}/%{name}-alarm.service
+%{_datadir}/license/%{name}
+%{_datadir}/dbus-1/system-services/ALARM.acalendar-service.service
+%{_datadir}/dbus-1/system-services/org.tizen.calendar_service.dbus.service
+%config %{_sysconfdir}/dbus-1/system.d/org.tizen.calendar_service.dbus.conf
 
 %files devel
 %defattr(-,root,root,-)

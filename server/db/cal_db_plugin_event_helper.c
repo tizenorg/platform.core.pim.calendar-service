@@ -722,7 +722,7 @@ int cal_db_event_insert_record(calendar_record_h record, int original_event_id, 
 			"%d, %lld, ?, ?, "
 			"%d, %lld, ?, ?, "
 			"strftime('%%s', 'now'), %d, "
-			"?, ?, %d, %d, %d, %ld, "
+			"?, ?, %d, %d, %d, %d, "
 			"?, ?, ?, ?, "
 			"%d, %d, %d, %d) ",
 		CAL_TABLE_SCHEDULE,
@@ -865,7 +865,7 @@ int cal_db_event_insert_record(calendar_record_h record, int original_event_id, 
 		*id = event_id;
 	}
 
-	cal_db_rrule_get_rrule_from_event(record, &rrule);
+	cal_db_rrule_get_rrule_from_record(record, &rrule);
 	if (rrule) {
 		cal_db_rrule_insert_record(event_id, rrule);
 		CAL_FREE(rrule);

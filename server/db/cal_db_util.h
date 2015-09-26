@@ -25,7 +25,6 @@
 
 #define CAL_SQLITE_ROW SQLITE_ROW
 
-void cal_db_util_notify_ipc_ready(void);
 int cal_db_util_open(void);
 int cal_db_util_close(void);
 int cal_db_util_query_prepare(char *query, sqlite3_stmt** stmt);

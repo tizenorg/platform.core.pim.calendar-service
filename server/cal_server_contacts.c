@@ -30,7 +30,6 @@
 #include "cal_time.h"
 #include "cal_access_control.h"
 #include "cal_server_contacts.h"
-#include "cal_server_ipc.h"
 #include "cal_server_service.h"
 #include "cal_server_ondemand.h"
 
@@ -575,7 +574,7 @@ static gpointer _cal_server_contacts_sync_main(gpointer user_data)
 			break;
 		}
 
-		cal_access_control_set_client_info(NULL, NULL);
+		cal_access_control_set_client_info(NULL, "calendar-service");
 
 		while(1) {
 			if (CALENDAR_ERROR_NONE != _cal_server_contacts_sync()) {

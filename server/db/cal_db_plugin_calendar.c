@@ -117,7 +117,7 @@ static int _cal_db_calendar_insert_record(calendar_record_h record, int* id)
 	snprintf(query, sizeof(query), "INSERT INTO %s (uid, updated, name, description, "
 			"color, location, visibility, sync_event, account_id, store_type, "
 			"sync_data1, sync_data2, sync_data3, sync_data4, mode, owner_label) "
-			"VALUES (?, %ld, ?, ?, ?, ?, %d, %d, %d, %d, ?, ?, ?, ?, %d, ?)",
+			"VALUES (?, %d, ?, ?, ?, ?, %d, %d, %d, %d, ?, ?, ?, ?, %d, ?)",
 			CAL_TABLE_CALENDAR, book->updated, book->visibility, book->sync_event,
 			book->account_id, book->store_type, book->mode);
 
@@ -232,7 +232,7 @@ static int _cal_db_calendar_update_record(calendar_record_h record)
 
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	snprintf(query, sizeof(query), "UPDATE %s SET "
-			"uid =?, updated = %ld, name =?, description =?, color =?, location =?, "
+			"uid =?, updated = %d, name =?, description =?, color =?, location =?, "
 			"visibility =%d, sync_event =%d, account_id =%d, store_type =%d, "
 			"sync_data1 =?, sync_data2 =?, sync_data3 =?, sync_data4 =?, mode =%d "
 			"WHERE id =%d",
@@ -274,7 +274,6 @@ static int _cal_db_calendar_update_record(calendar_record_h record)
 		return ret;
 	}
 	sqlite3_finalize(stmt);
-
 	cal_db_util_notify(CAL_NOTI_TYPE_CALENDAR);
 
 	return CALENDAR_ERROR_NONE;
@@ -357,7 +356,7 @@ static int _cal_db_calendar_replace_record(calendar_record_h record, int id)
 
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	snprintf(query, sizeof(query), "UPDATE %s SET "
-			"uid =?, updated =%ld, name =?, description =?, color =?, location =?, "
+			"uid =?, updated =%d, name =?, description =?, color =?, location =?, "
 			"visibility =%d, sync_event =%d, account_id =%d, store_type =%d, "
 			"sync_data1 =?, sync_data2 =?, sync_data3 =?, sync_data4 =?, mode =%d "
 			"WHERE id =%d",
@@ -534,6 +533,7 @@ static int _cal_db_calendar_get_records_with_query(calendar_query_h query, int o
 
 	/* query */
 	ret = cal_db_util_query_prepare(query_str, &stmt);
+	SECURE("[TEST]---------query[%s]", query_str);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query_str);

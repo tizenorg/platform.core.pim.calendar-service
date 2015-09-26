@@ -21,7 +21,6 @@
 #include <signal.h>
 #include <string.h>
 #include <sys/smack.h>
-#include <pims-ipc-svc.h>
 
 #include "calendar_db.h"
 #include "cal_internal.h"
@@ -38,7 +37,7 @@
 
 typedef struct {
 	unsigned int thread_id;
-	pims_ipc_h ipc;
+	void *ipc;
 	char *smack_label;
 	int *write_list;
 	int write_list_count;
@@ -52,7 +51,6 @@ enum {
 
 static GList *__thread_list = NULL;
 static int have_smack = CAL_SMACK_NOT_CHECKED;
-static void _cal_access_control_disconnected_cb(pims_ipc_h ipc, void *user_data);
 
 static cal_permission_info_s* _cal_access_control_find_permission_info(unsigned int thread_id)
 {
@@ -143,7 +141,7 @@ static void _cal_access_control_set_permission_info(cal_permission_info_s *info)
 	sqlite3_finalize(stmt);
 }
 
-void cal_access_control_set_client_info(pims_ipc_h ipc, const char *smack_label)
+void cal_access_control_set_client_info(void *ipc, const char *smack_label)
 {
 	unsigned int thread_id = (unsigned int)pthread_self();
 	cal_permission_info_s *info = NULL;
@@ -166,10 +164,6 @@ void cal_access_control_set_client_info(pims_ipc_h ipc, const char *smack_label)
 	info->smack_label = cal_strdup(smack_label);
 	_cal_access_control_set_permission_info(info);
 
-	/* for close DB or free access_control when client is disconnected */
-	if (info->ipc)
-		pims_ipc_svc_set_client_disconnected_cb(_cal_access_control_disconnected_cb,NULL);
-
 	cal_mutex_unlock(CAL_MUTEX_ACCESS_CONTROL);
 }
 
@@ -186,24 +180,6 @@ void cal_access_control_unset_client_info(void)
 		free(find);
 	}
 	cal_mutex_unlock(CAL_MUTEX_ACCESS_CONTROL);
-}
-
-bool cal_access_control_have_permission(pims_ipc_h ipc, cal_permission_e permission)
-{
-	have_smack = _cal_have_smack();
-	if (CAL_SMACK_DISABLED == have_smack)
-		return true;
-
-	if (NULL == ipc) // calendar-service daemon
-		return true;
-
-	if ((CAL_PERMISSION_READ & permission) && !pims_ipc_svc_check_privilege(ipc, CAL_PRIVILEGE_READ))
-		return false;
-
-	if ((CAL_PERMISSION_WRITE & permission) && !pims_ipc_svc_check_privilege(ipc, CAL_PRIVILEGE_WRITE))
-		return false;
-
-	return true;
 }
 
 char* cal_access_control_get_label(void)
@@ -265,28 +241,6 @@ bool cal_access_control_have_write_permission(int book_id)
 	cal_mutex_unlock(CAL_MUTEX_ACCESS_CONTROL);
 	ERR("thread(0x%x), No write permission of book_id(%d)", thread_id, book_id);
 	return false;
-}
-
-static void _cal_access_control_disconnected_cb(pims_ipc_h ipc, void *user_data)
-{
-	CAL_FN_CALL();
-	cal_permission_info_s *info = NULL;
-
-	cal_mutex_lock(CAL_MUTEX_ACCESS_CONTROL);
-	info = (cal_permission_info_s *)user_data;
-	if (info) {
-		INFO("Thread(0x%x), info(%p)", info->thread_id, info);
-		free(info->smack_label);
-		free(info->write_list);
-		__thread_list = g_list_remove(__thread_list, info);
-		free(info);
-	}
-	cal_mutex_unlock(CAL_MUTEX_ACCESS_CONTROL);
-	/*
-	 * if client did not call disconnect function such as disconnect
-	 * DB will be closed in cal_db_internal_disconnect()
-	 */
-	cal_service_internal_disconnect();
 }
 
 int cal_is_owner(int book_id)

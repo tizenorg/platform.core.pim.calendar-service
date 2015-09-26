@@ -1,9 +1,0 @@
-[Unit]
-Description=Calendar Service socket
-
-[Socket]
-ListenStream=/run/user/%U/.cal_svc_ipc
-Service=calendar-serviced.service
-
-[Install]
-WantedBy=sockets.target

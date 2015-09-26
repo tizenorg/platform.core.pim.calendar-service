@@ -115,6 +115,7 @@ static int _cal_db_instance_allday_get_all_records(int offset, int limit, calend
 		return ret;
 	}
 
+	SECURE("[TEST]---------query[%s]", query_str);
 	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		calendar_record_h record;
 		ret = calendar_record_create(_calendar_instance_localtime_calendar_book._uri,&record);

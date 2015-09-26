@@ -189,9 +189,12 @@ static int _cal_db_event_get_record(int id, calendar_record_h* out_record)
 		*out_record = NULL;
 		return CALENDAR_ERROR_DB_RECORD_NOT_FOUND;
 	}
-	if (CALENDAR_ERROR_NONE == cal_db_rrule_get_rrule(event->index, &rrule)) {
-		cal_db_rrule_set_rrule_to_event(rrule, *out_record);
-		CAL_FREE(rrule);
+	if (CALENDAR_RECURRENCE_NONE != event->freq) {
+		ret = cal_db_rrule_get_rrule(event->index, &rrule);
+		if (CALENDAR_ERROR_NONE == ret) {
+			cal_db_rrule_set_rrule_to_record(rrule, *out_record);
+			CAL_FREE(rrule);
+		}
 	}
 
 	if (event->has_alarm == 1)
@@ -570,7 +573,7 @@ static int __update_record(calendar_record_h record, int is_dirty_in_time)
 			"has_attendee = %d, "
 			"has_alarm = %d, "
 			"system_type = %d, "
-			"updated = %ld, "
+			"updated = %d, "
 			"sync_data1 = ?, "
 			"sync_data2 = ?, "
 			"sync_data3 = ?, "
@@ -720,7 +723,7 @@ static int __update_record(calendar_record_h record, int is_dirty_in_time)
 	 * which is original_event_id > 0
 	 */
 	cal_db_event_update_original_event_version(event->original_event_id, input_ver);
-	cal_db_rrule_get_rrule_from_event(record, &rrule);
+	cal_db_rrule_get_rrule_from_record(record, &rrule);
 	cal_db_rrule_update_record(event->index, rrule); /* if rrule turns none, update 0. */
 	CAL_FREE(rrule);
 
@@ -980,6 +983,7 @@ static int _cal_db_event_get_all_records(int offset, int limit, calendar_list_h*
 		return ret;
 	}
 
+	SECURE("[TEST]---------query[%s]", query_str);
 	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		calendar_record_h record;
 		int exception=0, extended=0;
@@ -1488,7 +1492,7 @@ static int _cal_db_event_replace_record(calendar_record_h record, int id)
 			"has_attendee = %d, "
 			"has_alarm = %d, "
 			"system_type = %d, "
-			"updated = %ld, "
+			"updated = %d, "
 			"sync_data1 = ?, "
 			"sync_data2 = ?, "
 			"sync_data3 = ?, "
@@ -1630,7 +1634,7 @@ static int _cal_db_event_replace_record(calendar_record_h record, int id)
 	 * which is original_event_id > 0
 	 */
 	cal_db_event_update_original_event_version(event->original_event_id, input_ver);
-	cal_db_rrule_get_rrule_from_event(record, &rrule);
+	cal_db_rrule_get_rrule_from_record(record, &rrule);
 	cal_db_rrule_update_record(id, rrule);
 	CAL_FREE(rrule);
 
@@ -2368,9 +2372,12 @@ static int _cal_db_event_exception_get_records(int original_id, cal_list_s *list
 
 		cal_rrule_s *rrule = NULL;
 		cal_event_s *event = (cal_event_s *)record;
-		if (CALENDAR_ERROR_NONE == cal_db_rrule_get_rrule(event->index, &rrule)) {
-			cal_db_rrule_set_rrule_to_event(rrule, record);
-			CAL_FREE(rrule);
+		if (CALENDAR_RECURRENCE_NONE != event->freq) {
+			ret = cal_db_rrule_get_rrule(event->index, &rrule);
+			if (CALENDAR_ERROR_NONE == ret) {
+				cal_db_rrule_set_rrule_to_record(rrule, record);
+				CAL_FREE(rrule);
+			}
 		}
 
 		if (event->has_alarm == 1)
@@ -2542,12 +2549,17 @@ static int _cal_db_event_exception_update(cal_list_s *exception_list_s, int orig
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_db_event_get_deleted_data(int id, int* calendar_book_id, int* created_ver,
+static int _cal_db_event_get_deleted_data(int id, int* book_id, int* created_ver,
 		int* original_event_id, char** recurrence_id)
 {
 	int ret = 0;
-	char query[CAL_DB_SQL_MAX_LEN];
+	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	sqlite3_stmt *stmt = NULL;
+
+	RETV_IF(NULL == book_id, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == created_ver, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == original_event_id, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == recurrence_id, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	snprintf(query, sizeof(query), "SELECT calendar_id, created_ver, "
 			"original_event_id, recurrence_id FROM %s WHERE id = %d ",
@@ -2559,23 +2571,19 @@ static int _cal_db_event_get_deleted_data(int id, int* calendar_book_id, int* cr
 		return ret;
 	}
 
-	const unsigned char *tmp;
-	if (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
-		*calendar_book_id = sqlite3_column_int(stmt, 0);
-		*created_ver = sqlite3_column_int(stmt, 1);
-		*original_event_id = sqlite3_column_int(stmt, 2);
-		tmp = sqlite3_column_text(stmt, 3);
-		*recurrence_id = cal_strdup((const char*)tmp);
-	}
-	else {
+	ret = cal_db_util_stmt_step(stmt);
+	if (CAL_SQLITE_ROW != ret) {
+		ERR("cal_db_util_stmt_step() Fail(%d)", ret);
 		sqlite3_finalize(stmt);
-		stmt = NULL;
-		DBG("Failed to get deleted_data: event_id(%d)", id);
 		return CALENDAR_ERROR_DB_RECORD_NOT_FOUND;
 	}
 
+	*book_id = sqlite3_column_int(stmt, 0);
+	*created_ver = sqlite3_column_int(stmt, 1);
+	*original_event_id = sqlite3_column_int(stmt, 2);
+	*recurrence_id = cal_strdup((const char *)sqlite3_column_text(stmt, 3));
+
 	sqlite3_finalize(stmt);
-	stmt = NULL;
 	return CALENDAR_ERROR_NONE;
 }
 

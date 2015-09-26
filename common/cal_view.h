@@ -19,6 +19,7 @@
 #ifndef __CALENDAR_SVC_VIEW_H__
 #define __CALENDAR_SVC_VIEW_H__
 
+#include "cal_typedef.h"
 #include "calendar_view.h"
 
 /* db record view: get, get_list, insert, update, delete, filter */

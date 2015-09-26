@@ -21,7 +21,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <glib-object.h>
 #include <glib.h>
@@ -29,31 +28,29 @@
 #include <grp.h>
 #include <sys/param.h>
 #include <unistd.h>
-#include <alarm.h>
-#include <contacts.h>
-#include <account.h>
+#include <sys/param.h>
+#include <unistd.h>
 
 #include "calendar.h"
 #include "cal_typedef.h"
 #include "cal_internal.h"
-#include "cal_ipc.h"
-#include "cal_server_ipc.h"
 #include "cal_inotify.h"
-#include "cal_db.h" // CAL_SECURITY_FILE_GROUP
-#include "cal_server_contacts.h"
+#include "cal_db.h"
+#include "cal_access_control.h"
+#include "cal_db_plugin_calendar_helper.h"
+#include "cal_time.h"
 #include "cal_server_alarm.h"
+#include "cal_server_contacts.h"
 #include "cal_server_calendar_delete.h"
 #include "cal_server_schema.h"
 #include "cal_server_update.h"
 #include "cal_server_service.h"
-#include "cal_access_control.h"
-#include "cal_db_plugin_calendar_helper.h"
-#include "cal_time.h"
+#include "cal_server_account.h"
+#include "cal_server_dbus.h"
 
 #define CAL_TIMEOUT_FOR_DECLARE 1
 #define CAL_TIMEOUT_FOR_DEFAULT 0
 
-static account_subscribe_h cal_account_h = NULL;
 GMainLoop* main_loop = NULL;
 static int cal_timeout = 0;
 
@@ -63,126 +60,37 @@ void cal_server_quit_loop(void)
 	main_loop = NULL;
 }
 
-static gboolean _cal_server_timeout_cb(gpointer argv)
+static int _cal_server_init(void)
 {
-	int ret;
-	int *try_count = (int *)argv;
-	DBG("called count(%d)", *try_count);
-	if (*try_count > 2)
-	{
-		ERR("Tried 3 times but Failed to contacts connect");
-		return false;
-	}
-
-	ret = contacts_connect();
-	if (CONTACTS_ERROR_NONE == ret)
-	{
-		DBG("contact connected");
-	}
-	else
-	{
-		ERR("Failed to connect (%d) times", *try_count + 1);
-		*try_count += 1;
-		return true;
-	}
-
-	ret = cal_server_contacts();
-	return false;
-}
-
-static bool _cal_server_account_delete_cb(const char* event_type, int account_id, void* user_data)
-{
-	CAL_FN_CALL();
-
-	if (CAL_STRING_EQUAL == strcmp(event_type, ACCOUNT_NOTI_NAME_DELETE))
-	{
-		cal_db_delete_account(account_id);
-		cal_server_contacts_delete(account_id);
-	}
-	return true;
-}
-
-static void _cal_server_init(void)
-{
-	int ret;
-	int on_contact = 0;
-	int try_count = 0;
+	int ret = 0;
 #if !GLIB_CHECK_VERSION(2,35,0)
 	g_type_init();
 #endif
 
-
-	//loop = g_main_loop_new(NULL, FALSE);
-
-	//calendar_alarm_init();
-/*
-	ret = contacts_connect();
-	if (CONTACTS_ERROR_NONE != ret)
-	{
-		ERR("contacts_connect() Failed");
-		g_timeout_add_seconds(30, _cal_server_timeout_cb, (gpointer)&try_count);
-	}
-	else
-	{
-		DBG("contacts connected");
-		on_contact = 1;
-	}
-*/
 	ret = cal_connect();
-	if (CALENDAR_ERROR_NONE != ret)
-	{
+	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_connect() Failed");
 		return ret;
 	}
 
+	cal_access_control_set_client_info(NULL, "calendar-service");
+
 	cal_db_initialize_view_table();
 
-	if (on_contact)
-	{
-/*		ret = cal_server_contacts();
-		if (CALENDAR_ERROR_NONE != ret)
-		{
-			contacts_disconnect();
-			ERR("cal_server_contacts() Failed");
-			return -1;
-		}
-
-		cal_server_contacts_sync_start();
-*/	}
-
-	// access_control
-	cal_access_control_set_client_info(NULL, NULL);
-
-	ret = account_subscribe_create(&cal_account_h);
-	if (ACCOUNT_ERROR_NONE == ret) {
-		ret = account_subscribe_notification(cal_account_h, _cal_server_account_delete_cb, NULL);
-		if (ACCOUNT_ERROR_NONE != ret) {
-			DBG("account_subscribe_notification Failed (%d)", ret);
-		}
-	}
-	else
-		DBG("account_subscribe_create Failed (%d)", ret);
-
-	cal_server_alarm_register();
 	cal_server_calendar_delete_start();
+	return CALENDAR_ERROR_NONE;
 }
 
 static void _cal_server_deinit(void)
 {
-	cal_disconnect();
-
-	if (cal_account_h) {
-		account_unsubscribe_notification(cal_account_h);
-		cal_account_h = NULL;
-	}
-
 	cal_access_control_unset_client_info();
+	cal_disconnect();
 }
 
 static int _cal_server_main(void)
 {
 	main_loop = g_main_loop_new(NULL, FALSE);
-	cal_server_ipc_run(main_loop);
+	g_main_loop_run(main_loop);
 
 	g_main_loop_unref(main_loop);
 
@@ -191,7 +99,6 @@ static int _cal_server_main(void)
 
 static void _cal_server_create_directory(const char* directory, mode_t mode)
 {
-	int ret = 0;
 	if (0 == access (directory, F_OK))
 		return;
 
@@ -222,7 +129,6 @@ static void _cal_server_create_file(void)
 	_cal_server_set_directory_permission(CAL_NOTI_CALENDAR_CHANGED, 0660);
 	_cal_server_set_directory_permission(CAL_NOTI_EVENT_CHANGED, 0660);
 	_cal_server_set_directory_permission(CAL_NOTI_TODO_CHANGED, 0660);
-	_cal_server_set_directory_permission(CAL_NOTI_IPC_READY, 0660);
 }
 
 int cal_server_get_timeout(void)
@@ -232,8 +138,8 @@ int cal_server_get_timeout(void)
 
 int main(int argc, char *argv[])
 {
-	INFO("server start");
-	if (getuid() == 0) {
+	INFO("---------------------[SERVER START]------------------------");
+	if (getuid() == 0) { /* root */
 		gid_t glist[] = {CAL_SECURITY_FILE_GROUP};
 		if (setgroups(1, glist) < 0)
 			ERR("setgroups() Failed");
@@ -244,18 +150,21 @@ int main(int argc, char *argv[])
 
 	_cal_server_create_file();
 	cal_server_schema_check();
-	cal_server_alarm_init();
 	cal_server_update();
 	_cal_server_init();
-	cal_server_ipc_init();
+	cal_server_alarm_init();
+	cal_server_account_init();
+
+	guint id;
+	id = cal_server_dbus_init();
 
 	_cal_server_main();
 
 	cal_time_u_cleanup();
-
-	cal_server_ipc_deinit();
-	_cal_server_deinit();
+	cal_server_account_deinit();
 	cal_server_alarm_deinit();
+	_cal_server_deinit();
+	cal_server_dbus_deinit(id);
 	cal_inotify_deinit();
 
 	return 0;

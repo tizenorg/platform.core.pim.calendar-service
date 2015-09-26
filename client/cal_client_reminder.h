@@ -20,8 +20,6 @@
 #ifndef __CAL_CLIENT_REMINDER_H__
 #define __CAL_CLIENT_REMINDER_H__
 
-int cal_client_reminder_create_for_subscribe(void);
-int cal_client_reminder_destroy_for_subscribe(void);
-int cal_client_recovery_for_change_subscription(void);
+int cal_client_reminder_call_subscribe(const char *stream);
 
 #endif /* __CAL_CLIENT_REMINDER_H__ */

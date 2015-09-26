@@ -33,6 +33,10 @@ void cal_server_ondemand_stop(void)
 {
 	CAL_FN_CALL();
 
+	int timeout = cal_server_get_timeout();
+	if (timeout < 1)
+		return;
+
 	pthread_mutex_lock(&cal_mutex_timeout);
 	g_source_remove(cal_timeout_id);
 	cal_timeout_id = 0;
@@ -41,6 +45,8 @@ void cal_server_ondemand_stop(void)
 
 static gboolean _timeout_cb(gpointer user_data)
 {
+	CAL_FN_CALL();
+
 	pthread_mutex_lock(&cal_mutex_holding);
 	if (FALSE == cal_holding) {
 		DBG("exit");
@@ -58,6 +64,7 @@ void cal_server_ondemand_start(void)
 	if (timeout < 1)
 		return;
 
+	DBG("timeout(%d)", timeout);
 	pthread_mutex_lock(&cal_mutex_timeout);
 	if (cal_timeout_id > 0)
 		g_source_remove(cal_timeout_id);

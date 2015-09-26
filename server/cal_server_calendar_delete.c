@@ -73,8 +73,6 @@ static bool _cal_server_calendar_delete_step(int ret, __calendar_delete_data_s* 
 			if (data->calendar_id_list)
 				g_list_free(data->calendar_id_list);
 			CAL_FREE(data);
-			ERR("step_1 no_data");
-
 			return false;
 		}
 		data->step = STEP_2;

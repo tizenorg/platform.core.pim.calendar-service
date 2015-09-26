@@ -17,10 +17,8 @@
  *
  */
 
+#include <pthread.h>
 #include <stdlib.h>
-#include <pims-ipc.h>
-#include <unistd.h>
-#include <sys/types.h>
 
 #include "calendar.h"
 #include "cal_internal.h"
@@ -29,200 +27,128 @@
 #include "cal_view.h"
 #include "cal_record.h"
 #include "cal_list.h"
-#include "cal_mutex.h"
-#include "cal_ipc.h"
-#include "cal_ipc_marshal.h"
-#include "cal_client_ipc.h"
 #include "cal_client_handle.h"
+#include "cal_client_dbus.h"
 
 typedef struct {
+	unsigned int id;
 	calendar_reminder_cb cb;
 	void *user_data;
 } callback_info_s;
 
-static int _ipc_pubsub_count = 0;
-static pims_ipc_h __ipc = NULL;
+static pthread_mutex_t cal_mutex_reminder = PTHREAD_MUTEX_INITIALIZER;
 static GSList *__subscribe_list = NULL;
-
-int cal_client_reminder_create_for_subscribe(void)
-{
-	cal_mutex_lock(CAL_MUTEX_PIMS_IPC_PUBSUB);
-
-	if (0 < _ipc_pubsub_count) {
-		_ipc_pubsub_count++;
-		cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
-		return CALENDAR_ERROR_NONE;
-	}
-
-	if (NULL == __ipc) {
-		char sock_file[CAL_STR_MIDDLE_LEN] = {0};
-		snprintf(sock_file, sizeof(sock_file), CAL_SOCK_PATH"/.%s_for_subscribe", getuid(), CAL_IPC_SERVICE);
-		__ipc = pims_ipc_create_for_subscribe(sock_file);
-		if (NULL == __ipc) {
-			ERR("pims_ipc_create_for_subscribe() Fail");
-			cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
-			return CALENDAR_ERROR_IPC;
-		}
-	}
-	_ipc_pubsub_count++;
-	cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
-	return CALENDAR_ERROR_NONE;
-}
-
-int cal_client_reminder_destroy_for_subscribe(void)
-{
-	cal_mutex_lock(CAL_MUTEX_PIMS_IPC_PUBSUB);
-
-	if (1 == _ipc_pubsub_count) {
-		pims_ipc_destroy_for_subscribe(__ipc);
-		__ipc = NULL;
-	}
-	else if (1 < _ipc_pubsub_count) {
-		DBG("Already subscribed:count(%d)", _ipc_pubsub_count);
-	}
-	else {
-		DBG("[System] Not subscribed");
-		cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
-
-	_ipc_pubsub_count--;
-	cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
-	return CALENDAR_ERROR_NONE;
-}
-
-int cal_client_recovery_for_change_subscription(void)
-{
-	cal_mutex_lock(CAL_MUTEX_PIMS_IPC_PUBSUB);
-	if (_ipc_pubsub_count <= 0) {
-		return CALENDAR_ERROR_NONE;
-	}
-
-	char sock_file[CAL_STR_MIDDLE_LEN] = {0};
-	snprintf(sock_file, sizeof(sock_file), CAL_SOCK_PATH"/.%s_for_subscribe", getuid(), CAL_IPC_SERVICE);
-	__ipc = pims_ipc_create_for_subscribe(sock_file);
-	if (NULL == __ipc) {
-		ERR("pims_ipc_create_for_subscribe() Fail");
-		cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
-		return CALENDAR_ERROR_IPC;
-	}
-	cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
-	return CALENDAR_ERROR_NONE;
-}
-
-static void _cal_client_reminder_subscribe_callback(pims_ipc_h ipc, pims_ipc_data_h data, void *user_data)
-{
-	unsigned int size = 0;
-	const char *str = NULL;
-	int len = 0;
-
-	if (data) {
-		len = (int)pims_ipc_data_get(data, &size);
-		if (0 == len) {
-			ERR("pims_ipc_data_get() Fail");
-			return;
-		}
-		str = (const char *)pims_ipc_data_get(data, &size);
-		if (!str) {
-			ERR("pims_ipc_data_get() Fail");
-			return;
-		}
-	}
-
-	if (__subscribe_list) {
-		GSList *l = NULL;
-		for (l = __subscribe_list; l; l = l->next) {
-			callback_info_s *cb_info = l->data;
-			if (NULL == cb_info) continue;
-
-			cb_info->cb(str, cb_info->user_data);
-		}
-	}
-}
 
 API int calendar_reminder_add_cb(calendar_reminder_cb callback, void *user_data)
 {
-	int ret = 0;;
-	GSList *it = NULL;
-	callback_info_s *cb_info = NULL;
-	bool result = false;
-	calendar_h handle = NULL;
-	ret = cal_client_handle_get_p(&handle);
-	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_client_handle_get_p() Fail(%d)", ret);
+	int ret = 0;
 
 	RETV_IF(NULL == callback, CALENDAR_ERROR_INVALID_PARAMETER);
 
-	ret = cal_client_ipc_client_check_permission(handle, CAL_PERMISSION_READ, &result);
-	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "ctsvc_ipc_client_check_permission() Fail(%d)", ret);
-	RETVM_IF(result == false, CALENDAR_ERROR_PERMISSION_DENIED, "Permission denied (calendar read)");
+	pthread_mutex_lock(&cal_mutex_reminder);
 
-	cal_mutex_lock(CAL_MUTEX_PIMS_IPC_PUBSUB);
-
-	if (!__subscribe_list) {
-		if (pims_ipc_subscribe(__ipc, CAL_IPC_MODULE_FOR_SUBSCRIPTION, (char *)CAL_NOTI_REMINDER_CAHNGED,
-					_cal_client_reminder_subscribe_callback, NULL) != 0) {
-			ERR("pims_ipc_subscribe() Fail");
-			cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
-			return CALENDAR_ERROR_IPC;
+	/* check duplicate */
+	GSList *cursor = __subscribe_list;
+	while (cursor) {
+		callback_info_s *ci = (callback_info_s *)cursor->data;
+		if (NULL == ci) {
+			cursor = g_slist_next(cursor);
+			continue;
 		}
-	}
 
-	/* Check duplication */
-	for (it = __subscribe_list; it; it = it->next) {
-		if (NULL == it->data) continue;
-
-		callback_info_s *cb_info = it->data;
-		if (callback == cb_info->cb && user_data == cb_info->user_data) {
-			ERR("The same callback(%s) is already exist");
-			cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+		if (callback == ci->cb && user_data == ci->user_data) {
+			DBG("This callback is already appended");
+			pthread_mutex_unlock(&cal_mutex_reminder);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
 		}
+		cursor = g_slist_next(cursor);
 	}
 
-	cb_info = calloc(1, sizeof(callback_info_s));
-	if (NULL == cb_info) {
+	callback_info_s *ci = NULL;
+	ci = calloc(1, sizeof(callback_info_s));
+	if (NULL == ci) {
 		ERR("calloc() Fail");
-		cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
-		return CALENDAR_ERROR_OUT_OF_MEMORY;
+		pthread_mutex_unlock(&cal_mutex_reminder);
+		return CALENDAR_ERROR_IPC;
 	}
 
-	cb_info->user_data = user_data;
-	cb_info->cb = callback;
-	__subscribe_list = g_slist_append(__subscribe_list, cb_info);
+	DBG("add reminer");
+	ci->id = cal_dbus_subscribe_signal(CAL_NOTI_REMINDER_CAHNGED,
+			cal_dbus_call_reminder_cb, user_data, NULL);
+	ci->cb = callback;
+	ci->user_data = user_data;
+	__subscribe_list = g_slist_append(__subscribe_list, ci);
 
-	cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+	pthread_mutex_unlock(&cal_mutex_reminder);
 
 	return CALENDAR_ERROR_NONE;
 }
 
 API int calendar_reminder_remove_cb(calendar_reminder_cb callback, void *user_data)
 {
-	GSList *it = NULL;
-
 	RETV_IF(NULL == callback, CALENDAR_ERROR_INVALID_PARAMETER);
 
-	cal_mutex_lock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+	pthread_mutex_lock(&cal_mutex_reminder);
 
-	for (it = __subscribe_list; it; it = it->next) {
-		if (NULL == it->data) continue;
+	int is_matched = 0;
+	GSList *cursor = __subscribe_list;
+	while (cursor) {
+		callback_info_s *ci = (callback_info_s *)cursor->data;
+		if (NULL == ci) {
+			cursor = g_slist_next(cursor);
+			continue;
+		}
 
-		callback_info_s *cb_info = it->data;
-		if (callback == cb_info->cb && user_data == cb_info->user_data) {
-			__subscribe_list = g_slist_remove(__subscribe_list, cb_info);
-			free(cb_info);
+		if (callback == ci->cb && user_data == ci->user_data) {
+			is_matched = 1;
 			break;
 		}
+		cursor = g_slist_next(cursor);
 	}
 
-	if (g_slist_length(__subscribe_list) == 0) {
-		pims_ipc_unsubscribe(__ipc, CAL_IPC_MODULE_FOR_SUBSCRIPTION, (char *)CAL_NOTI_REMINDER_CAHNGED);
+	if (0 == is_matched) {
+		ERR("Not matched callback");
+		pthread_mutex_unlock(&cal_mutex_reminder);
+		return CALENDAR_ERROR_INVALID_PARAMETER;
+	}
+
+	DBG("remove reminder");
+	callback_info_s *ci = (callback_info_s *)cursor->data;
+	cal_dbus_unsubscribe_signal(ci->id);
+	__subscribe_list = g_slist_remove(__subscribe_list, ci);
+	free(ci);
+
+	if (0 == g_slist_length(__subscribe_list)) {
 		g_slist_free(__subscribe_list);
 		__subscribe_list = NULL;
 	}
 
-	cal_mutex_unlock(CAL_MUTEX_PIMS_IPC_PUBSUB);
+	pthread_mutex_unlock(&cal_mutex_reminder);
 
 	return CALENDAR_ERROR_NONE;
 }
 
+int cal_client_reminder_call_subscribe(const char *stream)
+{
+	CAL_FN_CALL();
 
+	GSList *cursor = NULL;
+
+	pthread_mutex_lock(&cal_mutex_reminder);
+
+	cursor = __subscribe_list;
+	while (cursor) {
+		callback_info_s *ci = (callback_info_s *)cursor->data;
+		if (NULL == ci) {
+			ERR("data is NULL");
+			cursor = g_slist_next(cursor);
+			continue;
+		}
+		DBG("-----------------------------------------------------called");
+		ci->cb(stream, ci->user_data);
+		cursor = g_slist_next(cursor);
+	}
+
+	pthread_mutex_unlock(&cal_mutex_reminder);
+	return CALENDAR_ERROR_NONE;
+}

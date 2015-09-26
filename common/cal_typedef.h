@@ -38,7 +38,6 @@
 #define CAL_NOTI_EVENT_CHANGED tzplatform_mkpath(TZ_USER_DATA,"calendar-svc/.CALENDAR_SVC_EVENT_CHANGED")
 #define CAL_NOTI_TODO_CHANGED tzplatform_mkpath(TZ_USER_DATA,"calendar-svc/.CALENDAR_SVC_TODO_CHANGED")
 #define CAL_NOTI_CALENDAR_CHANGED tzplatform_mkpath(TZ_USER_DATA,"calendar-svc/.CALENDAR_SVC_CALENDAR_CHANGED")
-#define CAL_NOTI_IPC_READY tzplatform_mkpath(TZ_USER_DATA,"calendar-svc/.CALENDAR_SVC_IPC_READY")
 #define CAL_NOTI_REMINDER_CAHNGED "reminder"
 #define CAL_FORMAT_LOCAL_DATETIME "%04d-%02d-%02dT%02d:%02d:%02d"
 #define CAL_DATETIME_FORMAT_YYYYMMDD "%04d%02d%02d"
@@ -136,7 +135,7 @@ typedef struct
 	int has_attendee;
 	int has_alarm;
 	int system_type;
-	long updated;
+	int updated;
 	char *sync_data1;
 	char *sync_data2;
 	char *sync_data3;
@@ -190,7 +189,7 @@ typedef struct
 	int wkst;
 	int has_alarm;
 	int system_type;
-	long updated;
+	int updated;
 	char *sync_data1;
 	char *sync_data2;
 	char *sync_data3;
@@ -283,7 +282,7 @@ typedef struct
 	int index;
 	int store_type;
 	char *uid;
-	long updated;
+	int updated;
 	char *name;
 	char *description;
 	char *color;
@@ -482,7 +481,7 @@ typedef struct  {
 		double d;
 		long long int lli;
 		calendar_time_s caltime;
-	}value;
+	} value;
 } cal_attribute_filter_s;
 
 typedef struct  {
@@ -497,18 +496,6 @@ typedef struct  {
 	bool distinct;
 } cal_query_s;
 
-#define CAL_CALTIME_SET_UTIME(dest, src_utime) do {\
-	(dest).type = CALENDAR_TIME_UTIME; \
-	(dest).time.utime = src_utime; \
-} while (0)
-
-#define CAL_CALTIME_SET_DATE(dest, src_year, src_month, src_mday) do {\
-	(dest).type = CALENDAR_TIME_LOCALTIME; \
-	(dest).time.date.year = src_year; \
-	(dest).time.date.month = src_month; \
-	(dest).time.date.mday = src_mday; \
-} while (0)
-
 typedef struct {
 	int property_id;
 	union {
@@ -517,7 +504,7 @@ typedef struct {
 		double d;
 		long long int lli;
 		calendar_time_s caltime;
-	}value;
+	} value;
 } cal_search_value_s;
 
 typedef struct {

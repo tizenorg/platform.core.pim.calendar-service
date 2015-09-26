@@ -1,0 +1,5 @@
+[D-BUS Service]
+Name=org.tizen.calendar_service.dbus
+Exec=/bin/false
+User=root
+SystemdServier=calendar-serviced.service

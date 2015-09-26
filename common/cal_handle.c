@@ -40,3 +40,13 @@ int cal_handle_destroy(calendar_h handle)
 	free(h);
 	return CALENDAR_ERROR_NONE;
 }
+
+int cal_handle_get_version(calendar_h handle, int *out_version)
+{
+	RETV_IF(NULL == handle, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == out_version, CALENDAR_ERROR_INVALID_PARAMETER);
+
+	cal_s *h = (cal_s *)handle;
+	*out_version = h->version;
+	return CALENDAR_ERROR_NONE;
+}

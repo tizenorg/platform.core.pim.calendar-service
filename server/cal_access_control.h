@@ -20,19 +20,17 @@
 #ifndef __CALENDAR_SVC_ACCESS_CONTROL_H__
 #define __CALENDAR_SVC_ACCESS_CONTROL_H__
 
-#include <pims-ipc.h>
 #include "cal_typedef.h"
 
 #define CAL_PRIVILEGE_READ "http://tizen.org/privilege/calendar.read"
 #define CAL_PRIVILEGE_WRITE "http://tizen.org/privilege/calendar.write"
 
-void cal_access_control_set_client_info(pims_ipc_h ipc, const char* smack_label);
+void cal_access_control_set_client_info(void *ipc, const char* smack_label);
 void cal_access_control_unset_client_info(void);
 char* cal_access_control_get_label(void);
 void cal_access_control_reset(void);  // reset read_list, write_list..
 bool cal_access_control_have_write_permission(int book_id);
 int cal_is_owner(int book_id);
-bool cal_access_control_have_permission(pims_ipc_h ipc, cal_permission_e permission);
 
 
 #endif /*  __CALENDAR_SVC_ACCESS_CONTROL_H__ */

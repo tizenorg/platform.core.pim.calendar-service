@@ -157,7 +157,7 @@ static int _cal_db_todo_insert_record(calendar_record_h record, int* id)
 			"%d, %lld, ?, ?, "
 			"%d, %lld, ?, ?, "
 			"strftime('%%s', 'now'), %d, "
-			"%d, %d, %ld, "
+			"%d, %d, %d, "
 			"?, ?, ?, ?, "
 			"?, ?, "
 			"%d, %d, "
@@ -277,7 +277,7 @@ static int _cal_db_todo_insert_record(calendar_record_h record, int* id)
 		*id = index;
 	}
 
-	cal_db_rrule_get_rrule_from_todo(record, &rrule);
+	cal_db_rrule_get_rrule_from_record(record, &rrule);
 	cal_db_rrule_insert_record(index, rrule);
 
 	if (todo->alarm_list && 0 < todo->alarm_list->count) {
@@ -369,9 +369,12 @@ static int _cal_db_todo_get_record(int id, calendar_record_h* out_record)
 		return CALENDAR_ERROR_DB_RECORD_NOT_FOUND;
 	}
 
-	if (CALENDAR_ERROR_NONE ==  cal_db_rrule_get_rrule(todo->index, &rrule)) {
-		cal_db_rrule_set_rrule_to_todo(rrule, *out_record);
-		CAL_FREE(rrule);
+	if (CALENDAR_RECURRENCE_NONE != todo->freq) {
+		ret = cal_db_rrule_get_rrule(todo->index, &rrule);
+		if (CALENDAR_ERROR_NONE == ret) {
+			cal_db_rrule_set_rrule_to_record(rrule, *out_record);
+			CAL_FREE(rrule);
+		}
 	}
 
 	if (todo->has_alarm == 1)
@@ -447,7 +450,7 @@ static int _cal_db_todo_update_record(calendar_record_h record)
 			"last_mod = strftime('%%s', 'now'), "
 			"has_alarm = %d, "
 			"system_type = %d, "
-			"updated = %ld, "
+			"updated = %d, "
 			"sync_data1 = ?, "
 			"sync_data2 = ?, "
 			"sync_data3 = ?, "
@@ -568,7 +571,7 @@ static int _cal_db_todo_update_record(calendar_record_h record)
 		return ret;
 	}
 
-	cal_db_rrule_get_rrule_from_todo(record, &rrule);
+	cal_db_rrule_get_rrule_from_record(record, &rrule);
 	cal_db_rrule_update_record(todo->index, rrule);
 	CAL_FREE(rrule);
 
@@ -721,7 +724,7 @@ static int _cal_db_todo_replace_record(calendar_record_h record, int id)
 			"last_mod = strftime('%%s', 'now'), "
 			"has_alarm = %d, "
 			"system_type = %d, "
-			"updated = %ld, "
+			"updated = %d, "
 			"sync_data1 = ?, "
 			"sync_data2 = ?, "
 			"sync_data3 = ?, "
@@ -842,7 +845,7 @@ static int _cal_db_todo_replace_record(calendar_record_h record, int id)
 		return ret;
 	}
 
-	cal_db_rrule_get_rrule_from_todo(record, &rrule);
+	cal_db_rrule_get_rrule_from_record(record, &rrule);
 	cal_db_rrule_update_record(id, rrule);
 	CAL_FREE(rrule);
 

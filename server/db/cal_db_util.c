@@ -46,7 +46,7 @@ static TLS bool event_change=false;
 static TLS bool todo_change=false;
 static TLS bool calendar_change=false;
 
-static inline void _cal_db_util_notify_event_change(void)
+static void _cal_db_util_notify_event_change(void)
 {
 	int fd = open(CAL_NOTI_EVENT_CHANGED, O_TRUNC | O_RDWR);
 	if (0 <= fd) {

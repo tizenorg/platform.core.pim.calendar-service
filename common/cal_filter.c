@@ -93,7 +93,8 @@ API int calendar_filter_add_filter(calendar_filter_h filter, calendar_filter_h a
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_filter_create_attribute(cal_composite_filter_s *com_filter, unsigned int property_id, int match, int filter_type, cal_attribute_filter_s **out_filter)
+static int _cal_filter_create_attribute(cal_composite_filter_s *com_filter,
+		unsigned int property_id, int match, int filter_type, cal_attribute_filter_s **out_filter)
 {
 	cal_attribute_filter_s *filter;
 
@@ -111,7 +112,8 @@ static int _cal_filter_create_attribute(cal_composite_filter_s *com_filter, unsi
 	return CALENDAR_ERROR_NONE;
 }
 
-API int calendar_filter_add_str(calendar_filter_h filter, unsigned int property_id, calendar_match_str_flag_e match, const char* match_value)
+API int calendar_filter_add_str(calendar_filter_h filter, unsigned int property_id,
+		calendar_match_str_flag_e match, const char* match_value)
 {
 	cal_composite_filter_s *com_filter;
 	cal_attribute_filter_s *str_filter;
@@ -136,7 +138,8 @@ API int calendar_filter_add_str(calendar_filter_h filter, unsigned int property_
 	return CALENDAR_ERROR_NONE;
 }
 
-API int calendar_filter_add_int(calendar_filter_h filter, unsigned int property_id, calendar_match_int_flag_e match, int match_value)
+API int calendar_filter_add_int(calendar_filter_h filter, unsigned int property_id,
+		calendar_match_int_flag_e match, int match_value)
 {
 	cal_composite_filter_s *com_filter;
 	cal_attribute_filter_s *int_filter;
@@ -161,7 +164,8 @@ API int calendar_filter_add_int(calendar_filter_h filter, unsigned int property_
 	return CALENDAR_ERROR_NONE;
 }
 
-API int calendar_filter_add_double(calendar_filter_h filter, unsigned int property_id, calendar_match_int_flag_e match, double match_value)
+API int calendar_filter_add_double(calendar_filter_h filter, unsigned int property_id,
+		calendar_match_int_flag_e match, double match_value)
 {
 	cal_composite_filter_s *com_filter;
 	cal_attribute_filter_s *int_filter;
@@ -186,7 +190,8 @@ API int calendar_filter_add_double(calendar_filter_h filter, unsigned int proper
 	return CALENDAR_ERROR_NONE;
 }
 
-API int calendar_filter_add_lli(calendar_filter_h filter, unsigned int property_id, calendar_match_int_flag_e match, long long int match_value)
+API int calendar_filter_add_lli(calendar_filter_h filter, unsigned int property_id,
+		calendar_match_int_flag_e match, long long int match_value)
 {
 	cal_composite_filter_s *com_filter;
 	cal_attribute_filter_s *int_filter;

@@ -175,6 +175,7 @@ API int calendar_record_create(const char* view_uri, calendar_record_h* out_reco
 	RETV_IF(NULL == out_record, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	type =cal_view_get_type(view_uri);
+	DBG("----------------------[%s]", view_uri);
 	RETV_IF(CAL_RECORD_TYPE_INVALID == type, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	cal_record_plugin_cb_s *plugin_cb = cal_record_get_plugin_cb(type);

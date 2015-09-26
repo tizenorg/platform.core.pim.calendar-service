@@ -57,183 +57,123 @@ static int _get_start_date(cal_event_s *event, char **out_month, char **out_mday
 	return CALENDAR_ERROR_NONE;
 }
 
-void cal_db_rrule_get_rrule_from_event(calendar_record_h record, cal_rrule_s **out_rrule)
+void cal_db_rrule_get_rrule_from_record(calendar_record_h record, cal_rrule_s **out_rrule)
 {
 	RET_IF(NULL == record);
 
-	cal_event_s *event = NULL;
-	event = (cal_event_s *)record;
-	if (event->freq == CALENDAR_RECURRENCE_NONE) {
-		return;
-	}
-
 	cal_rrule_s *rrule = NULL;
-	rrule = calloc(1, sizeof(cal_rrule_s));
-	RETM_IF(NULL == rrule, "calloc() Fail");
-
-	rrule->freq = event->freq;
-
-	rrule->range_type = event->range_type;
-	switch (rrule->range_type) {
-	case CALENDAR_RANGE_UNTIL:
-		rrule->until = event->until;
-		break;
-	case CALENDAR_RANGE_COUNT:
-		break;
-	case CALENDAR_RANGE_NONE:
-		break;
-	}
-
-	rrule->count = event->count;
-	rrule->interval = event->interval;
-	rrule->bysecond = event->bysecond;
-	rrule->byminute = event->byminute;
-	rrule->byhour = event->byhour;
-	rrule->byday = event->byday;
-	rrule->bymonthday = event->bymonthday;
-	rrule->byyearday = event->byyearday;
-	rrule->byweekno = event->byweekno;
-	rrule->bymonth = event->bymonth;
-	rrule->bysetpos = event->bysetpos;
-	rrule->wkst = event->wkst;
-
-	/* check default */
-	switch (event->freq) {
-	case CALENDAR_RECURRENCE_YEARLY:
-		if (rrule->bymonth && *rrule->bymonth) {
-			if ((NULL == rrule->bymonthday || '\0' == *rrule->bymonthday) &&
-					(NULL == rrule->byday || '\0' == *rrule->byday)) {
-				DBG("Not enough data, set default");
-				free(rrule->bymonthday);
-				rrule->bymonthday = NULL;
-				_get_start_date(event, NULL, &rrule->bymonthday);
-				DBG("set bymonthday as start time mday[%s]", rrule->bymonthday);
-			}
-		}
-		else if (rrule->byyearday && *rrule->byyearday) {
-
-		}
-		else if (rrule->byweekno && *rrule->byweekno) {
-
-		}
-		else if ((rrule->bymonthday && *rrule->bymonthday) || (rrule->byday && *rrule->byday)) {
-			if (NULL == rrule->bymonth || '\0' == *rrule->bymonth) {
-				DBG("Not enough data, set default");
-				free(rrule->bymonth);
-				rrule->bymonth = NULL;
-				_get_start_date(event, &rrule->bymonth, NULL);
-				DBG("set bymonth as start time month[%s]", rrule->bymonth);
-			}
-		}
-		else {
-			if (NULL == rrule->bymonth || '\0' == *rrule->bymonth) {
-				DBG("Not enough data, set default");
-				free(rrule->bymonth);
-				rrule->bymonth = NULL;
-				free(rrule->bymonthday);
-				rrule->bymonthday = NULL;
-				_get_start_date(event, &rrule->bymonth, &rrule->bymonthday);
-				DBG("set bymonth, bymonthday as start time month[%s], mday[%s]",
-						rrule->bymonth, rrule->bymonthday);
-			}
+	cal_record_s *rec = (cal_record_s *)record;
+	switch (rec->type) {
+	case CAL_RECORD_TYPE_EVENT:
+		if (CALENDAR_RECURRENCE_NONE == ((cal_event_s *)record)->freq)
+			break;
+		rrule = calloc(1, sizeof(cal_rrule_s));
+		if (NULL == rrule)
+			break;
+		rrule->freq = ((cal_event_s *)record)->freq;
+		rrule->interval = ((cal_event_s *)record)->interval;
+		rrule->bysecond = ((cal_event_s *)record)->bysecond;
+		rrule->byminute = ((cal_event_s *)record)->byminute;
+		rrule->byhour = ((cal_event_s *)record)->byhour;
+		rrule->byday = ((cal_event_s *)record)->byday;
+		rrule->bymonthday = ((cal_event_s *)record)->bymonthday;
+		rrule->byyearday = ((cal_event_s *)record)->byyearday;
+		rrule->byweekno = ((cal_event_s *)record)->byweekno;
+		rrule->bymonth = ((cal_event_s *)record)->bymonth;
+		rrule->bysetpos = ((cal_event_s *)record)->bysetpos;
+		rrule->wkst = ((cal_event_s *)record)->wkst;
+		rrule->range_type = ((cal_event_s *)record)->range_type;
+		switch (rrule->range_type) {
+		case CALENDAR_RANGE_UNTIL:
+			rrule->until = ((cal_event_s *)record)->until;
+			break;
+		case CALENDAR_RANGE_COUNT:
+			rrule->count = ((cal_event_s *)record)->count;
+			break;
+		case CALENDAR_RANGE_NONE:
+			break;
 		}
 		break;
-	case CALENDAR_RECURRENCE_MONTHLY:
-		if (NULL == rrule->bymonth || '\0' == *rrule->bymonth) {
-			/* get start time month */
-			free(rrule->bymonth);
-			rrule->bymonth = NULL;
-			_get_start_date(event, &rrule->bymonth, NULL);
-			DBG("set start time month[%s]", rrule->bymonth);
+	case CAL_RECORD_TYPE_TODO:
+		if (CALENDAR_RECURRENCE_NONE == ((cal_todo_s *)record)->freq)
+			break;
+		rrule = calloc(1, sizeof(cal_rrule_s));
+		if (NULL == rrule)
+			break;
+		rrule->freq = ((cal_todo_s *)record)->freq;
+		rrule->interval = ((cal_todo_s *)record)->interval;
+		rrule->bysecond = ((cal_todo_s *)record)->bysecond;
+		rrule->byminute = ((cal_todo_s *)record)->byminute;
+		rrule->byhour = ((cal_todo_s *)record)->byhour;
+		rrule->byday = ((cal_todo_s *)record)->byday;
+		rrule->bymonthday = ((cal_todo_s *)record)->bymonthday;
+		rrule->byyearday = ((cal_todo_s *)record)->byyearday;
+		rrule->byweekno = ((cal_todo_s *)record)->byweekno;
+		rrule->bymonth = ((cal_todo_s *)record)->bymonth;
+		rrule->bysetpos = ((cal_todo_s *)record)->bysetpos;
+		rrule->wkst = ((cal_todo_s *)record)->wkst;
+		rrule->range_type = ((cal_todo_s *)record)->range_type;
+		switch (rrule->range_type) {
+		case CALENDAR_RANGE_UNTIL:
+			rrule->until = ((cal_todo_s *)record)->until;
+			break;
+		case CALENDAR_RANGE_COUNT:
+			rrule->count = ((cal_todo_s *)record)->count;
+			break;
+		case CALENDAR_RANGE_NONE:
+			break;
 		}
+		break;
 	default:
 		break;
 	}
-
 	*out_rrule = rrule;
 }
 
-void cal_db_rrule_set_rrule_to_event(cal_rrule_s *rrule, calendar_record_h event)
+void cal_db_rrule_set_rrule_to_record(cal_rrule_s *rrule, calendar_record_h record)
 {
-	cal_event_s *_event;
-
 	RET_IF(NULL == rrule);
-	RET_IF(NULL == event);
+	RET_IF(NULL == record);
 
-	_event = (cal_event_s *)event;
-
-	_event->freq = rrule->freq;
-	_event->range_type = rrule->range_type;
-	_event->until = rrule->until;
-	_event->count = rrule->count;
-	_event->interval = rrule->interval;
-	_event->bysecond = rrule->bysecond;
-	_event->byminute = rrule->byminute;
-	_event->byhour = rrule->byhour;
-	_event->byday = rrule->byday;
-	_event->bymonthday = rrule->bymonthday;
-	_event->byyearday = rrule->byyearday;
-	_event->byweekno = rrule->byweekno;
-	_event->bymonth = rrule->bymonth;
-	_event->bysetpos = rrule->bysetpos;
-	_event->wkst = rrule->wkst;
-}
-
-void cal_db_rrule_set_rrule_to_todo(cal_rrule_s *rrule, calendar_record_h todo)
-{
-	cal_todo_s *_todo;
-
-	RET_IF(NULL == rrule);
-	RET_IF(NULL == todo);
-
-	_todo = (cal_todo_s *)todo;
-
-	_todo->freq = rrule->freq;
-	_todo->range_type = rrule->range_type;
-	_todo->until = rrule->until;
-	_todo->count = rrule->count;
-	_todo->interval = rrule->interval;
-	_todo->bysecond = rrule->bysecond;
-	_todo->byminute = rrule->byminute;
-	_todo->byhour = rrule->byhour;
-	_todo->byday = rrule->byday;
-	_todo->bymonthday = rrule->bymonthday;
-	_todo->byyearday = rrule->byyearday;
-	_todo->byweekno = rrule->byweekno;
-	_todo->bymonth = rrule->bymonth;
-	_todo->bysetpos = rrule->bysetpos;
-	_todo->wkst = rrule->wkst;
-}
-
-void cal_db_rrule_get_rrule_from_todo(calendar_record_h todo, cal_rrule_s **rrule)
-{
-	cal_rrule_s *_rrule;
-	cal_todo_s *_todo;
-
-	RET_IF(NULL == todo);
-
-	_todo = (cal_todo_s *)todo;
-
-	_rrule = calloc(1, sizeof(cal_rrule_s));
-	RETM_IF(NULL == _rrule, "calloc() Fail");
-
-	_rrule->freq = _todo->freq;
-	_rrule->range_type = _todo->range_type;
-	_rrule->until = _todo->until;
-	_rrule->count = _todo->count;
-	_rrule->interval = _todo->interval;
-	_rrule->bysecond = _todo->bysecond;
-	_rrule->byminute = _todo->byminute;
-	_rrule->byhour = _todo->byhour;
-	_rrule->byday = _todo->byday;
-	_rrule->bymonthday = _todo->bymonthday;
-	_rrule->byyearday = _todo->byyearday;
-	_rrule->byweekno = _todo->byweekno;
-	_rrule->bymonth = _todo->bymonth;
-	_rrule->bysetpos = _todo->bysetpos;
-	_rrule->wkst = _todo->wkst;
-
-	*rrule = _rrule;
+	cal_record_s *rec = (cal_record_s *)record;
+	switch (rec->type) {
+	case CAL_RECORD_TYPE_EVENT:
+		((cal_event_s *)record)->freq = rrule->freq;
+		((cal_event_s *)record)->range_type = rrule->range_type;
+		((cal_event_s *)record)->until = rrule->until;
+		((cal_event_s *)record)->count = rrule->count;
+		((cal_event_s *)record)->interval = rrule->interval;
+		((cal_event_s *)record)->bysecond = rrule->bysecond;
+		((cal_event_s *)record)->byminute = rrule->byminute;
+		((cal_event_s *)record)->byhour = rrule->byhour;
+		((cal_event_s *)record)->byday = rrule->byday;
+		((cal_event_s *)record)->bymonthday = rrule->bymonthday;
+		((cal_event_s *)record)->byyearday = rrule->byyearday;
+		((cal_event_s *)record)->byweekno = rrule->byweekno;
+		((cal_event_s *)record)->bymonth = rrule->bymonth;
+		((cal_event_s *)record)->bysetpos = rrule->bysetpos;
+		((cal_event_s *)record)->wkst = rrule->wkst;
+		break;
+	case CAL_RECORD_TYPE_TODO:
+		((cal_todo_s *)record)->freq = rrule->freq;
+		((cal_todo_s *)record)->range_type = rrule->range_type;
+		((cal_todo_s *)record)->until = rrule->until;
+		((cal_todo_s *)record)->count = rrule->count;
+		((cal_todo_s *)record)->interval = rrule->interval;
+		((cal_todo_s *)record)->bysecond = rrule->bysecond;
+		((cal_todo_s *)record)->byminute = rrule->byminute;
+		((cal_todo_s *)record)->byhour = rrule->byhour;
+		((cal_todo_s *)record)->byday = rrule->byday;
+		((cal_todo_s *)record)->bymonthday = rrule->bymonthday;
+		((cal_todo_s *)record)->byyearday = rrule->byyearday;
+		((cal_todo_s *)record)->byweekno = rrule->byweekno;
+		((cal_todo_s *)record)->bymonth = rrule->bymonth;
+		((cal_todo_s *)record)->bysetpos = rrule->bysetpos;
+		((cal_todo_s *)record)->wkst = rrule->wkst;
+		break;
+	default:
+		break;
+	}
 }
 
 int _cal_db_rrule_insert_record(int id, cal_rrule_s *rrule)
