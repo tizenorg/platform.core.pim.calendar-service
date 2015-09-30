@@ -795,6 +795,8 @@ static int _cal_record_event_set_int(calendar_record_h record, unsigned int prop
 		break;
 	case CAL_PROPERTY_EVENT_WKST:
 		switch (value) {
+		case 0:
+			DBG("set wkst as default");
 		case CALENDAR_SUNDAY:
 		case CALENDAR_MONDAY:
 		case CALENDAR_TUESDAY:

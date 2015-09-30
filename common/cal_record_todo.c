@@ -688,6 +688,8 @@ static int _cal_record_todo_set_int(calendar_record_h record, unsigned int prope
 		break;
 	case CAL_PROPERTY_TODO_WKST:
 		switch (value) {
+		case 0:
+			DBG("set wkst as default");
 		case CALENDAR_SUNDAY:
 		case CALENDAR_MONDAY:
 		case CALENDAR_TUESDAY:
