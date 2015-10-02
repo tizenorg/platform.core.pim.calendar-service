@@ -902,17 +902,7 @@ static int _alert_cb(alarm_id_t alarm_id, void *data)
 
 static void _cal_server_alarm_timechange_cb(keynode_t *node, void *data)
 {
-	int t = 0;
-	int ret = 0;
-
-	if (node)
-		t = vconf_keynode_get_int(node);
-	else
-		vconf_get_int(VCONFKEY_SYSTEM_TIMECHANGE, &t);
-
-	if (t < 0)
-		t = time(NULL);
-
+	time_t t = time(NULL);
 	cal_server_alarm_alert(t);
 	cal_server_alarm_register_next_alarm(t);
 }
