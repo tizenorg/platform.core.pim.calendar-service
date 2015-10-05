@@ -2713,18 +2713,15 @@ static void __work_component_property_valarm_trigger(char *value, calendar_recor
 					case VCAL_RELATED_START:
 						ret = calendar_record_get_caltime(record, _calendar_event.start_time, &caltime);
 						WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_caltime() Fail(%d)", ret);
-						cal_time_modify_caltime(&caltime, tick * unit);
-						ret = cal_record_set_caltime(record, _calendar_event.start_time, caltime);
-						WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_caltime() Fail(%d)", ret);
 						break;
 					case VCAL_RELATED_END:
 						ret = calendar_record_get_caltime(record, _calendar_event.end_time, &caltime);
 						WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_caltime() Fail(%d)", ret);
-						cal_time_modify_caltime(&caltime, tick * unit);
-						ret = cal_record_set_caltime(record, _calendar_event.end_time, caltime);
-						WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_caltime() Fail(%d)", ret);
 						break;
 					}
+					cal_time_modify_caltime(&caltime, tick * unit);
+					ret = cal_record_set_caltime(alarm, _calendar_alarm.alarm_time, caltime);
+					WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_caltime() Fail(%d)", ret);
 					ret = cal_record_set_int(alarm, _calendar_alarm.tick_unit, CALENDAR_ALARM_TIME_UNIT_SPECIFIC);
 					WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
 				}

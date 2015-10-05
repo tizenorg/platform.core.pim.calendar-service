@@ -199,9 +199,9 @@ int cal_server_alarm_get_alert_time(int alarm_id, time_t *tt_alert)
 	RETV_IF(NULL == tt_alert, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
-	snprintf(query, sizeof(query), "SELECT A.event_id,A.remind_tick_unit,A.remind_tick,"
-			"A.alarm_type,A.alarm_utime,A.alarm_datetime,B.type,B.dtstart_type,B.dtend_type "
-			"FROM %s as A, %s as B ON A.event_id = B.id WHERE alarm_id =%d ",
+	snprintf(query, sizeof(query), "SELECT A.event_id, A.remind_tick_unit, A.remind_tick, "
+			"A.alarm_type, A.alarm_utime, A.alarm_datetime, B.type, B.dtstart_type, "
+			"B.dtend_type FROM %s as A, %s as B ON A.event_id =B.id WHERE alarm_id =%d ",
 			CAL_TABLE_ALARM, CAL_TABLE_SCHEDULE, alarm_id);
 
 	sqlite3_stmt *stmt = NULL;
@@ -256,8 +256,8 @@ int cal_server_alarm_get_alert_time(int alarm_id, time_t *tt_alert)
 			st.tm_hour = h;
 			st.tm_min = n;
 			st.tm_sec = s;
-			*tt_alert = (long long int)mktime(&st);
-			DBG("datetime[%s] to %02d:%02d:%02d (%lld)", datetime, h, n, s, *tt_alert);
+			*tt_alert = mktime(&st);
+			DBG("datetime[%s] to %02d:%02d:%02d (%d)", datetime, h, n, s, *tt_alert);
 		}
 		sqlite3_finalize(stmt);
 		return CALENDAR_ERROR_NONE;
@@ -293,7 +293,7 @@ int cal_server_alarm_get_alert_time(int alarm_id, time_t *tt_alert)
 		}
 		break;
 	}
-	DBG("alert_time(%lld) = utime(%lld) - (tick(%d) * unit(%d))", *tt_alert, utime, datetime, tick, unit);
+	DBG("alert_time(%d) = utime(%lld) - (tick(%d) * unit(%d))", *tt_alert, utime, tick, unit);
 
 	*tt_alert = utime - (tick * unit);
 	return CALENDAR_ERROR_NONE;
