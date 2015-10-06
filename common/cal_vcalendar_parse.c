@@ -165,6 +165,31 @@ enum {
 	VCAL_COMPONENT_PROPERTY_VTIMEZONE_MAX,
 };
 
+enum {
+	VCAL_VER_10_DALARM_NONE = 0,
+	VCAL_VER_10_DALARM_RUN_TIME,
+	VCAL_VER_10_DALARM_SNOOZE_TIME,
+	VCAL_VER_10_DALARM_REPEAT_COUNT,
+	VCAL_VER_10_DALARM_DISPLAY_STRING,
+};
+
+enum {
+	VCAL_VER_10_MALARM_NONE = 0,
+	VCAL_VER_10_MALARM_RUN_TIME,
+	VCAL_VER_10_MALARM_SNOOZE_TIME,
+	VCAL_VER_10_MALARM_REPEAT_COUNT,
+	VCAL_VER_10_MALARM_ADDRESS_STRING,
+	VCAL_VER_10_MALARM_NOTE_STRING,
+};
+
+enum {
+	VCAL_VER_10_AALARM_NONE = 0,
+	VCAL_VER_10_AALARM_RUN_TIME,
+	VCAL_VER_10_AALARM_SNOOZE_TIME,
+	VCAL_VER_10_AALARM_REPEAT_COUNT,
+	VCAL_VER_10_AALARM_AUDIO_CONTENT,
+};
+
 static const char *vcal_component[VCAL_COMPONENT_MAX] = {0};
 static void __init_component(void)
 {
@@ -346,15 +371,15 @@ static bool __check_has_rrule(char *stream)
 	return ret;
 }
 
-static void _sub_caltime(calendar_time_s *s, calendar_time_s *a, int *diff)
+static int _sub_caltime(calendar_time_s *s, calendar_time_s *a, int *diff)
 {
-	RET_IF(NULL == s);
-	RET_IF(NULL == a);
-	RET_IF(NULL == diff);
+	RETV_IF(NULL == s, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == a, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == diff, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	if (s->type != a->type) {
 		ERR("Invalid to compare start type(%d) alarm type(%d)", s->type, a->type);
-		return;
+		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 	switch (s->type) {
 	case CALENDAR_TIME_UTIME:
@@ -367,6 +392,7 @@ static void _sub_caltime(calendar_time_s *s, calendar_time_s *a, int *diff)
 					a->time.date.mday, a->time.date.hour, a->time.date.minute, a->time.date.second);
 		break;
 	}
+	return CALENDAR_ERROR_NONE;
 }
 
 static void _get_tick_unit(int t, int *tick, int *unit)
@@ -2289,7 +2315,7 @@ static void __work_component_property_dalarm(char *value, calendar_record_h reco
 
 	int len = g_strv_length(t);
 	int i;
-	int index = 0;
+	int index = VCAL_VER_10_DALARM_NONE;
 	for (i = 0; i < len; i++) {
 		if (index)
 			index++;
@@ -2298,7 +2324,7 @@ static void __work_component_property_dalarm(char *value, calendar_record_h reco
 
 		if ('0' <= *t[i] && *t[i] <= '9' && strlen("PTM") < strlen(t[i])) {
 			/* runTime */
-			index = 1;
+			index = VCAL_VER_10_DALARM_RUN_TIME;
 			calendar_time_s alarm_time = {0};
 			__get_caltime(t[i], &alarm_time, ud);
 			if (true == ud->has_rrule) {
@@ -2306,14 +2332,19 @@ static void __work_component_property_dalarm(char *value, calendar_record_h reco
 				ret = calendar_record_get_caltime(record, _calendar_event.start_time, &start_time);
 
 				int diff = 0;
-				_sub_caltime(&start_time, &alarm_time, &diff);
+				ret = _sub_caltime(&start_time, &alarm_time, &diff);
+				if (CALENDAR_ERROR_NONE != ret) {
+					ERR("_sub_caltime() Fail(%d)", ret);
+					index = VCAL_VER_10_DALARM_NONE;
+					break;
+				}
 				_set_alarm_tick_unit(alarm, alarm_time, diff);
 
 			} else {
 				_set_alarm_tick_unit(alarm, alarm_time, -1); /* -1 goes to specific time */
 			}
 		}
-		else if (4 == index) { /* displayString */
+		else if (VCAL_VER_10_DALARM_DISPLAY_STRING == index) { /* displayString */
 			DBG("displayString [%s]", t[i]);
 			ret = cal_record_set_str(alarm, _calendar_alarm.summary, t[i]);
 			WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
@@ -2324,7 +2355,7 @@ static void __work_component_property_dalarm(char *value, calendar_record_h reco
 		}
 	}
 
-	if (0 == index) {
+	if (VCAL_VER_10_DALARM_NONE == index) {
 		DBG("No alarm");
 		calendar_record_destroy(alarm, true);
 		g_strfreev(t);
@@ -2373,7 +2404,7 @@ static void __work_component_property_malarm(char *value, calendar_record_h reco
 
 	int len = g_strv_length(t);
 	int i;
-	int index = 0;
+	int index = VCAL_VER_10_MALARM_NONE;
 	for (i = 0; i < len; i++) {
 		if (index)
 			index++;
@@ -2382,7 +2413,7 @@ static void __work_component_property_malarm(char *value, calendar_record_h reco
 
 		if ('0' <= *t[i] && *t[i] <= '9' && strlen("PTM") < strlen(t[i])) {
 			/* runTime */
-			index = 1;
+			index = VCAL_VER_10_MALARM_RUN_TIME;
 			calendar_time_s alarm_time = {0};
 			__get_caltime(t[i], &alarm_time, ud);
 			if (true == ud->has_rrule) {
@@ -2391,20 +2422,25 @@ static void __work_component_property_malarm(char *value, calendar_record_h reco
 				WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_caltime() Fail(%d)", ret);
 
 				int diff = 0;
-				_sub_caltime(&start_time, &alarm_time, &diff);
+				ret = _sub_caltime(&start_time, &alarm_time, &diff);
+				if (CALENDAR_ERROR_NONE != ret) {
+					ERR("_sub_caltime() Fail(%d)", ret);
+					index = VCAL_VER_10_MALARM_NONE;
+					break;
+				}
 				_set_alarm_tick_unit(alarm, alarm_time, diff);
 
 			} else {
 				_set_alarm_tick_unit(alarm, alarm_time, -1); /* -1 goes to specific time */
 			}
 		}
-		else if (4 == index) { /* addressString */
+		else if (VCAL_VER_10_MALARM_ADDRESS_STRING == index) { /* addressString */
 			DBG("addressString [%s]", t[i]);
 			ret = cal_record_set_str(alarm, _calendar_alarm.attach, t[i]);
 			WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
 
 		}
-		else if (5 == index) { /* noteString */
+		else if (VCAL_VER_10_MALARM_NOTE_STRING == index) { /* noteString */
 			DBG("noteString [%s]", t[i]);
 			ret = cal_record_set_str(alarm, _calendar_alarm.description, t[i]);
 			WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
@@ -2415,7 +2451,7 @@ static void __work_component_property_malarm(char *value, calendar_record_h reco
 		}
 	}
 
-	if (0 == index) {
+	if (VCAL_VER_10_MALARM_NONE == index) {
 		DBG("No alarm");
 		calendar_record_destroy(alarm, true);
 		g_strfreev(t);
@@ -2466,7 +2502,7 @@ static void __work_component_property_aalarm(char *value, calendar_record_h reco
 
 	int len = g_strv_length(t);
 	int i;
-	int index = 0;
+	int index = VCAL_VER_10_AALARM_NONE;
 	for (i = 0; i < len; i++) {
 		if (index)
 			index++;
@@ -2475,7 +2511,7 @@ static void __work_component_property_aalarm(char *value, calendar_record_h reco
 
 		if ('0' <= *t[i] && *t[i] <= '9' && strlen("PTM") < strlen(t[i])) {
 			/* runTime */
-			index = 1;
+			index = VCAL_VER_10_AALARM_RUN_TIME;
 			calendar_time_s alarm_time = {0};
 			__get_caltime(t[i], &alarm_time, ud);
 			if (true == ud->has_rrule) {
@@ -2483,14 +2519,19 @@ static void __work_component_property_aalarm(char *value, calendar_record_h reco
 				ret = calendar_record_get_caltime(record, _calendar_event.start_time, &start_time);
 
 				int diff = 0;
-				_sub_caltime(&start_time, &alarm_time, &diff);
+				ret = _sub_caltime(&start_time, &alarm_time, &diff);
+				if (CALENDAR_ERROR_NONE != ret) {
+					ERR("_sub_caltime() Fail(%d)", ret);
+					index = VCAL_VER_10_AALARM_NONE;
+					break;
+				}
 				_set_alarm_tick_unit(alarm, alarm_time, diff);
 
 			} else {
 				_set_alarm_tick_unit(alarm, alarm_time, -1); /* -1 goes to specific time */
 			}
 		}
-		else if (4 == index) {
+		else if (VCAL_VER_10_AALARM_AUDIO_CONTENT == index) {
 			/* audioContent */
 			DBG("Content [%s]", t[i]);
 			ret = cal_record_set_str(alarm, _calendar_alarm.attach, t[i]);
@@ -2501,7 +2542,7 @@ static void __work_component_property_aalarm(char *value, calendar_record_h reco
 		}
 	}
 
-	if (0 == index) {
+	if (VCAL_VER_10_AALARM_NONE == index) {
 		DBG("No alarm");
 		calendar_record_destroy(alarm, true);
 		g_strfreev(t);
