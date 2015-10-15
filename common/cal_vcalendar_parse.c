@@ -1565,7 +1565,9 @@ static void __work_component_property_rrule_ver_1(char *value, calendar_record_h
 
 	int i;
 	for (i = 0; i < len; i++) {
-		if (NULL == t[i] || '\0' == *t[i]) continue;
+		if (NULL == t[i] || '\0' == *t[i])
+			continue;
+
 		DBG("[%s]", t[i]);
 
 		if (true == __is_wday_string(t[i])) {

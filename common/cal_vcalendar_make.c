@@ -510,34 +510,31 @@ static void _cal_vcalendar_make_alarm(cal_make_s *b, calendar_record_h alarm)
 
 int _cal_vcalendar_make_rrule_append_mday(char *buf, int buf_len, char *mday)
 {
-	int i;
-	int num;
-	int length = 0;
+	int ret = 0;
+
+	RETV_IF(NULL == buf, 0);
+	RETV_IF(NULL == mday, 0);
+
 	char **t = NULL;
-	char *p = NULL;
-
-	RETV_IF(NULL == buf, CALENDAR_ERROR_INVALID_PARAMETER);
-	RETV_IF(NULL == mday, CALENDAR_ERROR_INVALID_PARAMETER);
-
 	t = g_strsplit_set(mday, " ,", -1);
 	if (!t) {
 		ERR("g_strsplit_set() Fail");
 		g_strfreev(t);
-		return CALENDAR_ERROR_OUT_OF_MEMORY;
+		return 0;
 	}
 	int len = strlen(buf);
-	length = g_strv_length(t);
-	for (i = 0; i < length; i++) {
+	int tlen = g_strv_length(t);
+	int i;
+	for (i = 0; i < tlen; i++) {
 		if (*t[i] == '\0')
 			continue;
 
-		p = t[i];
-		num = atoi(p);
-		len += snprintf(buf +len, buf_len -len, "%d%s ", num, 0 < num? "": "-");
+		int num = atoi(t[i]);
+		ret = snprintf(buf +len, buf_len -len, "%d%s", num, 0 < num? " ": "- ");
 	}
 	g_strfreev(t);
 
-	return CALENDAR_ERROR_NONE;
+	return ret;
 }
 
 static void _cal_vcalendar_make_rrule_append_setpos(calendar_record_h record, char *buf, int buf_len)
@@ -991,9 +988,9 @@ static void __make_rrule_ver1(cal_make_s *b, calendar_record_h record)
 	switch (freq) {
 	case CALENDAR_RECURRENCE_YEARLY:
 		if (bymonth && *bymonth) {
-			DBG("bymonth");
+			DBG("bymonth[%s]", bymonth);
 			len += snprintf(buf +len, sizeof(buf) -len, "YM%d ", interval);
-			_cal_vcalendar_make_rrule_append_mday(buf, sizeof(buf), bymonth);
+			len +=_cal_vcalendar_make_rrule_append_mday(buf, sizeof(buf), bymonth);
 
 			if (byday && *byday) {
 				DBG("byday");
