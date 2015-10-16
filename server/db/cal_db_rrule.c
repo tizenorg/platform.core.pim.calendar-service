@@ -26,27 +26,51 @@
 #include "cal_time.h"
 #include "cal_utils.h"
 
-
-void cal_db_rrule_get_rrule_from_event(calendar_record_h event, cal_rrule_s **rrule)
+static int _set_default_bymonth(cal_event_s *event, char **out_bymonth)
 {
-	cal_rrule_s *_rrule;
-	cal_event_s *_event;
+	RETV_IF(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == out_bymonth, CALENDAR_ERROR_INVALID_PARAMETER);
 
-	RET_IF(NULL == event);
-	_event = (cal_event_s *)event;
-	if (_event->freq == CALENDAR_RECURRENCE_NONE) {
+	int m = 0;
+
+	switch (event->start.type) {
+	case CALENDAR_TIME_UTIME:
+		cal_time_get_local_datetime(event->start_tzid, event->start.time.utime,
+				NULL, &m, NULL, NULL, NULL, NULL);
+		break;
+	case CALENDAR_TIME_LOCALTIME:
+		m = event->start.time.date.month;
+		break;
+	}
+
+	char buf[CAL_STR_SHORT_LEN32] = {0};
+	snprintf(buf, sizeof(buf), "%d", m);
+	DBG("set default month(%d)", m);
+	*out_bymonth = strdup(buf);
+
+	return CALENDAR_ERROR_NONE;
+}
+
+void cal_db_rrule_get_rrule_from_event(calendar_record_h record, cal_rrule_s **out_rrule)
+{
+	RET_IF(NULL == record);
+
+	cal_event_s *event = NULL;
+	event = (cal_event_s *)record;
+	if (event->freq == CALENDAR_RECURRENCE_NONE) {
 		return;
 	}
 
-	_rrule = calloc(1, sizeof(cal_rrule_s));
-	RETM_IF(NULL == _rrule, "calloc() Fail");
+	cal_rrule_s *rrule = NULL;
+	rrule = calloc(1, sizeof(cal_rrule_s));
+	RETM_IF(NULL == rrule, "calloc() Fail");
 
-	_rrule->freq = _event->freq;
+	rrule->freq = event->freq;
 
-	_rrule->range_type = _event->range_type;
-	switch (_rrule->range_type) {
+	rrule->range_type = event->range_type;
+	switch (rrule->range_type) {
 	case CALENDAR_RANGE_UNTIL:
-		_rrule->until = _event->until;
+		rrule->until = event->until;
 		break;
 	case CALENDAR_RANGE_COUNT:
 		break;
@@ -54,20 +78,44 @@ void cal_db_rrule_get_rrule_from_event(calendar_record_h event, cal_rrule_s **rr
 		break;
 	}
 
-	_rrule->count = _event->count;
-	_rrule->interval = _event->interval;
-	_rrule->bysecond = _event->bysecond;
-	_rrule->byminute = _event->byminute;
-	_rrule->byhour = _event->byhour;
-	_rrule->byday = _event->byday;
-	_rrule->bymonthday = _event->bymonthday;
-	_rrule->byyearday = _event->byyearday;
-	_rrule->byweekno = _event->byweekno;
-	_rrule->bymonth = _event->bymonth;
-	_rrule->bysetpos = _event->bysetpos;
-	_rrule->wkst = _event->wkst;
+	rrule->count = event->count;
+	rrule->interval = event->interval;
+	rrule->bysecond = event->bysecond;
+	rrule->byminute = event->byminute;
+	rrule->byhour = event->byhour;
+	rrule->byday = event->byday;
+	rrule->bymonthday = event->bymonthday;
+	rrule->byyearday = event->byyearday;
+	rrule->byweekno = event->byweekno;
+	rrule->bymonth = event->bymonth;
+	rrule->bysetpos = event->bysetpos;
+	rrule->wkst = event->wkst;
 
-	*rrule = _rrule;
+	/* check default */
+	switch (event->freq) {
+	case CALENDAR_RECURRENCE_YEARLY:
+		if ((rrule->bymonthday && *rrule->bymonthday) || (rrule->byday && *rrule->byday)) {
+			if (NULL == rrule->bymonth || '\0' == *rrule->bymonth) {
+				free(rrule->bymonth);
+				rrule->bymonth = NULL;
+				_set_default_bymonth(event, &rrule->bymonth);
+				DBG("set start time month[%s]", rrule->bymonth);
+			}
+		}
+		break;
+	case CALENDAR_RECURRENCE_MONTHLY:
+		if (NULL == rrule->bymonth || '\0' == *rrule->bymonth) {
+			/* get start time month */
+			free(rrule->bymonth);
+			rrule->bymonth = NULL;
+			_set_default_bymonth(event, &rrule->bymonth);
+			DBG("set start time month[%s]", rrule->bymonth);
+		}
+	default:
+		break;
+	}
+
+	*out_rrule = rrule;
 }
 
 void cal_db_rrule_set_rrule_to_event(cal_rrule_s *rrule, calendar_record_h event)
