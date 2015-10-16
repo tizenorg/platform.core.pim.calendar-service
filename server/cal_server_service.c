@@ -25,6 +25,7 @@
 #include "cal_view.h"
 #include "cal_mutex.h"
 #include "cal_utils.h"
+#include "cal_mutex.h"
 
 static int cal_total_connection = 0;
 static TLS int cal_thread_connection = 0;
@@ -110,6 +111,5 @@ void cal_service_internal_disconnect(void)
 		}
 	}
 	cal_mutex_unlock(CAL_MUTEX_CONNECTION);
-
 	return CALENDAR_ERROR_NONE;
 }
