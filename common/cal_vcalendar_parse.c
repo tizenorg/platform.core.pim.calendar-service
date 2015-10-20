@@ -371,15 +371,38 @@ static bool __check_has_rrule(char *stream)
 	return ret;
 }
 
-static int _sub_caltime(calendar_time_s *s, calendar_time_s *a, int *diff)
+static int _sub_caltime(struct user_data *ud, calendar_time_s *s, calendar_time_s *a, int *diff)
 {
 	RETV_IF(NULL == s, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == a, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == diff, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	if (s->type != a->type) {
-		ERR("Invalid to compare start type(%d) alarm type(%d)", s->type, a->type);
-		return CALENDAR_ERROR_INVALID_PARAMETER;
+		WARN("This is strange. start type(%d) alarm type(%d)", s->type, a->type);
+		char *tz = NULL;
+		if (ud->timezone_tzid)
+			tz = ud->timezone_tzid;
+		else if (ud->datetime_tzid)
+			tz = ud->datetime_tzid;
+		else
+			tz = NULL;
+
+		long long int lli = 0;
+		if (CALENDAR_TIME_LOCALTIME == s->type) {
+			lli = cal_time_convert_itol(tz, s->time.date.year, s->time.date.month,
+					s->time.date.mday, s->time.date.hour, s->time.date.minute,
+					s->time.date.second);
+			*diff = lli - a->time.utime;
+			DBG("Convert start localtime with tz[%s] and get(%lld)", tz, lli);
+		}
+		else {
+			lli = cal_time_convert_itol(tz, a->time.date.year, a->time.date.month,
+					a->time.date.mday, a->time.date.hour, a->time.date.minute,
+					a->time.date.second);
+			*diff = s->time.utime - lli;
+			DBG("Convert alarm localtime with tz[%s] and get(%lld)", tz, lli);
+		}
+		return CALENDAR_ERROR_NONE;
 	}
 	switch (s->type) {
 	case CALENDAR_TIME_UTIME:
@@ -982,12 +1005,14 @@ static void __get_version(char *value, int *version)
 	DBG("version(%d)", *version);
 }
 
-static void __get_caltime(char *p, calendar_time_s *caltime, struct user_data *ud)
+static int _get_caltime(char *p, calendar_time_s *caltime, struct user_data *ud)
 {
-	RET_IF(NULL == p);
-	RET_IF('\0' == *p);
-	RET_IF(NULL == caltime);
-	RET_IF(NULL == ud);
+	RETV_IF(NULL == p, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF('\0' == *p, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == caltime, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == ud, CALENDAR_ERROR_INVALID_PARAMETER);
+
+	int ret = CALENDAR_ERROR_NONE;
 
 	switch (strlen(p)) {
 	case VCAL_DATETIME_LENGTH_YYYYMMDD:
@@ -1005,30 +1030,36 @@ static void __get_caltime(char *p, calendar_time_s *caltime, struct user_data *u
 		sscanf(p, CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS,
 				&(caltime->time.date.year), &(caltime->time.date.month), &(caltime->time.date.mday),
 				&(caltime->time.date.hour), &(caltime->time.date.minute), &(caltime->time.date.second));
-		if (NULL == ud->datetime_tzid || '\0' == *ud->datetime_tzid) {
-			if (NULL == ud->timezone_tzid || '\0' == *ud->timezone_tzid) {
-				/* Without tzid is localtime */
-				caltime->type = CALENDAR_TIME_LOCALTIME;
-				DBG(CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS,
-						caltime->time.date.year, caltime->time.date.month, caltime->time.date.mday,
-						caltime->time.date.hour, caltime->time.date.minute, caltime->time.date.second);
+
+		if (VCAL_VER_1 == ud->version) {
+			caltime->type = CALENDAR_TIME_LOCALTIME;
+		}
+		else {
+			if (NULL == ud->datetime_tzid || '\0' == *ud->datetime_tzid) {
+				if (NULL == ud->timezone_tzid || '\0' == *ud->timezone_tzid) {
+					/* Without tzid is localtime */
+					caltime->type = CALENDAR_TIME_LOCALTIME;
+					DBG(CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS,
+							caltime->time.date.year, caltime->time.date.month, caltime->time.date.mday,
+							caltime->time.date.hour, caltime->time.date.minute, caltime->time.date.second);
+				}
+				else {
+					/* No 'Z' with tzid means utime */
+					caltime->type = CALENDAR_TIME_UTIME;
+					caltime->time.utime = cal_time_convert_itol(ud->timezone_tzid,
+							caltime->time.date.year, caltime->time.date.month, caltime->time.date.mday,
+							caltime->time.date.hour, caltime->time.date.minute, caltime->time.date.second);
+					DBG("timezone_tzid[%s] (%lld)", ud->timezone_tzid, caltime->time.utime);
+				}
 			}
 			else {
 				/* No 'Z' with tzid means utime */
 				caltime->type = CALENDAR_TIME_UTIME;
-				caltime->time.utime = cal_time_convert_itol(ud->timezone_tzid,
+				caltime->time.utime = cal_time_convert_itol(ud->datetime_tzid,
 						caltime->time.date.year, caltime->time.date.month, caltime->time.date.mday,
 						caltime->time.date.hour, caltime->time.date.minute, caltime->time.date.second);
-				DBG("timezone_tzid[%s] (%lld)", ud->timezone_tzid, caltime->time.utime);
+				DBG("datetime_tzid[%s] (%lld)", ud->datetime_tzid, caltime->time.utime);
 			}
-		}
-		else {
-			/* No 'Z' with tzid means utime */
-			caltime->type = CALENDAR_TIME_UTIME;
-			caltime->time.utime = cal_time_convert_itol(ud->datetime_tzid,
-					caltime->time.date.year, caltime->time.date.month, caltime->time.date.mday,
-					caltime->time.date.hour, caltime->time.date.minute, caltime->time.date.second);
-			DBG("datetime_tzid[%s] (%lld)", ud->datetime_tzid, caltime->time.utime);
 		}
 		break;
 	case VCAL_DATETIME_LENGTH_YYYYMMDDTHHMMSSZ:
@@ -1050,7 +1081,12 @@ static void __get_caltime(char *p, calendar_time_s *caltime, struct user_data *u
 			DBG("(%lld)", caltime->time.utime);
 		}
 		break;
+	default:
+		ERR("Invalid time format[%s]", p);
+		ret = CALENDAR_ERROR_INVALID_PARAMETER;
+		break;
 	}
+	return ret;
 }
 
 /*
@@ -1178,11 +1214,16 @@ static void __work_component_property_dtstart(char *value, calendar_record_h rec
 	RET_IF(NULL == record);
 	RET_IF(NULL == ud);
 
+	int ret = 0;
+
 	value = __decode_datetime(value, ud);
 	calendar_time_s dtstart = {0};
-	__get_caltime(value, &dtstart, ud);
+	ret = _get_caltime(value, &dtstart, ud);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("_get_caltime() Fail(%d)", ret);
+		return;
+	}
 
-	int ret = 0;
 	char *tzid = NULL;
 	tzid = ud->datetime_tzid ? ud->datetime_tzid : (ud->timezone_tzid ? ud->timezone_tzid : NULL);
 
@@ -1217,7 +1258,7 @@ static void __work_component_property_dtstart(char *value, calendar_record_h rec
 		return;
 
 	int diff = 0;
-	_sub_caltime(&dtstart, &dtend, &diff);
+	_sub_caltime(ud, &dtstart, &dtend, &diff);
 	if (diff <= 0) /* proper data */
 		return;
 
@@ -1711,7 +1752,7 @@ static void __work_component_property_rrule_ver_1(char *value, calendar_record_h
 				if ('0' <= *t[i] && *t[i] <= '9' && strlen("YYYYMMDDTHHMMSS") <= strlen(t[i])) {
 					DBG("until");
 					calendar_time_s caltime = {0};
-					__get_caltime(t[i], &caltime, ud);
+					_get_caltime(t[i], &caltime, ud);
 					ret = cal_record_set_int(record, _calendar_event.range_type, CALENDAR_RANGE_UNTIL);
 					WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
 					ret = cal_record_set_caltime(record, _calendar_event.until_time, caltime);
@@ -1792,7 +1833,7 @@ static void __work_component_property_rrule_ver_2(char *value, calendar_record_h
 		}
 		else if (CAL_STRING_EQUAL == strncmp(t[i], "UNTIL=", strlen("UNTIL="))) {
 			calendar_time_s caltime = {0};
-			__get_caltime(t[i] + strlen("UNTIL="), &caltime, ud);
+			_get_caltime(t[i] + strlen("UNTIL="), &caltime, ud);
 			ret = cal_record_set_caltime(record, _calendar_event.until_time, caltime);
 			WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_caltime() Fail(%d)", ret);
 			ret = cal_record_set_int(record, _calendar_event.range_type, CALENDAR_RANGE_UNTIL);
@@ -1904,14 +1945,18 @@ static void __work_component_property_dtend(char *value, calendar_record_h recor
 	RET_IF(NULL == record);
 	RET_IF(NULL == ud);
 
+	int ret = 0;
+
 	value = __decode_datetime(value, ud);
 	calendar_time_s dtend = {0};
-	__get_caltime(value, &dtend, ud);
+	ret = _get_caltime(value, &dtend, ud);
+	if (CALENDAR_ERROR_NONE != ret) {
+		ERR("_get_caltime() Fail(%d)", ret);
+		return;
+	}
 
-	int ret = 0;
 	char *tzid = NULL;
 	tzid = ud->datetime_tzid ? ud->datetime_tzid : (ud->timezone_tzid ? ud->timezone_tzid : NULL);
-
 
 	/* check if dtend is earlier than dtstart. */
 	do {
@@ -1926,7 +1971,7 @@ static void __work_component_property_dtend(char *value, calendar_record_h recor
 			break;
 
 		int diff = 0;
-		_sub_caltime(&dtstart, &dtend, &diff);
+		_sub_caltime(ud, &dtstart, &dtend, &diff);
 		if (diff <= 0) /* proper data */
 			break;
 
@@ -2328,13 +2373,19 @@ static void __work_component_property_dalarm(char *value, calendar_record_h reco
 			/* runTime */
 			index = VCAL_VER_10_DALARM_RUN_TIME;
 			calendar_time_s alarm_time = {0};
-			__get_caltime(t[i], &alarm_time, ud);
+			ret = _get_caltime(t[i], &alarm_time, ud);
+			if (CALENDAR_ERROR_NONE != ret) {
+				ERR("_get_caltime() Fail(%d)", ret);
+				index = VCAL_VER_10_AALARM_NONE;
+				break;
+			}
+
 			if (true == ud->has_rrule) {
 				calendar_time_s start_time = {0};
 				ret = calendar_record_get_caltime(record, _calendar_event.start_time, &start_time);
 
 				int diff = 0;
-				ret = _sub_caltime(&start_time, &alarm_time, &diff);
+				ret = _sub_caltime(ud, &start_time, &alarm_time, &diff);
 				if (CALENDAR_ERROR_NONE != ret) {
 					ERR("_sub_caltime() Fail(%d)", ret);
 					index = VCAL_VER_10_DALARM_NONE;
@@ -2417,14 +2468,20 @@ static void __work_component_property_malarm(char *value, calendar_record_h reco
 			/* runTime */
 			index = VCAL_VER_10_MALARM_RUN_TIME;
 			calendar_time_s alarm_time = {0};
-			__get_caltime(t[i], &alarm_time, ud);
+			ret = _get_caltime(t[i], &alarm_time, ud);
+			if (CALENDAR_ERROR_NONE != ret) {
+				ERR("_get_caltime() Fail(%d)", ret);
+				index = VCAL_VER_10_AALARM_NONE;
+				break;
+			}
+
 			if (true == ud->has_rrule) {
 				calendar_time_s start_time = {0};
 				ret = calendar_record_get_caltime(record, _calendar_event.start_time, &start_time);
 				WARN_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_caltime() Fail(%d)", ret);
 
 				int diff = 0;
-				ret = _sub_caltime(&start_time, &alarm_time, &diff);
+				ret = _sub_caltime(ud, &start_time, &alarm_time, &diff);
 				if (CALENDAR_ERROR_NONE != ret) {
 					ERR("_sub_caltime() Fail(%d)", ret);
 					index = VCAL_VER_10_MALARM_NONE;
@@ -2515,13 +2572,19 @@ static void __work_component_property_aalarm(char *value, calendar_record_h reco
 			/* runTime */
 			index = VCAL_VER_10_AALARM_RUN_TIME;
 			calendar_time_s alarm_time = {0};
-			__get_caltime(t[i], &alarm_time, ud);
+			ret = _get_caltime(t[i], &alarm_time, ud);
+			if (CALENDAR_ERROR_NONE != ret) {
+				ERR("_get_caltime() Fail(%d)", ret);
+				index = VCAL_VER_10_AALARM_NONE;
+				break;
+			}
+
 			if (true == ud->has_rrule) {
 				calendar_time_s start_time = {0};
 				ret = calendar_record_get_caltime(record, _calendar_event.start_time, &start_time);
 
 				int diff = 0;
-				ret = _sub_caltime(&start_time, &alarm_time, &diff);
+				ret = _sub_caltime(ud, &start_time, &alarm_time, &diff);
 				if (CALENDAR_ERROR_NONE != ret) {
 					ERR("_sub_caltime() Fail(%d)", ret);
 					index = VCAL_VER_10_AALARM_NONE;
@@ -2725,7 +2788,7 @@ static void __work_component_property_valarm_trigger(char *value, calendar_recor
 		else {
 			if ('0' <= *t[i] && *t[i] <= '9' && strlen("YYYYDDMM") <= strlen(t[i])) {
 				calendar_time_s caltime = {0};
-				__get_caltime(t[i], &caltime, ud);
+				_get_caltime(t[i], &caltime, ud);
 				ret = cal_record_set_caltime(alarm, _calendar_alarm.alarm_time, caltime);
 				WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_caltime() Fail(%d)", ret);
 				ret = cal_record_set_int(alarm, _calendar_alarm.tick_unit, CALENDAR_ALARM_TIME_UNIT_SPECIFIC);
