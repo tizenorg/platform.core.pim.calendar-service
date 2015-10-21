@@ -26,27 +26,33 @@
 #include "cal_time.h"
 #include "cal_utils.h"
 
-static int _set_default_bymonth(cal_event_s *event, char **out_bymonth)
+static int _get_start_date(cal_event_s *event, char **out_month, char **out_mday)
 {
 	RETV_IF(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER);
-	RETV_IF(NULL == out_bymonth, CALENDAR_ERROR_INVALID_PARAMETER);
 
-	int m = 0;
+	int month = 0;
+	int mday = 0;
 
 	switch (event->start.type) {
 	case CALENDAR_TIME_UTIME:
 		cal_time_get_local_datetime(event->start_tzid, event->start.time.utime,
-				NULL, &m, NULL, NULL, NULL, NULL);
+				NULL, &month, &mday, NULL, NULL, NULL);
 		break;
 	case CALENDAR_TIME_LOCALTIME:
-		m = event->start.time.date.month;
+		month = event->start.time.date.month;
+		mday = event->start.time.date.mday;
 		break;
 	}
 
 	char buf[CAL_STR_SHORT_LEN32] = {0};
-	snprintf(buf, sizeof(buf), "%d", m);
-	DBG("set default month(%d)", m);
-	*out_bymonth = strdup(buf);
+	if (out_month) {
+		snprintf(buf, sizeof(buf), "%d", month);
+		*out_month = strdup(buf);
+	}
+	if (out_mday) {
+		snprintf(buf, sizeof(buf), "%d", mday);
+		*out_mday = strdup(buf);
+	}
 
 	return CALENDAR_ERROR_NONE;
 }
@@ -94,12 +100,41 @@ void cal_db_rrule_get_rrule_from_event(calendar_record_h record, cal_rrule_s **o
 	/* check default */
 	switch (event->freq) {
 	case CALENDAR_RECURRENCE_YEARLY:
-		if ((rrule->bymonthday && *rrule->bymonthday) || (rrule->byday && *rrule->byday)) {
+		if (rrule->bymonth && *rrule->bymonth) {
+			if ((NULL == rrule->bymonthday || '\0' == *rrule->bymonthday) &&
+					(NULL == rrule->byday || '\0' == *rrule->byday)) {
+				DBG("Not enough data, set default");
+				free(rrule->bymonthday);
+				rrule->bymonthday = NULL;
+				_get_start_date(event, NULL, &rrule->bymonthday);
+				DBG("set bymonthday as start time mday[%s]", rrule->bymonthday);
+			}
+		}
+		else if (rrule->byyearday && *rrule->byyearday) {
+
+		}
+		else if (rrule->byweekno && *rrule->byweekno) {
+
+		}
+		else if ((rrule->bymonthday && *rrule->bymonthday) || (rrule->byday && *rrule->byday)) {
 			if (NULL == rrule->bymonth || '\0' == *rrule->bymonth) {
+				DBG("Not enough data, set default");
 				free(rrule->bymonth);
 				rrule->bymonth = NULL;
-				_set_default_bymonth(event, &rrule->bymonth);
-				DBG("set start time month[%s]", rrule->bymonth);
+				_get_start_date(event, &rrule->bymonth, NULL);
+				DBG("set bymonth as start time month[%s]", rrule->bymonth);
+			}
+		}
+		else {
+			if (NULL == rrule->bymonth || '\0' == *rrule->bymonth) {
+				DBG("Not enough data, set default");
+				free(rrule->bymonth);
+				rrule->bymonth = NULL;
+				free(rrule->bymonthday);
+				rrule->bymonthday = NULL;
+				_get_start_date(event, &rrule->bymonth, &rrule->bymonthday);
+				DBG("set bymonth, bymonthday as start time month[%s], mday[%s]",
+						rrule->bymonth, rrule->bymonthday);
 			}
 		}
 		break;
@@ -108,7 +143,7 @@ void cal_db_rrule_get_rrule_from_event(calendar_record_h record, cal_rrule_s **o
 			/* get start time month */
 			free(rrule->bymonth);
 			rrule->bymonth = NULL;
-			_set_default_bymonth(event, &rrule->bymonth);
+			_get_start_date(event, &rrule->bymonth, NULL);
 			DBG("set start time month[%s]", rrule->bymonth);
 		}
 	default:
