@@ -98,39 +98,30 @@ static bool _cal_db_calendar_check_value_validation(cal_book_s* calendar)
 
 static int _cal_db_calendar_insert_record(calendar_record_h record, int* id)
 {
-	char query[CAL_DB_SQL_MAX_LEN];
-	int index = 0;
-	sqlite3_stmt *stmt;
-	cal_book_s* calendar =  (cal_book_s*)(record);
+	CAL_FN_CALL();
+
 	int ret = 0;
-	char *client_label = NULL;
 
-	RETV_IF(NULL == calendar, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 
-	if (false == _cal_db_calendar_check_value_validation(calendar)) {
+	cal_book_s *book =  (cal_book_s *)(record);
+	if (false == _cal_db_calendar_check_value_validation(book)) {
 		ERR("cal_db_calendar_check_value_validation() Fail");
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
+	char *client_label = NULL;
 	client_label = cal_access_control_get_label();
 
-	sprintf(query,"INSERT INTO %s(uid,updated,name,description,"
-			"color,location,"
-			"visibility,"
-			"sync_event,"
-			"account_id,store_type,sync_data1,sync_data2,sync_data3,sync_data4,"
-			"mode, owner_label) "
-			"VALUES(?, %ld, ?, ?, ?, ?, %d, %d, %d, %d"
-			", ?, ?, ?, ?"
-			", %d, ?)",
-			CAL_TABLE_CALENDAR,
-			calendar->updated,
-			calendar->visibility,
-			calendar->sync_event,
-			calendar->account_id,
-			calendar->store_type,
-			calendar->mode);
+	char query[CAL_DB_SQL_MAX_LEN];
+	snprintf(query, sizeof(query), "INSERT INTO %s (uid, updated, name, description, "
+			"color, location, visibility, sync_event, account_id, store_type, "
+			"sync_data1, sync_data2, sync_data3, sync_data4, mode, owner_label) "
+			"VALUES (?, %ld, ?, ?, ?, ?, %d, %d, %d, %d, ?, ?, ?, ?, %d, ?)",
+			CAL_TABLE_CALENDAR, book->updated, book->visibility, book->sync_event,
+			book->account_id, book->store_type, book->mode);
 
+	sqlite3_stmt *stmt = NULL;
 	ret = cal_db_util_query_prepare(query, &stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
@@ -139,35 +130,38 @@ static int _cal_db_calendar_insert_record(calendar_record_h record, int* id)
 		return ret;
 	}
 
-	if (calendar->uid)
-		cal_db_util_stmt_bind_text(stmt, 1, calendar->uid);
-	if (calendar->name)
-		cal_db_util_stmt_bind_text(stmt, 2, calendar->name);
-	if (calendar->description)
-		cal_db_util_stmt_bind_text(stmt, 3, calendar->description);
-	if (calendar->color)
-		cal_db_util_stmt_bind_text(stmt, 4, calendar->color);
-	if (calendar->location)
-		cal_db_util_stmt_bind_text(stmt, 5, calendar->location);
-	if (calendar->sync_data1)
-		cal_db_util_stmt_bind_text(stmt, 6, calendar->sync_data1);
-	if (calendar->sync_data2)
-		cal_db_util_stmt_bind_text(stmt, 7, calendar->sync_data2);
-	if (calendar->sync_data3)
-		cal_db_util_stmt_bind_text(stmt, 8, calendar->sync_data3);
-	if (calendar->sync_data4)
-		cal_db_util_stmt_bind_text(stmt, 9, calendar->sync_data4);
+	if (book->uid)
+		cal_db_util_stmt_bind_text(stmt, 1, book->uid);
+	if (book->name)
+		cal_db_util_stmt_bind_text(stmt, 2, book->name);
+	if (book->description)
+		cal_db_util_stmt_bind_text(stmt, 3, book->description);
+	if (book->color)
+		cal_db_util_stmt_bind_text(stmt, 4, book->color);
+	if (book->location)
+		cal_db_util_stmt_bind_text(stmt, 5, book->location);
+	if (book->sync_data1)
+		cal_db_util_stmt_bind_text(stmt, 6, book->sync_data1);
+	if (book->sync_data2)
+		cal_db_util_stmt_bind_text(stmt, 7, book->sync_data2);
+	if (book->sync_data3)
+		cal_db_util_stmt_bind_text(stmt, 8, book->sync_data3);
+	if (book->sync_data4)
+		cal_db_util_stmt_bind_text(stmt, 9, book->sync_data4);
 	if (client_label)
 		cal_db_util_stmt_bind_text(stmt, 10, client_label);
 
 	ret = cal_db_util_stmt_step(stmt);
-	sqlite3_finalize(stmt);
-	free(client_label);
 	if (CALENDAR_ERROR_NONE != ret) {
+		sqlite3_finalize(stmt);
+		free(client_label);
 		ERR("cal_db_util_stmt_step() Fail(%d)", ret);
 		return ret;
 	}
+	sqlite3_finalize(stmt);
+	free(client_label);
 
+	int index = 0;
 	index = cal_db_util_last_insert_id();
 	/* access control */
 	cal_access_control_reset();
@@ -205,6 +199,7 @@ static int _cal_db_calendar_get_record(int id, calendar_record_h* out_record)
 	ret = cal_db_util_stmt_step(stmt);
 	if (CAL_SQLITE_ROW != ret) {
 		ERR("cal_db_util_stmt_step() Fail(%d)", ret);
+		SECURE("query[%s]", query);
 		sqlite3_finalize(stmt);
 		calendar_record_destroy(*out_record, true);
 		*out_record = NULL;
@@ -221,48 +216,30 @@ static int _cal_db_calendar_get_record(int id, calendar_record_h* out_record)
 
 static int _cal_db_calendar_update_record(calendar_record_h record)
 {
-	//int rc = -1;
-	char query[CAL_DB_SQL_MAX_LEN] = {0};
-	sqlite3_stmt *stmt = NULL;
-	cal_book_s* calendar =  (cal_book_s*)(record);
 	int ret = 0;
 
-	RETV_IF(NULL == calendar, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 
-	if (false == _cal_db_calendar_check_value_validation(calendar)) {
+	cal_book_s* book =  (cal_book_s*)(record);
+	if (false == _cal_db_calendar_check_value_validation(book)) {
 		ERR("cal_db_calendar_check_value_validation() Fail");
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	if (calendar->common.properties_flags != NULL) {
+	if (book->common.properties_flags != NULL) {
 		return _cal_db_calendar_update_projection(record);
 	}
 
+	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	snprintf(query, sizeof(query), "UPDATE %s SET "
-			"updated = %ld,"
-			"name = ?,"
-			"description = ?,"
-			"color = ?,"
-			"location = ?,"
-			"visibility = %d,"
-			"sync_event = %d,"
-			"account_id = %d,"
-			"store_type = %d, "
-			"sync_data1 = ?, "
-			"sync_data2 = ?, "
-			"sync_data3 = ?, "
-			"sync_data4 = ?,"
-			"mode = %d "
-			"WHERE id = %d",
-			CAL_TABLE_CALENDAR,
-			calendar->updated,
-			calendar->visibility,
-			calendar->sync_event,
-			calendar->account_id,
-			calendar->store_type,
-			calendar->mode,
-			calendar->index);
+			"uid =?, updated = %ld, name =?, description =?, color =?, location =?, "
+			"visibility =%d, sync_event =%d, account_id =%d, store_type =%d, "
+			"sync_data1 =?, sync_data2 =?, sync_data3 =?, sync_data4 =?, mode =%d "
+			"WHERE id =%d",
+			CAL_TABLE_CALENDAR, book->updated, book->visibility, book->sync_event,
+			book->account_id, book->store_type, book->mode, book->index);
 
+	sqlite3_stmt *stmt = NULL;
 	ret = cal_db_util_query_prepare(query, &stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
@@ -270,33 +247,36 @@ static int _cal_db_calendar_update_record(calendar_record_h record)
 		return ret;
 	}
 
-	if (calendar->name)
-		cal_db_util_stmt_bind_text(stmt, 1, calendar->name);
-	if (calendar->description)
-		cal_db_util_stmt_bind_text(stmt, 2, calendar->description);
-	if (calendar->color)
-		cal_db_util_stmt_bind_text(stmt, 3, calendar->color);
-	if (calendar->location)
-		cal_db_util_stmt_bind_text(stmt, 4, calendar->location);
-	if (calendar->sync_data1)
-		cal_db_util_stmt_bind_text(stmt, 5, calendar->sync_data1);
-	if (calendar->sync_data2)
-		cal_db_util_stmt_bind_text(stmt, 6, calendar->sync_data2);
-	if (calendar->sync_data3)
-		cal_db_util_stmt_bind_text(stmt, 7, calendar->sync_data3);
-	if (calendar->sync_data4)
-		cal_db_util_stmt_bind_text(stmt, 8, calendar->sync_data4);
+	if (book->uid)
+		cal_db_util_stmt_bind_text(stmt, 1, book->uid);
+	if (book->name)
+		cal_db_util_stmt_bind_text(stmt, 2, book->name);
+	if (book->description)
+		cal_db_util_stmt_bind_text(stmt, 3, book->description);
+	if (book->color)
+		cal_db_util_stmt_bind_text(stmt, 4, book->color);
+	if (book->location)
+		cal_db_util_stmt_bind_text(stmt, 5, book->location);
+	if (book->sync_data1)
+		cal_db_util_stmt_bind_text(stmt, 6, book->sync_data1);
+	if (book->sync_data2)
+		cal_db_util_stmt_bind_text(stmt, 7, book->sync_data2);
+	if (book->sync_data3)
+		cal_db_util_stmt_bind_text(stmt, 8, book->sync_data3);
+	if (book->sync_data4)
+		cal_db_util_stmt_bind_text(stmt, 9, book->sync_data4);
 
 	ret = cal_db_util_stmt_step(stmt);
-	if (CAL_SQLITE_ROW != ret) {
+	if (CALENDAR_ERROR_NONE != ret) {
 		sqlite3_finalize(stmt);
 		ERR("cal_db_util_stmt_step() Fail(%d)", ret);
+		SECURE("query[%s]", query);
 		return ret;
 	}
-
 	sqlite3_finalize(stmt);
 
 	cal_db_util_notify(CAL_NOTI_TYPE_CALENDAR);
+
 	return CALENDAR_ERROR_NONE;
 }
 
@@ -360,48 +340,31 @@ static int _cal_db_calendar_delete_record(int id)
 
 static int _cal_db_calendar_replace_record(calendar_record_h record, int id)
 {
-	char query[CAL_DB_SQL_MAX_LEN] = {0};
-	sqlite3_stmt *stmt = NULL;
-	cal_book_s* calendar =  (cal_book_s*)(record);
 	int ret = 0;
 
-	RETV_IF(NULL == calendar, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
 
-	if (false == _cal_db_calendar_check_value_validation(calendar)) {
+	cal_book_s *book =  (cal_book_s *)(record);
+	if (false == _cal_db_calendar_check_value_validation(book)) {
 		ERR("cal_db_calendar_check_value_validation() Fail");
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
-	calendar->index = id;
-	if (calendar->common.properties_flags) {
+	book->index = id;
+	if (book->common.properties_flags) {
 		return _cal_db_calendar_update_projection(record);
 	}
 
+	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	snprintf(query, sizeof(query), "UPDATE %s SET "
-			"updated = %ld,"
-			"name = ?,"
-			"description = ?,"
-			"color = ?,"
-			"location = ?,"
-			"visibility = %d,"
-			"sync_event = %d,"
-			"account_id = %d,"
-			"store_type = %d, "
-			"sync_data1 = ?, "
-			"sync_data2 = ?, "
-			"sync_data3 = ?, "
-			"sync_data4 = ?, "
-			"mode = %d "
-			"WHERE id = %d",
-			CAL_TABLE_CALENDAR,
-			calendar->updated,
-			calendar->visibility,
-			calendar->sync_event,
-			calendar->account_id,
-			calendar->store_type,
-			calendar->mode,
-			id);
+			"uid =?, updated =%ld, name =?, description =?, color =?, location =?, "
+			"visibility =%d, sync_event =%d, account_id =%d, store_type =%d, "
+			"sync_data1 =?, sync_data2 =?, sync_data3 =?, sync_data4 =?, mode =%d "
+			"WHERE id =%d",
+			CAL_TABLE_CALENDAR, book->updated, book->visibility, book->sync_event,
+			book->account_id, book->store_type, book->mode, id);
 
+	sqlite3_stmt *stmt = NULL;
 	ret = cal_db_util_query_prepare(query, &stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
@@ -409,32 +372,35 @@ static int _cal_db_calendar_replace_record(calendar_record_h record, int id)
 		return ret;
 	}
 
-	if (calendar->name)
-		cal_db_util_stmt_bind_text(stmt, 1, calendar->name);
-	if (calendar->description)
-		cal_db_util_stmt_bind_text(stmt, 2, calendar->description);
-	if (calendar->color)
-		cal_db_util_stmt_bind_text(stmt, 3, calendar->color);
-	if (calendar->location)
-		cal_db_util_stmt_bind_text(stmt, 4, calendar->location);
-	if (calendar->sync_data1)
-		cal_db_util_stmt_bind_text(stmt, 5, calendar->sync_data1);
-	if (calendar->sync_data2)
-		cal_db_util_stmt_bind_text(stmt, 6, calendar->sync_data2);
-	if (calendar->sync_data3)
-		cal_db_util_stmt_bind_text(stmt, 7, calendar->sync_data3);
-	if (calendar->sync_data4)
-		cal_db_util_stmt_bind_text(stmt, 8, calendar->sync_data4);
+	if (book->uid)
+		cal_db_util_stmt_bind_text(stmt, 1, book->uid);
+	if (book->name)
+		cal_db_util_stmt_bind_text(stmt, 2, book->name);
+	if (book->description)
+		cal_db_util_stmt_bind_text(stmt, 3, book->description);
+	if (book->color)
+		cal_db_util_stmt_bind_text(stmt, 4, book->color);
+	if (book->location)
+		cal_db_util_stmt_bind_text(stmt, 5, book->location);
+	if (book->sync_data1)
+		cal_db_util_stmt_bind_text(stmt, 6, book->sync_data1);
+	if (book->sync_data2)
+		cal_db_util_stmt_bind_text(stmt, 7, book->sync_data2);
+	if (book->sync_data3)
+		cal_db_util_stmt_bind_text(stmt, 8, book->sync_data3);
+	if (book->sync_data4)
+		cal_db_util_stmt_bind_text(stmt, 9, book->sync_data4);
 
 	ret = cal_db_util_stmt_step(stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
 		sqlite3_finalize(stmt);
 		ERR("cal_db_util_stmt_step() Fail(%d)", ret);
+		SECURE("query[%s]", query);
 		return ret;
 	}
-
 	sqlite3_finalize(stmt);
 	cal_db_util_notify(CAL_NOTI_TYPE_CALENDAR);
+
 	return CALENDAR_ERROR_NONE;
 }
 
