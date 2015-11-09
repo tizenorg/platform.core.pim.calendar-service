@@ -192,13 +192,6 @@ void cal_vcalendar_make_free(cal_make_s **b)
 	free(*b);
 	b = NULL;
 }
-static void __get_str_utime(long long int t, char *out_str, int size)
-{
-	int y = 0, m = 0, d = 0;
-	int h = 0, n = 0, s = 0;
-	cal_time_get_local_datetime(NULL, t, &y, &m, &d, &h, &n, &s);
-	snprintf(out_str, size, ":"CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSSZ, y, m, d, h, n, s);
-}
 
 static int  _cal_vcalendar_make_time(cal_make_s *b, char *tzid, calendar_time_s *t, const char *prop)
 {
