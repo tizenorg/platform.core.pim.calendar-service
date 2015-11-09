@@ -585,7 +585,7 @@ static gpointer _cal_server_contacts_sync_main(gpointer user_data)
 		}
 		cal_access_control_unset_client_info();
 
-		calendar_disconnect();
+		cal_disconnect();
 
 		g_mutex_lock(&_cal_server_contacts_sync_mutex);
 		DBG("wait");

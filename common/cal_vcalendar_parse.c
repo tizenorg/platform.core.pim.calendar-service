@@ -29,6 +29,7 @@
 #include "cal_time.h"
 #include "cal_vcalendar.h"
 #include "cal_vcalendar_parse.h"
+#include "cal_utils.h"
 
 /*
  * LF | \n | 0x0A
@@ -742,13 +743,10 @@ static char* __decode_charset(char *p)
 		return cal_strdup(p + 1);
 	}
 
-	/* param start */
-	int len_param = strlen(t[0]);
-
 	char **s = NULL;
 	s = g_strsplit(t[0], ";", -1);
 	if (NULL == s) {
-		ERR("g_strsplit() failed");
+		ERR("g_strsplit() Fail");
 		g_strfreev(t);
 		return NULL;
 	}
@@ -829,7 +827,7 @@ static char* __decode_datetime(char *p, struct user_data *ud)
 	/* param start */
 	char **s = NULL;
 	s = g_strsplit(p, ";", -1);
-	RETVM_IF(NULL == s, p + strlen(p) - len_param, "g_strsplit() failed");
+	RETVM_IF(NULL == s, p + strlen(p) - len_param, "g_strsplit() Fail");
 
 	int count_param = g_strv_length(s);
 	DBG("count_param(%d)", count_param);

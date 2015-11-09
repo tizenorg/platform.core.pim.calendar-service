@@ -22,5 +22,6 @@
 
 int cal_client_reminder_create_for_subscribe(void);
 int cal_client_reminder_destroy_for_subscribe(void);
+int cal_client_recovery_for_change_subscription(void);
 
 #endif /* __CAL_CLIENT_REMINDER_H__ */

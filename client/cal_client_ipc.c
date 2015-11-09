@@ -22,6 +22,8 @@
 #include <glib-object.h>
 #include <errno.h>
 #include <pthread.h>
+#include <unistd.h>
+#include <sys/types.h>
 
 #include "calendar_db.h"
 #include "calendar_types.h"
@@ -38,6 +40,7 @@
 #include "cal_ipc_marshal.h"
 #include "cal_handle.h"
 #include "cal_utils.h"
+#include "cal_client_reminder.h"
 
 typedef struct {
 	pims_ipc_h ipc;
@@ -369,6 +372,7 @@ int cal_client_ipc_client_check_permission(calendar_h handle, int permission, bo
 		pims_ipc_data_destroy(outdata);
 		return CALENDAR_ERROR_IPC;
 	}
+	pims_ipc_data_destroy(outdata);
 
 	return ipc_ret;
 }

@@ -1,13 +1,13 @@
 # Package Information for pkg-config
 
-prefix=@PREFIX@
-exec_prefix=@EXEC_PREFIX@
-libdir=@LIBDIR@
-includedir=@INCLUDEDIR@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}/bin
+libdir=@LIB_INSTALL_DIR@
+includedir=@INCLUDE_INSTALL_DIR@
 
-Name: @CALSVC2@
-Description: @CALSVC2@ library
+Name: @CLIENT@
+Description: @CLIENT@ library
 Version: @FULLVER@
 Requires: glib-2.0 alarm-service capi-base-common
-Libs: -L${libdir} -l@CALSVC2@
-Cflags: -I${includedir}2
+Libs: -L${libdir} -l@CLIENT@
+Cflags: -I${includedir}/@CLIENT@

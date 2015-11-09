@@ -21,6 +21,8 @@
 #include <stdbool.h>
 #include <db-util.h>
 #include <sys/time.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include "cal_internal.h"
 #include "cal_typedef.h"

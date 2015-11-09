@@ -32,5 +32,7 @@ char* cal_access_control_get_label(void);
 void cal_access_control_reset(void);  // reset read_list, write_list..
 bool cal_access_control_have_write_permission(int book_id);
 int cal_is_owner(int book_id);
+bool cal_access_control_have_permission(pims_ipc_h ipc, cal_permission_e permission);
+
 
 #endif /*  __CALENDAR_SVC_ACCESS_CONTROL_H__ */

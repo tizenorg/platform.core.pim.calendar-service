@@ -28,16 +28,15 @@
 
 #include "calendar_db.h"
 #include "calendar_types.h"
-
 #include "cal_internal.h"
 #include "cal_typedef.h"
 #include "cal_view.h"
 #include "cal_time.h"
 #include "cal_record.h"
-
-#include "cal_db_util.h"
-#include "cal_db.h"
 #include "cal_db_instance_helper.h"
+#include "cal_db.h"
+#include "cal_db_util.h"
+#include "cal_db_plugin_timezone_helper.h"
 
 #define ms2sec(ms) (long long int)(ms / 1000.0)
 #define sec2ms(s) (s * 1000.0)

@@ -21,11 +21,11 @@
 
 #include "cal_internal.h"
 #include "cal_typedef.h"
-#include "cal_db_util.h"
 #include "cal_view.h"
-#include "cal_mutex.h"
+#include "cal_db_util.h"
 #include "cal_utils.h"
 #include "cal_mutex.h"
+#include "cal_inotify.h"
 
 static int cal_total_connection = 0;
 static TLS int cal_thread_connection = 0;
@@ -37,7 +37,9 @@ int cal_connect(void)
 
 	cal_mutex_lock(CAL_MUTEX_CONNECTION);
 	if (0 == cal_total_connection) {
+#if !GLIB_CHECK_VERSION(2,35,0)
 		g_type_init();	// added for alarmmgr
+#endif
 		cal_view_initialize();
 		ret = cal_inotify_init();
 		if (CALENDAR_ERROR_NONE != ret) {

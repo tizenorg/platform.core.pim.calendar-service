@@ -20,6 +20,8 @@
 #include <stdlib.h>
 #include <malloc.h>
 #include <glib.h>
+#include <unistd.h>
+#include <sys/types.h>
 #include <pims-ipc-data.h>
 #include <pims-ipc-svc.h>
 
@@ -1581,7 +1583,9 @@ DATA_FREE:
 
 int cal_server_ipc_init(void)
 {
+#if !GLIB_CHECK_VERSION(2,35,0)
 	g_type_init();
+#endif
 
 	char sock_file[CAL_STR_MIDDLE_LEN] = {0};
 	snprintf(sock_file, sizeof(sock_file), CAL_SOCK_PATH"/.%s", getuid(), CAL_IPC_SERVICE);

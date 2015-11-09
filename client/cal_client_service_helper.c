@@ -17,6 +17,8 @@
  *
  */
 
+ #include <unistd.h>
+
 #include "calendar_types.h"
 #include "cal_internal.h"
 #include "cal_typedef.h"
@@ -27,6 +29,7 @@
 #include "cal_client_handle.h"
 #include "cal_client_ipc.h"
 #include "cal_client_utils.h"
+#include "cal_client_reminder.h"
 
 static void _cal_client_ipc_initialized_cb(void *user_data)
 {
@@ -58,7 +61,9 @@ int cal_client_connect(calendar_h handle, unsigned int id, int *connection_count
 	DBG("[Connection count:handle] (%d)", h->connection_count);
 
 	if (0 == *connection_count) { /* total connection */
+#if !GLIB_CHECK_VERSION(2,35,0)
 		g_type_init(); /* for alarmmgr */
+#endif
 		ret = cal_inotify_init();
 		if (CALENDAR_ERROR_NONE != ret) {
 			ERR("cal_inotify_init() Fail(%d)", ret);

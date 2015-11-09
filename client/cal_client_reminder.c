@@ -19,6 +19,8 @@
 
 #include <stdlib.h>
 #include <pims-ipc.h>
+#include <unistd.h>
+#include <sys/types.h>
 
 #include "calendar.h"
 #include "cal_internal.h"
@@ -31,6 +33,7 @@
 #include "cal_ipc.h"
 #include "cal_ipc_marshal.h"
 #include "cal_client_ipc.h"
+#include "cal_client_handle.h"
 
 typedef struct {
 	calendar_reminder_cb cb;

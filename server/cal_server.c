@@ -21,14 +21,21 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
-#include <unistd.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <glib-object.h>
+#include <glib.h>
+#include <glib/gstdio.h>
+#include <grp.h>
+#include <sys/param.h>
+#include <unistd.h>
 #include <alarm.h>
 #include <contacts.h>
 #include <account.h>
 
 #include "calendar.h"
-#include "cal_internal.h" // DBG
+#include "cal_typedef.h"
+#include "cal_internal.h"
 #include "cal_ipc.h"
 #include "cal_server_ipc.h"
 #include "cal_inotify.h"
@@ -38,6 +45,7 @@
 #include "cal_server_calendar_delete.h"
 #include "cal_server_schema.h"
 #include "cal_server_update.h"
+#include "cal_server_service.h"
 #include "cal_access_control.h"
 #include "cal_db_plugin_calendar_helper.h"
 #include "cal_time.h"
@@ -99,7 +107,9 @@ static void _cal_server_init(void)
 	int ret;
 	int on_contact = 0;
 	int try_count = 0;
+#if !GLIB_CHECK_VERSION(2,35,0)
 	g_type_init();
+#endif
 
 
 	//loop = g_main_loop_new(NULL, FALSE);
