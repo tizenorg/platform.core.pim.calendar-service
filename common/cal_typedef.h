@@ -54,7 +54,7 @@ typedef enum
 	CAL_PRIORITY_LOW,	/**< priority low */
 	CAL_PRIORITY_MID,	/**< priority middle */
 	CAL_PRIORITY_HIGH	/**< priority high */
-}cal_priority_e;
+} cal_priority_e;
 
 typedef enum
 {
@@ -151,7 +151,7 @@ typedef struct
 	cal_list_s *attendee_list;
 	cal_list_s *exception_list;
 	cal_list_s *extended_list;
-}cal_event_s;
+} cal_event_s;
 
 typedef struct
 {
@@ -207,7 +207,7 @@ typedef struct
 	cal_list_s *alarm_list;
 	cal_list_s *attendee_list;
 	cal_list_s *extended_list;
-}cal_todo_s;
+} cal_todo_s;
 
 typedef struct
 {
@@ -226,7 +226,7 @@ typedef struct
 	char *bymonth;
 	char *bysetpos;
 	int wkst;
-}cal_rrule_s;
+} cal_rrule_s;
 
 /**
  * This structure defines participant information of a meetting.
@@ -254,7 +254,7 @@ typedef struct
 	char *attendee_name;	/* cn */
 	char *attendee_member;	/* member */
 
-}cal_attendee_s;
+} cal_attendee_s;
 
 /**
  * This structure defines exception information of alarm.
@@ -274,7 +274,7 @@ typedef struct
 	int alarm_action;
 	char *alarm_attach;
 	calendar_time_s alarm;
-}cal_alarm_s;
+} cal_alarm_s;
 
 /* This is the calendar schema */
 typedef struct
@@ -436,19 +436,19 @@ typedef struct
 	int id;
 	int calendar_id;
 	int version;
-}cal_updated_info_s;
+} cal_updated_info_s;
 
 typedef enum
 {
 	CAL_NOTI_TYPE_EVENT = 0x0,
 	CAL_NOTI_TYPE_TODO,
 	CAL_NOTI_TYPE_CALENDAR,
-}cal_noti_type_e;
+} cal_noti_type_e;
 
 typedef struct{
 	unsigned int property_id;
 	const char* fields; /* DB field */
-}cal_property_info_s;
+} cal_property_info_s;
 
 typedef enum {
 	CAL_FILTER_STR,
@@ -457,11 +457,11 @@ typedef enum {
 	CAL_FILTER_LLI,
 	CAL_FILTER_CALTIME,
 	CAL_FILTER_COMPOSITE,
-}cal_filter_type_e;
+} cal_filter_type_e;
 
 typedef struct  {
 	int filter_type; /* composite */
-}cal_filter_s;
+} cal_filter_s;
 
 typedef struct {
 	int filter_type;
@@ -470,7 +470,7 @@ typedef struct {
 	GSList *filters; /* calendar_filter_h l_filter */
 	cal_property_info_s *properties;
 	int property_count;
-}cal_composite_filter_s;
+} cal_composite_filter_s;
 
 typedef struct  {
 	int filter_type; /* cal_filter_type_e */
@@ -483,7 +483,7 @@ typedef struct  {
 		long long int lli;
 		calendar_time_s caltime;
 	}value;
-}cal_attribute_filter_s;
+} cal_attribute_filter_s;
 
 typedef struct  {
 	char* view_uri;
@@ -495,7 +495,7 @@ typedef struct  {
 	cal_property_info_s *properties;
 	int property_count;
 	bool distinct;
-}cal_query_s;
+} cal_query_s;
 
 #define CAL_CALTIME_SET_UTIME(dest, src_utime) do {\
 	(dest).type = CALENDAR_TIME_UTIME; \
@@ -518,12 +518,12 @@ typedef struct {
 		long long int lli;
 		calendar_time_s caltime;
 	}value;
-}cal_search_value_s;
+} cal_search_value_s;
 
 typedef struct {
 	cal_record_s common;
 	GSList *values;
-}cal_search_s;
+} cal_search_s;
 
 typedef struct {
 	cal_record_s common;
@@ -532,7 +532,7 @@ typedef struct {
 	int record_type;
 	char* key;
 	char* value;
-}cal_extended_s;
+} cal_extended_s;
 
 /**
  * @}
