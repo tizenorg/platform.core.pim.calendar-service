@@ -35,7 +35,7 @@
 #include "cal_server_service.h"
 #include "cal_db.h"
 #include "cal_server.h"
-#include "cal_ondemand.h"
+#include "cal_server_ondemand.h"
 
 
 static void _cal_server_ipc_return(pims_ipc_data_h *outdata, int ret)
@@ -104,7 +104,7 @@ void cal_server_ipc_disconnect(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_
 	ret = cal_disconnect();
 	_cal_server_ipc_return(outdata, ret);
 	cal_handle_destroy(handle);
-	cal_ondemand_start();
+	cal_server_ondemand_start();
 }
 
 void cal_server_ipc_check_permission(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -211,7 +211,8 @@ void cal_server_ipc_db_insert_record(pims_ipc_h ipc, pims_ipc_data_h indata, pim
 
 	calendar_record_destroy(record, true);
 	cal_handle_destroy(handle);
-	cal_ondemand_start();
+	cal_server_ondemand_start();
+	return;
 }
 
 void cal_server_ipc_db_get_record(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -278,7 +279,7 @@ void cal_server_ipc_db_get_record(pims_ipc_h ipc, pims_ipc_data_h indata, pims_i
 	calendar_record_destroy(record, true);
 	free(view_uri);
 	cal_handle_destroy(handle);
-	cal_ondemand_start();
+	cal_server_ondemand_start();
 }
 
 void cal_server_ipc_db_update_record(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -333,7 +334,7 @@ void cal_server_ipc_db_update_record(pims_ipc_h ipc, pims_ipc_data_h indata, pim
 
 	calendar_record_destroy(record, true);
 	cal_handle_destroy(handle);
-	cal_ondemand_start();
+	cal_server_ondemand_start();
 }
 
 void cal_server_ipc_db_delete_record(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -399,7 +400,7 @@ void cal_server_ipc_db_delete_record(pims_ipc_h ipc, pims_ipc_data_h indata, pim
 
 	free(view_uri);
 	cal_handle_destroy(handle);
-	cal_ondemand_start();
+	cal_server_ondemand_start();
 }
 
 void cal_server_ipc_db_get_all_records(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -475,7 +476,7 @@ void cal_server_ipc_db_get_all_records(pims_ipc_h ipc, pims_ipc_data_h indata, p
 	calendar_list_destroy(list, true);
 	free(view_uri);
 	cal_handle_destroy(handle);
-	cal_ondemand_start();
+	cal_server_ondemand_start();
 }
 
 void cal_server_ipc_db_get_records_with_query(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -552,7 +553,7 @@ void cal_server_ipc_db_get_records_with_query(pims_ipc_h ipc, pims_ipc_data_h in
 	calendar_list_destroy(list, true);
 	calendar_query_destroy(query);
 	cal_handle_destroy(handle);
-	cal_ondemand_start();
+	cal_server_ondemand_start();
 }
 
 void cal_server_ipc_db_clean_after_sync(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -602,7 +603,7 @@ void cal_server_ipc_db_clean_after_sync(pims_ipc_h ipc, pims_ipc_data_h indata, 
 	ret = cal_db_clean_after_sync(calendar_book_id, calendar_db_version);
 	_cal_server_ipc_return(outdata, ret);
 	cal_handle_destroy(handle);
-	cal_ondemand_start();
+	cal_server_ondemand_start();
 }
 
 void cal_server_ipc_db_get_count(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -656,7 +657,7 @@ void cal_server_ipc_db_get_count(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ip
 
 	free(view_uri);
 	cal_handle_destroy(handle);
-	cal_ondemand_start();
+	cal_server_ondemand_start();
 }
 
 void cal_server_ipc_db_get_count_with_query(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -710,7 +711,7 @@ void cal_server_ipc_db_get_count_with_query(pims_ipc_h ipc, pims_ipc_data_h inda
 
 	calendar_query_destroy(query);
 	cal_handle_destroy(handle);
-	cal_ondemand_start();
+	cal_server_ondemand_start();
 }
 
 void cal_server_ipc_db_insert_records(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -803,7 +804,7 @@ void cal_server_ipc_db_insert_records(pims_ipc_h ipc, pims_ipc_data_h indata, pi
 	free(ids);
 	calendar_list_destroy(list, true);
 	cal_handle_destroy(handle);
-	cal_ondemand_start();
+	cal_server_ondemand_start();
 }
 
 void cal_server_ipc_db_update_records(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -858,7 +859,7 @@ void cal_server_ipc_db_update_records(pims_ipc_h ipc, pims_ipc_data_h indata, pi
 
 	calendar_list_destroy(list,true);
 	cal_handle_destroy(handle);
-	cal_ondemand_start();
+	cal_server_ondemand_start();
 }
 
 void cal_server_ipc_db_delete_records(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -961,7 +962,8 @@ void cal_server_ipc_db_delete_records(pims_ipc_h ipc, pims_ipc_data_h indata, pi
 	free(ids);
 	free(view_uri);
 	cal_handle_destroy(handle);
-	cal_ondemand_start();
+	cal_server_ondemand_start();
+	return;
 }
 
 void cal_server_ipc_db_get_changes_by_version(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -1054,7 +1056,7 @@ void cal_server_ipc_db_get_changes_by_version(pims_ipc_h ipc, pims_ipc_data_h in
 	calendar_list_destroy(list, true);
 	free(view_uri);
 	cal_handle_destroy(handle);
-	cal_ondemand_start();
+	cal_server_ondemand_start();
 }
 
 void cal_server_ipc_db_get_current_version(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -1095,7 +1097,8 @@ void cal_server_ipc_db_get_current_version(pims_ipc_h ipc, pims_ipc_data_h indat
 		}
 	}
 	cal_handle_destroy(handle);
-	cal_ondemand_start();
+	cal_server_ondemand_start();
+	return;
 }
 
 void cal_server_ipc_db_insert_vcalendars(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -1184,7 +1187,7 @@ void cal_server_ipc_db_insert_vcalendars(pims_ipc_h ipc, pims_ipc_data_h indata,
 	free(ids);
 	free(stream);
 	cal_handle_destroy(handle);
-	cal_ondemand_start();
+	cal_server_ondemand_start();
 }
 
 void cal_server_ipc_db_replace_vcalendars(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -1277,7 +1280,7 @@ void cal_server_ipc_db_replace_vcalendars(pims_ipc_h ipc, pims_ipc_data_h indata
 	free(ids);
 	free(stream);
 	cal_handle_destroy(handle);
-	cal_ondemand_start();
+	cal_server_ondemand_start();
 }
 
 void cal_server_ipc_db_replace_record(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -1342,7 +1345,7 @@ void cal_server_ipc_db_replace_record(pims_ipc_h ipc, pims_ipc_data_h indata, pi
 
 	calendar_record_destroy(record, true);
 	cal_handle_destroy(handle);
-	cal_ondemand_start();
+	cal_server_ondemand_start();
 }
 
 void cal_server_ipc_db_replace_records(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -1444,7 +1447,7 @@ void cal_server_ipc_db_replace_records(pims_ipc_h ipc, pims_ipc_data_h indata, p
 	free(ids);
 	calendar_list_destroy(list, true);
 	cal_handle_destroy(handle);
-	cal_ondemand_start();
+	cal_server_ondemand_start();
 }
 
 void cal_server_ipc_db_changes_exception(pims_ipc_h ipc, pims_ipc_data_h indata, pims_ipc_data_h *outdata, void *userdata)
@@ -1519,7 +1522,7 @@ void cal_server_ipc_db_changes_exception(pims_ipc_h ipc, pims_ipc_data_h indata,
 	calendar_list_destroy(list, true);
 	free(view_uri);
 	cal_handle_destroy(handle);
-	cal_ondemand_start();
+	cal_server_ondemand_start();
 }
 
 #ifdef CAL_MEMORY_TEST

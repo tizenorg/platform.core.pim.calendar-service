@@ -20,9 +20,9 @@
 #ifndef __CALENDAR_SVC_ONDEMAND_H__
 #define __CALENDAR_SVC_ONDEMAND_H__
 
-void cal_ondemand_stop(void);
-void cal_ondemand_start(void);
-void cal_ondemand_hold(void);
-void cal_ondemand_release(void);
+void cal_server_ondemand_stop(void);
+void cal_server_ondemand_start(void);
+void cal_server_ondemand_hold(void);
+void cal_server_ondemand_release(void);
 
 #endif /*__CALENDAR_SVC_ONDEMAND_H__ */

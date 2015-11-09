@@ -32,7 +32,7 @@
 #include "cal_server_contacts.h"
 #include "cal_server_ipc.h"
 #include "cal_server_service.h"
-#include "cal_ondemand.h"
+#include "cal_server_ondemand.h"
 
 #define CAL_SERVER_CONTACTS_SYNC_THREAD_NAME "cal_server_contacts_sync"
 #define BULK_MAX_COUNT 100
@@ -566,12 +566,12 @@ static gpointer _cal_server_contacts_sync_main(gpointer user_data)
 		 * while syncing with contacts, calendar-service could be stopped by on-demand.
 		 * so, on-demand timeout is stopped.
 		 */
-		cal_ondemand_hold();
+		cal_server_ondemand_hold();
 
 		ret = cal_connect();
 		if (CALENDAR_ERROR_NONE != ret) {
 			ERR("cal_connect() Fail(%d)", ret);
-			cal_ondemand_start();
+			cal_server_ondemand_start();
 			break;
 		}
 
@@ -589,8 +589,8 @@ static gpointer _cal_server_contacts_sync_main(gpointer user_data)
 
 		g_mutex_lock(&_cal_server_contacts_sync_mutex);
 		DBG("wait");
-		cal_ondemand_release();
-		cal_ondemand_start();
+		cal_server_ondemand_release();
+		cal_server_ondemand_start();
 		g_cond_wait(&_cal_server_contacts_sync_cond, &_cal_server_contacts_sync_mutex);
 		g_mutex_unlock(&_cal_server_contacts_sync_mutex);
 	}

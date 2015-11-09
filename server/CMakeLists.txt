@@ -51,10 +51,10 @@ SET(LIBSRCS
 	${CMAKE_SOURCE_DIR}/common/cal_mutex.c
 	${CMAKE_SOURCE_DIR}/common/cal_handle.c
 	${CMAKE_SOURCE_DIR}/common/cal_utils.c
-	${CMAKE_SOURCE_DIR}/common/cal_ondemand.c
 	cal_access_control.c
 	cal_server_service.c
 	cal_server_ipc.c
+	cal_server_ondemand.c
 	db/cal_db.c
 	db/cal_db_util.c
 	db/cal_db_rrule.c

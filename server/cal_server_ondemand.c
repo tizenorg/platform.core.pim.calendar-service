@@ -29,7 +29,7 @@ static pthread_mutex_t cal_mutex_holding = PTHREAD_MUTEX_INITIALIZER;
 static guint cal_timeout_id = 0;
 static gboolean cal_holding = FALSE;
 
-void cal_ondemand_stop(void)
+void cal_server_ondemand_stop(void)
 {
 	CAL_FN_CALL();
 
@@ -50,7 +50,7 @@ static gboolean _timeout_cb(gpointer user_data)
 	return TRUE;
 }
 
-void cal_ondemand_start(void)
+void cal_server_ondemand_start(void)
 {
 	CAL_FN_CALL();
 
@@ -65,14 +65,14 @@ void cal_ondemand_start(void)
 	pthread_mutex_unlock(&cal_mutex_timeout);
 }
 
-void cal_ondemand_hold(void)
+void cal_server_ondemand_hold(void)
 {
 	pthread_mutex_lock(&cal_mutex_holding);
 	cal_holding = TRUE;
 	pthread_mutex_unlock(&cal_mutex_holding);
 }
 
-void cal_ondemand_release(void)
+void cal_server_ondemand_release(void)
 {
 	pthread_mutex_lock(&cal_mutex_holding);
 	cal_holding = FALSE;
