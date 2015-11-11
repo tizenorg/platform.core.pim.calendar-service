@@ -1583,7 +1583,9 @@ int cal_server_ipc_init(void)
 {
 	g_type_init();
 
-	pims_ipc_svc_init(CAL_IPC_SOCKET_PATH, CAL_SECURITY_FILE_GROUP, 0777);
+	char sock_file[CAL_STR_MIDDLE_LEN] = {0};
+	snprintf(sock_file, sizeof(sock_file), CAL_SOCK_PATH"/.%s", getuid(), CAL_IPC_SERVICE);
+	pims_ipc_svc_init(sock_file,CAL_SECURITY_FILE_GROUP, 0777);
 
 	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_CONNECT, cal_server_ipc_connect, NULL) != 0, -1);
 	RETV_IF(pims_ipc_svc_register(CAL_IPC_MODULE, CAL_IPC_SERVER_DISCONNECT, cal_server_ipc_disconnect, NULL) != 0, -1);
@@ -1612,7 +1614,8 @@ int cal_server_ipc_init(void)
 #endif /* CAL_MEMORY_TEST */
 
 	/* for subscribe */
-	pims_ipc_svc_init_for_publish(CAL_IPC_SOCKET_PATH_FOR_SUBSCRIPTION, CAL_SECURITY_FILE_GROUP, CAL_SECURITY_DEFAULT_PERMISSION);
+	snprintf(sock_file, sizeof(sock_file), CAL_SOCK_PATH"/.%s_for_subscribe", getuid(), CAL_IPC_SERVICE);
+	pims_ipc_svc_init_for_publish(sock_file, CAL_SECURITY_FILE_GROUP, CAL_SECURITY_DEFAULT_PERMISSION);
 	return CALENDAR_ERROR_NONE;
 }
 
