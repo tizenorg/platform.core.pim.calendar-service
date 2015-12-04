@@ -12,6 +12,9 @@ Source3:    ALARM.acalendar-service.service
 %if "%{?tizen_profile_name}" == "wearable"
 ExcludeArch: %{arm} %ix86 x86_64
 %endif
+%if "%{?tizen_profile_name}" == "tv"
+ExcludeArch: %{arm} %ix86 x86_64
+%endif
 
 Requires(post): /sbin/ldconfig
 Requires(post): /usr/bin/sqlite3, /bin/chown
