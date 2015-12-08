@@ -37,8 +37,8 @@ int cal_connect(void)
 
 	cal_mutex_lock(CAL_MUTEX_CONNECTION);
 	if (0 == cal_total_connection) {
-#if !GLIB_CHECK_VERSION(2,35,0)
-		g_type_init();	// added for alarmmgr
+#if !GLIB_CHECK_VERSION(2, 35, 0)
+		g_type_init();	/* added for alarmmgr */
 #endif
 		cal_view_initialize();
 		ret = cal_inotify_init();
@@ -47,8 +47,7 @@ int cal_connect(void)
 			cal_mutex_unlock(CAL_MUTEX_CONNECTION);
 			return ret;
 		}
-	}
-	else {
+	} else {
 		DBG("[System] calendar service has been already connected");
 	}
 	cal_total_connection++;
@@ -74,8 +73,7 @@ int cal_disconnect(void)
 	cal_mutex_lock(CAL_MUTEX_CONNECTION);
 	if (1 == cal_thread_connection) {
 		cal_db_util_close();
-	}
-	else if (cal_thread_connection <= 0) {
+	} else if (cal_thread_connection <= 0) {
 		DBG("[System] not connected, count(%d)", cal_thread_connection);
 		cal_mutex_unlock(CAL_MUTEX_CONNECTION);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
@@ -85,11 +83,9 @@ int cal_disconnect(void)
 	if (1 == cal_total_connection) {
 		cal_inotify_deinit();
 		cal_view_finalize();
-	}
-	else if (1 < cal_total_connection) {
+	} else if (1 < cal_total_connection) {
 		DBG("[System] connection count(%d)", cal_total_connection);
-	}
-	else {
+	} else {
 		DBG("[System] Not connected, count(%d)", cal_total_connection);
 		cal_mutex_unlock(CAL_MUTEX_CONNECTION);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
@@ -108,9 +104,8 @@ void cal_service_internal_disconnect(void)
 		cal_db_util_close();
 		cal_thread_connection--;
 
-		if (1 <= cal_total_connection) {
+		if (1 <= cal_total_connection)
 			cal_total_connection--;
-		}
 	}
 	cal_mutex_unlock(CAL_MUTEX_CONNECTION);
 	return CALENDAR_ERROR_NONE;

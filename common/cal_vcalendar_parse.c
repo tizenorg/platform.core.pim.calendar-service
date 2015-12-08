@@ -327,9 +327,9 @@ static inline char* __crlf(char *p)
 {
 	RETV_IF(NULL == p, NULL);
 	while (VCAL_LF != *p) {
-		if ('\0' == *p) {
+		if ('\0' == *p)
 			return NULL;
-		}
+
 		p++;
 	}
 	return p +1;
@@ -348,10 +348,9 @@ static bool __check_has_rrule(char *stream)
 					*(cursor++) == 'U' &&
 					*(cursor++) == 'L' &&
 					*(cursor++) == 'E' &&
-					*(cursor++) == ':' ) {
+					*(cursor++) == ':') {
 				return true;
-			}
-			else if (*(cursor-1) == 'E' &&
+			} else if (*(cursor-1) == 'E' &&
 					*(cursor++) == 'N' &&
 					*(cursor++) == 'D' &&
 					*(cursor++) == ':' &&
@@ -362,8 +361,6 @@ static bool __check_has_rrule(char *stream)
 					*(cursor++) == 'N' &&
 					*(cursor++) == 'T') {
 				break;
-			}
-			else {
 			}
 		}
 	}
@@ -393,8 +390,7 @@ static int _sub_caltime(struct user_data *ud, calendar_time_s *s, calendar_time_
 					s->time.date.second);
 			*diff = lli - a->time.utime;
 			DBG("Convert start localtime with tz[%s] and get(%lld)", tz, lli);
-		}
-		else {
+		} else {
 			lli = cal_time_convert_itol(tz, a->time.date.year, a->time.date.month,
 					a->time.date.mday, a->time.date.hour, a->time.date.minute,
 					a->time.date.second);
@@ -419,27 +415,22 @@ static int _sub_caltime(struct user_data *ud, calendar_time_s *s, calendar_time_
 
 static void _get_tick_unit(int t, int *tick, int *unit)
 {
-	if (0 == t) {
+	if (0 == t)
 		return;
-	}
 
 	if (0 == (t % CALENDAR_ALARM_TIME_UNIT_WEEK)) {
 		*tick = t / CALENDAR_ALARM_TIME_UNIT_WEEK;
 		*unit = CALENDAR_ALARM_TIME_UNIT_WEEK;
-	}
-	else if (0 == (t % CALENDAR_ALARM_TIME_UNIT_DAY)) {
+	} else if (0 == (t % CALENDAR_ALARM_TIME_UNIT_DAY)) {
 		*tick = t / CALENDAR_ALARM_TIME_UNIT_DAY;
 		*unit = CALENDAR_ALARM_TIME_UNIT_DAY;
-	}
-	else if (0 == (t % CALENDAR_ALARM_TIME_UNIT_HOUR)) {
+	} else if (0 == (t % CALENDAR_ALARM_TIME_UNIT_HOUR)) {
 		*tick = t / CALENDAR_ALARM_TIME_UNIT_HOUR;
 		*unit = CALENDAR_ALARM_TIME_UNIT_HOUR;
-	}
-	else if (0 == (t % CALENDAR_ALARM_TIME_UNIT_MINUTE)) {
+	} else if (0 == (t % CALENDAR_ALARM_TIME_UNIT_MINUTE)) {
 		*tick = t / CALENDAR_ALARM_TIME_UNIT_MINUTE;
 		*unit = CALENDAR_ALARM_TIME_UNIT_MINUTE;
-	}
-	else {
+	} else {
 		*tick = t;
 		*unit = CALENDAR_ALARM_TIME_UNIT_SPECIFIC;
 	}
@@ -453,28 +444,25 @@ static char* __get_value(char *cursor, char **value)
 
 	/* offset: length until ';' or ':' */
 	int offset = 0;
-	while (':' != *(cursor + offset) && ';' != *(cursor + offset)) {
+	while (':' != *(cursor + offset) && ';' != *(cursor + offset))
 		offset++;
-	}
 
 	int i = 0;
 	while (VCAL_LF != *(cursor + offset + i)) {
-		if ('\0' == *(cursor + offset + i)) {
+		if ('\0' == *(cursor + offset + i))
 			return NULL;
-		}
+
 		i++;
 	}
 
 	char *p = calloc(i + 1, sizeof(char));
 	RETVM_IF(NULL == p, NULL, "calloc() Fail");
 
-	if (VCAL_CR == *(cursor + offset + i -1)) {
+	if (VCAL_CR == *(cursor + offset + i -1))
 		memcpy(p, cursor + offset, i -1);
-
-	}
-	else {
+	else
 		memcpy(p, cursor + offset, i);
-	}
+
 	*value = p;
 	DBG("offset(%d) len(%d) value[%s]", offset, i, *value);
 
@@ -514,12 +502,10 @@ static inline void __adjust_tzid(char *p)
 	int i = 0;
 	while (*(p +i)) {
 		if ('-' == *(p +i)) {
-			if ('1' <= *(p +i +1) && *(p +i +1) <= '9') {
+			if ('1' <= *(p +i +1) && *(p +i +1) <= '9')
 				i++;
-			}
-			else {
+			else
 				*(p +i) = '/';
-			}
 		}
 		i++;
 	}
@@ -594,8 +580,7 @@ static void __decode_escaped_char(char *p)
 				p++;
 				break;
 			}
-		}
-		else {
+		} else {
 			*q = *p;
 		}
 		q++;
@@ -660,29 +645,23 @@ static void __decode_quoted_printable(char *p)
 	while (p[i]) {
 		if (p[i] == '=') {
 			if (p[i+1] == 0x09 || p[i+1] == 0x20) {
-				i +=3;
-
-			}
-			else if (p[i+1] == '\r' || p[i+1] == '\n') {
-				i +=3;
-
-			}
-			else {
+				i += 3;
+			} else if (p[i+1] == '\r' || p[i+1] == '\n') {
+				i += 3;
+			} else {
 				if (p[i+1] == '0' && tolower(p[i+2]) == 'd' &&
 						p[i+3] == '=' && p[i+4] == '0' && tolower(p[i+5]) == 'a') {
 					p[j] = '\n';
 					j++;
 					i += 6;
-				}
-				else {
+				} else {
 					ch = __decode_hexa(p +i +1);
 					p[j] = ch;
 					j++;
 					i += 3;
 				}
 			}
-		}
-		else {
+		} else {
 			p[j] = p[i];
 			j++;
 			i++;
@@ -712,17 +691,15 @@ static char* __decode_iso8859_1_to_utf8(char *p)
 
 	/* check enough space */
 	for (src = dst = out_p; *src; src++, dst++) {
-		if (*src & 0x80) {
+		if (*src & 0x80)
 			++dst;
-		}
 	}
 
 	while (dst > src) {
 		if (*src & 0x80) {
 			*dst-- = 0x80 | (*src & 0x3f);
 			*dst-- = 0xc0 | (*((unsigned char *)src--) >> 6);
-		}
-		else {
+		} else {
 			*dst-- = *src--;
 		}
 	}
@@ -767,8 +744,7 @@ static char* __decode_charset(char *p)
 				charset = VCAL_CHARSET_ISO_8859_1;
 			else
 				WARN("Not support charset[%s]", s[i] + key_len);
-		}
-		else if (CAL_STRING_EQUAL == strncmp(s[i], "ENCODING=", strlen("ENCODING="))) {
+		} else if (CAL_STRING_EQUAL == strncmp(s[i], "ENCODING=", strlen("ENCODING="))) {
 			int key_len = strlen("ENCODING=");
 			if (CAL_STRING_EQUAL == strcmp(s[i] + key_len, "BASE64"))
 				encoding = VCAL_ENCODING_BASE64;
@@ -776,8 +752,7 @@ static char* __decode_charset(char *p)
 				encoding = VCAL_ENCODING_QUOTED_PRINTABLE;
 			else
 				WARN("Not support encoding[%s]", s[i] + key_len);
-		}
-		else {
+		} else {
 			WARN("[%s]", s[i]);
 		}
 	}
@@ -863,8 +838,7 @@ static char* __decode_datetime(char *p, struct user_data *ud)
 				break;
 			}
 			DBG("set datetime_tzid[%s] as timezone_tzid", ud->datetime_tzid);
-		}
-		else {
+		} else {
 			ERR("INVALID tzid");
 		}
 		break;
@@ -1029,8 +1003,7 @@ static int _get_caltime(char *p, calendar_time_s *caltime, struct user_data *ud)
 
 		if (VCAL_VER_1 == ud->version) {
 			caltime->type = CALENDAR_TIME_LOCALTIME;
-		}
-		else {
+		} else {
 			if (NULL == ud->datetime_tzid || '\0' == *ud->datetime_tzid) {
 				if (NULL == ud->timezone_tzid || '\0' == *ud->timezone_tzid) {
 					/* Without tzid is localtime */
@@ -1038,8 +1011,7 @@ static int _get_caltime(char *p, calendar_time_s *caltime, struct user_data *ud)
 					DBG(CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS,
 							caltime->time.date.year, caltime->time.date.month, caltime->time.date.mday,
 							caltime->time.date.hour, caltime->time.date.minute, caltime->time.date.second);
-				}
-				else {
+				} else {
 					/* No 'Z' with tzid means utime */
 					caltime->type = CALENDAR_TIME_UTIME;
 					caltime->time.utime = cal_time_convert_itol(ud->timezone_tzid,
@@ -1047,8 +1019,7 @@ static int _get_caltime(char *p, calendar_time_s *caltime, struct user_data *ud)
 							caltime->time.date.hour, caltime->time.date.minute, caltime->time.date.second);
 					DBG("timezone_tzid[%s] (%lld)", ud->timezone_tzid, caltime->time.utime);
 				}
-			}
-			else {
+			} else {
 				/* No 'Z' with tzid means utime */
 				caltime->type = CALENDAR_TIME_UTIME;
 				caltime->time.utime = cal_time_convert_itol(ud->datetime_tzid,
@@ -1070,8 +1041,7 @@ static int _get_caltime(char *p, calendar_time_s *caltime, struct user_data *ud)
 			DBG(CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS,
 					caltime->time.date.year, caltime->time.date.month, caltime->time.date.mday,
 					caltime->time.date.hour, caltime->time.date.minute, caltime->time.date.second);
-		}
-		else {
+		} else {
 			caltime->type = CALENDAR_TIME_UTIME;
 			caltime->time.utime = cal_time_convert_lli(p);
 			DBG("(%lld)", caltime->time.utime);
@@ -1116,8 +1086,7 @@ static void __parse_tz(const char *tz, int *h, int *m)
 	char buf[8] = {0};
 	if (sign) {
 		snprintf(buf, strlen(t[0]), "%s", t[0] + 1);
-	}
-	else {
+	} else {
 		sign = 1;
 		snprintf(buf, strlen(t[0]) + 1, "%s", t[0]);
 	}
@@ -1144,13 +1113,11 @@ static void __get_tz(char *value, char **tz)
 	__parse_tz(value +1, &h, &m); /* +1 to skip ':' */
 
 	char buf[CAL_STR_SHORT_LEN32] = {0};
-	if (0 == m) {
+	if (0 == m)
 		snprintf(buf, sizeof(buf), "Etc/GMT%c%d", h < 0 ? '+' : '-', h);
-
-	}
-	else {
+	else
 		cal_time_get_registered_tzid_with_offset(h * 3600 + m * 60, buf, sizeof(buf));
-	}
+
 	DBG("set tzid [%s]", buf);
 
 	*tz = strdup(buf);
@@ -1429,18 +1396,15 @@ static void __work_component_property_status(char *value, calendar_record_h reco
 	int status = 0;
 	switch (ud->type) {
 	case CALENDAR_BOOK_TYPE_EVENT:
-		if (CAL_STRING_EQUAL == strncmp(value, ":TENTATIVE", strlen(":TENTATIVE"))) {
+		if (CAL_STRING_EQUAL == strncmp(value, ":TENTATIVE", strlen(":TENTATIVE")))
 			status = CALENDAR_EVENT_STATUS_TENTATIVE;
-		}
-		else if (CAL_STRING_EQUAL == strncmp(value, ":CONFIRMED", strlen(":CONFIRMED"))) {
+		else if (CAL_STRING_EQUAL == strncmp(value, ":CONFIRMED", strlen(":CONFIRMED")))
 			status = CALENDAR_EVENT_STATUS_CONFIRMED;
-		}
-		else if (CAL_STRING_EQUAL == strncmp(value, ":CANCELLED", strlen(":CANCELLED"))) {
+		else if (CAL_STRING_EQUAL == strncmp(value, ":CANCELLED", strlen(":CANCELLED")))
 			status = CALENDAR_EVENT_STATUS_CANCELLED;
-		}
-		else {
+		else
 			status = CALENDAR_EVENT_STATUS_NONE;
-		}
+
 		ret = cal_record_set_int(record, _calendar_event.event_status, status);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
 		break;
@@ -1611,21 +1575,18 @@ static void __work_component_property_rrule_ver_1(char *value, calendar_record_h
 			has_by = true;
 			if (week_index) {
 				int j = 0;
-				for (j = 0; j < week_index; j++) {
+				for (j = 0; j < week_index; j++)
 					len_str += snprintf(bystr + len_str, sizeof(bystr) - len_str, "%d%s,", week[j], t[i]);
-				}
-			}
-			else {
+
+			} else {
 				len_str += snprintf(bystr + len_str, sizeof(bystr) - len_str, "%s,", t[i]);
 			}
 			DBG("[%s] week_index(%d)", bystr, week_index);
-		}
-		else if ('L' == *t[i] && 'D' == *(t[i] +1)) {  /* last day */
+		} else if ('L' == *t[i] && 'D' == *(t[i] +1)) {  /* last day */
 			has_by = true;
 			len_str += snprintf(bystr + len_str, sizeof(bystr) - len_str, "%s,", "-1");
 
-		}
-		else if ('W' == *t[i] && 'K' == *(t[i] +1) && 'S' == *(t[i] +2) && 'T' == *(t[i] +3)) { /* +4 is '=' */
+		} else if ('W' == *t[i] && 'K' == *(t[i] +1) && 'S' == *(t[i] +2) && 'T' == *(t[i] +3)) { /* +4 is '=' */
 			if ('S' == *(t[i] +5) && 'U' == *(t[i] +6))
 				ret = cal_record_set_int(record, _calendar_event.wkst, CALENDAR_SUNDAY);
 			else if ('M' == *(t[i] +5))
@@ -1644,8 +1605,7 @@ static void __work_component_property_rrule_ver_1(char *value, calendar_record_h
 				ERR("Invalid parameter[%s]", t[i]);
 
 			WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
-		}
-		else if (true == __is_digit(t[i])) {
+		} else if (true == __is_digit(t[i])) {
 
 			char buf[8] = {0};
 			bool exit_loop = false;
@@ -1654,9 +1614,9 @@ static void __work_component_property_rrule_ver_1(char *value, calendar_record_h
 			switch (freq_mode) {
 			case VCAL_RECURRENCE_MONTHLY_BYDAY:
 			case VCAL_RECURRENCE_WEEKLY:
-				if (true == has_by) {
+				if (true == has_by)
 					week_index = 0;
-				}
+
 				while (*(t[i] +j)) {
 					switch (*(t[i] +j)) {
 					case '+':
@@ -1699,8 +1659,7 @@ static void __work_component_property_rrule_ver_1(char *value, calendar_record_h
 				len_str += snprintf(bystr + len_str, sizeof(bystr) - len_str, "%d,", (atoi(buf) * sign));
 				break;
 			}
-		}
-		else {
+		} else {
 			if (true == has_by) {
 				__set_bystr(freq_mode, record, bystr);
 				week_index = 0;
@@ -1743,8 +1702,7 @@ static void __work_component_property_rrule_ver_1(char *value, calendar_record_h
 					WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
 					DBG("frequency[%d] interval(%d)", frequency, interval);
 				}
-			}
-			else {
+			} else {
 				if ('0' <= *t[i] && *t[i] <= '9' && strlen("YYYYMMDDTHHMMSS") <= strlen(t[i])) {
 					DBG("until");
 					calendar_time_s caltime = {0};
@@ -1754,36 +1712,31 @@ static void __work_component_property_rrule_ver_1(char *value, calendar_record_h
 					ret = cal_record_set_caltime(record, _calendar_event.until_time, caltime);
 					WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_caltime() Fail(%d)", ret);
 
-				}
-				else if ('#' == *t[i]) {
+				} else if ('#' == *t[i]) {
 					/* count */
 					if (true == __is_digit(t[i] +1)) {
 						if (0 == atoi(t[i] +1)) {
 							DBG("endless");
 							ret = cal_record_set_int(record, _calendar_event.range_type, CALENDAR_RANGE_NONE);
 							WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
-						}
-						else {
+						} else {
 							DBG("count (%d)", atoi(t[i] +1));
 							ret = cal_record_set_int(record, _calendar_event.range_type, CALENDAR_RANGE_COUNT);
 							WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
 							ret = cal_record_set_int(record, _calendar_event.count, atoi(t[i] +1));
 							WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
 						}
-					}
-					else {
+					} else {
 						ERR("Unable to parse count[%s]", t[i]);
 					}
-				}
-				else {
+				} else {
 					DBG("Invalid");
 				}
 			}
 		}
 	}
-	if (true == has_by) {
+	if (true == has_by)
 		__set_bystr(freq_mode, record, bystr);
-	}
 
 	g_strfreev(t);
 }
@@ -1826,54 +1779,44 @@ static void __work_component_property_rrule_ver_2(char *value, calendar_record_h
 			ret = cal_record_set_int(record, _calendar_event.freq, frequency);
 			WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
 
-		}
-		else if (CAL_STRING_EQUAL == strncmp(t[i], "UNTIL=", strlen("UNTIL="))) {
+		} else if (CAL_STRING_EQUAL == strncmp(t[i], "UNTIL=", strlen("UNTIL="))) {
 			calendar_time_s caltime = {0};
 			_get_caltime(t[i] + strlen("UNTIL="), &caltime, ud);
 			ret = cal_record_set_caltime(record, _calendar_event.until_time, caltime);
 			WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_caltime() Fail(%d)", ret);
 			ret = cal_record_set_int(record, _calendar_event.range_type, CALENDAR_RANGE_UNTIL);
 			WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
-		}
-		else if (CAL_STRING_EQUAL == strncmp(t[i], "COUNT=", strlen("COUNT="))) {
+		} else if (CAL_STRING_EQUAL == strncmp(t[i], "COUNT=", strlen("COUNT="))) {
 			int count = atoi(t[i] + strlen("COUNT="));
 			if (count < 1) count = 1;
 			ret = cal_record_set_int(record,  _calendar_event.count, count);
 			WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
 			ret = cal_record_set_int(record, _calendar_event.range_type, CALENDAR_RANGE_COUNT);
 			WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
-		}
-		else if (CAL_STRING_EQUAL == strncmp(t[i], "INTERVAL=", strlen("INTERVAL="))) {
+		} else if (CAL_STRING_EQUAL == strncmp(t[i], "INTERVAL=", strlen("INTERVAL="))) {
 			int interval = atoi(t[i] + strlen("INTERVAL="));
 			if (interval < 1) interval = 1;
 			ret = cal_record_set_int(record, _calendar_event.interval, interval);
 			WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
-		}
-		else if (CAL_STRING_EQUAL == strncmp(t[i], "BYYEARDAY=", strlen("BYYEARDAY="))) {
+		} else if (CAL_STRING_EQUAL == strncmp(t[i], "BYYEARDAY=", strlen("BYYEARDAY="))) {
 			ret = cal_record_set_str(record, _calendar_event.byyearday, t[i] + strlen("BYYEARDAY="));
 			WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
-		}
-		else if (CAL_STRING_EQUAL == strncmp(t[i], "BYWEEKNO=", strlen("BYWEEKNO="))) {
+		} else if (CAL_STRING_EQUAL == strncmp(t[i], "BYWEEKNO=", strlen("BYWEEKNO="))) {
 			ret = cal_record_set_str(record, _calendar_event.byweekno, t[i] + strlen("BYWEEKNO="));
 			WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
-		}
-		else if (CAL_STRING_EQUAL == strncmp(t[i], "BYMONTH=", strlen("BYMONTH="))) {
+		} else if (CAL_STRING_EQUAL == strncmp(t[i], "BYMONTH=", strlen("BYMONTH="))) {
 			ret = cal_record_set_str(record, _calendar_event.bymonth, t[i] + strlen("BYMONTH="));
 			WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
-		}
-		else if (CAL_STRING_EQUAL == strncmp(t[i], "BYMONTHDAY=", strlen("BYMONTHDAY="))) {
+		} else if (CAL_STRING_EQUAL == strncmp(t[i], "BYMONTHDAY=", strlen("BYMONTHDAY="))) {
 			ret = cal_record_set_str(record, _calendar_event.bymonthday, t[i] + strlen("BYMONTHDAY="));
 			WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
-		}
-		else if (CAL_STRING_EQUAL == strncmp(t[i], "BYDAY=", strlen("BYDAY="))) {
+		} else if (CAL_STRING_EQUAL == strncmp(t[i], "BYDAY=", strlen("BYDAY="))) {
 			ret = cal_record_set_str(record, _calendar_event.byday, t[i] + strlen("BYDAY="));
 			WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
-		}
-		else if (CAL_STRING_EQUAL == strncmp(t[i], "BYSETPOS=", strlen("BYSETPOS="))) {
+		} else if (CAL_STRING_EQUAL == strncmp(t[i], "BYSETPOS=", strlen("BYSETPOS="))) {
 			ret = cal_record_set_str(record, _calendar_event.bysetpos, t[i] + strlen("BYSETPOS="));
 			WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
-		}
-		else if (CAL_STRING_EQUAL == strncmp(t[i], "WKST=", strlen("WKST="))) {
+		} else if (CAL_STRING_EQUAL == strncmp(t[i], "WKST=", strlen("WKST="))) {
 			if (CAL_STRING_EQUAL == strncmp(t[i] + strlen("WKST="), "SU", strlen("SU")))
 				ret = cal_record_set_int(record, _calendar_event.wkst, CALENDAR_SUNDAY);
 			else if (CAL_STRING_EQUAL == strncmp(t[i] + strlen("WKST="), "MO", strlen("MO")))
@@ -1892,8 +1835,7 @@ static void __work_component_property_rrule_ver_2(char *value, calendar_record_h
 				DBG("Unable to parse[%s]", t[i]);
 
 			WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
-		}
-		else {
+		} else {
 			DBG("Unable to parse[%s]", t[i]);
 		}
 	}
@@ -2076,23 +2018,19 @@ static void __work_component_property_attendee_role(calendar_record_h attendee, 
 		ret = cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_ROLE_REQ_PARTICIPANT);
 		if (strlen(value) > strlen("REQ-PARTICIPANT"))
 			prop = "REQ-PARTICIPANT";
-	}
-	else if (CAL_STRING_EQUAL == strncmp(value, "OPT-PARTICIPANT", strlen("OPT-PARTICIPANT"))) {
+	} else if (CAL_STRING_EQUAL == strncmp(value, "OPT-PARTICIPANT", strlen("OPT-PARTICIPANT"))) {
 		ret = cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_ROLE_OPT_PARTICIPANT);
 		if (strlen(value) > strlen("OPT-PARTICIPANT"))
 			prop = "OPT-PARTICIPANT";
-	}
-	else if (CAL_STRING_EQUAL == strncmp(value, "NON-PARTICIPANT", strlen("NON-PARTICIPANT"))) {
+	} else if (CAL_STRING_EQUAL == strncmp(value, "NON-PARTICIPANT", strlen("NON-PARTICIPANT"))) {
 		ret = cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_ROLE_NON_PARTICIPANT);
 		if (strlen(value) > strlen("NON-PARTICIPANT"))
 			prop = "NON-PARTICIPANT";
-	}
-	else if (CAL_STRING_EQUAL == strncmp(value, "CHAIR", strlen("CHAIR"))) {
+	} else if (CAL_STRING_EQUAL == strncmp(value, "CHAIR", strlen("CHAIR"))) {
 		ret = cal_record_set_int(attendee, _calendar_attendee.cutype, CALENDAR_ATTENDEE_ROLE_CHAIR);
 		if (strlen(value) > strlen("CHAIR"))
 			prop = "CHAIR";
-	}
-	else {
+	} else {
 		ERR("Invalid value[%s]", value);
 	}
 	WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
@@ -2310,15 +2248,13 @@ static void _set_alarm_tick_unit(calendar_record_h alarm, calendar_time_s alarm_
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_caltime() Fail(%d)", ret);
 		ret = cal_record_set_int(alarm, _calendar_alarm.tick_unit, CALENDAR_ALARM_TIME_UNIT_SPECIFIC);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
-	}
-	else if (0 == diff) {
+	} else if (0 == diff) {
 		DBG("set alarm in start time");
 		ret = cal_record_set_int(alarm, _calendar_alarm.tick, 0);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
 		ret = cal_record_set_int(alarm, _calendar_alarm.tick_unit, CALENDAR_ALARM_TIME_UNIT_HOUR);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
-	}
-	else {
+	} else {
 		int tick = 0;
 		int unit = 0;
 		_get_tick_unit(diff, &tick, &unit);
@@ -2392,14 +2328,12 @@ static void __work_component_property_dalarm(char *value, calendar_record_h reco
 			} else {
 				_set_alarm_tick_unit(alarm, alarm_time, -1); /* -1 goes to specific time */
 			}
-		}
-		else if (VCAL_VER_10_DALARM_DISPLAY_STRING == index) { /* displayString */
+		} else if (VCAL_VER_10_DALARM_DISPLAY_STRING == index) { /* displayString */
 			DBG("displayString [%s]", t[i]);
 			ret = cal_record_set_str(alarm, _calendar_alarm.summary, t[i]);
 			WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
 
-		}
-		else {
+		} else {
 			/* TYPE, VALUE */
 		}
 	}
@@ -2488,20 +2422,17 @@ static void __work_component_property_malarm(char *value, calendar_record_h reco
 			} else {
 				_set_alarm_tick_unit(alarm, alarm_time, -1); /* -1 goes to specific time */
 			}
-		}
-		else if (VCAL_VER_10_MALARM_ADDRESS_STRING == index) { /* addressString */
+		} else if (VCAL_VER_10_MALARM_ADDRESS_STRING == index) { /* addressString */
 			DBG("addressString [%s]", t[i]);
 			ret = cal_record_set_str(alarm, _calendar_alarm.attach, t[i]);
 			WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
 
-		}
-		else if (VCAL_VER_10_MALARM_NOTE_STRING == index) { /* noteString */
+		} else if (VCAL_VER_10_MALARM_NOTE_STRING == index) { /* noteString */
 			DBG("noteString [%s]", t[i]);
 			ret = cal_record_set_str(alarm, _calendar_alarm.description, t[i]);
 			WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
 
-		}
-		else {
+		} else {
 			/* TYPE, VALUE */
 		}
 	}
@@ -2591,14 +2522,12 @@ static void __work_component_property_aalarm(char *value, calendar_record_h reco
 			} else {
 				_set_alarm_tick_unit(alarm, alarm_time, -1); /* -1 goes to specific time */
 			}
-		}
-		else if (VCAL_VER_10_AALARM_AUDIO_CONTENT == index) {
+		} else if (VCAL_VER_10_AALARM_AUDIO_CONTENT == index) {
 			/* audioContent */
 			DBG("Content [%s]", t[i]);
 			ret = cal_record_set_str(alarm, _calendar_alarm.attach, t[i]);
 			WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
-		}
-		else {
+		} else {
 			/* TYPE, VALUE */
 		}
 	}
@@ -2777,11 +2706,9 @@ static void __work_component_property_valarm_trigger(char *value, calendar_recor
 				related = VCAL_RELATED_END;
 			else
 				ERR("Invalid related:[%s]", t[i]);
-		}
-		else if (CAL_STRING_EQUAL == strncmp(t[i], "VALUE", strlen("VALUE"))) {
+		} else if (CAL_STRING_EQUAL == strncmp(t[i], "VALUE", strlen("VALUE"))) {
 			/* do nothing */
-		}
-		else {
+		} else {
 			if ('0' <= *t[i] && *t[i] <= '9' && strlen("YYYYDDMM") <= strlen(t[i])) {
 				calendar_time_s caltime = {0};
 				_get_caltime(t[i], &caltime, ud);
@@ -2789,8 +2716,7 @@ static void __work_component_property_valarm_trigger(char *value, calendar_recor
 				WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_caltime() Fail(%d)", ret);
 				ret = cal_record_set_int(alarm, _calendar_alarm.tick_unit, CALENDAR_ALARM_TIME_UNIT_SPECIFIC);
 				WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
-			}
-			else {
+			} else {
 				int unit = 0;
 				int tick = 0;
 				__decode_duration(t[i], strlen(t[i]), &tick, &unit);
@@ -2826,8 +2752,7 @@ static void __work_component_property_valarm_trigger(char *value, calendar_recor
 					WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_caltime() Fail(%d)", ret);
 					ret = cal_record_set_int(alarm, _calendar_alarm.tick_unit, CALENDAR_ALARM_TIME_UNIT_SPECIFIC);
 					WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
-				}
-				else {
+				} else {
 					ret = cal_record_set_int(alarm, _calendar_alarm.tick, (-1 * tick));
 					WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
 					ret = cal_record_set_int(alarm, _calendar_alarm.tick_unit, unit);
@@ -3481,25 +3406,20 @@ static char* __work_component_vtimezone(char *cursor, calendar_record_h record, 
 			cursor = __get_value(p, &value);
 			__adjust_tzid(value);
 			DBG("tzid[%s]", value +1);
-			if (true == cal_time_is_available_tzid(value +1)) {
+			if (true == cal_time_is_available_tzid(value +1))
 				ud->timezone_tzid = strdup(value +1);
-			}
-			else {
+			else
 				DBG("Invalid tzid string[%s]", value +1);
-			}
+
 			free(value);
-		}
-		else if (CAL_STRING_EQUAL == strncmp(cursor, "BEGIN:STANDARD", strlen("BEGIN:STANDARD"))) {
+		} else if (CAL_STRING_EQUAL == strncmp(cursor, "BEGIN:STANDARD", strlen("BEGIN:STANDARD"))) {
 			cursor = __work_component_vtimezone_standard(cursor, record, ud);
-		}
-		else if (CAL_STRING_EQUAL == strncmp(cursor, "BEGIN:DAYLIGHT", strlen("BEGIN:DAYLIGHT"))) {
+		} else if (CAL_STRING_EQUAL == strncmp(cursor, "BEGIN:DAYLIGHT", strlen("BEGIN:DAYLIGHT"))) {
 			cursor = __work_component_vtimezone_daylight(cursor, record, ud);
-		}
-		else if (CAL_STRING_EQUAL == strncmp(cursor, "END", strlen("END"))) {
+		} else if (CAL_STRING_EQUAL == strncmp(cursor, "END", strlen("END"))) {
 			cursor = __crlf(cursor);
 			break;
-		}
-		else {
+		} else {
 			DBG("Unable to parse");
 			__print_cursor(cursor, __LINE__);
 			cursor = __crlf(cursor);

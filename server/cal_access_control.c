@@ -56,7 +56,7 @@ static cal_permission_info_s* _cal_access_control_find_permission_info(unsigned 
 {
 	GList *cursor;
 
-	for(cursor=__thread_list;cursor;cursor=cursor->next) {
+	for (cursor = __thread_list; cursor; cursor = cursor->next) {
 		cal_permission_info_s *info = NULL;
 		info = cursor->data;
 		if (info->thread_id == thread_id)
@@ -128,11 +128,11 @@ static void _cal_access_control_set_permission_info(cal_permission_info_s *info)
 		mode = sqlite3_column_int(stmt, 1);
 		temp = (char *)sqlite3_column_text(stmt, 2);
 
-		if (!smack_enabled) // smack disabled
+		if (!smack_enabled) /* smack disabled */
 			info->write_list[write_index++] = id;
-		else if (NULL == info->ipc) // calendar-service daemon
+		else if (NULL == info->ipc) /* calendar-service daemon */
 			info->write_list[write_index++] = id;
-		else if (info->smack_label && temp && 0 == strcmp(temp, info->smack_label)) // owner
+		else if (info->smack_label && temp && 0 == strcmp(temp, info->smack_label)) /* owner */
 			info->write_list[write_index++] = id;
 		else if (CALENDAR_BOOK_MODE_NONE == mode)
 			info->write_list[write_index++] = id;
@@ -191,9 +191,9 @@ char* cal_access_control_get_label(void)
 	info = _cal_access_control_find_permission_info(thread_id);
 
 	char *smack_label = NULL;
-	if (info && info->smack_label) {
+	if (info && info->smack_label)
 		smack_label = strdup(info->smack_label);
-	}
+
 	cal_mutex_unlock(CAL_MUTEX_ACCESS_CONTROL);
 	return smack_label;
 }
@@ -202,7 +202,7 @@ void cal_access_control_reset(void)
 {
 	cal_mutex_lock(CAL_MUTEX_ACCESS_CONTROL);
 	GList *cursor;
-	for(cursor=__thread_list;cursor;cursor=cursor->next) {
+	for (cursor = __thread_list; cursor; cursor = cursor->next) {
 		cal_permission_info_s *info = NULL;
 		info = cursor->data;
 		if (info)

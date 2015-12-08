@@ -34,8 +34,8 @@
 #include "cal_db_plugin_alarm_helper.h"
 #include "cal_utils.h"
 
-//static int _cal_db_alarm_get_record(int id, calendar_record_h* out_record);
-static int _cal_db_alarm_get_all_records(int offset, int limit, calendar_list_h* out_list);
+/* static int _cal_db_alarm_get_record(int id, calendar_record_h* out_record); */
+static int _cal_db_alarm_get_all_records(int offset, int limit, calendar_list_h *out_list);
 static int _cal_db_alarm_get_records_with_query(calendar_query_h query, int offset, int limit, calendar_list_h* out_list);
 static int _cal_db_alarm_get_count(int *out_count);
 static int _cal_db_alarm_get_count_with_query(calendar_query_h query, int *out_count);
@@ -57,7 +57,7 @@ cal_db_plugin_cb_s cal_db_alarm_plugin_cb = {
 	.get_count_with_query = _cal_db_alarm_get_count_with_query
 };
 
-static void _cal_db_alarm_get_stmt(sqlite3_stmt *stmt,calendar_record_h record)
+static void _cal_db_alarm_get_stmt(sqlite3_stmt *stmt, calendar_record_h record)
 {
 	cal_alarm_s *alarm = NULL;
 	int index;
@@ -84,10 +84,9 @@ static void _cal_db_alarm_get_stmt(sqlite3_stmt *stmt,calendar_record_h record)
 	alarm->alarm_attach = cal_strdup((const char*)temp);
 
 	if (alarm->alarm.type == CALENDAR_TIME_UTIME) {
-		alarm->alarm.time.utime = sqlite3_column_int64(stmt,index++);
+		alarm->alarm.time.utime = sqlite3_column_int64(stmt, index++);
 		index++; /* datetime */
-	}
-	else {
+	} else {
 		index++; /* utime */
 		temp = sqlite3_column_text(stmt, index++);
 		if (temp) {
@@ -129,14 +128,14 @@ static int _cal_db_alarm_get_all_records(int offset, int limit, calendar_list_h*
 	ret = calendar_list_create(out_list);
 	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "calendar_list_create() Fail(%d)", ret);
 
-	if (0 < offset) {
+	if (0 < offset)
 		snprintf(offsetquery, sizeof(offsetquery), "OFFSET %d", offset);
-	}
-	if (0 < limit) {
+
+	if (0 < limit)
 		snprintf(limitquery, sizeof(limitquery), "LIMIT %d", limit);
-	}
+
 	snprintf(query, sizeof(query), "SELECT *, rowid FROM %s %s %s",
-			CAL_TABLE_ALARM,limitquery,offsetquery);
+			CAL_TABLE_ALARM, limitquery, offsetquery);
 
 	ret = cal_db_util_query_prepare(query, &stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
@@ -149,16 +148,16 @@ static int _cal_db_alarm_get_all_records(int offset, int limit, calendar_list_h*
 
 	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		calendar_record_h record = NULL;
-		ret = calendar_record_create(_calendar_alarm._uri,&record);
+		ret = calendar_record_create(_calendar_alarm._uri, &record);
 		if (CALENDAR_ERROR_NONE != ret) {
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
 			sqlite3_finalize(stmt);
 			return ret;
 		}
-		_cal_db_alarm_get_stmt(stmt,record);
+		_cal_db_alarm_get_stmt(stmt, record);
 
-		ret = calendar_list_add(*out_list,record);
+		ret = calendar_list_add(*out_list, record);
 		if (CALENDAR_ERROR_NONE != ret) {
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
@@ -212,8 +211,7 @@ static void _cal_db_alarm_get_property_stmt(sqlite3_stmt *stmt,
 			alarm->alarm.time.utime = sqlite3_column_int64(stmt, *stmt_count);
 			*stmt_count = *stmt_count+1; /* datetime */
 
-		}
-		else {
+		} else {
 			*stmt_count = *stmt_count+1; /* utime */
 			*stmt_count = *stmt_count+1;
 			temp = sqlite3_column_text(stmt, *stmt_count);
@@ -253,11 +251,11 @@ static void _cal_db_alarm_get_projection_stmt(sqlite3_stmt *stmt,
 		const unsigned int *projection, const int projection_count,
 		calendar_record_h record)
 {
-	int i=0;
+	int i = 0;
 	int stmt_count = 0;
 
-	for(i=0;i<projection_count;i++)
-		_cal_db_alarm_get_property_stmt(stmt,projection[i],&stmt_count,record);
+	for (i = 0; i < projection_count; i++)
+		_cal_db_alarm_get_property_stmt(stmt, projection[i], &stmt_count, record);
 }
 
 static int _cal_db_alarm_get_records_with_query(calendar_query_h query, int offset, int limit, calendar_list_h* out_list)
@@ -277,9 +275,8 @@ static int _cal_db_alarm_get_records_with_query(calendar_query_h query, int offs
 
 	if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_ALARM)) {
 		table_name = cal_strdup(CAL_TABLE_ALARM);
-	}
-	else {
-		ERR("uri(%s) not support get records with query",que->view_uri);
+	} else {
+		ERR("uri(%s) not support get records with query", que->view_uri);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -303,8 +300,7 @@ static int _cal_db_alarm_get_records_with_query(calendar_query_h query, int offs
 		cal_db_append_string(&query_str, "FROM");
 		cal_db_append_string(&query_str, table_name);
 		CAL_FREE(projection);
-	}
-	else {
+	} else {
 		cal_db_append_string(&query_str, "SELECT *, rowid FROM ");
 		cal_db_append_string(&query_str, table_name);
 	}
@@ -349,9 +345,8 @@ static int _cal_db_alarm_get_records_with_query(calendar_query_h query, int offs
 
 	/* bind text */
 	if (bind_text)	{
-		for (cursor=bind_text, i=1; cursor;cursor=cursor->next, i++) {
+		for (cursor = bind_text, i = 1; cursor; cursor = cursor->next, i++)
 			cal_db_util_stmt_bind_text(stmt, i, cursor->data);
-		}
 	}
 
 	ret = calendar_list_create(out_list);
@@ -368,7 +363,7 @@ static int _cal_db_alarm_get_records_with_query(calendar_query_h query, int offs
 
 	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		calendar_record_h record;
-		ret = calendar_record_create(_calendar_alarm._uri,&record);
+		ret = calendar_record_create(_calendar_alarm._uri, &record);
 		if (CALENDAR_ERROR_NONE != ret) {
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
@@ -388,12 +383,11 @@ static int _cal_db_alarm_get_records_with_query(calendar_query_h query, int offs
 			_cal_db_alarm_get_projection_stmt(stmt,
 					que->projection, que->projection_count,
 					record);
-		}
-		else {
-			_cal_db_alarm_get_stmt(stmt,record);
+		} else {
+			_cal_db_alarm_get_stmt(stmt, record);
 		}
 
-		ret = calendar_list_add(*out_list,record);
+		ret = calendar_list_add(*out_list, record);
 		if (CALENDAR_ERROR_NONE != ret) {
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
@@ -435,7 +429,7 @@ static int _cal_db_alarm_get_count(int *out_count)
 		ERR("cal_db_util_query_get_first_int_result() failed");
 		return ret;
 	}
-	DBG("%s=%d",query,count);
+	DBG("%s=%d", query, count);
 
 	*out_count = count;
 	return CALENDAR_ERROR_NONE;
@@ -452,11 +446,10 @@ static int _cal_db_alarm_get_count_with_query(calendar_query_h query, int *out_c
 
 	que = (cal_query_s *)query;
 
-	if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_ALARM))	{
+	if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_ALARM)) {
 		table_name = cal_strdup(CAL_TABLE_ALARM);
-	}
-	else {
-		ERR("uri(%s) not support get records with query",que->view_uri);
+	} else {
+		ERR("uri(%s) not support get records with query", que->view_uri);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -494,7 +487,7 @@ static int _cal_db_alarm_get_count_with_query(calendar_query_h query, int *out_c
 		CAL_FREE(query_str);
 		return ret;
 	}
-	DBG("%s=%d",query_str,count);
+	DBG("%s=%d", query_str, count);
 
 	*out_count = count;
 

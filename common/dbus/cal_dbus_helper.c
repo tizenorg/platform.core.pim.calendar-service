@@ -31,16 +31,16 @@
 #define CAL_DBUS_SET_STRING(x) (x) ? x : ""
 #define CAL_DBUS_GET_STRING(x) do { \
 	x = (NULL != x && '\0' != *x) ? strdup(x) : NULL; \
-} while(0)
+} while (0)
 
-GVariant *cal_dbus_utils_null_to_gvariant(void)
+GVariant* cal_dbus_utils_null_to_gvariant(void)
 {
 	GVariant *value = NULL;
 	value = g_variant_new("(s)", "");
 	return value;
 }
 
-GVariant *cal_dbus_utils_common_to_gvariant(cal_record_s *rec)
+GVariant* cal_dbus_utils_common_to_gvariant(cal_record_s *rec)
 {
 	GVariant *value = NULL;
 	value = g_variant_new("(isuasy)",
@@ -52,7 +52,7 @@ GVariant *cal_dbus_utils_common_to_gvariant(cal_record_s *rec)
 	return value;
 }
 
-GVariant *cal_dbus_utils_handle_to_gvariant(calendar_h handle)
+GVariant* cal_dbus_utils_handle_to_gvariant(calendar_h handle)
 {
 	GVariant *value = NULL;
 	cal_s *p = (cal_s *)handle;
@@ -61,7 +61,7 @@ GVariant *cal_dbus_utils_handle_to_gvariant(calendar_h handle)
 	return value;
 }
 
-static GVariant *_caltime_to_gvariant(calendar_time_s *ct)
+static GVariant* _caltime_to_gvariant(calendar_time_s *ct)
 {
 	GVariant *value = NULL;
 	switch (ct->type) {
@@ -175,12 +175,10 @@ static GVariant *_composite_to_gvariant(cal_composite_filter_s *filter)
 			if (1 == is_error) {
 				count_composite = 0;
 				arg_composite = cal_dbus_utils_null_to_gvariant();
-			}
-			else {
+			} else {
 				arg_composite = g_variant_builder_end(&builder_attribute);
 			}
-		}
-		else {
+		} else {
 			arg_composite = cal_dbus_utils_null_to_gvariant();
 		}
 
@@ -207,8 +205,7 @@ static GVariant *_operate_to_gvariant(cal_composite_filter_s *f, int *out_count)
 			cursor = g_slist_next(cursor);
 		}
 		arg_operate = g_variant_builder_end(&builder);
-	}
-	else {
+	} else {
 		arg_operate = cal_dbus_utils_null_to_gvariant();
 	}
 	*out_count = count_operate;
@@ -219,21 +216,17 @@ static GVariant *_operate_to_gvariant(cal_composite_filter_s *f, int *out_count)
 static GVariant *_filter_to_gvariant(cal_composite_filter_s *f)
 {
 	GVariant *arg_composite_pack = NULL;
-	if (f->filters) {
+	if (f->filters)
 		arg_composite_pack = _composite_to_gvariant(f);
-	}
-	else {
+	else
 		arg_composite_pack = cal_dbus_utils_null_to_gvariant();
-	}
 
 	int count_operate = 0;
 	GVariant *arg_operate = NULL;
-	if (f->filter_ops) {
+	if (f->filter_ops)
 		arg_operate = _operate_to_gvariant(f, &count_operate);
-	}
-	else {
+	else
 		arg_operate = cal_dbus_utils_null_to_gvariant();
-	}
 
 	GVariant *value = NULL;
 	value = g_variant_new("(viv)",
@@ -246,9 +239,9 @@ static GVariant *_projection_to_gvariant(cal_query_s *p)
 	int i;
 	GVariantBuilder builder;
 	g_variant_builder_init(&builder, G_VARIANT_TYPE("au"));
-	for (i = 0; i < p->projection_count; i++) {
+	for (i = 0; i < p->projection_count; i++)
 		g_variant_builder_add(&builder, "u", p->projection[i]);
-	}
+
 	return g_variant_builder_end(&builder);
 }
 
@@ -262,19 +255,16 @@ GVariant *cal_dbus_utils_query_to_gvariant(calendar_query_h query)
 	if (q->filter) {
 		has_filter = 1;
 		arg_filter = _filter_to_gvariant(q->filter);
-	}
-	else {
+	} else {
 		has_filter = 0;
 		arg_filter = cal_dbus_utils_null_to_gvariant();
 	}
 
 	GVariant *arg_projection = NULL;
-	if (q->projection_count) {
+	if (q->projection_count)
 		arg_projection = _projection_to_gvariant(q);
-	}
-	else {
+	else
 		arg_projection = cal_dbus_utils_null_to_gvariant();
-	}
 
 	GVariant *value = NULL;
 	value = g_variant_new("(siviviii)",
@@ -441,8 +431,7 @@ static GVariant *_event_to_gvariant(calendar_record_h record)
 			calendar_record_get_child_record_at_p(record, _calendar_event.calendar_alarm, i, &alarm);
 			g_variant_builder_add(&builder_alarm, "v", _alarm_to_gvariant(alarm));
 		}
-	}
-	else {
+	} else {
 		DBG("No alarm");
 		g_variant_builder_add(&builder_alarm, "v", cal_dbus_utils_null_to_gvariant());
 	}
@@ -457,8 +446,7 @@ static GVariant *_event_to_gvariant(calendar_record_h record)
 			calendar_record_get_child_record_at_p(record, _calendar_event.calendar_attendee, i, &attendee);
 			g_variant_builder_add(&builder_attendee, "v", _attendee_to_gvariant(attendee));
 		}
-	}
-	else {
+	} else {
 		DBG("No attendee");
 		g_variant_builder_add(&builder_attendee, "v", cal_dbus_utils_null_to_gvariant());
 	}
@@ -473,8 +461,7 @@ static GVariant *_event_to_gvariant(calendar_record_h record)
 			calendar_record_get_child_record_at_p(record, _calendar_event.exception, i, &exception);
 			g_variant_builder_add(&builder_exception, "v", _only_event_to_gvariant(exception));
 		}
-	}
-	else {
+	} else {
 		DBG("No exception");
 		g_variant_builder_add(&builder_exception, "v", cal_dbus_utils_null_to_gvariant());
 	}
@@ -489,8 +476,7 @@ static GVariant *_event_to_gvariant(calendar_record_h record)
 			calendar_record_get_child_record_at_p(record, _calendar_event.extended, i, &extended);
 			g_variant_builder_add(&builder_extended, "v", _extended_to_gvariant(extended));
 		}
-	}
-	else {
+	} else {
 		DBG("No extended");
 		g_variant_builder_add(&builder_extended, "v", cal_dbus_utils_null_to_gvariant());
 	}
@@ -570,8 +556,7 @@ static GVariant *_todo_to_gvariant(calendar_record_h record)
 			calendar_record_get_child_record_at_p(record, _calendar_todo.calendar_alarm, i, &alarm);
 			g_variant_builder_add(&builder_alarm, "v", _alarm_to_gvariant(alarm));
 		}
-	}
-	else {
+	} else {
 		DBG("No alarm");
 		g_variant_builder_add(&builder_alarm, "v", cal_dbus_utils_null_to_gvariant());
 	}
@@ -586,8 +571,7 @@ static GVariant *_todo_to_gvariant(calendar_record_h record)
 			calendar_record_get_child_record_at_p(record, _calendar_todo.calendar_attendee, i, &attendee);
 			g_variant_builder_add(&builder_attendee, "v", _attendee_to_gvariant(attendee));
 		}
-	}
-	else {
+	} else {
 		DBG("No attendee");
 		g_variant_builder_add(&builder_attendee, "v", cal_dbus_utils_null_to_gvariant());
 	}
@@ -602,8 +586,7 @@ static GVariant *_todo_to_gvariant(calendar_record_h record)
 			calendar_record_get_child_record_at_p(record, _calendar_todo.extended, i, &extended);
 			g_variant_builder_add(&builder_extended, "v", _extended_to_gvariant(extended));
 		}
-	}
-	else {
+	} else {
 		DBG("No extended");
 		g_variant_builder_add(&builder_extended, "v", cal_dbus_utils_null_to_gvariant());
 	}
@@ -760,8 +743,7 @@ static GVariant *_search_to_gvariant(calendar_record_h record)
 			g_variant_builder_add(&builder, "iv", d->property_id, arg_value);
 			cursor = g_slist_next(cursor);
 		}
-	}
-	else {
+	} else {
 		g_variant_builder_init(&builder, (G_VARIANT_TYPE("i")));
 		g_variant_builder_add(&builder, "i", 0);
 	}
@@ -778,8 +760,7 @@ GVariant *cal_dbus_utils_record_to_gvariant(calendar_record_h record)
 	if (NULL == record) {
 		ERR("record is NULL");
 		type = -1;
-	}
-	else {
+	} else {
 		cal_record_s *rec = (cal_record_s *)record;
 		type = rec->type;
 	}
@@ -998,7 +979,7 @@ static int _gvariant_to_only_event(GVariant *arg_record, calendar_record_h *out_
 	cal_event_s *p = (cal_event_s *)record;
 
 	GVariant *arg_until = NULL;
-	GVariant *arg_start= NULL;
+	GVariant *arg_start = NULL;
 	GVariant *arg_end = NULL;
 
 	g_variant_get(arg_record, "(ii&s&s&s&s&siiiiiii&s&s&siddixixiiivii"
@@ -1196,12 +1177,11 @@ static int _gvariant_to_composite(GVariant * arg_composite_pack, cal_composite_f
 		if (1 == is_exit)
 			break;
 
-		if (NULL == composite) {
+		if (NULL == composite)
 			composite = c;
-		}
-		else {
+		else
 			composite->filters = g_slist_append(composite->filters, c);
-		}
+
 	}
 	*out_composite = composite;
 	return CALENDAR_ERROR_NONE;
@@ -1213,9 +1193,8 @@ static int _gvariant_to_operate(GVariant * arg_operate, cal_composite_filter_s *
 	g_variant_get(arg_operate, "ai", &iter_operate);
 
 	int operate = 0;
-	while (g_variant_iter_loop(iter_operate, "i", &operate)) {
+	while (g_variant_iter_loop(iter_operate, "i", &operate))
 		f->filter_ops = g_slist_append(f->filter_ops, GINT_TO_POINTER(operate));
-	}
 
 	return CALENDAR_ERROR_NONE;
 }
@@ -1246,9 +1225,9 @@ static int _gvariant_to_projection(int count_projection, GVariant *arg_projectio
 		ERR("calloc() Fail");
 		return CALENDAR_ERROR_OUT_OF_MEMORY;
 	}
-	while (g_variant_iter_loop(iter_projection, "u", &q->projection[i])) {
+	while (g_variant_iter_loop(iter_projection, "u", &q->projection[i]))
 		i++;
-	}
+
 	q->projection_count = count_projection;
 
 	return CALENDAR_ERROR_NONE;
@@ -1303,9 +1282,9 @@ int cal_dbus_utils_gvariant_to_ids(GVariant *arg_ids, int count, int **out_ids)
 		return CALENDAR_ERROR_OUT_OF_MEMORY;
 	}
 	int i = 0;
-	for (i = 0; i < count; i++) {
+	for (i = 0; i < count; i++)
 		g_variant_iter_loop(iter_ids, "i", &ids[i]);
-	}
+
 	*out_ids = ids;
 	return CALENDAR_ERROR_NONE;
 }
@@ -1338,8 +1317,7 @@ static int _gvariant_to_event(GVariant * arg_record, calendar_record_h *out_reco
 			_gvariant_to_alarm(arg_alarm, &alarm);
 			calendar_record_add_child_record(record, _calendar_event.calendar_alarm, alarm);
 		}
-	}
-	else {
+	} else {
 		DBG("No alarm");
 	}
 
@@ -1350,8 +1328,7 @@ static int _gvariant_to_event(GVariant * arg_record, calendar_record_h *out_reco
 			_gvariant_to_attendee(arg_attendee, &attendee);
 			calendar_record_add_child_record(record, _calendar_event.calendar_attendee, attendee);
 		}
-	}
-	else {
+	} else {
 		DBG("No attendee");
 	}
 
@@ -1362,8 +1339,7 @@ static int _gvariant_to_event(GVariant * arg_record, calendar_record_h *out_reco
 			_gvariant_to_only_event(arg_exception, &exception);
 			calendar_record_add_child_record(record, _calendar_event.exception, exception);
 		}
-	}
-	else {
+	} else {
 		DBG("No exception");
 	}
 
@@ -1374,8 +1350,7 @@ static int _gvariant_to_event(GVariant * arg_record, calendar_record_h *out_reco
 			_gvariant_to_extended(arg_extended, &extended);
 			calendar_record_add_child_record(record, _calendar_event.extended, extended);
 		}
-	}
-	else {
+	} else {
 		DBG("No extended");
 	}
 
@@ -1390,7 +1365,7 @@ static int _gvariant_to_only_todo(GVariant *arg_record, calendar_record_h *out_r
 	cal_todo_s *p = (cal_todo_s *)record;
 
 	GVariant *arg_until = NULL;
-	GVariant *arg_start= NULL;
+	GVariant *arg_start = NULL;
 	GVariant *arg_due = NULL;
 
 	g_variant_get(arg_record, "(ii&s&s&s&siii&sddxxiixiiivii&s&s&s&s&s&s&s&s&si"
@@ -1462,8 +1437,7 @@ static int _gvariant_to_todo(GVariant * arg_record, calendar_record_h *out_recor
 			_gvariant_to_alarm(arg_alarm, &alarm);
 			calendar_record_add_child_record(record, _calendar_todo.calendar_alarm, alarm);
 		}
-	}
-	else {
+	} else {
 		DBG("No alarm");
 	}
 
@@ -1474,8 +1448,7 @@ static int _gvariant_to_todo(GVariant * arg_record, calendar_record_h *out_recor
 			_gvariant_to_attendee(arg_attendee, &attendee);
 			calendar_record_add_child_record(record, _calendar_todo.calendar_attendee, attendee);
 		}
-	}
-	else {
+	} else {
 		DBG("No attendee");
 	}
 
@@ -1486,8 +1459,7 @@ static int _gvariant_to_todo(GVariant * arg_record, calendar_record_h *out_recor
 			_gvariant_to_extended(arg_extended, &extended);
 			calendar_record_add_child_record(record, _calendar_todo.extended, extended);
 		}
-	}
-	else {
+	} else {
 		DBG("No extended");
 	}
 

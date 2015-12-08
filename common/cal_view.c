@@ -25,8 +25,7 @@
 #include "cal_view.h"
 #include "cal_mutex.h"
 
-API const _calendar_book_property_ids   _calendar_book =
-{
+API const _calendar_book_property_ids   _calendar_book = {
 	._uri = CALENDAR_VIEW_CALENDAR,
 	.id = CAL_PROPERTY_CALENDAR_ID,
 	.uid = CAL_PROPERTY_CALENDAR_UID,
@@ -45,8 +44,7 @@ API const _calendar_book_property_ids   _calendar_book =
 	.mode = CAL_PROPERTY_CALENDAR_MODE
 };
 
-API const _calendar_event_property_ids   _calendar_event =
-{
+API const _calendar_event_property_ids   _calendar_event = {
 	._uri = CALENDAR_VIEW_EVENT,
 	.id = CAL_PROPERTY_EVENT_ID,
 	.calendar_book_id = CAL_PROPERTY_EVENT_CALENDAR_ID,
@@ -107,8 +105,7 @@ API const _calendar_event_property_ids   _calendar_event =
 	.is_allday = CAL_PROPERTY_EVENT_IS_ALLDAY
 };
 
-API const _calendar_todo_property_ids   _calendar_todo =
-{
+API const _calendar_todo_property_ids   _calendar_todo = {
 	._uri = CALENDAR_VIEW_TODO,
 	.id = CAL_PROPERTY_TODO_ID,
 	.calendar_book_id = CAL_PROPERTY_TODO_CALENDAR_ID,
@@ -160,8 +157,7 @@ API const _calendar_todo_property_ids   _calendar_todo =
 	.is_allday = CAL_PROPERTY_TODO_IS_ALLDAY
 };
 
-API const _calendar_timezone_property_ids   _calendar_timezone =
-{
+API const _calendar_timezone_property_ids   _calendar_timezone = {
 	._uri = CALENDAR_VIEW_TIMEZONE,
 	.id = CAL_PROPERTY_TIMEZONE_ID,
 	.calendar_book_id = CAL_PROPERTY_TIMEZONE_CALENDAR_ID,
@@ -180,8 +176,7 @@ API const _calendar_timezone_property_ids   _calendar_timezone =
 	.day_light_bias = CAL_PROPERTY_TIMEZONE_DAY_LIGHT_BIAS
 };
 
-API const _calendar_attendee_property_ids   _calendar_attendee =
-{
+API const _calendar_attendee_property_ids   _calendar_attendee = {
 	._uri = CALENDAR_VIEW_ATTENDEE,
 	.parent_id = CAL_PROPERTY_ATTENDEE_PARENT_ID,
 	.number = CAL_PROPERTY_ATTENDEE_NUMBER,
@@ -199,8 +194,7 @@ API const _calendar_attendee_property_ids   _calendar_attendee =
 	.member = CAL_PROPERTY_ATTENDEE_MEMBER
 };
 
-API const _calendar_alarm_property_ids   _calendar_alarm =
-{
+API const _calendar_alarm_property_ids   _calendar_alarm = {
 	._uri = CALENDAR_VIEW_ALARM,
 	.parent_id = CAL_PROPERTY_ALARM_PARENT_ID,
 	.tick = CAL_PROPERTY_ALARM_TICK,
@@ -212,8 +206,7 @@ API const _calendar_alarm_property_ids   _calendar_alarm =
 	.alarm_time = CAL_PROPERTY_ALARM_ALARM,
 };
 
-API const _calendar_updated_info_property_ids   _calendar_updated_info =
-{
+API const _calendar_updated_info_property_ids   _calendar_updated_info = {
 	._uri = CALENDAR_VIEW_UPDATED_INFO,
 	.id = CAL_PROPERTY_UPDATED_INFO_ID,
 	.calendar_book_id = CAL_PROPERTY_UPDATED_INFO_CALENDAR_ID,
@@ -221,8 +214,7 @@ API const _calendar_updated_info_property_ids   _calendar_updated_info =
 	.version = CAL_PROPERTY_UPDATED_INFO_VERSION
 };
 
-API const _calendar_event_calendar_book_property_ids   _calendar_event_calendar_book =
-{
+API const _calendar_event_calendar_book_property_ids   _calendar_event_calendar_book = {
 	._uri = CALENDAR_VIEW_EVENT_CALENDAR,
 	.event_id = CAL_PROPERTY_EVENT_ID,
 	.calendar_book_id = CAL_PROPERTY_EVENT_CALENDAR_ID,
@@ -280,8 +272,7 @@ API const _calendar_event_calendar_book_property_ids   _calendar_event_calendar_
 	.calendar_book_account_id = CAL_PROPERTY_CALENDAR_ACCOUNT_ID | CAL_PROPERTY_FLAGS_FILTER
 };
 
-API const _calendar_todo_calendar_book_property_ids   _calendar_todo_calendar_book =
-{
+API const _calendar_todo_calendar_book_property_ids   _calendar_todo_calendar_book = {
 	._uri = CALENDAR_VIEW_TODO_CALENDAR,
 	.todo_id = CAL_PROPERTY_TODO_ID,
 	.calendar_book_id = CAL_PROPERTY_TODO_CALENDAR_ID,
@@ -331,8 +322,7 @@ API const _calendar_todo_calendar_book_property_ids   _calendar_todo_calendar_bo
 	.calendar_book_account_id = CAL_PROPERTY_CALENDAR_ACCOUNT_ID | CAL_PROPERTY_FLAGS_FILTER
 };
 
-API const _calendar_event_calendar_book_attendee_property_ids   _calendar_event_calendar_book_attendee =
-{
+API const _calendar_event_calendar_book_attendee_property_ids   _calendar_event_calendar_book_attendee = {
 	._uri = CALENDAR_VIEW_EVENT_CALENDAR_ATTENDEE,
 	.event_id = CAL_PROPERTY_EVENT_ID,
 	.calendar_book_id = CAL_PROPERTY_EVENT_CALENDAR_ID,
@@ -393,8 +383,7 @@ API const _calendar_event_calendar_book_attendee_property_ids   _calendar_event_
 	.attendee_member = CAL_PROPERTY_ATTENDEE_MEMBER | CAL_PROPERTY_FLAGS_FILTER
 };
 
-API const _calendar_instance_utime_calendar_book_property_ids   _calendar_instance_utime_calendar_book =
-{
+API const _calendar_instance_utime_calendar_book_property_ids   _calendar_instance_utime_calendar_book = {
 	._uri = CALENDAR_VIEW_INSTANCE_UTIME_CALENDAR,
 	.event_id = CAL_PROPERTY_INSTANCE_NORMAL_EVENT_ID,
 	.start_time = CAL_PROPERTY_INSTANCE_NORMAL_START,
@@ -418,8 +407,7 @@ API const _calendar_instance_utime_calendar_book_property_ids   _calendar_instan
 	.sync_data1 = CAL_PROPERTY_INSTANCE_NORMAL_SYNC_DATA1
 };
 
-API const _calendar_instance_localtime_calendar_book_property_ids   _calendar_instance_localtime_calendar_book =
-{
+API const _calendar_instance_localtime_calendar_book_property_ids   _calendar_instance_localtime_calendar_book = {
 	._uri = CALENDAR_VIEW_INSTANCE_LOCALTIME_CALENDAR,
 	.event_id = CAL_PROPERTY_INSTANCE_ALLDAY_EVENT_ID,
 	.start_time = CAL_PROPERTY_INSTANCE_ALLDAY_START,
@@ -444,8 +432,7 @@ API const _calendar_instance_localtime_calendar_book_property_ids   _calendar_in
 	.is_allday = CAL_PROPERTY_INSTANCE_ALLDAY_IS_ALLDAY
 };
 
-API const _calendar_instance_utime_calendar_book_extended_property_ids   _calendar_instance_utime_calendar_book_extended =
-{
+API const _calendar_instance_utime_calendar_book_extended_property_ids   _calendar_instance_utime_calendar_book_extended = {
 	._uri = CALENDAR_VIEW_INSTANCE_UTIME_CALENDAR_EXTENDED,
 	.event_id = CAL_PROPERTY_INSTANCE_NORMAL_EXTENDED_EVENT_ID,
 	.start_time = CAL_PROPERTY_INSTANCE_NORMAL_EXTENDED_START,
@@ -475,8 +462,7 @@ API const _calendar_instance_utime_calendar_book_extended_property_ids   _calend
 	.sync_data4 = CAL_PROPERTY_INSTANCE_NORMAL_EXTENDED_SYNC_DATA4
 };
 
-API const _calendar_instance_localtime_calendar_book_extended_property_ids   _calendar_instance_localtime_calendar_book_extended =
-{
+API const _calendar_instance_localtime_calendar_book_extended_property_ids   _calendar_instance_localtime_calendar_book_extended = {
 	._uri = CALENDAR_VIEW_INSTANCE_LOCALTIME_CALENDAR_EXTENDED,
 	.event_id = CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_EVENT_ID,
 	.start_time = CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_START,
@@ -498,7 +484,7 @@ API const _calendar_instance_localtime_calendar_book_extended_property_ids   _ca
 	.calendar_book_account_id = CAL_PROPERTY_CALENDAR_ACCOUNT_ID | CAL_PROPERTY_FLAGS_FILTER,
 	.last_modified_time = CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_LAST_MODIFIED_TIME,
 	.sync_data1 = CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_SYNC_DATA1,
-	.organizer_name= CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_ORGANIZER_NAME,
+	.organizer_name = CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_ORGANIZER_NAME,
 	.categories = CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_CATEGORIES,
 	.has_attendee = CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_HAS_ATTENDEE,
 	.sync_data2 = CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_SYNC_DATA2,
@@ -507,8 +493,7 @@ API const _calendar_instance_localtime_calendar_book_extended_property_ids   _ca
 	.is_allday = CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_IS_ALLDAY
 };
 
-API const _calendar_extended_property_property_ids   _calendar_extended_property =
-{
+API const _calendar_extended_property_property_ids   _calendar_extended_property = {
 	._uri = CALENDAR_VIEW_EXTENDED,
 	.id = CAL_PROPERTY_EXTENDED_ID,
 	.record_id = CAL_PROPERTY_EXTENDED_RECORD_ID,
@@ -535,8 +520,7 @@ const cal_property_info_s  __property_calendar_book[] = {
 	{CAL_PROPERTY_CALENDAR_MODE,                "mode"},
 };
 
-const cal_property_info_s   __property_event[] =
-{
+const cal_property_info_s   __property_event[] = {
 	{CAL_PROPERTY_EVENT_ID,                     "id"},
 	{CAL_PROPERTY_EVENT_CALENDAR_ID,            "calendar_id"},
 	{CAL_PROPERTY_EVENT_SUMMARY,                "summary"},
@@ -596,8 +580,7 @@ const cal_property_info_s   __property_event[] =
 	{CAL_PROPERTY_EVENT_IS_ALLDAY,              "is_allday"},
 };
 
-const cal_property_info_s   __property_todo[] =
-{
+const cal_property_info_s   __property_todo[] = {
 	{CAL_PROPERTY_TODO_ID,                      "id"},
 	{CAL_PROPERTY_TODO_CALENDAR_ID,             "calendar_id"},
 	{CAL_PROPERTY_TODO_SUMMARY,                 "summary"},
@@ -648,8 +631,7 @@ const cal_property_info_s   __property_todo[] =
 	{CAL_PROPERTY_TODO_IS_ALLDAY,               "dtend_type"},
 };
 
-const cal_property_info_s   __property_timezone[] =
-{
+const cal_property_info_s   __property_timezone[] = {
 	{CAL_PROPERTY_TIMEZONE_ID,                                  "id"},
 	{CAL_PROPERTY_TIMEZONE_TZ_OFFSET_FROM_GMT,                  "tz_offset_from_gmt"},
 	{CAL_PROPERTY_TIMEZONE_STANDARD_NAME,                       "standard_name"},
@@ -667,8 +649,7 @@ const cal_property_info_s   __property_timezone[] =
 	{CAL_PROPERTY_TIMEZONE_CALENDAR_ID,                         "calendar_id"},
 };
 
-const cal_property_info_s   __property_attendee[] =
-{
+const cal_property_info_s   __property_attendee[] = {
 	{CAL_PROPERTY_ATTENDEE_NUMBER,              "attendee_number"},
 	{CAL_PROPERTY_ATTENDEE_CUTYPE,              "attendee_cutype"},
 	{CAL_PROPERTY_ATTENDEE_CT_INDEX,            "attendee_ct_index"},
@@ -685,8 +666,7 @@ const cal_property_info_s   __property_attendee[] =
 	{CAL_PROPERTY_ATTENDEE_PARENT_ID,           "event_id"},
 };
 
-const cal_property_info_s   __property_alarm[] =
-{
+const cal_property_info_s   __property_alarm[] = {
 	{CAL_PROPERTY_ALARM_TICK,               "remind_tick"},
 	{CAL_PROPERTY_ALARM_TICK_UNIT,          "remind_tick_unit"},
 	{CAL_PROPERTY_ALARM_DESCRIPTION,        "alarm_description"},
@@ -697,16 +677,14 @@ const cal_property_info_s   __property_alarm[] =
 	{CAL_PROPERTY_ALARM_ALARM,              "alarm_type,alarm_utime,alarm_datetime"},
 };
 
-const cal_property_info_s   __property_updated_info[] =
-{
+const cal_property_info_s   __property_updated_info[] = {
 	{CAL_PROPERTY_UPDATED_INFO_ID,                  "id"},
 	{CAL_PROPERTY_UPDATED_INFO_CALENDAR_ID,         "calendar_id"},
 	{CAL_PROPERTY_UPDATED_INFO_TYPE,                "type"},
 	{CAL_PROPERTY_UPDATED_INFO_VERSION,             "ver"},
 };
 
-const cal_property_info_s   __property_search_event_calendar[] =
-{
+const cal_property_info_s   __property_search_event_calendar[] = {
 	{CAL_PROPERTY_EVENT_ID,                     "id"},
 	{CAL_PROPERTY_EVENT_CALENDAR_ID,            "calendar_id"},
 	{CAL_PROPERTY_EVENT_SUMMARY,                "summary"},
@@ -763,8 +741,7 @@ const cal_property_info_s   __property_search_event_calendar[] =
 	{(CAL_PROPERTY_CALENDAR_ACCOUNT_ID|CAL_PROPERTY_FLAGS_FILTER),       "account_id"},
 };
 
-const cal_property_info_s   __property_search_todo_calendar[] =
-{
+const cal_property_info_s   __property_search_todo_calendar[] = {
 	{CAL_PROPERTY_TODO_ID,                      "id"},
 	{CAL_PROPERTY_TODO_CALENDAR_ID,             "calendar_id"},
 	{CAL_PROPERTY_TODO_SUMMARY,                 "summary"},
@@ -813,8 +790,7 @@ const cal_property_info_s   __property_search_todo_calendar[] =
 	{(CAL_PROPERTY_CALENDAR_ACCOUNT_ID|CAL_PROPERTY_FLAGS_FILTER),       "account_id"},
 };
 
-const cal_property_info_s   __property_search_event_calendar_attendee[] =
-{
+const cal_property_info_s   __property_search_event_calendar_attendee[] = {
 	{CAL_PROPERTY_EVENT_ID,                     "id"},
 	{CAL_PROPERTY_EVENT_CALENDAR_ID,            "calendar_id"},
 	{CAL_PROPERTY_EVENT_SUMMARY,                "summary"},
@@ -874,8 +850,7 @@ const cal_property_info_s   __property_search_event_calendar_attendee[] =
 	{(CAL_PROPERTY_ATTENDEE_MEMBER|CAL_PROPERTY_FLAGS_FILTER),           "attendee_member"},
 };
 
-const cal_property_info_s   __property_search_instance_utime_calendar[] =
-{
+const cal_property_info_s   __property_search_instance_utime_calendar[] = {
 	{CAL_PROPERTY_INSTANCE_NORMAL_EVENT_ID,             "event_id"},
 	{CAL_PROPERTY_INSTANCE_NORMAL_START,                "dtstart_type,dtstart_utime,dtstart_datetime"},
 	{CAL_PROPERTY_INSTANCE_NORMAL_END,                  "dtend_type,dtend_utime,dtend_datetime"},
@@ -898,8 +873,7 @@ const cal_property_info_s   __property_search_instance_utime_calendar[] =
 	{CAL_PROPERTY_INSTANCE_NORMAL_SYNC_DATA1,   "sync_data1"},
 };
 
-const cal_property_info_s   __property_search_instance_localtime_calendar[] =
-{
+const cal_property_info_s   __property_search_instance_localtime_calendar[] = {
 	{CAL_PROPERTY_INSTANCE_ALLDAY_EVENT_ID,             "event_id"},
 	{CAL_PROPERTY_INSTANCE_ALLDAY_START,                "dtstart_type,dtstart_utime,dtstart_datetime"},
 	{CAL_PROPERTY_INSTANCE_ALLDAY_END,                  "dtend_type,dtend_utime,dtend_datetime"},
@@ -923,8 +897,7 @@ const cal_property_info_s   __property_search_instance_localtime_calendar[] =
 	{CAL_PROPERTY_INSTANCE_ALLDAY_IS_ALLDAY,   "is_allday"},
 };
 
-const cal_property_info_s   __property_search_instance_utime_calendar_extended[] =
-{
+const cal_property_info_s   __property_search_instance_utime_calendar_extended[] = {
 	{CAL_PROPERTY_INSTANCE_NORMAL_EXTENDED_EVENT_ID,             "event_id"},
 	{CAL_PROPERTY_INSTANCE_NORMAL_EXTENDED_START,                "dtstart_type,dtstart_utime,dtstart_datetime"},
 	{CAL_PROPERTY_INSTANCE_NORMAL_EXTENDED_END,                  "dtend_type,dtend_utime,dtend_datetime"},
@@ -954,8 +927,7 @@ const cal_property_info_s   __property_search_instance_utime_calendar_extended[]
 };
 
 
-const cal_property_info_s   __property_search_instance_localtime_calendar_extended[] =
-{
+const cal_property_info_s   __property_search_instance_localtime_calendar_extended[] = {
 	{CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_EVENT_ID,             "event_id"},
 	{CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_START,                "dtstart_type,dtstart_utime,dtstart_datetime"},
 	{CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_END,                  "dtend_type,dtend_utime,dtend_datetime"},
@@ -985,8 +957,7 @@ const cal_property_info_s   __property_search_instance_localtime_calendar_extend
 	{CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_IS_ALLDAY,    "is_allday"},
 };
 
-const cal_property_info_s   __property_extended[] =
-{
+const cal_property_info_s   __property_extended[] = {
 	{CAL_PROPERTY_EXTENDED_ID,              "id"},
 	{CAL_PROPERTY_EXTENDED_RECORD_ID,       "record_id"},
 	{CAL_PROPERTY_EXTENDED_RECORD_TYPE,     "record_type"},
@@ -999,7 +970,7 @@ typedef struct {
 	cal_record_type_e type;
 	cal_property_info_s *properties;
 	int property_count;
-}cal_view_uri_info_s;
+} cal_view_uri_info_s;
 
 #define PTR_COUNT(X)    (void*)(X), sizeof(X)/sizeof(cal_property_info_s)
 
@@ -1077,16 +1048,13 @@ cal_record_type_e cal_view_get_type(const char *view_uri)
 	cal_view_uri_info_s* view_uri_info = NULL;
 	cal_record_type_e type = CAL_RECORD_TYPE_INVALID;
 
-	if (cal_uri_property_hash){
+	if (cal_uri_property_hash) {
 		view_uri_info = g_hash_table_lookup(cal_uri_property_hash, view_uri);
-		if (view_uri_info) {
+		if (view_uri_info)
 			type = view_uri_info->type;
-		}
-		else {
+		else
 			ERR("g_hash_table_lookup() Fail");
-		}
-	}
-	else {
+	} else {
 		ERR("Unable to get cal_uri_property_hash[%s]", view_uri);
 	}
 
@@ -1118,7 +1086,7 @@ const cal_property_info_s* cal_view_get_property_info(const char *view_uri, int 
 	cal_property_info_s* tmp = NULL;
 	cal_view_uri_info_s* view_uri_info = NULL;
 
-	if (cal_uri_property_hash){
+	if (cal_uri_property_hash) {
 		view_uri_info = g_hash_table_lookup(cal_uri_property_hash, view_uri);
 		if (view_uri_info) {
 			tmp = view_uri_info->properties;
@@ -1133,11 +1101,10 @@ const char* cal_view_get_uri(const char *view_uri)
 {
 	cal_view_uri_info_s* view_uri_info = NULL;
 
-	if (cal_uri_property_hash){
+	if (cal_uri_property_hash) {
 		view_uri_info = g_hash_table_lookup(cal_uri_property_hash, view_uri);
-		if (view_uri_info) {
+		if (view_uri_info)
 			return view_uri_info->view_uri;
-		}
 	}
 
 	return NULL;

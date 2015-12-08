@@ -55,7 +55,7 @@ int cal_db_delete_account(int account_id)
 
 	sqlite3_finalize(stmt);
 	if (calendar_list)
-		DBG("calendar cnt=%d",g_list_length(calendar_list));
+		DBG("calendar cnt=%d", g_list_length(calendar_list));
 
 	ret = cal_db_util_begin_trans();
 	if (CALENDAR_ERROR_NONE != ret) {

@@ -65,7 +65,7 @@ cal_record_plugin_cb_s cal_record_instance_allday_plugin_cb = {
 
 static void _cal_record_instance_allday_struct_init(cal_instance_allday_s* record)
 {
-	memset(record,0, sizeof(cal_instance_allday_s));
+	memset(record, 0, sizeof(cal_instance_allday_s));
 
 	record->event_status = CALENDAR_EVENT_STATUS_NONE;
 	record->calendar_id = DEFAULT_EVENT_CALENDAR_BOOK_ID;
@@ -74,7 +74,7 @@ static void _cal_record_instance_allday_struct_init(cal_instance_allday_s* recor
 	record->busy_status = 2;
 	record->summary = NULL;
 	record->description = NULL;
-	record->location= NULL;
+	record->location = NULL;
 
 	record->latitude = 1000; /* set default 1000 out of range(-180 ~ 180) */
 	record->longitude = 1000; /* set default 1000 out of range(-180 ~ 180) */
@@ -85,7 +85,7 @@ static void _cal_record_instance_allday_struct_init(cal_instance_allday_s* recor
 static int _cal_record_instance_allday_create(calendar_record_h* out_record)
 {
 	cal_instance_allday_s *temp = NULL;
-	int ret= CALENDAR_ERROR_NONE;
+	int ret = CALENDAR_ERROR_NONE;
 
 	temp = calloc(1, sizeof(cal_instance_allday_s));
 	RETVM_IF(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc() Fail");
@@ -171,7 +171,7 @@ static int _cal_record_instance_allday_get_str(calendar_record_h record, unsigne
 		*out_str = cal_strdup(rec->sync_data1);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -195,7 +195,7 @@ static int _cal_record_instance_allday_get_str_p(calendar_record_h record, unsig
 		*out_str = (rec->sync_data1);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -237,7 +237,7 @@ static int _cal_record_instance_allday_get_int(calendar_record_h record, unsigne
 		*out_value = (rec->is_allday);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -255,7 +255,7 @@ static int _cal_record_instance_allday_get_double(calendar_record_h record, unsi
 		*out_value = (rec->longitude);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -287,7 +287,7 @@ static int _cal_record_instance_allday_get_caltime(calendar_record_h record, uns
 		*out_value = rec->end;
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -315,7 +315,7 @@ static int _cal_record_instance_allday_set_str(calendar_record_h record, unsigne
 		rec->sync_data1 = cal_strdup(value);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -354,7 +354,7 @@ static int _cal_record_instance_allday_set_int(calendar_record_h record, unsigne
 		(rec->original_event_id) = value;
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -372,7 +372,7 @@ static int _cal_record_instance_allday_set_double(calendar_record_h record, unsi
 		(rec->longitude) = value;
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -390,7 +390,7 @@ static int _cal_record_instance_allday_set_caltime(calendar_record_h record, uns
 		rec->end = value;
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 

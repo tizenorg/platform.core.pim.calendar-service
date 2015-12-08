@@ -192,21 +192,18 @@ int cal_list_clone(calendar_list_h list, calendar_list_h *out_list)
 	RETV_IF(NULL == out_list, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	ret = calendar_list_get_count(list, &count);
-	if (CALENDAR_ERROR_NONE != ret) {
+	if (CALENDAR_ERROR_NONE != ret)
 		return ret;
-	}
 
 	ret = calendar_list_first(list);
-	if (CALENDAR_ERROR_NONE != ret) {
+	if (CALENDAR_ERROR_NONE != ret)
 		return ret;
-	}
 
 	ret = calendar_list_create(&l);
-	if (CALENDAR_ERROR_NONE != ret) {
+	if (CALENDAR_ERROR_NONE != ret)
 		return ret;
-	}
 
-	for(i = 0; i < count; i++) {
+	for (i = 0; i < count; i++) {
 		calendar_record_h record = NULL;
 		calendar_record_h clone_record = NULL;
 		ret = calendar_list_get_current_record_p(list, &record);

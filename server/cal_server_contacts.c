@@ -20,7 +20,7 @@
 #include <stdlib.h>
 #include <sys/time.h>
 #include <contacts.h>
-#include <unistd.h>	// usleep
+#include <unistd.h>	/* usleep */
 
 #include "calendar.h"
 #include "cal_typedef.h"
@@ -234,7 +234,7 @@ static int cal_server_contacts_insert_event(int id, calendar_list_h out_insert)
 			contacts_record_destroy(contact, true);
 			return CALENDAR_ERROR_SYSTEM;
 		}
-		DBG("account_id[%d]",account_id);
+		DBG("account_id[%d]", account_id);
 	}
 
 	int index = 0;
@@ -337,12 +337,11 @@ static void _cal_server_contacts_get_event_list(contacts_list_h contacts_list,
 
 		if (0 < delete_count) {
 			DBG("delete_count");
-			if (NULL == array) {
+			if (NULL == array)
 				array = calloc(delete_count, sizeof(int));
-			}
-			else {
+			else
 				array = realloc(array, (count +delete_count) *sizeof(int));
-			}
+
 			if (NULL == array) {
 				ERR("calloc() Fail");
 				free(delete_array);
@@ -479,7 +478,7 @@ void cal_server_contacts_delete(int account_id)
 		return ;
 	}
 	ret = calendar_filter_add_int(filter, _calendar_event.calendar_book_id,
-			CALENDAR_MATCH_EQUAL,DEFAULT_BIRTHDAY_CALENDAR_BOOK_ID);
+			CALENDAR_MATCH_EQUAL, DEFAULT_BIRTHDAY_CALENDAR_BOOK_ID);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("calendar_filter_add_int() Fail(%d)", ret);
 		calendar_filter_destroy(filter);
@@ -494,7 +493,7 @@ void cal_server_contacts_delete(int account_id)
 		return ;
 	}
 	unsigned int projection = _calendar_event.id;
-	ret = calendar_query_set_projection(query, &projection ,1);
+	ret = calendar_query_set_projection(query, &projection , 1);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("calendar_query_set_projection() Fail");
 		calendar_filter_destroy(filter);
@@ -576,7 +575,7 @@ static gpointer _cal_server_contacts_sync_main(gpointer user_data)
 
 		cal_access_control_set_client_info(NULL, "calendar-service");
 
-		while(1) {
+		while (1) {
 			if (CALENDAR_ERROR_NONE != _cal_server_contacts_sync()) {
 				DBG("end");
 				break;

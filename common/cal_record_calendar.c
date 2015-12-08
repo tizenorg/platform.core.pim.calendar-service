@@ -60,7 +60,7 @@ cal_record_plugin_cb_s cal_record_calendar_plugin_cb = {
 
 static void _cal_record_calendar_struct_init(cal_book_s *record)
 {
-	memset(record,0, sizeof(cal_book_s));
+	memset(record, 0, sizeof(cal_book_s));
 	record->index = -1;
 	record->visibility = true;
 	record->account_id = LOCAL_ACCOUNT_ID;
@@ -70,7 +70,7 @@ static void _cal_record_calendar_struct_init(cal_book_s *record)
 static int _cal_record_calendar_create(calendar_record_h* out_record)
 {
 	cal_book_s *temp = NULL;
-	int ret= CALENDAR_ERROR_NONE;
+	int ret = CALENDAR_ERROR_NONE;
 
 	temp = calloc(1, sizeof(cal_book_s));
 	RETVM_IF(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc() Fail");
@@ -175,7 +175,7 @@ static int _cal_record_calendar_get_str(calendar_record_h record, unsigned int p
 		*out_str = cal_strdup(cal_rec->sync_data4);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -214,7 +214,7 @@ static int _cal_record_calendar_get_str_p(calendar_record_h record, unsigned int
 		*out_str = (cal_rec->sync_data4);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -244,7 +244,7 @@ static int _cal_record_calendar_get_int(calendar_record_h record, unsigned int p
 		*out_value = (cal_rec->mode);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -292,7 +292,7 @@ static int _cal_record_calendar_set_str(calendar_record_h record, unsigned int p
 		cal_rec->sync_data4 = cal_strdup(value);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -343,7 +343,7 @@ static int _cal_record_calendar_set_int(calendar_record_h record, unsigned int p
 		(cal_rec->mode) = value;
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 

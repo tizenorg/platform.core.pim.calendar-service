@@ -224,15 +224,13 @@ API int calendar_vcalendar_parse_to_calendar_foreach(const char *vcalendar_file_
 	while (fgets(buf, sizeof(buf), file)) {
 		if (len + sizeof(buf) < buf_size) {
 			len += snprintf(stream + len, strlen(buf) +1, "%s", buf);
-		}
-		else {
+		} else {
 			char *new_stream;
 			buf_size *= 2;
 			new_stream = realloc(stream, buf_size);
 			if (new_stream) {
 				stream = new_stream;
-			}
-			else {
+			} else {
 				free(stream);
 				fclose(file);
 				free(foreach_data);

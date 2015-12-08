@@ -67,7 +67,7 @@ cal_record_plugin_cb_s cal_record_search_plugin_cb = {
 static int _cal_record_search_create(calendar_record_h* out_record)
 {
 	cal_search_s *temp = NULL;
-	int ret= CALENDAR_ERROR_NONE;
+	int ret = CALENDAR_ERROR_NONE;
 
 	temp = calloc(1, sizeof(cal_search_s));
 	RETVM_IF(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc() Fail");
@@ -84,11 +84,11 @@ static int _cal_record_search_destroy(calendar_record_h record, bool delete_chil
 
 	cal_search_s *temp = (cal_search_s*)(record);
 
-	for(cursor = temp->values;cursor;cursor=cursor->next) {
+	for (cursor = temp->values; cursor; cursor = cursor->next) {
 		cal_search_value_s *data = cursor->data;
-		if (CAL_PROPERTY_CHECK_DATA_TYPE(data->property_id, CAL_PROPERTY_DATA_TYPE_STR) == true) {
+		if (CAL_PROPERTY_CHECK_DATA_TYPE(data->property_id, CAL_PROPERTY_DATA_TYPE_STR) == true)
 			CAL_FREE(data->value.s);
-		}
+
 		CAL_FREE(data);
 	}
 
@@ -111,7 +111,7 @@ static int _cal_record_search_clone(calendar_record_h record, calendar_record_h*
 
 	CAL_RECORD_COPY_COMMON(&(out_data->common), &(src_data->common));
 
-	for(cursor = src_data->values;cursor;cursor=cursor->next) {
+	for (cursor = src_data->values; cursor; cursor = cursor->next) {
 		cal_search_value_s *src = cursor->data;
 		cal_search_value_s *dest = calloc(1, sizeof(cal_search_value_s));
 		if (NULL == dest) {
@@ -121,20 +121,15 @@ static int _cal_record_search_clone(calendar_record_h record, calendar_record_h*
 		dest->property_id = src->property_id;
 		if (CAL_PROPERTY_CHECK_DATA_TYPE(src->property_id, CAL_PROPERTY_DATA_TYPE_STR) == true) {
 			dest->value.s = cal_strdup(src->value.s);
-		}
-		else if (CAL_PROPERTY_CHECK_DATA_TYPE(src->property_id, CAL_PROPERTY_DATA_TYPE_INT) == true) {
+		} else if (CAL_PROPERTY_CHECK_DATA_TYPE(src->property_id, CAL_PROPERTY_DATA_TYPE_INT) == true) {
 			dest->value.i = src->value.i;
-		}
-		else if (CAL_PROPERTY_CHECK_DATA_TYPE(src->property_id, CAL_PROPERTY_DATA_TYPE_DOUBLE) == true) {
+		} else if (CAL_PROPERTY_CHECK_DATA_TYPE(src->property_id, CAL_PROPERTY_DATA_TYPE_DOUBLE) == true) {
 			dest->value.d = src->value.d;
-		}
-		else if (CAL_PROPERTY_CHECK_DATA_TYPE(src->property_id, CAL_PROPERTY_DATA_TYPE_LLI) == true) {
+		} else if (CAL_PROPERTY_CHECK_DATA_TYPE(src->property_id, CAL_PROPERTY_DATA_TYPE_LLI) == true) {
 			dest->value.lli = src->value.lli;
-		}
-		else if (CAL_PROPERTY_CHECK_DATA_TYPE(src->property_id, CAL_PROPERTY_DATA_TYPE_CALTIME) == true) {
+		} else if (CAL_PROPERTY_CHECK_DATA_TYPE(src->property_id, CAL_PROPERTY_DATA_TYPE_CALTIME) == true) {
 			dest->value.caltime = src->value.caltime;
-		}
-		else {
+		} else {
 			CAL_FREE(dest);
 			continue;
 		}
@@ -152,15 +147,14 @@ static int _cal_record_search_get_str(calendar_record_h record, unsigned int pro
 	cal_search_s *rec = (cal_search_s*)(record);
 	GSList *cursor;
 
-	for(cursor = rec->values;cursor;cursor=cursor->next) {
+	for (cursor = rec->values; cursor; cursor = cursor->next) {
 		cal_search_value_s *data = cursor->data;
 		if (data->property_id == property_id) {
 			if (CAL_PROPERTY_CHECK_DATA_TYPE(data->property_id, CAL_PROPERTY_DATA_TYPE_STR) == true) {
 				*out_str = cal_strdup(data->value.s);
 				break;
-			}
-			else {
-				ERR("invalid parameter (property:%d)",data->property_id);
+			} else {
+				ERR("invalid parameter (property:%d)", data->property_id);
 				return CALENDAR_ERROR_INVALID_PARAMETER;
 			}
 		}
@@ -174,15 +168,14 @@ static int _cal_record_search_get_str_p(calendar_record_h record, unsigned int p
 	cal_search_s *rec = (cal_search_s*)(record);
 	GSList *cursor;
 
-	for(cursor = rec->values;cursor;cursor=cursor->next) {
+	for (cursor = rec->values; cursor; cursor = cursor->next) {
 		cal_search_value_s *data = cursor->data;
 		if (data->property_id == property_id) {
 			if (CAL_PROPERTY_CHECK_DATA_TYPE(data->property_id, CAL_PROPERTY_DATA_TYPE_STR) == true) {
 				*out_str = (data->value.s);
 				break;
-			}
-			else {
-				ERR("invalid parameter (property:%d)",data->property_id);
+			} else {
+				ERR("invalid parameter (property:%d)", data->property_id);
 				return CALENDAR_ERROR_INVALID_PARAMETER;
 			}
 		}
@@ -196,15 +189,14 @@ static int _cal_record_search_get_int(calendar_record_h record, unsigned int pro
 	cal_search_s *rec = (cal_search_s*)(record);
 	GSList *cursor;
 
-	for(cursor = rec->values;cursor;cursor=cursor->next) {
+	for (cursor = rec->values; cursor; cursor = cursor->next) {
 		cal_search_value_s *data = cursor->data;
 		if (data->property_id == property_id) {
 			if (CAL_PROPERTY_CHECK_DATA_TYPE(data->property_id, CAL_PROPERTY_DATA_TYPE_INT) == true) {
 				*out_value = (data->value.i);
 				break;
-			}
-			else {
-				ERR("invalid parameter (property:%d)",data->property_id);
+			} else {
+				ERR("invalid parameter (property:%d)", data->property_id);
 				return CALENDAR_ERROR_INVALID_PARAMETER;
 			}
 		}
@@ -218,15 +210,14 @@ static int _cal_record_search_get_double(calendar_record_h record, unsigned int 
 	cal_search_s *rec = (cal_search_s*)(record);
 	GSList *cursor;
 
-	for(cursor = rec->values;cursor;cursor=cursor->next) {
+	for (cursor = rec->values; cursor; cursor = cursor->next) {
 		cal_search_value_s *data = cursor->data;
 		if (data->property_id == property_id) {
 			if (CAL_PROPERTY_CHECK_DATA_TYPE(data->property_id, CAL_PROPERTY_DATA_TYPE_DOUBLE) == true) {
 				*out_value = (data->value.d);
 				break;
-			}
-			else {
-				ERR("invalid parameter (property:%d)",data->property_id);
+			} else {
+				ERR("invalid parameter (property:%d)", data->property_id);
 				return CALENDAR_ERROR_INVALID_PARAMETER;
 			}
 		}
@@ -240,15 +231,14 @@ static int _cal_record_search_get_lli(calendar_record_h record, unsigned int pro
 	cal_search_s *rec = (cal_search_s*)(record);
 	GSList *cursor;
 
-	for(cursor = rec->values;cursor;cursor=cursor->next) {
+	for (cursor = rec->values; cursor; cursor = cursor->next) {
 		cal_search_value_s *data = cursor->data;
 		if (data->property_id == property_id) {
 			if (CAL_PROPERTY_CHECK_DATA_TYPE(data->property_id, CAL_PROPERTY_DATA_TYPE_LLI) == true) {
 				*out_value = (data->value.lli);
 				break;
-			}
-			else {
-				ERR("invalid parameter (property:%d)",data->property_id);
+			} else {
+				ERR("invalid parameter (property:%d)", data->property_id);
 				return CALENDAR_ERROR_INVALID_PARAMETER;
 			}
 		}
@@ -262,15 +252,14 @@ static int _cal_record_search_get_caltime(calendar_record_h record, unsigned int
 	cal_search_s *rec = (cal_search_s*)(record);
 	GSList *cursor;
 
-	for(cursor = rec->values;cursor;cursor=cursor->next) {
+	for (cursor = rec->values; cursor; cursor = cursor->next) {
 		cal_search_value_s *data = cursor->data;
 		if (data->property_id == property_id) {
 			if (CAL_PROPERTY_CHECK_DATA_TYPE(data->property_id, CAL_PROPERTY_DATA_TYPE_CALTIME) == true) {
 				*out_value = (data->value.caltime);
 				break;
-			}
-			else {
-				ERR("invalid parameter (property:%d)",data->property_id);
+			} else {
+				ERR("invalid parameter (property:%d)", data->property_id);
 				return CALENDAR_ERROR_INVALID_PARAMETER;
 			}
 		}
@@ -285,16 +274,15 @@ static int _cal_record_search_set_str(calendar_record_h record, unsigned int pro
 	GSList *cursor;
 	cal_search_value_s *data = NULL;
 
-	for(cursor = rec->values;cursor;cursor=cursor->next) {
+	for (cursor = rec->values; cursor; cursor = cursor->next) {
 		data = cursor->data;
 		if (data->property_id == property_id) {
 			if (CAL_PROPERTY_CHECK_DATA_TYPE(data->property_id, CAL_PROPERTY_DATA_TYPE_STR) == true) {
 				CAL_FREE(data->value.s);
 				(data->value.s) = cal_strdup(value);
 				return CALENDAR_ERROR_NONE;
-			}
-			else {
-				ERR("invalid parameter (property:%d)",data->property_id);
+			} else {
+				ERR("invalid parameter (property:%d)", data->property_id);
 				return CALENDAR_ERROR_INVALID_PARAMETER;
 			}
 		}
@@ -315,15 +303,14 @@ static int _cal_record_search_set_int(calendar_record_h record, unsigned int pro
 	GSList *cursor;
 	cal_search_value_s *data = NULL;
 
-	for(cursor = rec->values;cursor;cursor=cursor->next) {
+	for (cursor = rec->values; cursor; cursor = cursor->next) {
 		data = cursor->data;
 		if (data->property_id == property_id) {
 			if (CAL_PROPERTY_CHECK_DATA_TYPE(data->property_id, CAL_PROPERTY_DATA_TYPE_INT) == true) {
 				(data->value.i) = value;
 				return CALENDAR_ERROR_NONE;
-			}
-			else {
-				ERR("invalid parameter (property:%d)",data->property_id);
+			} else {
+				ERR("invalid parameter (property:%d)", data->property_id);
 				return CALENDAR_ERROR_INVALID_PARAMETER;
 			}
 		}
@@ -344,15 +331,14 @@ static int _cal_record_search_set_double(calendar_record_h record, unsigned int 
 	GSList *cursor;
 	cal_search_value_s *data = NULL;
 
-	for(cursor = rec->values;cursor;cursor=cursor->next) {
+	for (cursor = rec->values; cursor; cursor = cursor->next) {
 		data = cursor->data;
 		if (data->property_id == property_id) {
 			if (CAL_PROPERTY_CHECK_DATA_TYPE(data->property_id, CAL_PROPERTY_DATA_TYPE_DOUBLE) == true) {
 				(data->value.d) = value;
 				return CALENDAR_ERROR_NONE;
-			}
-			else {
-				ERR("invalid parameter (property:%d)",data->property_id);
+			} else {
+				ERR("invalid parameter (property:%d)", data->property_id);
 				return CALENDAR_ERROR_INVALID_PARAMETER;
 			}
 		}
@@ -373,15 +359,14 @@ static int _cal_record_search_set_lli(calendar_record_h record, unsigned int pro
 	GSList *cursor;
 	cal_search_value_s *data = NULL;
 
-	for(cursor = rec->values;cursor;cursor=cursor->next) {
+	for (cursor = rec->values; cursor; cursor = cursor->next) {
 		data = cursor->data;
 		if (data->property_id == property_id) {
 			if (CAL_PROPERTY_CHECK_DATA_TYPE(data->property_id, CAL_PROPERTY_DATA_TYPE_LLI) == true) {
 				(data->value.lli) = value;
 				return CALENDAR_ERROR_NONE;
-			}
-			else {
-				ERR("invalid parameter (property:%d)",data->property_id);
+			} else {
+				ERR("invalid parameter (property:%d)", data->property_id);
 				return CALENDAR_ERROR_INVALID_PARAMETER;
 			}
 		}
@@ -402,15 +387,14 @@ static int _cal_record_search_set_caltime(calendar_record_h record, unsigned int
 	GSList *cursor;
 	cal_search_value_s *data = NULL;
 
-	for(cursor = rec->values;cursor;cursor=cursor->next) {
+	for (cursor = rec->values; cursor; cursor = cursor->next) {
 		data = cursor->data;
 		if (data->property_id == property_id) {
 			if (CAL_PROPERTY_CHECK_DATA_TYPE(data->property_id, CAL_PROPERTY_DATA_TYPE_CALTIME) == true) {
 				(data->value.caltime) = value;
 				return CALENDAR_ERROR_NONE;
-			}
-			else {
-				ERR("invalid parameter (property:%d)",data->property_id);
+			} else {
+				ERR("invalid parameter (property:%d)", data->property_id);
 				return CALENDAR_ERROR_INVALID_PARAMETER;
 			}
 		}

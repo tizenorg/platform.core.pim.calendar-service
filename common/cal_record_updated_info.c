@@ -57,7 +57,7 @@ cal_record_plugin_cb_s cal_record_updated_info_plugin_cb = {
 static int _cal_record_updated_info_create(calendar_record_h* out_record)
 {
 	cal_updated_info_s *temp = NULL;
-	int ret= CALENDAR_ERROR_NONE;
+	int ret = CALENDAR_ERROR_NONE;
 
 	temp = calloc(1, sizeof(cal_updated_info_s));
 	RETVM_IF(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc() Fail");
@@ -118,7 +118,7 @@ static int _cal_record_updated_info_get_int(calendar_record_h record, unsigned i
 		*out_value = (rec->version);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -142,7 +142,7 @@ static int _cal_record_updated_info_set_int(calendar_record_h record, unsigned i
 		(rec->version) = value;
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 

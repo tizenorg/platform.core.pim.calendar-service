@@ -348,19 +348,19 @@ int cal_db_rrule_get_rrule(int id, cal_rrule_s **rrule)
 	_rrule->byhour = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, index++);
-	_rrule->byday= cal_strdup((const char*)temp);
+	_rrule->byday = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, index++);
-	_rrule->bymonthday= cal_strdup((const char*)temp);
+	_rrule->bymonthday = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, index++);
-	_rrule->byyearday= cal_strdup((const char*)temp);
+	_rrule->byyearday = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, index++);
-	_rrule->byweekno= cal_strdup((const char*)temp);
+	_rrule->byweekno = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, index++);
-	_rrule->bymonth= cal_strdup((const char*)temp);
+	_rrule->bymonth = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, index++);
 	_rrule->bysetpos = cal_strdup((const char*)temp);
@@ -520,11 +520,9 @@ int cal_db_rrule_insert_record(int id, cal_rrule_s *rrule)
 	RETVM_IF(NULL == rrule, CALENDAR_ERROR_INVALID_PARAMETER,
 			"Invalid argument: rrule is NULL");
 
-	if (rrule->freq == CALENDAR_RECURRENCE_NONE) {
-	}
-	else {
+	if (CALENDAR_RECURRENCE_NONE != rrule->freq)
 		_cal_db_rrule_insert_record(id, rrule);
-	}
+
 	return CALENDAR_ERROR_NONE;
 }
 
@@ -536,15 +534,12 @@ int cal_db_rrule_update_record(int id, cal_rrule_s *rrule)
 		DBG("freq is NONE");
 		_cal_db_rrule_delete_record(id);
 		return CALENDAR_ERROR_NONE;
-	}
-	else {
+	} else {
 		_cal_db_rrule_has_record(id, &has_record);
-		if (has_record) {
+		if (has_record)
 			_cal_db_rrule_update_record(id, rrule);
-		}
-		else {
+		else
 			_cal_db_rrule_insert_record(id, rrule);
-		}
 	}
 	return CALENDAR_ERROR_NONE;
 }

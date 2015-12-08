@@ -60,7 +60,7 @@ static inline void _handle_callback(GSList *_noti_list, int wd, uint32_t mask)
 		noti = (noti_info_s *)cursor->data;
 		if (noti->wd == wd) {
 			if ((mask & IN_CLOSE_WRITE) && noti->cb) {
-				switch(noti->noti_type) {
+				switch (noti->noti_type) {
 				case CAL_NOTI_TYPE_CALENDAR:
 					noti->cb(CALENDAR_VIEW_CALENDAR, noti->cb_data);
 					break;
@@ -93,7 +93,7 @@ static gboolean _inotify_gio_cb(GIOChannel *src, GIOCondition cond, gpointer dat
 				_handle_callback(_noti_list, ie.wd, ie.mask);
 
 			while (0 != ie.len) {
-				ret = read(fd, name, (ie.len<sizeof(name))?ie.len:sizeof(name));
+				ret = read(fd, name, (ie.len < sizeof(name)) ? ie.len : sizeof(name));
 				if (-1 == ret) {
 					if (EINTR == errno)
 						continue;
@@ -105,8 +105,7 @@ static gboolean _inotify_gio_cb(GIOChannel *src, GIOCondition cond, gpointer dat
 				else
 					ie.len -= ret;
 			}
-		}
-		else {
+		} else {
 			while (ret < sizeof(ie)) {
 				int read_size;
 				read_size = read(fd, name, sizeof(ie)-ret);
@@ -156,11 +155,11 @@ int cal_inotify_init(void)
 	calendar_inoti_count++;
 
 	if (1 < calendar_inoti_count) {
-		DBG("inotify count =%d",calendar_inoti_count);
+		DBG("inotify count =%d", calendar_inoti_count);
 		cal_mutex_unlock(CAL_MUTEX_INOTIFY);
 		return CALENDAR_ERROR_NONE;
 	}
-	DBG("inotify count =%d",calendar_inoti_count);
+	DBG("inotify count =%d", calendar_inoti_count);
 	cal_mutex_unlock(CAL_MUTEX_INOTIFY);
 #endif
 	_inoti_fd = inotify_init();
@@ -206,10 +205,9 @@ static inline int _cal_inotify_add_watch(int fd, const char *notipath)
 	int ret;
 
 	ret = inotify_add_watch(fd, notipath, IN_CLOSE_WRITE);
-	if (ret < 0)
-	{
+	if (ret < 0) {
 		ERR("Failed to add watch(ret:%d)", ret);
-		return -1; // CALENDAR_ERROR_FAILED_INOTIFY
+		return -1; /* CALENDAR_ERROR_FAILED_INOTIFY */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -227,9 +225,10 @@ static bool _has_noti(int wd, void *cb, void *cb_data)
 			cursor = g_slist_next(cursor);
 			continue;
 		}
-		if (info->wd == wd && info->cb == cb && info->cb_data == cb_data) {
+
+		if (info->wd == wd && info->cb == cb && info->cb_data == cb_data)
 			has_noti = true;
-		}
+
 		cursor = g_slist_next(cursor);
 	}
 	return has_noti;
@@ -305,8 +304,7 @@ static int _cal_del_noti(GSList **_noti_list, int wd, void *cb, void *cb_data)
 				free(noti);
 				del_cnt++;
 				continue;
-			}
-			else {
+			} else {
 				remain_cnt++;
 			}
 		}
@@ -367,11 +365,11 @@ void cal_inotify_deinit(void)
 	calendar_inoti_count--;
 
 	if (0 < calendar_inoti_count) {
-		DBG("inotify count =%d",calendar_inoti_count);
+		DBG("inotify count =%d", calendar_inoti_count);
 		cal_mutex_unlock(CAL_MUTEX_INOTIFY);
 		return ;
 	}
-	DBG("inotify count =%d",calendar_inoti_count);
+	DBG("inotify count =%d", calendar_inoti_count);
 	cal_mutex_unlock(CAL_MUTEX_INOTIFY);
 #endif
 	if (inoti_handler) {
@@ -379,8 +377,7 @@ void cal_inotify_deinit(void)
 		inoti_handler = 0;
 	}
 
-	if (_noti_list)
-	{
+	if (_noti_list)	{
 		g_slist_foreach(_noti_list, __clear_nslot_list, NULL);
 		g_slist_free(_noti_list);
 		_noti_list = NULL;

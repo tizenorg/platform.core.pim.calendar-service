@@ -38,7 +38,7 @@ static int _cal_db_instance_allday_extended_get_count_with_query(calendar_query_
 /*
  * static function
  */
-static void _cal_db_instance_allday_extended_get_stmt(sqlite3_stmt *stmt,calendar_record_h record);
+static void _cal_db_instance_allday_extended_get_stmt(sqlite3_stmt *stmt, calendar_record_h record);
 static void _cal_db_instance_allday_extended_get_property_stmt(sqlite3_stmt *stmt,
 		unsigned int property, int *stmt_count, calendar_record_h record);
 static void _cal_db_instance_allday_extended_get_projection_stmt(sqlite3_stmt *stmt,
@@ -47,19 +47,19 @@ static void _cal_db_instance_allday_extended_get_projection_stmt(sqlite3_stmt *s
 
 cal_db_plugin_cb_s cal_db_instance_allday_extended_plugin_cb = {
 	.is_query_only = false,
-	.insert_record= NULL,
-	.get_record= NULL,
-	.update_record=NULL,
-	.delete_record=NULL,
-	.get_all_records=_cal_db_instance_allday_extended_get_all_records,
-	.get_records_with_query=_cal_db_instance_allday_extended_get_records_with_query,
-	.insert_records=NULL,
-	.update_records=NULL,
-	.delete_records=NULL,
-	.get_count=_cal_db_instance_allday_extended_get_count,
-	.get_count_with_query=_cal_db_instance_allday_extended_get_count_with_query,
-	.replace_record=NULL,
-	.replace_records=NULL
+	.insert_record = NULL,
+	.get_record = NULL,
+	.update_record = NULL,
+	.delete_record = NULL,
+	.get_all_records = _cal_db_instance_allday_extended_get_all_records,
+	.get_records_with_query = _cal_db_instance_allday_extended_get_records_with_query,
+	.insert_records = NULL,
+	.update_records = NULL,
+	.delete_records = NULL,
+	.get_count = _cal_db_instance_allday_extended_get_count,
+	.get_count_with_query = _cal_db_instance_allday_extended_get_count_with_query,
+	.replace_record = NULL,
+	.replace_records = NULL
 };
 
 static int _cal_db_instance_allday_extended_get_all_records(int offset, int limit, calendar_list_h* out_list)
@@ -97,7 +97,7 @@ static int _cal_db_instance_allday_extended_get_all_records(int offset, int limi
 
 	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		calendar_record_h record;
-		ret = calendar_record_create(_calendar_instance_localtime_calendar_book_extended._uri,&record);
+		ret = calendar_record_create(_calendar_instance_localtime_calendar_book_extended._uri, &record);
 		if (CALENDAR_ERROR_NONE != ret) {
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
@@ -105,9 +105,9 @@ static int _cal_db_instance_allday_extended_get_all_records(int offset, int limi
 			CAL_FREE(query_str);
 			return ret;
 		}
-		_cal_db_instance_allday_extended_get_stmt(stmt,record);
+		_cal_db_instance_allday_extended_get_stmt(stmt, record);
 
-		ret = calendar_list_add(*out_list,record);
+		ret = calendar_list_add(*out_list, record);
 		if (CALENDAR_ERROR_NONE != ret) {
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
@@ -159,8 +159,7 @@ static int _cal_db_instance_allday_extended_get_records_with_query(calendar_quer
 		cal_db_append_string(&query_str, "FROM");
 		cal_db_append_string(&query_str, table_name);
 		CAL_FREE(projection);
-	}
-	else {
+	} else {
 		cal_db_append_string(&query_str, "SELECT * FROM");
 		cal_db_append_string(&query_str, table_name);
 	}
@@ -210,9 +209,8 @@ static int _cal_db_instance_allday_extended_get_records_with_query(calendar_quer
 	/* bind text */
 	if (bind_text) {
 		g_slist_length(bind_text);
-		for (cursor=bind_text, i=1; cursor;cursor=cursor->next, i++) {
+		for (cursor = bind_text, i = 1; cursor; cursor = cursor->next, i++)
 			cal_db_util_stmt_bind_text(stmt, i, cursor->data);
-		}
 	}
 
 	ret = calendar_list_create(out_list);
@@ -229,7 +227,7 @@ static int _cal_db_instance_allday_extended_get_records_with_query(calendar_quer
 
 	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		calendar_record_h record;
-		ret = calendar_record_create(que->view_uri,&record);
+		ret = calendar_record_create(que->view_uri, &record);
 		if (CALENDAR_ERROR_NONE != ret) {
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
@@ -245,12 +243,11 @@ static int _cal_db_instance_allday_extended_get_records_with_query(calendar_quer
 		if (0 < que->projection_count) {
 			cal_record_set_projection(record, que->projection, que->projection_count, que->property_count);
 			_cal_db_instance_allday_extended_get_projection_stmt(stmt, que->projection, que->projection_count, record);
-		}
-		else {
-			_cal_db_instance_allday_extended_get_stmt(stmt,record);
+		} else {
+			_cal_db_instance_allday_extended_get_stmt(stmt, record);
 		}
 
-		ret = calendar_list_add(*out_list,record);
+		ret = calendar_list_add(*out_list, record);
 		if (CALENDAR_ERROR_NONE != ret) {
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
@@ -360,7 +357,7 @@ static int _cal_db_instance_allday_extended_get_count_with_query(calendar_query_
 	return CALENDAR_ERROR_NONE;
 }
 
-static void _cal_db_instance_allday_extended_get_stmt(sqlite3_stmt *stmt,calendar_record_h record)
+static void _cal_db_instance_allday_extended_get_stmt(sqlite3_stmt *stmt, calendar_record_h record)
 {
 	cal_instance_allday_extended_s* instance =  (cal_instance_allday_extended_s*)(record);
 	const unsigned char *temp;
@@ -405,13 +402,12 @@ static void _cal_db_instance_allday_extended_get_stmt(sqlite3_stmt *stmt,calenda
 	instance->sensitivity = sqlite3_column_int(stmt, count++);
 
 	instance->has_rrule = sqlite3_column_int(stmt, count++);
-	if (0 < instance->has_rrule) {
+	if (0 < instance->has_rrule)
 		instance->has_rrule = 1;
-	}
 
-	instance->latitude = sqlite3_column_double(stmt,count++);
-	instance->longitude = sqlite3_column_double(stmt,count++);
-	instance->has_alarm = sqlite3_column_int(stmt,count++);
+	instance->latitude = sqlite3_column_double(stmt, count++);
+	instance->longitude = sqlite3_column_double(stmt, count++);
+	instance->has_alarm = sqlite3_column_int(stmt, count++);
 	instance->original_event_id = sqlite3_column_int(stmt, count++);
 	instance->calendar_id = sqlite3_column_int(stmt, count++);
 
@@ -424,9 +420,9 @@ static void _cal_db_instance_allday_extended_get_stmt(sqlite3_stmt *stmt,calenda
 	instance->organizer_name = cal_strdup((const char*)temp);
 
 	temp = sqlite3_column_text(stmt, count++);
-	instance->categories= cal_strdup((const char*)temp);
+	instance->categories = cal_strdup((const char*)temp);
 
-	instance->has_attendee= sqlite3_column_int(stmt, count++);
+	instance->has_attendee = sqlite3_column_int(stmt, count++);
 
 	temp = sqlite3_column_text(stmt, count++);
 	instance->sync_data2 = cal_strdup((const char*)temp);
@@ -502,15 +498,15 @@ static void _cal_db_instance_allday_extended_get_property_stmt(sqlite3_stmt *stm
 		break;
 	case CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_HAS_RRULE:
 		instance->has_rrule = sqlite3_column_int(stmt, *stmt_count);
-		if (0 < instance->has_rrule) {
+		if (0 < instance->has_rrule)
 			instance->has_rrule = 1;
-		}
+
 		break;
 	case CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_LATITUDE:
-		instance->latitude = sqlite3_column_double(stmt,*stmt_count);
+		instance->latitude = sqlite3_column_double(stmt, *stmt_count);
 		break;
 	case CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_LONGITUDE:
-		instance->longitude = sqlite3_column_double(stmt,*stmt_count);
+		instance->longitude = sqlite3_column_double(stmt, *stmt_count);
 		break;
 	case CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_EVENT_ID:
 		instance->event_id = sqlite3_column_int(stmt, *stmt_count);
@@ -530,18 +526,18 @@ static void _cal_db_instance_allday_extended_get_property_stmt(sqlite3_stmt *stm
 		break;
 	case CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_ORGANIZER_NAME:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		instance->organizer_name= cal_strdup((const char*)temp);
+		instance->organizer_name = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_CATEGORIES:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		instance->categories= cal_strdup((const char*)temp);
+		instance->categories = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_HAS_ATTENDEE:
-		instance->has_attendee= sqlite3_column_int(stmt, *stmt_count);
+		instance->has_attendee = sqlite3_column_int(stmt, *stmt_count);
 		break;
 	case CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_SYNC_DATA2:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		instance->sync_data2= cal_strdup((const char*)temp);
+		instance->sync_data2 = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_SYNC_DATA3:
 		temp = sqlite3_column_text(stmt, *stmt_count);
@@ -549,7 +545,7 @@ static void _cal_db_instance_allday_extended_get_property_stmt(sqlite3_stmt *stm
 		break;
 	case CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_SYNC_DATA4:
 		temp = sqlite3_column_text(stmt, *stmt_count);
-		instance->sync_data4= cal_strdup((const char*)temp);
+		instance->sync_data4 = cal_strdup((const char*)temp);
 		break;
 	case CAL_PROPERTY_INSTANCE_ALLDAY_EXTENDED_IS_ALLDAY:
 		instance->is_allday = sqlite3_column_int(stmt, *stmt_count);
@@ -569,10 +565,9 @@ static void _cal_db_instance_allday_extended_get_projection_stmt(sqlite3_stmt *s
 		const unsigned int *projection, const int projection_count,
 		calendar_record_h record)
 {
-	int i=0;
+	int i = 0;
 	int stmt_count = 0;
 
-	for(i=0;i<projection_count;i++) {
-		_cal_db_instance_allday_extended_get_property_stmt(stmt,projection[i],&stmt_count,record);
-	}
+	for (i = 0; i < projection_count; i++)
+		_cal_db_instance_allday_extended_get_property_stmt(stmt, projection[i], &stmt_count, record);
 }

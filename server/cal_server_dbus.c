@@ -521,7 +521,7 @@ static int _cal_server_dbus_find_sender(const char *owner_name, cal_sender_s **o
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_server_dbus_cleanup_sender(cal_sender_s *sender) // cleanup_handle_list
+static int _cal_server_dbus_cleanup_sender(cal_sender_s *sender) /* cleanup_handle_list */
 {
 	CAL_FN_CALL();
 	RETV_IF(NULL == sender, CALENDAR_ERROR_INVALID_PARAMETER);
@@ -653,14 +653,18 @@ static void _dbus_on_bus_acquired(GDBusConnection *conn, const gchar *name, gpoi
 			G_CALLBACK(_handle_get_count_with_query), NULL);
 	g_signal_connect(dbus_object, "handle-get-current-version",
 			G_CALLBACK(_handle_get_current_version), NULL);
-//	g_signal_connect(dbus_object, "handle-add-changed-cb",
-//	G_CALLBACK(_handle_add_changed_cb), NULL);
-//	g_signal_connect(dbus_object, "handle-remove-changed-cb",
-//	G_CALLBACK(_handle_remove_changed_cb), NULL);
+/*
+	g_signal_connect(dbus_object, "handle-add-changed-cb",
+	G_CALLBACK(_handle_add_changed_cb), NULL);
+	g_signal_connect(dbus_object, "handle-remove-changed-cb",
+	G_CALLBACK(_handle_remove_changed_cb), NULL);
+*/
 	g_signal_connect(dbus_object, "handle-get-changes-by-version",
 			G_CALLBACK(_handle_get_changes_by_version), NULL);
-//	g_signal_connect(dbus_object, "handle-get-last-change-version",
-//	G_CALLBACK(_handle_get_last_change_version), NULL);
+/*
+	g_signal_connect(dbus_object, "handle-get-last-change-version",
+	G_CALLBACK(_handle_get_last_change_version), NULL);
+*/
 	g_signal_connect(dbus_object, "handle-get-changes-exception-by-version",
 			G_CALLBACK(_handle_get_changes_exception_by_version), NULL);
 	g_signal_connect(dbus_object, "handle-clean-after-sync",

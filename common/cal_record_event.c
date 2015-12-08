@@ -74,7 +74,7 @@ cal_record_plugin_cb_s cal_record_event_plugin_cb = {
 
 static void _cal_record_event_struct_init(cal_event_s *record)
 {
-	memset(record,0, sizeof(cal_event_s));
+	memset(record, 0, sizeof(cal_event_s));
 
 	record->meeting_status = CALENDAR_MEETING_STATUS_NOTMEETING;
 	record->calendar_id = DEFAULT_EVENT_CALENDAR_BOOK_ID;
@@ -85,12 +85,12 @@ static void _cal_record_event_struct_init(cal_event_s *record)
 	record->busy_status = 2;
 	record->summary = NULL;
 	record->description = NULL;
-	record->location= NULL;
+	record->location = NULL;
 	record->categories = NULL;
 	record->exdate = NULL;
 	record->organizer_email = NULL;
 	record->organizer_name = NULL;
-	record->uid= NULL;
+	record->uid = NULL;
 	record->original_event_id = CAL_INVALID_ID;
 	record->event_status = CALENDAR_EVENT_STATUS_NONE;
 
@@ -112,7 +112,7 @@ static void _cal_record_event_struct_init(cal_event_s *record)
 static int _cal_record_event_create(calendar_record_h* out_record)
 {
 	cal_event_s *temp = NULL;
-	int ret= CALENDAR_ERROR_NONE;
+	int ret = CALENDAR_ERROR_NONE;
 
 	temp = calloc(1, sizeof(cal_event_s));
 	RETVM_IF(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc() Fail");
@@ -336,7 +336,7 @@ static int _cal_record_event_get_str(calendar_record_h record, unsigned int prop
 		*out_str = cal_strdup(rec->end_tzid);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -423,7 +423,7 @@ static int _cal_record_event_get_str_p(calendar_record_h record, unsigned int pr
 		*out_str = (rec->end_tzid);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -515,7 +515,7 @@ static int _cal_record_event_get_double(calendar_record_h record, unsigned int p
 		*out_value = (rec->longitude);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -553,7 +553,7 @@ static int _cal_record_event_get_caltime(calendar_record_h record, unsigned int 
 		*out_value = rec->until;
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -665,7 +665,7 @@ static int _cal_record_event_set_str(calendar_record_h record, unsigned int prop
 		rec->end_tzid = cal_strdup(value);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -833,7 +833,7 @@ static int _cal_record_event_set_int(calendar_record_h record, unsigned int prop
 		(rec->is_allday) = value;
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -851,7 +851,7 @@ static int _cal_record_event_set_double(calendar_record_h record, unsigned int p
 		(rec->longitude) = value;
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -866,7 +866,7 @@ static int _cal_record_event_set_lli(calendar_record_h record, unsigned int prop
 		(rec->created_time) = value;
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 	return CALENDAR_ERROR_NONE;
@@ -888,7 +888,7 @@ static int _cal_record_event_set_caltime(calendar_record_h record, unsigned int 
 		rec->until = value;
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -944,7 +944,7 @@ static int _cal_record_event_add_child_record(calendar_record_h record, unsigned
 		ret = calendar_list_add((calendar_list_h)rec->extended_list, child_record);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -973,7 +973,7 @@ static int _cal_record_event_remove_child_record(calendar_record_h record, unsig
 		ret = calendar_list_remove((calendar_list_h)rec->extended_list, child_record);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 	return ret;
@@ -1001,7 +1001,7 @@ static int _cal_record_event_get_child_record_count(calendar_record_h record, un
 		ret = calendar_list_get_count((calendar_list_h)rec->extended_list, (int *)count);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 	return ret;
@@ -1029,7 +1029,7 @@ static int _cal_record_event_get_child_record_at_p(calendar_record_h record, uns
 		ret = cal_list_get_nth_record_p(rec->extended_list, index, child_record);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 	return ret;

@@ -37,8 +37,7 @@ API int calendar_connect(void)
 	if (CALENDAR_ERROR_NO_DATA == ret) {
 		ret = cal_client_handle_create(id, &handle);
 		RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_client_handle_create() Fail(%d)", ret);
-	}
-	else if (CALENDAR_ERROR_NONE != ret) {
+	} else if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_client_handle_get_p_with_id() Fail(%d)", ret);
 		return ret;
 	}
@@ -55,8 +54,7 @@ API int calendar_disconnect(void)
 	ret = cal_client_handle_get_p_with_id(id, &handle);
 	if (CALENDAR_ERROR_NO_DATA == ret) {
 		return CALENDAR_ERROR_NONE;
-	}
-	else if (CALENDAR_ERROR_NONE != ret) {
+	} else if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_client_handle_get_p_with_id() Fail(%d)", ret);
 		return ret;
 	}
@@ -75,8 +73,7 @@ API int calendar_connect_on_thread(void)
 	if (CALENDAR_ERROR_NO_DATA == ret) {
 		ret = cal_client_handle_create(id, &handle);
 		RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_client_handle_create() Fail(%d)", ret);
-	}
-	else if (CALENDAR_ERROR_NONE != ret) {
+	} else if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_client_handle_get_p_with_id() Fail(%d)", ret);
 		return ret;
 	}
@@ -93,8 +90,7 @@ API int calendar_disconnect_on_thread(void)
 	ret = cal_client_handle_get_p_with_id(id, &handle);
 	if (CALENDAR_ERROR_NO_DATA == ret) {
 		return CALENDAR_ERROR_NONE;
-	}
-	else if (CALENDAR_ERROR_NONE != ret) {
+	} else if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_client_handle_get_p_with_id() Fail(%d)", ret);
 		return ret;
 	}
@@ -113,8 +109,7 @@ API int calendar_connect_with_flags(unsigned int flags)
 	if (CALENDAR_ERROR_NO_DATA == ret) {
 		ret = cal_client_handle_create(id, &handle);
 		RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_client_handle_create() Fail(%d)", ret);
-	}
-	else if (CALENDAR_ERROR_NONE != ret) {
+	} else if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_client_handle_get_p_with_id() Fail(%d)", ret);
 		return ret;
 	}

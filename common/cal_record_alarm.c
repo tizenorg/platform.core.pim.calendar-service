@@ -62,13 +62,13 @@ cal_record_plugin_cb_s cal_record_alarm_plugin_cb = {
 
 static void _cal_record_alarm_struct_init(cal_alarm_s *record)
 {
-	memset(record,0, sizeof(cal_alarm_s));
+	memset(record, 0, sizeof(cal_alarm_s));
 }
 
 static int _cal_record_alarm_create(calendar_record_h* out_record)
 {
 	cal_alarm_s *temp = NULL;
-	int ret= CALENDAR_ERROR_NONE;
+	int ret = CALENDAR_ERROR_NONE;
 
 	temp = calloc(1, sizeof(cal_alarm_s));
 	RETVM_IF(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc() Fail");
@@ -140,7 +140,7 @@ static int _cal_record_alarm_get_str(calendar_record_h record, unsigned int prop
 		*out_str = cal_strdup(rec->alarm_attach);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -161,7 +161,7 @@ static int _cal_record_alarm_get_str_p(calendar_record_h record, unsigned int pr
 		*out_str = (rec->alarm_attach);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -185,7 +185,7 @@ static int _cal_record_alarm_get_int(calendar_record_h record, unsigned int prop
 		*out_value = (rec->alarm_action);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -200,7 +200,7 @@ static int _cal_record_alarm_get_caltime(calendar_record_h record, unsigned int 
 		*out_value = rec->alarm;
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 	return CALENDAR_ERROR_NONE;
@@ -223,7 +223,7 @@ static int _cal_record_alarm_set_str(calendar_record_h record, unsigned int prop
 		rec->alarm_attach = cal_strdup(value);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -235,7 +235,7 @@ static int _cal_record_alarm_set_int(calendar_record_h record, unsigned int prop
 	cal_alarm_s *rec = (cal_alarm_s*)(record);
 	switch (property_id) {
 	case CAL_PROPERTY_ALARM_TICK:
-		(rec->remind_tick)=value;
+		rec->remind_tick = value;
 		break;
 	case CAL_PROPERTY_ALARM_TICK_UNIT:
 		switch (value) {
@@ -245,7 +245,7 @@ static int _cal_record_alarm_set_int(calendar_record_h record, unsigned int prop
 		case CALENDAR_ALARM_TIME_UNIT_HOUR:
 		case CALENDAR_ALARM_TIME_UNIT_DAY:
 		case CALENDAR_ALARM_TIME_UNIT_WEEK:
-			(rec->remind_tick_unit)=value;
+			rec->remind_tick_unit = value;
 			break;
 		default:
 			ERR("invalid parameter (value:%d)", value);
@@ -253,14 +253,14 @@ static int _cal_record_alarm_set_int(calendar_record_h record, unsigned int prop
 		}
 		break;
 	case CAL_PROPERTY_ALARM_PARENT_ID:
-		(rec->parent_id) = value;
+		rec->parent_id = value;
 		break;
 	case CAL_PROPERTY_ALARM_ACTION:
 		switch (value) {
 		case CALENDAR_ALARM_ACTION_AUDIO:
 		case CALENDAR_ALARM_ACTION_DISPLAY:
 		case CALENDAR_ALARM_ACTION_EMAIL:
-			(rec->alarm_action) = value;
+			rec->alarm_action = value;
 			break;
 		default:
 			ERR("invalid parameter (value:%d)", value);
@@ -268,7 +268,7 @@ static int _cal_record_alarm_set_int(calendar_record_h record, unsigned int prop
 		}
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -283,7 +283,7 @@ static int _cal_record_alarm_set_caltime(calendar_record_h record, unsigned int 
 		rec->alarm = value;
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 	return CALENDAR_ERROR_NONE;

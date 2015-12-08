@@ -400,7 +400,7 @@ int cal_db_insert_record(calendar_record_h record, int* id)
 
 int cal_db_update_record(calendar_record_h record)
 {
-	cal_record_s *temp=NULL ;
+	cal_record_s *temp = NULL;
 	int ret = CALENDAR_ERROR_NONE;
 
 	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
@@ -452,7 +452,7 @@ int cal_db_delete_record(const char* view_uri, int id)
 
 int cal_db_replace_record(calendar_record_h record, int record_id)
 {
-	cal_record_s *temp=NULL ;
+	cal_record_s *temp = NULL;
 	int ret = CALENDAR_ERROR_NONE;
 
 	RETV_IF(NULL == record, CALENDAR_ERROR_INVALID_PARAMETER);
@@ -491,7 +491,7 @@ int cal_db_get_all_records(const char* view_uri, int offset, int limit, calendar
 	RETV_IF(NULL == plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETVM_IF(NULL == plugin_cb->get_all_records, CALENDAR_ERROR_NOT_PERMITTED, "Not permitted");
 
-	ret = plugin_cb->get_all_records(offset,limit, &list);
+	ret = plugin_cb->get_all_records(offset, limit, &list);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("get_all_records() Fail");
 		return ret;
@@ -664,7 +664,7 @@ int cal_db_insert_records(calendar_list_h list, int** ids, int* count)
 	for (i = 0; i < _count; i++) {
 		calendar_record_h record = NULL;
 		ret = calendar_list_get_current_record_p(list, &record);
-		if (NULL == record|| CALENDAR_ERROR_NONE != ret) {
+		if (NULL == record || CALENDAR_ERROR_NONE != ret) {
 			ERR("No record in the list");
 			cal_db_util_end_trans(false);
 			CAL_FREE(_ids);
@@ -799,7 +799,7 @@ int cal_db_delete_records(const char* view_uri, int record_id_array[], int count
 	ret = cal_db_util_begin_trans();
 	RETVM_IF(CALENDAR_ERROR_NONE != ret, CALENDAR_ERROR_DB_FAILED, "cal_db_util_begin_trans() Fail(%d)", ret);
 
-	ret = plugin_cb->delete_records(record_id_array,count);
+	ret = plugin_cb->delete_records(record_id_array, count);
 
 	if (CALENDAR_ERROR_NONE == ret)
 		ret = cal_db_util_end_trans(true);
@@ -891,7 +891,7 @@ int cal_db_insert_vcalendars(const char* vcalendar_stream, int **record_id_array
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 
-	for(i=0;i<list_count;i++) {
+	for (i = 0; i < list_count; i++) {
 		calendar_record_h record = NULL;
 
 		ret = calendar_list_get_current_record_p(list, &record);
@@ -964,7 +964,7 @@ int cal_db_replace_vcalendars(const char* vcalendar_stream, int *record_id_array
 	int div = (int)(count / BULK_DEFAULT_COUNT) + 1;
 	int bulk = count / div + 1;
 
-	for(i = 0; i < list_count; i++) {
+	for (i = 0; i < list_count; i++) {
 		calendar_record_h record = NULL;
 		char *view_uri = NULL;
 
@@ -987,11 +987,9 @@ int cal_db_replace_vcalendars(const char* vcalendar_stream, int *record_id_array
 
 		if (CAL_STRING_EQUAL == strcmp(view_uri, _calendar_event._uri)) {
 			ret = cal_record_set_int(record, _calendar_event.id, record_id_array[i]);
-		}
-		else if (CAL_STRING_EQUAL == strcmp(view_uri, _calendar_todo._uri)) {
+		} else if (CAL_STRING_EQUAL == strcmp(view_uri, _calendar_todo._uri)) {
 			ret = cal_record_set_int(record, _calendar_todo.id, record_id_array[i]);
-		}
-		else {
+		} else {
 			DBG("this uri[%s] is not replacable.", view_uri);
 			calendar_list_next(list);
 			continue;
@@ -1069,27 +1067,21 @@ int cal_db_get_changes_by_version(const char* view_uri, int calendar_book_id, in
 	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_db_util_query_get_first_int_result() Fail(%d)", ret);
 
 	char buf[CAL_STR_SHORT_LEN64] = {0};
-	if (0 < calendar_book_id) {
+	if (0 < calendar_book_id)
 		snprintf(buf, sizeof(buf), "AND calendar_id = %d ", calendar_book_id);
-
-	}
-	else {
+	else
 		memset(buf, 0x0, sizeof(buf));
-	}
 
 	int schedule_type = 0;
 	int record_type = 0;
-	if (CAL_STRING_EQUAL == strcmp(view_uri,_calendar_event._uri)) {
+	if (CAL_STRING_EQUAL == strcmp(view_uri, _calendar_event._uri)) {
 		schedule_type = CAL_SCH_TYPE_EVENT;
 		record_type = CAL_RECORD_TYPE_EVENT;
 
-	}
-	else if (CAL_STRING_EQUAL == strcmp(view_uri,_calendar_todo._uri)) {
+	} else if (CAL_STRING_EQUAL == strcmp(view_uri, _calendar_todo._uri)) {
 		schedule_type = CAL_SCH_TYPE_TODO;
 		record_type = CAL_RECORD_TYPE_TODO;
-
-	}
-	else {
+	} else {
 		ERR("Invalid parameter");
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
@@ -1119,11 +1111,11 @@ int cal_db_get_changes_by_version(const char* view_uri, int calendar_book_id, in
 
 	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		calendar_record_h record;
-		int id = 0, calendar_id = 0,type = 0;
+		int id = 0, calendar_id = 0, type = 0;
 		int ver = 0;
 		int created_ver = 0;
 
-		ret = calendar_record_create(_calendar_updated_info._uri,&record);
+		ret = calendar_record_create(_calendar_updated_info._uri, &record);
 		if (CALENDAR_ERROR_NONE != ret) {
 			ERR("calendar_record_create() Fail");
 			calendar_list_destroy(*record_list, true);
@@ -1136,15 +1128,12 @@ int cal_db_get_changes_by_version(const char* view_uri, int calendar_book_id, in
 		ver = sqlite3_column_int(stmt, 1);
 		created_ver = sqlite3_column_int(stmt, 2);
 		is_deleted = sqlite3_column_int(stmt, 3);
-		if (is_deleted == 1) {
+		if (is_deleted == 1)
 			type = CALENDAR_RECORD_MODIFIED_STATUS_DELETED;
-		}
-		else if (created_ver != ver) {
+		else if (created_ver != ver)
 			type = CALENDAR_RECORD_MODIFIED_STATUS_UPDATED;
-		}
-		else {
+		else
 			type = CALENDAR_RECORD_MODIFIED_STATUS_INSERTED;
-		}
 
 		calendar_id = sqlite3_column_int(stmt, 4);
 
@@ -1154,12 +1143,12 @@ int cal_db_get_changes_by_version(const char* view_uri, int calendar_book_id, in
 			continue;
 		}
 
-		cal_record_set_int(record,_calendar_updated_info.id,id);
-		cal_record_set_int(record,_calendar_updated_info.calendar_book_id,calendar_id);
-		cal_record_set_int(record,_calendar_updated_info.modified_status,type);
-		cal_record_set_int(record,_calendar_updated_info.version,ver);
+		cal_record_set_int(record, _calendar_updated_info.id, id);
+		cal_record_set_int(record, _calendar_updated_info.calendar_book_id, calendar_id);
+		cal_record_set_int(record, _calendar_updated_info.modified_status, type);
+		cal_record_set_int(record, _calendar_updated_info.version, ver);
 
-		ret = calendar_list_add(*record_list,record);
+		ret = calendar_list_add(*record_list, record);
 		if (CALENDAR_ERROR_NONE != ret) {
 			calendar_list_destroy(*record_list, true);
 			*record_list = NULL;
@@ -1195,12 +1184,11 @@ int cal_db_get_changes_exception_by_version(const char* view_uri, int original_e
 
 	int schedule_type = 0;
 	int record_type = 0;
-	if (CAL_STRING_EQUAL == strcmp(view_uri,_calendar_event._uri)) {
+	if (CAL_STRING_EQUAL == strcmp(view_uri, _calendar_event._uri)) {
 		schedule_type = CAL_SCH_TYPE_EVENT;
 		record_type = CAL_RECORD_TYPE_EVENT;
 
-	}
-	else {
+	} else {
 		ERR("Invalid parameter");
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
@@ -1230,11 +1218,11 @@ int cal_db_get_changes_exception_by_version(const char* view_uri, int original_e
 
 	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		calendar_record_h record;
-		int id = 0, calendar_id = 0,type = 0;
+		int id = 0, calendar_id = 0, type = 0;
 		int ver = 0;
 		int created_ver = 0;
 
-		ret = calendar_record_create(_calendar_updated_info._uri,&record);
+		ret = calendar_record_create(_calendar_updated_info._uri, &record);
 		if (CALENDAR_ERROR_NONE != ret) {
 			ERR("calendar_record_create() Fail");
 			calendar_list_destroy(*record_list, true);
@@ -1257,12 +1245,12 @@ int cal_db_get_changes_exception_by_version(const char* view_uri, int original_e
 
 		calendar_id = sqlite3_column_int(stmt, 4);
 
-		cal_record_set_int(record,_calendar_updated_info.id,id);
-		cal_record_set_int(record,_calendar_updated_info.calendar_book_id,calendar_id);
-		cal_record_set_int(record,_calendar_updated_info.modified_status,type);
-		cal_record_set_int(record,_calendar_updated_info.version,ver);
+		cal_record_set_int(record, _calendar_updated_info.id, id);
+		cal_record_set_int(record, _calendar_updated_info.calendar_book_id, calendar_id);
+		cal_record_set_int(record, _calendar_updated_info.modified_status, type);
+		cal_record_set_int(record, _calendar_updated_info.version, ver);
 
-		ret = calendar_list_add(*record_list,record);
+		ret = calendar_list_add(*record_list, record);
 		if (CALENDAR_ERROR_NONE != ret) {
 			calendar_list_destroy(*record_list, true);
 			*record_list = NULL;

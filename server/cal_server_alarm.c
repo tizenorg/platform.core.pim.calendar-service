@@ -37,8 +37,7 @@
 
 #define CAL_SEARCH_LOOP_MAX 4
 
-struct _alarm_data_s
-{
+struct _alarm_data_s {
 	int event_id;
 	long long int alert_utime; /* to compare */
 	int unit;
@@ -57,8 +56,7 @@ static int _cal_server_alarm_unset_alerted_alarmmgr_id(int alarm_id)
 	int ret = 0;
 
 	ret = cal_db_util_begin_trans();
-	if (CALENDAR_ERROR_NONE != ret)
-	{
+	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_db_util_begin_trans() Fail");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
@@ -85,8 +83,7 @@ static int _cal_server_alarm_clear_all_cb(alarm_id_t alarm_id, void *data)
 	DBG("remove alarm id(%d)", alarm_id);
 	_cal_server_alarm_unset_alerted_alarmmgr_id(alarm_id);
 	ret = alarmmgr_remove_alarm(alarm_id);
-	if (ret != ALARMMGR_RESULT_SUCCESS)
-	{
+	if (ret != ALARMMGR_RESULT_SUCCESS) {
 		ERR("alarmmgr_remove_alarm() Fail(ret:%d)", ret);
 		return ret;
 	}
@@ -99,8 +96,7 @@ static int _cal_server_alarm_update_alarm_id(int alarm_id, int event_id, int tic
 	int ret = 0;
 
 	ret = cal_db_util_begin_trans();
-	if (CALENDAR_ERROR_NONE != ret)
-	{
+	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_db_util_begin_trans() Fail");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
@@ -244,8 +240,7 @@ int cal_server_alarm_get_alert_time(int alarm_id, time_t *tt_alert)
 	if (CALENDAR_ALARM_TIME_UNIT_SPECIFIC == unit) {
 		if (CALENDAR_TIME_UTIME == type) {
 			*tt_alert = utime;
-		}
-		else {
+		} else {
 			int y = 0, m = 0, d = 0;
 			int h = 0, n = 0, s = 0;
 			sscanf(datetime, CAL_FORMAT_LOCAL_DATETIME, &y, &m, &d, &h, &n, &s);
@@ -333,7 +328,7 @@ static void _cal_server_alarm_get_upcoming_specific_utime(time_t utime, bool get
 			return;
 		}
 
-		ad->event_id = sqlite3_column_int(stmt,0);
+		ad->event_id = sqlite3_column_int(stmt, 0);
 		ad->unit = sqlite3_column_int(stmt, 1);
 		ad->tick = sqlite3_column_int(stmt, 2);
 		ad->type = sqlite3_column_int(stmt, 3);
@@ -652,7 +647,7 @@ static gint _cal_server_alarm_sort_cb(gconstpointer a, gconstpointer b)
 {
 	struct _alarm_data_s *p1 = (struct _alarm_data_s *)a;
 	struct _alarm_data_s *p2 = (struct _alarm_data_s *)b;
-	DBG("%lld) > (%lld)",p1->alert_utime, p2->alert_utime);
+	DBG("%lld) > (%lld)", p1->alert_utime, p2->alert_utime);
 
 	return p1->alert_utime < p2->alert_utime ? -1 : 1;
 }
@@ -804,7 +799,7 @@ static bool __app_matched_cb(app_control_h app_control, const char *package, voi
 		l = g_list_next(l);
 	}
 	app_control_add_extra_data_array(b, "ids", (const char **)ids, len);
-	app_control_send_launch_request (b, NULL, NULL);
+	app_control_send_launch_request(b, NULL, NULL);
 	app_control_destroy(b);
 
 	for (i = 0; i < len; i++) {
@@ -869,9 +864,8 @@ int cal_server_alarm_register_next_alarm(time_t utime)
 {
 	GList *l = NULL;
 	_cal_server_alarm_get_latest(utime, false, &l);
-	if (NULL == l) {
+	if (NULL == l)
 		return CALENDAR_ERROR_NONE;
-	}
 
 	l = g_list_sort(l, _cal_server_alarm_sort_cb);
 	g_list_foreach(l, (GFunc)_cal_server_alarm_print_cb, NULL);

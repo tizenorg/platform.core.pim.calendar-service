@@ -47,28 +47,28 @@ static int _cal_db_extended_replace_records(const calendar_list_h list, int ids[
 /*
  * static function
  */
-static void _cal_db_extended_get_stmt(sqlite3_stmt *stmt,calendar_record_h record);
+static void _cal_db_extended_get_stmt(sqlite3_stmt *stmt, calendar_record_h record);
 static void _cal_db_extended_get_property_stmt(sqlite3_stmt *stmt,
 		unsigned int property, int stmt_count, calendar_record_h record);
 static void _cal_db_extended_get_projection_stmt(sqlite3_stmt *stmt,
 		const unsigned int *projection, const int projection_count,
 		calendar_record_h record);
-static void _cal_db_extended_get_stmt(sqlite3_stmt *stmt,calendar_record_h record);
+static void _cal_db_extended_get_stmt(sqlite3_stmt *stmt, calendar_record_h record);
 static int _cal_db_extended_update_projection(calendar_record_h record);
 
 cal_db_plugin_cb_s cal_db_extended_plugin_cb = {
-	.is_query_only=false,
-	.insert_record=_cal_db_extended_insert_record,
-	.get_record=_cal_db_extended_get_record,
-	.update_record=_cal_db_extended_update_record,
-	.delete_record=_cal_db_extended_delete_record,
-	.get_all_records=_cal_db_extended_get_all_records,
-	.get_records_with_query=_cal_db_extended_get_records_with_query,
-	.insert_records=_cal_db_extended_insert_records,
-	.update_records=_cal_db_extended_update_records,
-	.delete_records=_cal_db_extended_delete_records,
-	.get_count=_cal_db_extended_get_count,
-	.get_count_with_query=_cal_db_extended_get_count_with_query,
+	.is_query_only = false,
+	.insert_record = _cal_db_extended_insert_record,
+	.get_record = _cal_db_extended_get_record,
+	.update_record = _cal_db_extended_update_record,
+	.delete_record = _cal_db_extended_delete_record,
+	.get_all_records = _cal_db_extended_get_all_records,
+	.get_records_with_query = _cal_db_extended_get_records_with_query,
+	.insert_records = _cal_db_extended_insert_records,
+	.update_records = _cal_db_extended_update_records,
+	.delete_records = _cal_db_extended_delete_records,
+	.get_count = _cal_db_extended_get_count,
+	.get_count_with_query = _cal_db_extended_get_count_with_query,
 	.replace_record = _cal_db_extended_replace_record,
 	.replace_records = _cal_db_extended_replace_records
 };
@@ -87,7 +87,7 @@ static int _cal_db_extended_get_record(int id, calendar_record_h* out_record)
 	char query[CAL_DB_SQL_MAX_LEN];
 	sqlite3_stmt *stmt = NULL;
 
-	ret = calendar_record_create(_calendar_extended_property._uri ,out_record);
+	ret = calendar_record_create(_calendar_extended_property._uri, out_record);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("calendar_record_create() Fail(%d)", ret);
 		return CALENDAR_ERROR_OUT_OF_MEMORY;
@@ -113,7 +113,7 @@ static int _cal_db_extended_get_record(int id, calendar_record_h* out_record)
 		return ret;
 	}
 
-	_cal_db_extended_get_stmt(stmt,*out_record);
+	_cal_db_extended_get_stmt(stmt, *out_record);
 
 	sqlite3_finalize(stmt);
 	stmt = NULL;
@@ -130,9 +130,8 @@ static int _cal_db_extended_update_record(calendar_record_h record)
 
 	RETV_IF(NULL == extended_info, CALENDAR_ERROR_INVALID_PARAMETER);
 
-	if (extended_info->common.properties_flags) {
+	if (extended_info->common.properties_flags)
 		return _cal_db_extended_update_projection(record);
-	}
 
 	snprintf(query, sizeof(query), "UPDATE %s SET "
 			"record_id=%d,"
@@ -194,9 +193,8 @@ static int _cal_db_extended_replace_record(calendar_record_h record, int id)
 	RETV_IF(NULL == extended_info, CALENDAR_ERROR_INVALID_PARAMETER);
 	extended_info->id = id;
 
-	if (extended_info->common.properties_flags) {
+	if (extended_info->common.properties_flags)
 		return _cal_db_extended_update_projection(record);
-	}
 
 	snprintf(query, sizeof(query), "UPDATE %s SET "
 			"record_id=%d,"
@@ -245,13 +243,13 @@ static int _cal_db_extended_get_all_records(int offset, int limit, calendar_list
 	ret = calendar_list_create(out_list);
 	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "calendar_list_create() Fail(%d)", ret);
 
-	if (0 < offset) {
+	if (0 < offset)
 		snprintf(offsetquery, sizeof(offsetquery), "OFFSET %d", offset);
-	}
-	if (0 < limit) {
+
+	if (0 < limit)
 		snprintf(limitquery, sizeof(limitquery), "LIMIT %d", limit);
-	}
-	snprintf(query, sizeof(query), "SELECT * FROM %s %s %s", CAL_TABLE_EXTENDED,limitquery,offsetquery);
+
+	snprintf(query, sizeof(query), "SELECT * FROM %s %s %s", CAL_TABLE_EXTENDED, limitquery, offsetquery);
 
 	ret = cal_db_util_query_prepare(query, &stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
@@ -264,16 +262,16 @@ static int _cal_db_extended_get_all_records(int offset, int limit, calendar_list
 
 	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		calendar_record_h record;
-		ret = calendar_record_create(_calendar_extended_property._uri,&record);
+		ret = calendar_record_create(_calendar_extended_property._uri, &record);
 		if (CALENDAR_ERROR_NONE != ret) {
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
 			sqlite3_finalize(stmt);
 			return ret;
 		}
-		_cal_db_extended_get_stmt(stmt,record);
+		_cal_db_extended_get_stmt(stmt, record);
 
-		ret = calendar_list_add(*out_list,record);
+		ret = calendar_list_add(*out_list, record);
 		if (CALENDAR_ERROR_NONE != ret) {
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
@@ -320,8 +318,7 @@ static int _cal_db_extended_get_records_with_query(calendar_query_h query, int o
 		cal_db_append_string(&query_str, "FROM");
 		cal_db_append_string(&query_str, CAL_TABLE_EXTENDED);
 		CAL_FREE(projection);
-	}
-	else {
+	} else {
 		cal_db_append_string(&query_str, "SELECT * FROM");
 		cal_db_append_string(&query_str, CAL_TABLE_EXTENDED);
 	}
@@ -365,9 +362,8 @@ static int _cal_db_extended_get_records_with_query(calendar_query_h query, int o
 
 	/* bind text */
 	if (bind_text) {
-		for (cursor=bind_text, i=1; cursor;cursor=cursor->next, i++) {
+		for (cursor = bind_text, i = 1; cursor; cursor = cursor->next, i++)
 			cal_db_util_stmt_bind_text(stmt, i, cursor->data);
-		}
 	}
 
 	ret = calendar_list_create(out_list);
@@ -384,7 +380,7 @@ static int _cal_db_extended_get_records_with_query(calendar_query_h query, int o
 
 	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		calendar_record_h record;
-		ret = calendar_record_create(_calendar_extended_property._uri,&record);
+		ret = calendar_record_create(_calendar_extended_property._uri, &record);
 		if (CALENDAR_ERROR_NONE != ret) {
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
@@ -404,12 +400,11 @@ static int _cal_db_extended_get_records_with_query(calendar_query_h query, int o
 			_cal_db_extended_get_projection_stmt(stmt,
 					que->projection, que->projection_count,
 					record);
-		}
-		else {
-			_cal_db_extended_get_stmt(stmt,record);
+		} else {
+			_cal_db_extended_get_stmt(stmt, record);
 		}
 
-		ret = calendar_list_add(*out_list,record);
+		ret = calendar_list_add(*out_list, record);
 		if (CALENDAR_ERROR_NONE != ret) {
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
@@ -439,7 +434,7 @@ static int _cal_db_extended_insert_records(const calendar_list_h list, int** ids
 	calendar_record_h record;
 	int ret = 0;
 	int count = 0;
-	int i=0;
+	int i = 0;
 	int *id = NULL;
 
 	ret = calendar_list_get_count(list, &count);
@@ -470,12 +465,10 @@ static int _cal_db_extended_insert_records(const calendar_list_h list, int** ids
 		i++;
 	} while (CALENDAR_ERROR_NO_DATA != calendar_list_next(list));
 
-	if (ids) {
+	if (ids)
 		*ids = id;
-	}
-	else {
+	else
 		CAL_FREE(id);
-	}
 
 	return CALENDAR_ERROR_NONE;
 }
@@ -507,7 +500,7 @@ static int _cal_db_extended_delete_records(int ids[], int count)
 {
 	int ret = 0;
 	int i = 0;
-	for(i = 0; i < count; i++) {
+	for (i = 0; i < count; i++) {
 		ret = _cal_db_extended_delete_record(ids[i]);
 		if (CALENDAR_ERROR_NONE != ret) {
 			ERR("_cal_db_extended_delete_record() Fail(%d)", ret);
@@ -542,9 +535,8 @@ static int _cal_db_extended_replace_records(const calendar_list_h list, int ids[
 				return CALENDAR_ERROR_DB_FAILED;
 			}
 		}
-		if (CALENDAR_ERROR_NO_DATA != calendar_list_next(list)) {
+		if (CALENDAR_ERROR_NO_DATA != calendar_list_next(list))
 			break;
-		}
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -565,7 +557,7 @@ static int _cal_db_extended_get_count(int *out_count)
 		ERR("cal_db_util_query_get_first_int_result() Fail");
 		return ret;
 	}
-	DBG("%s=%d",query,count);
+	DBG("%s=%d", query, count);
 
 	*out_count = count;
 	return CALENDAR_ERROR_NONE;
@@ -585,9 +577,8 @@ static int _cal_db_extended_get_count_with_query(calendar_query_h query, int *ou
 
 	if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_EXTENDED)) {
 		table_name = cal_strdup(CAL_TABLE_EXTENDED);
-	}
-	else {
-		ERR("uri(%s) not support get records with query",que->view_uri);
+	} else {
+		ERR("uri(%s) not support get records with query", que->view_uri);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -624,7 +615,7 @@ static int _cal_db_extended_get_count_with_query(calendar_query_h query, int *ou
 		CAL_FREE(query_str);
 		return ret;
 	}
-	DBG("%s=%d",query_str,count);
+	DBG("%s=%d", query_str, count);
 
 	*out_count = count;
 
@@ -636,7 +627,7 @@ static int _cal_db_extended_get_count_with_query(calendar_query_h query, int *ou
 	return CALENDAR_ERROR_NONE;
 }
 
-static void _cal_db_extended_get_stmt(sqlite3_stmt *stmt,calendar_record_h record)
+static void _cal_db_extended_get_stmt(sqlite3_stmt *stmt, calendar_record_h record)
 {
 	cal_extended_s* extended =  (cal_extended_s*)(record);
 	int count = 0;
@@ -689,11 +680,10 @@ static void _cal_db_extended_get_projection_stmt(sqlite3_stmt *stmt,
 		const unsigned int *projection, const int projection_count,
 		calendar_record_h record)
 {
-	int i=0;
+	int i = 0;
 
-	for(i=0;i<projection_count;i++) {
-		_cal_db_extended_get_property_stmt(stmt,projection[i],i,record);
-	}
+	for (i = 0; i < projection_count; i++)
+		_cal_db_extended_get_property_stmt(stmt, projection[i], i, record);
 }
 
 static int _cal_db_extended_update_projection(calendar_record_h record)
@@ -706,7 +696,7 @@ static int _cal_db_extended_update_projection(calendar_record_h record)
 	GSList *bind_text = NULL;
 	GSList *cursor = NULL;
 
-	ret = cal_db_query_create_projection_update_set(record,&set,&bind_text);
+	ret = cal_db_query_create_projection_update_set(record, &set, &bind_text);
 	RETV_IF(CALENDAR_ERROR_NONE != ret, ret);
 
 	snprintf(query, sizeof(query), "UPDATE %s SET %s WHERE id = %d",
@@ -726,10 +716,8 @@ static int _cal_db_extended_update_projection(calendar_record_h record)
 
 	if (bind_text) {
 		int i = 0;
-		for (cursor=bind_text, i=1; cursor;cursor=cursor->next, i++)
-		{
+		for (cursor = bind_text, i = 1; cursor; cursor = cursor->next, i++)
 			cal_db_util_stmt_bind_text(stmt, i, cursor->data);
-		}
 	}
 
 	ret = cal_db_util_stmt_step(stmt);

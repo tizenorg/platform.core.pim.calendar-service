@@ -31,11 +31,10 @@ static bool _cal_query_property_check(const cal_property_info_s *properties,
 {
 	int i;
 
-	for (i=0;i<count;i++) {
+	for (i = 0; i < count; i++) {
 		cal_property_info_s *p = (cal_property_info_s*)&(properties[i]);
-		if (property_id == p->property_id) {
+		if (property_id == p->property_id)
 			return true;
-		}
 	}
 	return false;
 }
@@ -69,7 +68,7 @@ API int calendar_query_set_projection(calendar_query_h query, unsigned int prope
 
 	que = (cal_query_s *)query;
 
-	for (i=0;i<count;i++) {
+	for (i = 0; i < count; i++) {
 		find = _cal_query_property_check(que->properties, que->property_count, property_ids[i]);
 		RETVM_IF(false == find, CALENDAR_ERROR_INVALID_PARAMETER,
 				"Invalid parameter : property_id(%d) is not supported on view_uri(%s)", property_ids[i], que->view_uri);
@@ -117,12 +116,11 @@ API int calendar_query_set_filter(calendar_query_h query, calendar_filter_h filt
 		return CALENDAR_ERROR_NO_DATA;
 	}
 
-	ret = cal_filter_clone(filter,&new_filter);
-	RETV_IF(ret!=CALENDAR_ERROR_NONE, ret);
+	ret = cal_filter_clone(filter, &new_filter);
+	RETV_IF(ret != CALENDAR_ERROR_NONE, ret);
 
-	if (que->filter) {
+	if (que->filter)
 		calendar_filter_destroy((calendar_filter_h)que->filter);
-	}
 
 	que->filter = (cal_composite_filter_s*)new_filter;
 
@@ -155,9 +153,8 @@ API int calendar_query_destroy(calendar_query_h query)
 	RETV_IF(NULL == query, CALENDAR_ERROR_INVALID_PARAMETER);
 	que = (cal_query_s *)query;
 
-	if (que->filter) {
+	if (que->filter)
 		calendar_filter_destroy((calendar_filter_h)que->filter);
-	}
 
 	CAL_FREE(que->view_uri);
 	CAL_FREE(que->projection);

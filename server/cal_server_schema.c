@@ -34,8 +34,8 @@ static inline int __remake_db_file(char* db_path)
 	int ret, fd;
 	char *errmsg;
 	sqlite3 *db;
-	char db_file[CAL_STR_MIDDLE_LEN]={0};
-	char jn_file[CAL_STR_MIDDLE_LEN]={0};
+	char db_file[CAL_STR_MIDDLE_LEN] = {0};
+	char jn_file[CAL_STR_MIDDLE_LEN] = {0};
 
 	snprintf(db_file, sizeof(db_file), "%s/%s", db_path ? db_path : DB_PATH, CALS_DB_NAME);
 
@@ -77,7 +77,7 @@ static inline int __remake_db_file(char* db_path)
 static inline int __check_db_file(char* db_path)
 {
 	int fd = -1;
-	char db_file[CAL_STR_MIDDLE_LEN]={0,};
+	char db_file[CAL_STR_MIDDLE_LEN] = {0,};
 	snprintf(db_file, sizeof(db_file), "%s/%s", db_path ? db_path : DB_PATH, CALS_DB_NAME);
 	DBG("[%s]", db_file);
 

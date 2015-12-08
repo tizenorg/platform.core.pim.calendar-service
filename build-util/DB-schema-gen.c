@@ -28,7 +28,7 @@ int main(int argc, char **argv)
 	if (NULL == fp)
 		exit(EXIT_FAILURE);
 
-	do{
+	do {
 		c = fgetc(fp);
 		switch (c) {
 		case '\n':
@@ -39,16 +39,17 @@ int main(int argc, char **argv)
 				while ('\n' != c && EOF != c)
 					c = fgetc(fp);
 				printf("\\\n");
+			} else {
+				printf("-%c", c);
 			}
-			else printf("-%c",c);
 			break;
 		case EOF:
 			break;
 		default:
-			printf("%c",c);
+			printf("%c", c);
 			break;
 		}
-	}while (EOF != c);
+	} while (EOF != c);
 
 	exit(EXIT_SUCCESS);
 }

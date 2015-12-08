@@ -100,20 +100,16 @@ int cal_db_event_check_value_validation(cal_event_s *event)
 		if (event->start.time.date.month < 1 || 12 < event->start.time.date.month) {
 			ERR("Error check start month(input:%d)", event->start.time.date.month);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
-		}
-		else if (event->start.time.date.mday < 1 || 31 < event->start.time.date.mday) {
+		} else if (event->start.time.date.mday < 1 || 31 < event->start.time.date.mday) {
 			ERR("Error check start mday(input:%d)", event->start.time.date.mday);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
-		}
-		else if (event->end.time.date.month < 1 || 12 < event->end.time.date.month) {
+		} else if (event->end.time.date.month < 1 || 12 < event->end.time.date.month) {
 			ERR("Error check end month(input:%d)", event->end.time.date.month);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
-		}
-		else if (event->end.time.date.mday < 1 || 31 < event->end.time.date.mday) {
+		} else if (event->end.time.date.mday < 1 || 31 < event->end.time.date.mday) {
 			ERR("Error check end mday(input:%d)", event->end.time.date.mday);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
-		}
-		else {
+		} else {
 			/* handle hour, minute, second */
 			if (event->start.time.date.hour < 0 || 24 < event->start.time.date.hour)
 				event->start.time.date.hour = 0;
@@ -206,9 +202,9 @@ char* cal_db_event_get_recurrence_id_from_exception(int child_id)
 	}
 
 	char *recurrence_id = NULL;
-	if (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
+	if (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt))
 		recurrence_id = cal_strdup((const char*)sqlite3_column_text(stmt, 0));
-	}
+
 	sqlite3_finalize(stmt);
 	return recurrence_id;
 }
@@ -237,8 +233,7 @@ static void __get_tzid_and_range(char *p, char **out_tzid, int *out_range)
 				continue;
 			tzid = strdup(s[i] + strlen("TZID="));
 			DBG("tzid [%s]", tzid);
-		}
-		else if (CAL_STRING_EQUAL == strncmp(s[i], "RANGE=", strlen("RANGE="))) {
+		} else if (CAL_STRING_EQUAL == strncmp(s[i], "RANGE=", strlen("RANGE="))) {
 			char *param = s[i] + strlen("RANGE=");
 			if (CAL_STRING_EQUAL == strncmp(param, "THISANDFUTURE", strlen("THISANDFUTURE")))
 				range = CAL_RECURRENCE_ID_RANGE_THISANDFUTURE;
@@ -246,8 +241,7 @@ static void __get_tzid_and_range(char *p, char **out_tzid, int *out_range)
 				range = CAL_RECURRENCE_ID_RANGE_THISANDPRIOR;
 			else
 				ERR("Invalid param[%s]", s[i]);
-		}
-		else {
+		} else {
 			ERR("Invalid param[%s]", s[i]);
 		}
 	}
@@ -411,8 +405,7 @@ static void __get_last_instance_caltime(int parent_id, int type, calendar_time_s
 				sscanf(temp, CAL_FORMAT_LOCAL_DATETIME,
 						&(dtstart->time.date.year), &(dtstart->time.date.month), &(dtstart->time.date.mday),
 						&(dtstart->time.date.hour), &(dtstart->time.date.minute), &(dtstart->time.date.second));
-			}
-			else {
+			} else {
 				ERR("datetime is NULL");
 			}
 		}
@@ -529,8 +522,7 @@ void cal_db_event_apply_recurrence_id(int parent_id, cal_event_s *event, char *r
 			dtstart_utime = cal_time_convert_itol(tzid, y, m, d, h, n, s);
 			rectime.type = CALENDAR_TIME_UTIME;
 			rectime.time.utime = dtstart_utime;
-		}
-		else {
+		} else {
 			snprintf(dtstart_datetime, sizeof(dtstart_datetime), CAL_FORMAT_LOCAL_DATETIME, y, m, d, h, n, s);
 			rectime.type = CALENDAR_TIME_LOCALTIME;
 			rectime.time.date.year = y;
@@ -623,9 +615,9 @@ static int __get_parent_id_with_uid(char *uid, int child_id)
 		SECURE("query[%s]", query);
 		return ret;
 	}
-	if (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
+	if (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt))
 		parent_id = sqlite3_column_int64(stmt, 0);
-	}
+
 	sqlite3_finalize(stmt);
 	DBG("found parent_id(%d)", parent_id);
 	return parent_id;
@@ -861,18 +853,18 @@ int cal_db_event_insert_record(calendar_record_h record, int original_event_id, 
 
 	calendar_record_get_int(record, _calendar_event.id, &tmp);
 	cal_record_set_int(record, _calendar_event.id, event_id);
-	if (id) {
+	if (id)
 		*id = event_id;
-	}
 
 	cal_db_rrule_get_rrule_from_record(record, &rrule);
 	if (rrule) {
 		cal_db_rrule_insert_record(event_id, rrule);
 		CAL_FREE(rrule);
 	}
-	if (0 < original_event_id) {
+
+	if (0 < original_event_id)
 		cal_record_set_int(record, _calendar_event.original_event_id, original_event_id);
-	}
+
 	cal_db_instance_publish_record(record);
 
 	while (event->uid && *event->uid) {
@@ -905,8 +897,7 @@ int cal_db_event_insert_record(calendar_record_h record, int original_event_id, 
 				l = g_list_next(l);
 			}
 			g_list_free(list);
-		}
-		else {
+		} else {
 			DBG("this is child");
 			/* get parent with uid and update original_event_id */
 			int parent_id = 0;
@@ -927,8 +918,7 @@ int cal_db_event_insert_record(calendar_record_h record, int original_event_id, 
 		DBG("insert alarm");
 		ret = cal_db_alarm_insert_records(event->alarm_list, event_id);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_db_alarm_insert_records() Fail(%d)", ret);
-	}
-	else {
+	} else {
 		DBG("No alarm");
 	}
 
@@ -936,8 +926,7 @@ int cal_db_event_insert_record(calendar_record_h record, int original_event_id, 
 		DBG("insert attendee");
 		ret = cal_db_attendee_insert_records(event->attendee_list, event_id);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_db_attendee_insert_records() Fail(%d)", ret);
-	}
-	else {
+	} else {
 		DBG("No attendee");
 	}
 
@@ -945,8 +934,7 @@ int cal_db_event_insert_record(calendar_record_h record, int original_event_id, 
 		DBG("insert exception");
 		ret = cal_db_event_insert_records(event->exception_list, event_id);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_db_event_insert_records() Fail(%d)", ret);
-	}
-	else {
+	} else {
 		DBG("No exception");
 	}
 
@@ -954,8 +942,7 @@ int cal_db_event_insert_record(calendar_record_h record, int original_event_id, 
 		DBG("insert extended");
 		ret = cal_db_extended_insert_records(event->extended_list, event_id, CALENDAR_RECORD_TYPE_EVENT);
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_db_extended_insert_records() Fail(%d)", ret);
-	}
-	else {
+	} else {
 		DBG("No extended");
 	}
 

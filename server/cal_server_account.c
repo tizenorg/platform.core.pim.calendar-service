@@ -54,9 +54,8 @@ int cal_server_account_init(void)
 	}
 
 	ret = account_subscribe_notification(cal_account_h, _noti_cb, NULL);
-	if (ACCOUNT_ERROR_NONE != ret) {
+	if (ACCOUNT_ERROR_NONE != ret)
 		WARN("account_subscribe_notification Failed (%d)", ret);
-	}
 
 	pthread_mutex_unlock(&cal_mutex_account);
 	return CALENDAR_ERROR_NONE;

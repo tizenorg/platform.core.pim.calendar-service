@@ -33,8 +33,7 @@
 #define CAL_SERVER_CALENDAR_DELETE_STEP_TIME 1
 #define CAL_SERVER_CALENDAR_DELETE_THREAD_NAME "cal_server_calendar_delete"
 
-typedef enum
-{
+typedef enum {
 	STEP_1, /* create calendar_id_list */
 	STEP_2, /* delete schedule_table <-- CAL_SERVER_CALENDAR_DELETE_COUNT */
 	STEP_3, /* delete calendar_table*/
@@ -64,7 +63,7 @@ static bool _cal_server_calendar_delete_step(int ret, __calendar_delete_data_s* 
 			g_list_free(data->calendar_id_list);
 
 		CAL_FREE(data);
-		ERR("_cal_server_calendar_delete_step Fail(%d)",ret);
+		ERR("_cal_server_calendar_delete_step Fail(%d)", ret);
 		return false;
 	}
 	switch (data->step) {
@@ -79,9 +78,8 @@ static bool _cal_server_calendar_delete_step(int ret, __calendar_delete_data_s* 
 		break;
 	case STEP_2:
 		if (ret == CALENDAR_ERROR_NO_DATA)
-		{
 			data->step = STEP_3;
-		}
+
 		break;
 	case STEP_3:
 		data->step = STEP_1;
@@ -122,20 +120,15 @@ static int _cal_server_calendar_delete_step1(__calendar_delete_data_s* data)
 
 	count = g_list_length(data->calendar_id_list);
 	if (count <= 0)
-	{
-		return CALENDAR_ERROR_NO_DATA;
-	}
+			return CALENDAR_ERROR_NO_DATA;
 
 	GList *cursor = g_list_first(data->calendar_id_list);
-	if (cursor)
-	{
+	if (cursor) {
 		data->current_calendar_id = GPOINTER_TO_INT(cursor->data);
 		data->calendar_id_list = g_list_remove(data->calendar_id_list, GINT_TO_POINTER(data->current_calendar_id));
 
 		return CALENDAR_ERROR_NONE;
-	}
-	else
-	{
+	} else {
 		return CALENDAR_ERROR_NO_DATA;
 	}
 }
@@ -151,8 +144,7 @@ static int _cal_server_calendar_delete_step2(__calendar_delete_data_s* data)
 	CAL_FN_CALL();
 
 	ret = cal_db_util_begin_trans();
-	if (CALENDAR_ERROR_NONE != ret)
-	{
+	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_db_util_begin_trans() failed");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
@@ -184,7 +176,7 @@ static int _cal_server_calendar_delete_step2(__calendar_delete_data_s* data)
 	}
 
 	GList *cursor = g_list_first(list);
-	while(cursor) {
+	while (cursor) {
 		int id = GPOINTER_TO_INT(cursor->data);
 		/* delete event table */
 		snprintf(query, sizeof(query), "DELETE FROM %s WHERE id=%d", CAL_TABLE_SCHEDULE, id);
@@ -212,8 +204,7 @@ static int _cal_server_calendar_delete_step3(__calendar_delete_data_s* data)
 	char query[CAL_DB_SQL_MIN_LEN] = {0};
 
 	ret = cal_db_util_begin_trans();
-	if (CALENDAR_ERROR_NONE != ret)
-	{
+	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("cal_db_util_begin_trans() failed");
 		return CALENDAR_ERROR_DB_FAILED;
 	}
@@ -274,7 +265,7 @@ static gpointer _cal_server_calendar_main(gpointer user_data)
 	int ret = CALENDAR_ERROR_NONE;
 	CAL_FN_CALL();
 
-	while(1) {
+	while (1) {
 		__calendar_delete_data_s *callback_data = NULL;
 		callback_data = calloc(1, sizeof(__calendar_delete_data_s));
 		if (NULL == callback_data) {

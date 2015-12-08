@@ -60,14 +60,14 @@ cal_record_plugin_cb_s cal_record_timezone_plugin_cb = {
 
 static void _cal_record_timezone_struct_init(cal_timezone_s *record)
 {
-	memset(record,0, sizeof(cal_timezone_s));
+	memset(record, 0, sizeof(cal_timezone_s));
 	record->calendar_id = DEFAULT_EVENT_CALENDAR_BOOK_ID;
 }
 
 static int _cal_record_timezone_create(calendar_record_h* out_record)
 {
 	cal_timezone_s *temp = NULL;
-	int ret= CALENDAR_ERROR_NONE;
+	int ret = CALENDAR_ERROR_NONE;
 
 	temp = calloc(1, sizeof(cal_timezone_s));
 	RETVM_IF(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc() Fail");
@@ -142,7 +142,7 @@ static int _cal_record_timezone_get_str(calendar_record_h record, unsigned int p
 		*out_str = cal_strdup(rec->day_light_name);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -160,7 +160,7 @@ static int _cal_record_timezone_get_str_p(calendar_record_h record, unsigned int
 		*out_str = (rec->day_light_name);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -211,7 +211,7 @@ static int _cal_record_timezone_get_int(calendar_record_h record, unsigned int p
 		*out_value = (rec->calendar_id);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -231,7 +231,7 @@ static int _cal_record_timezone_set_str(calendar_record_h record, unsigned int p
 		rec->day_light_name = cal_strdup(value);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -282,7 +282,7 @@ static int _cal_record_timezone_set_int(calendar_record_h record, unsigned int p
 		(rec->calendar_id) = value;
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 

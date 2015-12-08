@@ -192,18 +192,17 @@ int cal_db_alarm_get_records(int parent, cal_list_s *list)
 		alarm->alarm.type = sqlite3_column_int(stmt, index++);
 
 		temp = sqlite3_column_text(stmt, index++);
-		alarm->alarm_summary= cal_strdup((const char*)temp);
+		alarm->alarm_summary = cal_strdup((const char*)temp);
 
 		alarm->alarm_action = sqlite3_column_int(stmt, index++);
 
 		temp = sqlite3_column_text(stmt, index++);
-		alarm->alarm_attach= cal_strdup((const char*)temp);
+		alarm->alarm_attach = cal_strdup((const char*)temp);
 
 		if (alarm->alarm.type == CALENDAR_TIME_UTIME) {
-			alarm->alarm.time.utime = sqlite3_column_int64(stmt,index++);
+			alarm->alarm.time.utime = sqlite3_column_int64(stmt, index++);
 			index++; /* datetime */
-		}
-		else {
+		} else {
 			index++; /* utime */
 			temp = sqlite3_column_text(stmt, index++);
 			if (temp) {

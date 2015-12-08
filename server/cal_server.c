@@ -63,7 +63,7 @@ void cal_server_quit_loop(void)
 static int _cal_server_init(void)
 {
 	int ret = 0;
-#if !GLIB_CHECK_VERSION(2,35,0)
+#if !GLIB_CHECK_VERSION(2, 35, 0)
 	g_type_init();
 #endif
 
@@ -99,7 +99,7 @@ static int _cal_server_main(void)
 
 static void _cal_server_create_directory(const char* directory, mode_t mode)
 {
-	if (0 == access (directory, F_OK))
+	if (0 == access(directory, F_OK))
 		return;
 
 	DBG("No directory[%s]", directory);

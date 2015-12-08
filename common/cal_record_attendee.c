@@ -66,7 +66,7 @@ static void _cal_record_attendee_struct_init(cal_attendee_s *record)
 static int _cal_record_attendee_create(calendar_record_h* out_record)
 {
 	cal_attendee_s *temp = NULL;
-	int ret= CALENDAR_ERROR_NONE;
+	int ret = CALENDAR_ERROR_NONE;
 
 	temp = calloc(1, sizeof(cal_attendee_s));
 	RETVM_IF(NULL == temp, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc() Fail");
@@ -163,7 +163,7 @@ static int _cal_record_attendee_get_str(calendar_record_h record, unsigned int p
 		*out_str = cal_strdup(rec->attendee_member);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -199,7 +199,7 @@ static int _cal_record_attendee_get_str_p(calendar_record_h record, unsigned int
 		*out_str = (rec->attendee_member);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -229,7 +229,7 @@ static int _cal_record_attendee_get_int(calendar_record_h record, unsigned int p
 		*out_value = (rec->parent_id);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -273,7 +273,7 @@ static int _cal_record_attendee_set_str(calendar_record_h record, unsigned int p
 		rec->attendee_member = cal_strdup(value);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -303,7 +303,7 @@ static int _cal_record_attendee_set_int(calendar_record_h record, unsigned int p
 		(rec->parent_id) = value;
 		break;
 	default:
-		ERR("invalid parameter (property:%d)",property_id);
+		ERR("invalid parameter (property:%d)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 

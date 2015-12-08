@@ -42,9 +42,9 @@ static TLS int transaction_cnt = 0;
 static TLS int transaction_ver = 0;
 static TLS bool version_up = false;
 
-static TLS bool event_change=false;
-static TLS bool todo_change=false;
-static TLS bool calendar_change=false;
+static TLS bool event_change = false;
+static TLS bool todo_change = false;
+static TLS bool calendar_change = false;
 
 static void _cal_db_util_notify_event_change(void)
 {
@@ -52,8 +52,7 @@ static void _cal_db_util_notify_event_change(void)
 	if (0 <= fd) {
 		close(fd);
 		event_change = false;
-	}
-	else {
+	} else {
 		ERR("open() Fail");
 	}
 }
@@ -64,8 +63,7 @@ static inline void _cal_db_util_notify_todo_change(void)
 	if (0 <= fd) {
 		close(fd);
 		todo_change = false;
-	}
-	else {
+	} else {
 		ERR("open() Fail");
 	}
 }
@@ -76,8 +74,7 @@ static inline void _cal_db_util_notify_calendar_change(void)
 	if (0 <= fd) {
 		close(fd);
 		calendar_change = false;
-	}
-	else {
+	} else {
 		ERR("open() Fail");
 	}
 }
@@ -109,7 +106,7 @@ int cal_db_util_notify(cal_noti_type_e type)
 		return CALENDAR_ERROR_NONE;
 	}
 
-	switch(type) {
+	switch (type) {
 	case CAL_NOTI_TYPE_EVENT:
 		_cal_db_util_notify_event_change();
 		break;
@@ -132,10 +129,10 @@ int cal_db_util_open(void)
 	if (cal_db)
 		return CALENDAR_ERROR_NONE;
 
-	if (-1 == access (DB_PATH, F_OK))
+	if (-1 == access(DB_PATH, F_OK))
 		mkdir(DB_PATH, 755);
 
-	if (-1 == access (CAL_DB_FILE, F_OK))
+	if (-1 == access(CAL_DB_FILE, F_OK))
 		mkdir(DB_PATH, 755);
 
 	int ret = 0;
@@ -155,9 +152,9 @@ int cal_db_util_close(void)
 
 	int ret = 0;
 	ret = db_util_close(cal_db);
-	if (SQLITE_OK != ret) {
+	if (SQLITE_OK != ret)
 		WARN("db_util_close() Fail(%d)", ret);
-	}
+
 	cal_db = NULL;
 	DBG("The database disconnected really.");
 
@@ -186,11 +183,10 @@ int cal_db_util_query_prepare(char *query, sqlite3_stmt **stmt)
 		if (SQLITE_BUSY == ret || SQLITE_LOCKED == ret) {
 			gettimeofday(&now, NULL);
 			timersub(&now, &from, &diff);
-			retry = (diff.tv_sec < CAL_QUERY_RETRY_TIME) ?true :false;
+			retry = (diff.tv_sec < CAL_QUERY_RETRY_TIME) ? true : false;
 			if (retry)
-				usleep(CAL_QUERY_RETRY_INTERVAL); // 50ms
-		}
-		else {
+				usleep(CAL_QUERY_RETRY_INTERVAL); /* 50ms */
+		} else {
 			retry = false;
 		}
 	} while (retry);
@@ -229,11 +225,10 @@ int cal_db_util_stmt_step(sqlite3_stmt *stmt)
 		if (SQLITE_BUSY == ret || SQLITE_LOCKED == ret) {
 			gettimeofday(&now, NULL);
 			timersub(&now, &from, &diff);
-			retry = (diff.tv_sec < CAL_QUERY_RETRY_TIME) ?true :false;
+			retry = (diff.tv_sec < CAL_QUERY_RETRY_TIME) ? true : false;
 			if (retry)
 				usleep(CAL_QUERY_RETRY_INTERVAL); /* 50ms */
-		}
-		else {
+		} else {
 			retry = false;
 		}
 	} while (retry);
@@ -305,11 +300,10 @@ int cal_db_util_query_get_first_int_result(const char *query, GSList *bind_text,
 			SECURE("[%s]", query);
 			gettimeofday(&now, NULL);
 			timersub(&now, &from, &diff);
-			retry = (diff.tv_sec < CAL_QUERY_RETRY_TIME) ?true :false;
+			retry = (diff.tv_sec < CAL_QUERY_RETRY_TIME) ? true : false;
 			if (retry)
 				usleep(CAL_QUERY_RETRY_INTERVAL); /* 50ms */
-		}
-		else {
+		} else {
 			retry = false;
 		}
 	} while (retry);
@@ -337,11 +331,10 @@ int cal_db_util_query_get_first_int_result(const char *query, GSList *bind_text,
 			ERR("sqlite3_step fail(%d, %s)", ret, sqlite3_errmsg(cal_db));
 			gettimeofday(&now, NULL);
 			timersub(&now, &from, &diff);
-			retry = (diff.tv_sec < CAL_QUERY_RETRY_TIME) ? true : false;
+			retry = (diff.tv_sec < CAL_QUERY_RETRY_TIME) ? true :  false;
 			if (retry)
 				usleep(CAL_QUERY_RETRY_INTERVAL); /* 50ms */
-		}
-		else {
+		} else {
 			retry = false;
 		}
 	} while (retry);
@@ -380,8 +373,8 @@ int cal_db_util_begin_trans(void)
 
 		progress = 100000;
 		ret = cal_db_util_query_exec("BEGIN IMMEDIATE TRANSACTION");
-		// !! check error code
-		while(CALENDAR_ERROR_NONE != ret && progress < CAL_COMMIT_TRY_MAX) {
+		/*  !! check error code */
+		while (CALENDAR_ERROR_NONE != ret && progress < CAL_COMMIT_TRY_MAX) {
 			usleep(progress);
 			ret = cal_db_util_query_exec("BEGIN IMMEDIATE TRANSACTION");
 			progress *= 2;
@@ -391,8 +384,7 @@ int cal_db_util_begin_trans(void)
 		transaction_cnt = 0;
 		const char *query = "SELECT ver FROM "CAL_TABLE_VERSION;
 		ret = cal_db_util_query_get_first_int_result(query, NULL, &transaction_ver);
-		if (CALENDAR_ERROR_NONE != ret)
-		{
+		if (CALENDAR_ERROR_NONE != ret) {
 			ERR("cal_db_util_query_get_first_int_result() Fail");
 			return ret;
 		}
@@ -434,13 +426,13 @@ int cal_db_util_end_trans(bool is_success)
 	INFO("start commit");
 	progress = 100000;
 	ret = cal_db_util_query_exec("COMMIT TRANSACTION");
-	// !! check error code
+	/* !! check error code */
 	while (CALENDAR_ERROR_NONE != ret && progress < CAL_COMMIT_TRY_MAX) {
 		usleep(progress);
 		ret = cal_db_util_query_exec("COMMIT TRANSACTION");
 		progress *= 2;
 	}
-	INFO("%s", (CALENDAR_ERROR_NONE == ret)?"commit": "rollback");
+	INFO("%s", (CALENDAR_ERROR_NONE == ret) ? "commit" : "rollback");
 
 	if (CALENDAR_ERROR_NONE != ret) {
 		int tmp_ret;
@@ -454,7 +446,7 @@ int cal_db_util_end_trans(bool is_success)
 	if (todo_change) _cal_db_util_notify_todo_change();
 	if (calendar_change) _cal_db_util_notify_calendar_change();
 
-	DBG("transaction_ver = %d",transaction_ver);
+	DBG("transaction_ver = %d", transaction_ver);
 	return CALENDAR_ERROR_NONE;
 }
 
@@ -469,9 +461,9 @@ int cal_db_util_get_next_ver(void)
 	int count = 0;
 	const char *query = "SELECT ver FROM "CAL_TABLE_VERSION;
 	ret = cal_db_util_query_get_first_int_result(query, NULL, &count);
-	if (CALENDAR_ERROR_NONE != ret) {
+	if (CALENDAR_ERROR_NONE != ret)
 		WARN("cal_db_util_query_get_first_int_result() Fail(%d)", ret);
-	}
+
 	return (1 + count);
 }
 

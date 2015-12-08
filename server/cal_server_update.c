@@ -40,8 +40,7 @@ static int _cal_server_update_get_db_version(sqlite3 *db, int *version)
 		return CALENDAR_ERROR_DB_FAILED;
 	}
 	ret = sqlite3_step(stmt);
-	if (SQLITE_ROW != ret)
-	{
+	if (SQLITE_ROW != ret) {
 		ERR("sqlite3_step() failed[%s]", sqlite3_errmsg(db));
 		sqlite3_finalize(stmt);
 		return CALENDAR_ERROR_DB_FAILED;
@@ -77,46 +76,39 @@ int cal_server_update(void)
 		 * added attendee_table(cutype, delegatee_uri, member), alarm_table(summary, action, attach).
 		 */
 		ret = sqlite3_exec(__db, "DROP VIEW event_calendar_attendee_view", NULL, 0, &errmsg);
-		if (SQLITE_OK != ret)
-		{
+		if (SQLITE_OK != ret) {
 			ERR("sqlite3_exec() failed: DROP VIEW event_calendar_attendee_view(%d) [%s]", ret, errmsg);
 			sqlite3_free(errmsg);
 		}
 
 		ret = sqlite3_exec(__db, "ALTER TABLE attendee_table ADD COLUMN attendee_cutype INTEGER", NULL, 0, &errmsg);
-		if (SQLITE_OK != ret)
-		{
+		if (SQLITE_OK != ret) {
 			ERR("sqlite3_exec() failed: ALTER TABLE attendee_table ADD COLUMN attendee_cutype(%d) [%s]", ret, errmsg);
 			sqlite3_free(errmsg);
 		}
 		ret = sqlite3_exec(__db, "ALTER TABLE attendee_table ADD COLUMN attendee_delegatee_uri TEXT", NULL, 0, &errmsg);
-		if (SQLITE_OK != ret)
-		{
+		if (SQLITE_OK != ret) {
 			ERR("sqlite3_exec() failed: ALTER TABLE attendee_table ADD COLUMN attendee_delegatee_uri(%d) [%s]", ret, errmsg);
 			sqlite3_free(errmsg);
 		}
 		ret = sqlite3_exec(__db, "ALTER TABLE attendee_table ADD COLUMN attendee_member TEXT", NULL, 0, &errmsg);
-		if (SQLITE_OK != ret)
-		{
+		if (SQLITE_OK != ret) {
 			ERR("sqlite3_exec() failed: ALTER TABLE attendee_table ADD COLUMN attendee_member(%d) [%s]", ret, errmsg);
 			sqlite3_free(errmsg);
 		}
 
 		ret = sqlite3_exec(__db, "ALTER TABLE alarm_table ADD COLUMN alarm_summary TEXT", NULL, 0, &errmsg);
-		if (SQLITE_OK != ret)
-		{
+		if (SQLITE_OK != ret) {
 			ERR("sqlite3_exec() failed: ALTER TABLE alarm_table ADD COLUMN alarm_summary(%d) [%s]", ret, errmsg);
 			sqlite3_free(errmsg);
 		}
 		ret = sqlite3_exec(__db, "ALTER TABLE alarm_table ADD COLUMN alarm_action INTEGER", NULL, 0, &errmsg);
-		if (SQLITE_OK != ret)
-		{
+		if (SQLITE_OK != ret) {
 			ERR("sqlite3_exec() failed: ALTER TABLE alarm_table ADD COLUMN alarm_action(%d) [%s]", ret, errmsg);
 			sqlite3_free(errmsg);
 		}
 		ret = sqlite3_exec(__db, "ALTER TABLE alarm_table ADD COLUMN alarm_attach TEXT", NULL, 0, &errmsg);
-		if (SQLITE_OK != ret)
-		{
+		if (SQLITE_OK != ret) {
 			ERR("sqlite3_exec() failed: ALTER TABLE alarm_table ADD COLUMN alarm_attach(%d) [%s]", ret, errmsg);
 			sqlite3_free(errmsg);
 		}
@@ -129,8 +121,7 @@ int cal_server_update(void)
 		 * added schedule_table(freq) for view table parameter.
 		 */
 		ret = sqlite3_exec(__db, "ALTER TABLE schedule_table ADD COLUMN freq INTEGER DEFAULT 0", NULL, 0, &errmsg);
-		if (SQLITE_OK != ret)
-		{
+		if (SQLITE_OK != ret) {
 			ERR("sqlite3_exec() failed: ALTER TABLE schedule_table ADD COLUMN freq(%d) [%s]", ret, errmsg);
 			sqlite3_free(errmsg);
 		}
@@ -259,14 +250,12 @@ int cal_server_update(void)
 			sqlite3_free(errmsg);
 		}
 		ret = sqlite3_exec(__db, "DROP VIEW allday_instance_view", NULL, 0, &errmsg);
-		if (SQLITE_OK != ret)
-		{
+		if (SQLITE_OK != ret) {
 			ERR("sqlite3_exec() failed: DROP VIEW allday_instance_view(%d) [%s]", ret, errmsg);
 			sqlite3_free(errmsg);
 		}
 		ret = sqlite3_exec(__db, "DROP VIEW allday_instance_view_extended", NULL, 0, &errmsg);
-		if (SQLITE_OK != ret)
-		{
+		if (SQLITE_OK != ret) {
 			ERR("sqlite3_exec() failed: DROP VIEW allday_instance_view_extended(%d) [%s]", ret, errmsg);
 			sqlite3_free(errmsg);
 		}
@@ -276,8 +265,7 @@ int cal_server_update(void)
 	/* update DB user_version */
 	snprintf(query, sizeof(query), "PRAGMA user_version = %d", __USER_VERSION);
 	ret = sqlite3_exec(__db, query, NULL, 0, &errmsg);
-	if (SQLITE_OK != ret)
-	{
+	if (SQLITE_OK != ret) {
 		ERR("sqlite3_exec() failed(%d) [%s]", ret, errmsg);
 		sqlite3_free(errmsg);
 	}

@@ -38,31 +38,24 @@
 	DBG("uri[%s]", uri); \
 	int is_schedule = 0; \
 	do { \
-		if (CAL_STRING_EQUAL == strncmp(uri, CALENDAR_VIEW_EVENT, strlen(CALENDAR_VIEW_EVENT))) \
-		{ \
+		if (CAL_STRING_EQUAL == strncmp(uri, CALENDAR_VIEW_EVENT, strlen(CALENDAR_VIEW_EVENT))) { \
 			is_schedule = 1; \
 			struct timeval hold = {0}; \
 			struct timeval diff = {0}; \
 			gettimeofday(&hold, NULL); \
 			timersub(&hold, &__g_release_time, &diff); \
 			DBG("%ld.%ld sec", diff.tv_sec, diff.tv_usec); \
-			if (diff.tv_sec / 1000 == 0 && diff.tv_usec < __CAL_CLIENT_ALLOW_USEC) \
-			{ \
-				if (__g_access_count < __CAL_CLIENT_ACCESS_MAX) \
-				{ \
+			if (diff.tv_sec / 1000 == 0 && diff.tv_usec < __CAL_CLIENT_ALLOW_USEC) { \
+				if (__g_access_count < __CAL_CLIENT_ACCESS_MAX) { \
 					__g_access_count++; \
 					DBG("--count (%d)", __g_access_count); \
-				} \
-				else \
-				{ \
+				} else { \
 					DBG("--sleep"); \
 					usleep(200000); \
 					__g_access_count = 0; \
 					timerclear(&__g_release_time); \
 				} \
-			} \
-			else \
-			{ \
+			} else { \
 				DBG("--reset"); \
 				__g_access_count = 0; \
 				timerclear(&__g_release_time); \
@@ -72,8 +65,7 @@
 
 #define CAL_LIMIT_ACCESS_BACK \
 	do { \
-		if (is_schedule) \
-		{ \
+		if (is_schedule) { \
 			gettimeofday(&__g_release_time, NULL); \
 		} \
 	} while (0)
