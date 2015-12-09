@@ -154,7 +154,7 @@ static int _cal_record_search_get_str(calendar_record_h record, unsigned int pro
 				*out_str = cal_strdup(data->value.s);
 				break;
 			} else {
-				ERR("invalid parameter (property:%d)", data->property_id);
+				ERR("invalid parameter (property:0x%x)", data->property_id);
 				return CALENDAR_ERROR_INVALID_PARAMETER;
 			}
 		}
@@ -175,7 +175,7 @@ static int _cal_record_search_get_str_p(calendar_record_h record, unsigned int p
 				*out_str = (data->value.s);
 				break;
 			} else {
-				ERR("invalid parameter (property:%d)", data->property_id);
+				ERR("invalid parameter (property:0x%x)", data->property_id);
 				return CALENDAR_ERROR_INVALID_PARAMETER;
 			}
 		}
@@ -196,7 +196,7 @@ static int _cal_record_search_get_int(calendar_record_h record, unsigned int pro
 				*out_value = (data->value.i);
 				break;
 			} else {
-				ERR("invalid parameter (property:%d)", data->property_id);
+				ERR("invalid parameter (property:0x%x)", data->property_id);
 				return CALENDAR_ERROR_INVALID_PARAMETER;
 			}
 		}
@@ -217,7 +217,7 @@ static int _cal_record_search_get_double(calendar_record_h record, unsigned int 
 				*out_value = (data->value.d);
 				break;
 			} else {
-				ERR("invalid parameter (property:%d)", data->property_id);
+				ERR("invalid parameter (property:0x%x)", data->property_id);
 				return CALENDAR_ERROR_INVALID_PARAMETER;
 			}
 		}
@@ -238,7 +238,7 @@ static int _cal_record_search_get_lli(calendar_record_h record, unsigned int pro
 				*out_value = (data->value.lli);
 				break;
 			} else {
-				ERR("invalid parameter (property:%d)", data->property_id);
+				ERR("invalid parameter (property:0x%x)", data->property_id);
 				return CALENDAR_ERROR_INVALID_PARAMETER;
 			}
 		}
@@ -259,7 +259,7 @@ static int _cal_record_search_get_caltime(calendar_record_h record, unsigned int
 				*out_value = (data->value.caltime);
 				break;
 			} else {
-				ERR("invalid parameter (property:%d)", data->property_id);
+				ERR("invalid parameter (property:0x%x)", data->property_id);
 				return CALENDAR_ERROR_INVALID_PARAMETER;
 			}
 		}
@@ -282,7 +282,7 @@ static int _cal_record_search_set_str(calendar_record_h record, unsigned int pro
 				(data->value.s) = cal_strdup(value);
 				return CALENDAR_ERROR_NONE;
 			} else {
-				ERR("invalid parameter (property:%d)", data->property_id);
+				ERR("invalid parameter (property:0x%x)", data->property_id);
 				return CALENDAR_ERROR_INVALID_PARAMETER;
 			}
 		}
@@ -310,7 +310,7 @@ static int _cal_record_search_set_int(calendar_record_h record, unsigned int pro
 				(data->value.i) = value;
 				return CALENDAR_ERROR_NONE;
 			} else {
-				ERR("invalid parameter (property:%d)", data->property_id);
+				ERR("invalid parameter (property:0x%x)", data->property_id);
 				return CALENDAR_ERROR_INVALID_PARAMETER;
 			}
 		}
@@ -338,7 +338,7 @@ static int _cal_record_search_set_double(calendar_record_h record, unsigned int 
 				(data->value.d) = value;
 				return CALENDAR_ERROR_NONE;
 			} else {
-				ERR("invalid parameter (property:%d)", data->property_id);
+				ERR("invalid parameter (property:0x%x)", data->property_id);
 				return CALENDAR_ERROR_INVALID_PARAMETER;
 			}
 		}
@@ -366,7 +366,7 @@ static int _cal_record_search_set_lli(calendar_record_h record, unsigned int pro
 				(data->value.lli) = value;
 				return CALENDAR_ERROR_NONE;
 			} else {
-				ERR("invalid parameter (property:%d)", data->property_id);
+				ERR("invalid parameter (property:0x%x)", data->property_id);
 				return CALENDAR_ERROR_INVALID_PARAMETER;
 			}
 		}
@@ -394,7 +394,7 @@ static int _cal_record_search_set_caltime(calendar_record_h record, unsigned int
 				(data->value.caltime) = value;
 				return CALENDAR_ERROR_NONE;
 			} else {
-				ERR("invalid parameter (property:%d)", data->property_id);
+				ERR("invalid parameter (property:0x%x)", data->property_id);
 				return CALENDAR_ERROR_INVALID_PARAMETER;
 			}
 		}

@@ -140,7 +140,7 @@ static int _cal_record_alarm_get_str(calendar_record_h record, unsigned int prop
 		*out_str = cal_strdup(rec->alarm_attach);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)", property_id);
+		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -161,7 +161,7 @@ static int _cal_record_alarm_get_str_p(calendar_record_h record, unsigned int pr
 		*out_str = (rec->alarm_attach);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)", property_id);
+		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -185,7 +185,7 @@ static int _cal_record_alarm_get_int(calendar_record_h record, unsigned int prop
 		*out_value = (rec->alarm_action);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)", property_id);
+		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -200,7 +200,7 @@ static int _cal_record_alarm_get_caltime(calendar_record_h record, unsigned int 
 		*out_value = rec->alarm;
 		break;
 	default:
-		ERR("invalid parameter (property:%d)", property_id);
+		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 	return CALENDAR_ERROR_NONE;
@@ -223,7 +223,7 @@ static int _cal_record_alarm_set_str(calendar_record_h record, unsigned int prop
 		rec->alarm_attach = cal_strdup(value);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)", property_id);
+		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -268,7 +268,7 @@ static int _cal_record_alarm_set_int(calendar_record_h record, unsigned int prop
 		}
 		break;
 	default:
-		ERR("invalid parameter (property:%d)", property_id);
+		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -283,7 +283,7 @@ static int _cal_record_alarm_set_caltime(calendar_record_h record, unsigned int 
 		rec->alarm = value;
 		break;
 	default:
-		ERR("invalid parameter (property:%d)", property_id);
+		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 	return CALENDAR_ERROR_NONE;

@@ -118,7 +118,7 @@ static int _cal_record_updated_info_get_int(calendar_record_h record, unsigned i
 		*out_value = (rec->version);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)", property_id);
+		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -142,7 +142,7 @@ static int _cal_record_updated_info_set_int(calendar_record_h record, unsigned i
 		(rec->version) = value;
 		break;
 	default:
-		ERR("invalid parameter (property:%d)", property_id);
+		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 

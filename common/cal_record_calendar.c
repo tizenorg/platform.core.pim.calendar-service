@@ -175,7 +175,7 @@ static int _cal_record_calendar_get_str(calendar_record_h record, unsigned int p
 		*out_str = cal_strdup(cal_rec->sync_data4);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)", property_id);
+		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -214,7 +214,7 @@ static int _cal_record_calendar_get_str_p(calendar_record_h record, unsigned int
 		*out_str = (cal_rec->sync_data4);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)", property_id);
+		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -244,7 +244,7 @@ static int _cal_record_calendar_get_int(calendar_record_h record, unsigned int p
 		*out_value = (cal_rec->mode);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)", property_id);
+		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -292,7 +292,7 @@ static int _cal_record_calendar_set_str(calendar_record_h record, unsigned int p
 		cal_rec->sync_data4 = cal_strdup(value);
 		break;
 	default:
-		ERR("invalid parameter (property:%d)", property_id);
+		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
@@ -343,7 +343,7 @@ static int _cal_record_calendar_set_int(calendar_record_h record, unsigned int p
 		(cal_rec->mode) = value;
 		break;
 	default:
-		ERR("invalid parameter (property:%d)", property_id);
+		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
 	}
 
