@@ -106,7 +106,7 @@ static const char* __calendar_vcalendar_get_vcalendar_object(const char *origina
 					vcal_cursor++;
 				}
 
-				len = (int)vcal_cursor - (int)vcal_start;
+				len = (int)((long)vcal_cursor - (long)vcal_start);
 				vcalendar_object = calloc(len + 1, sizeof(char));
 				if (NULL == vcalendar_object) {
 					ERR("calloc() Fail");

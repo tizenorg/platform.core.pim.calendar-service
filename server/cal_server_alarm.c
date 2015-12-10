@@ -732,7 +732,6 @@ static bool __app_matched_cb(app_control_h app_control, const char *package, voi
 	CAL_FN_CALL();
 
 	int ret = 0;
-	struct alarm_ud *au = (struct alarm_ud *)user_data;
 
 	RETV_IF(NULL == user_data, true);
 

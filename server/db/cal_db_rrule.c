@@ -26,37 +26,6 @@
 #include "cal_time.h"
 #include "cal_utils.h"
 
-static int _get_start_date(cal_event_s *event, char **out_month, char **out_mday)
-{
-	RETV_IF(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER);
-
-	int month = 0;
-	int mday = 0;
-
-	switch (event->start.type) {
-	case CALENDAR_TIME_UTIME:
-		cal_time_get_local_datetime(event->start_tzid, event->start.time.utime,
-				NULL, &month, &mday, NULL, NULL, NULL);
-		break;
-	case CALENDAR_TIME_LOCALTIME:
-		month = event->start.time.date.month;
-		mday = event->start.time.date.mday;
-		break;
-	}
-
-	char buf[CAL_STR_SHORT_LEN32] = {0};
-	if (out_month) {
-		snprintf(buf, sizeof(buf), "%d", month);
-		*out_month = strdup(buf);
-	}
-	if (out_mday) {
-		snprintf(buf, sizeof(buf), "%d", mday);
-		*out_mday = strdup(buf);
-	}
-
-	return CALENDAR_ERROR_NONE;
-}
-
 void cal_db_rrule_get_rrule_from_record(calendar_record_h record, cal_rrule_s **out_rrule)
 {
 	RET_IF(NULL == record);

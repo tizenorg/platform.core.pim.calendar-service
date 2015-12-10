@@ -601,7 +601,7 @@ static int _cal_db_todo_update_record(calendar_record_h record)
 static int _cal_db_todo_delete_record(int id)
 {
 	int ret = 0;
-	int calendar_book_id;
+	int calendar_book_id = 0;
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	int created_ver = 0;
 	calendar_book_sync_event_type_e sync_event_type = CALENDAR_BOOK_SYNC_EVENT_FOR_ME;

@@ -75,12 +75,6 @@ static struct timeval __g_release_time;
 
 static calDbus *cal_dbus_object;
 
-static void _cal_dbus_sub_id_list_free(gpointer data)
-{
-	GDBusConnection *conn = g_dbus_proxy_get_connection(G_DBUS_PROXY(cal_dbus_object));
-	g_dbus_connection_signal_unsubscribe(conn, GPOINTER_TO_UINT(data));
-}
-
 static void _cal_dbus_cleanup(void)
 {
 	CAL_FN_CALL();

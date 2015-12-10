@@ -108,5 +108,5 @@ void cal_service_internal_disconnect(void)
 			cal_total_connection--;
 	}
 	cal_mutex_unlock(CAL_MUTEX_CONNECTION);
-	return CALENDAR_ERROR_NONE;
+	return;
 }

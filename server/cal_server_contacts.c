@@ -292,11 +292,6 @@ static int cal_server_contacts_insert_event(int id, calendar_list_h out_insert)
 	return ret;
 }
 
-static void __contacts_changed_cb(const char* view_uri, void *user_data)
-{
-	cal_server_contacts_sync_start(user_data);
-}
-
 static void _cal_server_contacts_get_event_list(contacts_list_h contacts_list,
 		calendar_list_h out_insert, int **out_delete, int *out_count)
 {

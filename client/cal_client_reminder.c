@@ -41,8 +41,6 @@ static GSList *__subscribe_list = NULL;
 
 API int calendar_reminder_add_cb(calendar_reminder_cb callback, void *user_data)
 {
-	int ret = 0;
-
 	RETV_IF(NULL == callback, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	pthread_mutex_lock(&cal_mutex_reminder);
