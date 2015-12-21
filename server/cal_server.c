@@ -113,10 +113,9 @@ static void _cal_server_set_directory_permission(const char* file, mode_t mode)
 	fd = creat(file, mode);
 	if (0 <= fd) {
 		ret = fchown(fd, -1, CAL_SECURITY_FILE_GROUP);
-		if (-1 == ret) {
+		if (-1 == ret)
 			printf("Failed to fchown\n");
-			return;
-		}
+
 		close(fd);
 	}
 }
