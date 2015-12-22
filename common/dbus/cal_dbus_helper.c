@@ -1144,15 +1144,15 @@ static int _gvariant_to_composite(GVariant * arg_composite_pack, cal_composite_f
 	while (g_variant_iter_loop(iter_composite_pack, "(i&siv)",
 				&filter_type, &view_uri, &count_composite, &arg_composite)) {
 
-		cal_composite_filter_s *c = calloc(1, sizeof(cal_composite_filter_s));
-		if (NULL == c) {
+		cal_composite_filter_s *cf = calloc(1, sizeof(cal_composite_filter_s));
+		if (NULL == cf) {
 			ERR("calloc() Fail");
 			break;
 		}
-		c->filter_type = CAL_FILTER_COMPOSITE;
-		c->view_uri = cal_strdup(view_uri);
-		c->properties = (cal_property_info_s *)cal_view_get_property_info(view_uri,
-				&c->property_count);
+		cf->filter_type = CAL_FILTER_COMPOSITE;
+		cf->view_uri = cal_strdup(view_uri);
+		cf->properties = (cal_property_info_s *)cal_view_get_property_info(view_uri,
+				&cf->property_count);
 
 		int is_exit = 0;
 		if (0 == count_composite) {
@@ -1171,16 +1171,16 @@ static int _gvariant_to_composite(GVariant * arg_composite_pack, cal_composite_f
 			filter->property_id = property_id;
 			filter->match = match;
 			_gvariant_to_attr_value(composite_filter_type, arg_attr_value, filter);
-			c->filters = g_slist_append(c->filters, filter);
+			cf->filters = g_slist_append(cf->filters, filter);
 		}
 
 		if (1 == is_exit)
 			break;
 
 		if (NULL == composite)
-			composite = c;
+			composite = cf;
 		else
-			composite->filters = g_slist_append(composite->filters, c);
+			composite->filters = g_slist_append(composite->filters, cf);
 
 	}
 	*out_composite = composite;

@@ -294,14 +294,16 @@ int cal_db_rrule_get_rrule(int id, cal_rrule_s **rrule)
 	_rrule->until.time.utime = sqlite3_column_int64(stmt, index++);
 
 	temp = sqlite3_column_text(stmt, index++);
-	if (CALENDAR_TIME_LOCALTIME == _rrule->until.type) {
-		sscanf((const char *)temp, CAL_FORMAT_LOCAL_DATETIME,
-				&_rrule->until.time.date.year,
-				&_rrule->until.time.date.month,
-				&_rrule->until.time.date.mday,
-				&_rrule->until.time.date.hour,
-				&_rrule->until.time.date.minute,
-				&_rrule->until.time.date.second);
+	if (temp) {
+		if (CALENDAR_TIME_LOCALTIME == _rrule->until.type) {
+			sscanf((const char *)temp, CAL_FORMAT_LOCAL_DATETIME,
+					&_rrule->until.time.date.year,
+					&_rrule->until.time.date.month,
+					&_rrule->until.time.date.mday,
+					&_rrule->until.time.date.hour,
+					&_rrule->until.time.date.minute,
+					&_rrule->until.time.date.second);
+		}
 	}
 
 	_rrule->count = sqlite3_column_int(stmt, index++);

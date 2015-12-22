@@ -243,16 +243,18 @@ int cal_server_alarm_get_alert_time(int alarm_id, time_t *tt_alert)
 		} else {
 			int y = 0, m = 0, d = 0;
 			int h = 0, n = 0, s = 0;
-			sscanf(datetime, CAL_FORMAT_LOCAL_DATETIME, &y, &m, &d, &h, &n, &s);
+			if (datetime) {
+				sscanf(datetime, CAL_FORMAT_LOCAL_DATETIME, &y, &m, &d, &h, &n, &s);
 
-			st.tm_year = y - 1900;
-			st.tm_mon = m - 1;
-			st.tm_mday = d;
-			st.tm_hour = h;
-			st.tm_min = n;
-			st.tm_sec = s;
-			*tt_alert = mktime(&st);
-			DBG("datetime[%s] to %02d:%02d:%02d (%d)", datetime, h, n, s, *tt_alert);
+				st.tm_year = y - 1900;
+				st.tm_mon = m - 1;
+				st.tm_mday = d;
+				st.tm_hour = h;
+				st.tm_min = n;
+				st.tm_sec = s;
+				*tt_alert = mktime(&st);
+				DBG("datetime[%s] to %02d:%02d:%02d (%d)", datetime, h, n, s, *tt_alert);
+			}
 		}
 		sqlite3_finalize(stmt);
 		return CALENDAR_ERROR_NONE;

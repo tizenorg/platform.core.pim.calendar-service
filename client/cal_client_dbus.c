@@ -753,7 +753,6 @@ int cal_dbus_insert_vcalendars(calendar_h handle, const char *stream,
 
 	RETV_IF(NULL == handle, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == stream, CALENDAR_ERROR_INVALID_PARAMETER);
-	RETV_IF(NULL == out_ids, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == out_count, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == cal_dbus_object, CALENDAR_ERROR_IPC);
 

@@ -312,10 +312,12 @@ static int __get_time_shifted_field(char *old_field, int old_type, int new_type,
 
 	int len_t = g_strv_length(t);
 
+	char *field = NULL;
 	int len_field = strlen(old_field);
-	char *new = NULL;
-	new = calloc(len_field + (len_t * 8) + 1, sizeof(char)); /* add (len_t * 8) for YYYYMMDD -> YYYYMMDDTHHMMSSZ */
-	if (NULL == new) {
+	len_field += (len_t * 8) + 1;  /* add (len_t * 8) for YYYYMMDD -> YYYYMMDDTHHMMSSZ */
+
+	field = calloc(len_field, sizeof(char)); /* add (len_t * 8) for YYYYMMDD -> YYYYMMDDTHHMMSSZ */
+	if (NULL == field) {
 		ERR("calloc() Fail");
 		g_strfreev(t);
 		return CALENDAR_ERROR_OUT_OF_MEMORY;
@@ -324,6 +326,7 @@ static int __get_time_shifted_field(char *old_field, int old_type, int new_type,
 	struct tm tm = {0};
 	time_t tt = 0;
 
+	int len = 0;
 	int i;
 	for (i = 0; i < len_t; i++) {
 		int y = 0, m = 0, d = 0;
@@ -402,14 +405,16 @@ static int __get_time_shifted_field(char *old_field, int old_type, int new_type,
 			}
 			break;
 		}
-		strcat(new, buf);
+		len += snprintf(field + len, len_field -len, "%s", buf);
+		DBG("[%s]", field);
 	}
 	g_strfreev(t);
 
 	if (new_field)
-		*new_field = new;
+		*new_field = field;
 	else
-		free(new);
+		free(field);
+
 	return CALENDAR_ERROR_NONE;
 }
 
@@ -2219,13 +2224,15 @@ static int _cal_db_event_update_dirty(calendar_record_h record, int is_dirty_in_
 			if (CALENDAR_ERROR_NONE != ret)
 				continue;
 			if (sync_event_type == CALENDAR_BOOK_SYNC_EVENT_FOR_EVERY_AND_REMAIN) {
-				ret = _cal_db_event_exdate_insert_normal(event_id, original_exdate, record_exdate, NULL, NULL);
+				ret = _cal_db_event_exdate_insert_normal(event_id, original_exdate,
+						record_exdate, NULL, NULL);
 				WARN_IF(CALENDAR_ERROR_NONE != ret, "%s->%s", original_exdate, record_exdate);
 
 			} else {
 				int *exception_ids = NULL;
 				int exception_len = 0;
-				ret = _cal_db_event_exdate_insert_normal(event_id, original_exdate, record_exdate, &exception_ids, &exception_len);
+				ret = _cal_db_event_exdate_insert_normal(event_id, original_exdate,
+						record_exdate, &exception_ids, &exception_len);
 				WARN_IF(CALENDAR_ERROR_NONE != ret, "%s->%s", original_exdate, record_exdate);
 				ret = _cal_db_event_delete_exception(exception_ids, exception_len);
 				WARN_IF(CALENDAR_ERROR_NONE != ret, "_cal_db_event_delete_record() Fail");
@@ -2553,7 +2560,8 @@ static int _cal_db_event_get_deleted_data(int id, int* book_id, int* created_ver
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _cal_db_event_exdate_insert_normal(int event_id, const char* original_exdate, const char* exdate, int **exception_ids, int *exception_len)
+static int _cal_db_event_exdate_insert_normal(int event_id, const char* original_exdate,
+		const char* exdate, int **exception_ids, int *exception_len)
 {
 	int ret = CALENDAR_ERROR_NONE;
 	gchar **patterns1 = NULL;

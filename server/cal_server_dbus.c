@@ -296,6 +296,7 @@ static gboolean _handle_replace_records(calDbus *object, GDBusMethodInvocation *
 	ret = cal_dbus_utils_gvariant_to_ids(arg_ids, count, &ids);
 
 	ret = cal_db_replace_records(list, ids, count);
+	free(ids);
 
 	int version = 0;
 	version = cal_db_util_get_transaction_ver();
@@ -488,6 +489,7 @@ static gboolean _handle_replace_vcalendars(calDbus *object, GDBusMethodInvocatio
 	ret = cal_dbus_utils_gvariant_to_ids(arg_ids, count, &ids);
 
 	ret = cal_db_replace_vcalendars(stream, ids, count);
+	free(ids);
 
 	int version = 0;
 	version = cal_db_util_get_transaction_ver();

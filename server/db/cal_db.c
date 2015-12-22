@@ -51,7 +51,7 @@ extern cal_db_plugin_cb_s cal_db_search_plugin_cb;
 extern cal_db_plugin_cb_s cal_db_timezone_plugin_cb;
 extern cal_db_plugin_cb_s cal_db_extended_plugin_cb;
 
-int cal_db_append_string(char **dst, char *src)
+int cal_db_append_string(char **dst, const char *src)
 {
 	RETV_IF(NULL == dst, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == src, CALENDAR_ERROR_INVALID_PARAMETER);
@@ -69,6 +69,7 @@ int cal_db_append_string(char **dst, char *src)
 		}
 		return CALENDAR_ERROR_NONE;
 	}
+
 	int len_dst = strlen(*dst);
 	char *tmp = *dst;
 	tmp = (char *)realloc(tmp, len_dst + len_src + 2);
@@ -77,8 +78,8 @@ int cal_db_append_string(char **dst, char *src)
 		return CALENDAR_ERROR_OUT_OF_MEMORY;
 	}
 	*dst = tmp;
-	strcat(*dst, " ");
-	strcat(*dst, src);
+	snprintf(*dst + len_dst, len_src + 2, " %s", src);
+
 	return CALENDAR_ERROR_NONE;
 }
 

@@ -65,10 +65,10 @@ void cal_server_account_deinit(void)
 {
 	pthread_mutex_lock(&cal_mutex_account);
 
-	RET_IF(NULL == cal_account_h);
-
-	account_unsubscribe_notification(cal_account_h);
-	cal_account_h = NULL;
+	if (cal_account_h) {
+		account_unsubscribe_notification(cal_account_h);
+		cal_account_h = NULL;
+	}
 
 	pthread_mutex_unlock(&cal_mutex_account);
 }

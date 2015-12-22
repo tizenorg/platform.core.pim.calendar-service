@@ -126,7 +126,7 @@ int cal_db_get_current_version(int* current_version);
 int cal_db_get_changes_by_version(const char* view_uri, int calendar_book_id, int calendar_db_version, calendar_list_h* record_list, int *current_calendar_db_version);
 int cal_db_get_changes_exception_by_version(const char* view_uri, int original_event_id, int calendar_db_version, calendar_list_h* record_list);
 
-int cal_db_append_string(char **dst, char *src);
+int cal_db_append_string(char **dst, const char *src);
 cal_db_plugin_cb_s* _cal_db_get_plugin(cal_record_type_e type);
 
 #endif /* __CAL_DB_H__ */
