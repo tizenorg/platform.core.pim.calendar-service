@@ -734,6 +734,7 @@ static bool __app_matched_cb(app_control_h app_control, const char *package, voi
 	CAL_FN_CALL();
 
 	int ret = 0;
+	int i;
 
 	RETV_IF(NULL == user_data, true);
 
@@ -749,7 +750,12 @@ static bool __app_matched_cb(app_control_h app_control, const char *package, voi
 	}
 	free(mime);
 
-	GList *alarm_list = (GList *)user_data;
+	struct alarm_ud *au = (struct alarm_ud *)user_data;
+	GList *alarm_list = au->alarm_list;
+	if (NULL == alarm_list) {
+		ERR("No list");
+		return true;
+	}
 	int len = 0;
 	len = g_list_length(alarm_list);
 	if (0 == len) {
@@ -757,25 +763,38 @@ static bool __app_matched_cb(app_control_h app_control, const char *package, voi
 		return true;
 	}
 
-	app_control_h b = NULL;
-	app_control_create(&b);
-	app_control_set_operation(b,  APP_CONTROL_OPERATION_DEFAULT);
-	app_control_set_app_id(b, package);
+	app_control_h ac = NULL;
+	ret = app_control_create(&ac);
+	if (APP_CONTROL_ERROR_NONE != ret) {
+		ERR("app_control_create() Fail(%d)", ret);
+		return true;
+	}
+	ret = app_control_set_operation(ac,  APP_CONTROL_OPERATION_DEFAULT);
+	if (APP_CONTROL_ERROR_NONE != ret) {
+		ERR("app_control_create() Fail(%d)", ret);
+		app_control_destroy(ac);
+		return true;
+	}
+	ret = app_control_set_app_id(ac, package);
+	if (APP_CONTROL_ERROR_NONE != ret) {
+		ERR("app_control_set_app_id() Fail(%d)", ret);
+		app_control_destroy(ac);
+		return true;
+	}
 
 	char **ids = NULL;
 	ids = calloc(len, sizeof(char *));
 	if (NULL == ids) {
 		ERR("calloc() Fail");
-		app_control_destroy(b);
-		return CALENDAR_ERROR_OUT_OF_MEMORY;
+		app_control_destroy(ac);
+		return true;
 	}
-	GList *l = g_list_first(alarm_list);
-	int i;
+	GList *cursor = g_list_first(alarm_list);
 	for (i = 0; i < len; i++) {
-		struct _alarm_data_s *ad = (struct _alarm_data_s *)l->data;
+		struct _alarm_data_s *ad = (struct _alarm_data_s *)cursor->data;
 		if (NULL == ad) {
 			ERR("No data");
-			l = g_list_next(l);
+			cursor = g_list_next(cursor);
 			continue;
 		}
 		DBG("pkg[%s] time[%lld] tick[%d] unit[%d] record_type[%d]",
@@ -789,20 +808,24 @@ static bool __app_matched_cb(app_control_h app_control, const char *package, voi
 		len += snprintf(extra+len, sizeof(extra)-len, "&%s=%d", "unit", ad->unit);
 		len += snprintf(extra+len, sizeof(extra)-len, "&%s=%d", "type", ad->record);
 
+		/*
+		 * key: id, value: id=4&time=123123&..
+		 */
 		char buf_id[CAL_STR_MIDDLE_LEN] = {0};
 		snprintf(buf_id, sizeof(buf_id), "%d", ad->event_id);
-		app_control_add_extra_data(b, buf_id, extra); /* key: id, value: id=4&time=123123&.. */
+		app_control_add_extra_data(ac, buf_id, extra);
 		DBG("value[%s]", extra);
 
 		/* append ids */
 		ids[i] = strdup(buf_id);
 
-		l = g_list_next(l);
+		cursor = g_list_next(cursor);
 	}
-	app_control_add_extra_data_array(b, "ids", (const char **)ids, len);
-	app_control_send_launch_request(b, NULL, NULL);
-	app_control_destroy(b);
+	app_control_add_extra_data_array(ac, "ids", (const char **)ids, len);
+	app_control_send_launch_request(ac, NULL, NULL);
+	app_control_destroy(ac);
 
+	g_list_free_full(alarm_list, free);
 	for (i = 0; i < len; i++) {
 		free(ids[i]);
 		ids[i] = NULL;
@@ -815,12 +838,28 @@ static bool __app_matched_cb(app_control_h app_control, const char *package, voi
 static void _cal_server_alarm_noti_with_control(GList *alarm_list)
 {
 	CAL_FN_CALL();
+
+	int ret = 0;
 	RETM_IF(NULL == alarm_list, "No alarm list");
 
 	app_control_h app_control = NULL;
-	app_control_create(&app_control);
-	app_control_set_operation(app_control, APP_CONTROL_OPERATION_VIEW);
-	app_control_set_mime(app_control, "application/x-tizen.calendar.reminder");
+	ret = app_control_create(&app_control);
+	if (APP_CONTROL_ERROR_NONE != ret) {
+		ERR("app_control_create() Fail(%d)", ret);
+		return;
+	}
+	ret = app_control_set_operation(app_control, APP_CONTROL_OPERATION_VIEW);
+	if (APP_CONTROL_ERROR_NONE != ret) {
+		ERR("app_control_set_operation() Fail(%d)", ret);
+		app_control_destroy(app_control);
+		return;
+	}
+	ret = app_control_set_mime(app_control, "application/x-tizen.calendar.reminder");
+	if (APP_CONTROL_ERROR_NONE != ret) {
+		ERR("app_control_set_mime() Fail(%d)", ret);
+		app_control_destroy(app_control);
+		return;
+	}
 
 	struct alarm_ud *au = calloc(1, sizeof(struct alarm_ud));
 	if (NULL == au) {
@@ -829,7 +868,14 @@ static void _cal_server_alarm_noti_with_control(GList *alarm_list)
 		return;
 	}
 	au->alarm_list = alarm_list;
-	app_control_foreach_app_matched(app_control, __app_matched_cb, au);
+	ret = app_control_foreach_app_matched(app_control, __app_matched_cb, au);
+	if (APP_CONTROL_ERROR_NONE != ret) {
+		ERR("app_control_foreach_app_matched() Fail(%d)", ret);
+		free(au);
+		app_control_destroy(app_control);
+		return;
+	}
+	free(au);
 	app_control_destroy(app_control);
 }
 
