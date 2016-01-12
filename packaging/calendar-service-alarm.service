@@ -2,10 +2,7 @@
 Description=Calendar Service Alarm
 
 [Service]
-Type=simple
+Type=dbus
 BusName=ALARM.acalendar-service
 Environment="TIMEOUT=0"
 ExecStart=/usr/bin/calendar-serviced $TIMEOUT
-
-[Install]
-WantedBy=default.target

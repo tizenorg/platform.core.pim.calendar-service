@@ -2,10 +2,7 @@
 Description=Calendar Service daemon
 
 [Service]
-Type=simple
-BusName=org.tizen.calendar_service.dbus
+Type=dbus
+BusName=org.tizen.CalendarService.dbus
 Environment="TIMEOUT=0"
 ExecStart=/usr/bin/calendar-serviced $TIMEOUT
-
-[Install]
-WantedBy=default.target

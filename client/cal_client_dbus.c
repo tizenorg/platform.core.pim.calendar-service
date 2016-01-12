@@ -171,7 +171,7 @@ int cal_dbus_start(void)
 	}
 
 	GError *error = NULL;
-	cal_dbus_object = cal_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SYSTEM,
+	cal_dbus_object = cal_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SESSION,
 			G_DBUS_PROXY_FLAGS_NONE,
 			CAL_DBUS_INTERFACE,
 			CAL_DBUS_OBJPATH,
@@ -225,7 +225,7 @@ int cal_dbus_recovery(void)
 	}
 
 	GError *error = NULL;
-	cal_dbus_object = cal_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SYSTEM,
+	cal_dbus_object = cal_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SESSION,
 			G_DBUS_PROXY_FLAGS_NONE,
 			CAL_DBUS_INTERFACE,
 			CAL_DBUS_OBJPATH,

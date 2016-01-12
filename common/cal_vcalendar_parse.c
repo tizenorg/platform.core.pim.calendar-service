@@ -19,7 +19,6 @@
 
 #include <stdlib.h>
 #include <ctype.h>
-#include <vconf.h>
 
 #include "calendar_list.h"
 #include "cal_internal.h"

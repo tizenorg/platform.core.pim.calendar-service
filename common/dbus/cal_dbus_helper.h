@@ -25,7 +25,7 @@
  * Each element must only contain the ASCII characters "[A-Z][a-z][0-9]_" and must not begin with a digit.
  */
 #ifndef CAL_DBUS_INTERFACE
-#define CAL_DBUS_INTERFACE "org.tizen.calendar_service.dbus"
+#define CAL_DBUS_INTERFACE "org.tizen.CalendarService.dbus"
 #warning "CAL_DBUS_INTERFACE is redefined"
 #endif
 

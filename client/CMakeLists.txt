@@ -15,7 +15,6 @@ pkg_check_modules(client_pkgs REQUIRED
 	glib-2.0
 	db-util
 	sqlite3
-	vconf
 	alarm-service
 	icu-i18n
 	contacts-service2

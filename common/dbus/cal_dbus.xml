@@ -1,5 +1,5 @@
 <node>
-	<interface name="org.tizen.calendar_service.dbus">
+	<interface name="org.tizen.CalendarService.dbus">
 		<method name="register_resource">
 			<arg type="i" name="ret" direction="out"/>
 		</method>

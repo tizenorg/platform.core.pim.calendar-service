@@ -3,24 +3,24 @@
  "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
 <busconfig>
     <policy user="root">
-        <allow own="org.tizen.calendar_service.dbus"/>
+        <allow own="@DBUS_INTERFACE@"/>
 		<allow send_destination="@DBUS_INTERFACE@" send_interface="@DBUS_INTERFACE@"/>
 		<allow receive_sender="@DBUS_INTERFACE@"/>
     </policy>
     <policy user="system">
-        <allow own="org.tizen.calendar_service.dbus"/>
+        <allow own="@DBUS_INTERFACE@"/>
 		<allow send_destination="@DBUS_INTERFACE@" send_interface="@DBUS_INTERFACE@"/>
 		<allow receive_sender="@DBUS_INTERFACE@"/>
     </policy>
     <policy group="users">
-        <allow own="org.tizen.calendar_service.dbus"/>
+        <allow own="@DBUS_INTERFACE@"/>
 		<allow send_destination="@DBUS_INTERFACE@" send_interface="@DBUS_INTERFACE@"/>
     </policy>
 	<policy at_console="true">
 		<allow send_destination="@DBUS_INTERFACE@" send_interface="@DBUS_INTERFACE@"/>
 	</policy>
     <policy context="default">
-        <allow send_destination="org.tizen.calendar_service.dbus"/>
+        <allow send_destination="@DBUS_INTERFACE@"/>
 		<check send_destination="@DBUS_INTERFACE@"
 				send_interface="@DBUS_INTERFACE@" send_member="insert_record"
 				privilege="http://tizen.org/privilege/calendar.write"/>

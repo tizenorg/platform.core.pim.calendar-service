@@ -704,7 +704,7 @@ static void _dbus_on_name_lost(GDBusConnection *conn, const gchar *name, gpointe
 unsigned int cal_server_dbus_init(void)
 {
 	guint id = 0;
-	id = g_bus_own_name(G_BUS_TYPE_SYSTEM,
+	id = g_bus_own_name(G_BUS_TYPE_SESSION,
 			CAL_DBUS_INTERFACE,
 			G_BUS_NAME_OWNER_FLAGS_REPLACE,
 			_dbus_on_bus_acquired,

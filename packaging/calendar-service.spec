@@ -1,25 +1,19 @@
 Name:       calendar-service
 Summary:    DB library for calendar
-Version:    0.1.156
+Version:    0.1.157
 Release:    1
 Group:      System/Libraries
 License:    Apache-2.0
 Source0:    %{name}-%{version}.tar.gz
 Source1:    %{name}d.service
-Source2:	org.tizen.calendar_service.dbus.service
-Source3:    ALARM.a%{name}.service
-Source4:	org.tizen.calendar_service.dbus.conf.in
-Source5:	%{name}-alarm.service
-
+Source2:    org.tizen.CalendarService.dbus.service
+Source1001: %{name}.manifest
+Source1002: %{name}.conf.in
+Source2001: %{name}-alarm.service
+Source2002: ALARM.a%{name}.service
 %if "%{?tizen_profile_name}" == "wearable"
 ExcludeArch: %{arm} %ix86 x86_64
 %endif
-
-Requires(post): /sbin/ldconfig
-Requires(post): /usr/bin/sqlite3, /bin/chown
-Requires(post): contacts-service2
-Requires(postun): /sbin/ldconfig
-
 BuildRequires: cmake
 BuildRequires: pkgconfig(db-util)
 BuildRequires: pkgconfig(sqlite3)
@@ -35,9 +29,13 @@ BuildRequires: pkgconfig(capi-base-common)
 BuildRequires: pkgconfig(capi-appfw-package-manager)
 BuildRequires: pkgconfig(capi-appfw-application)
 BuildRequires: pkgconfig(libsmack)
+Requires(post): /sbin/ldconfig
+Requires(postun): /sbin/ldconfig
+
+%define _dbus_interface org.tizen.CalendarService.dbus
 
 %description
-DB library for calendar
+Calendar Service for using Calendar DB
 
 %package devel
 Summary:    DB library for calendar
@@ -46,11 +44,14 @@ Requires:   %{name} = %{version}-%{release}
 Requires:   pkgconfig(alarm-service)
 
 %description devel
-DB library for calendar (developement files)
+Calendar Service for using Calendar DB(development Kit)
+
 
 %prep
 %setup -q
-cp %{SOURCE4} .
+chmod g-w %_sourcedir/*
+cp %{SOURCE1001} .
+
 
 %build
 export CFLAGS="$CFLAGS -DTIZEN_DEBUG_ENABLE"
@@ -58,48 +59,51 @@ export CXXFLAGS="$CXXFLAGS -DTIZEN_DEBUG_ENABLE"
 export FFLAGS="$FFLAGS -DTIZEN_DEBUG_ENABLE"
 
 MAJORVER=`echo %{version} | awk 'BEGIN {FS="."}{print $1}'`
+%cmake . -DMAJORVER=${MAJORVER} -DFULLVER=%{version} -DBIN_INSTALL_DIR:PATH=%{_bindir} \
+		-DDBUS_INTERFACE=%{_dbus_interface}
 
-%cmake . -DBIN_INSTALL_DIR:PATH=%{_bindir} \
-		-DMAJORVER=${MAJORVER} \
-		-DFULLVER=%{version}
 
 make %{?jobs:-j%jobs}
 
+
 %install
+rm -rf %{buildroot}
 %make_install
 
 mkdir -p %{buildroot}%{_unitdir_user}/default.target.wants
-install -m 0644 %SOURCE1 %{buildroot}%{_unitdir_user}/%{name}d.service
-ln -s ../%{name}d.service %{buildroot}%{_unitdir_user}/default.target.wants/%{name}d.service
-install -m 0644 %SOURCE5 %{buildroot}%{_unitdir_user}/%{name}-alarm.service
+install -m 0644 %SOURCE1 %{buildroot}%{_unitdir_user}
 
-mkdir -p %{buildroot}%{_datadir}/license
-cp LICENSE.APLv2 %{buildroot}%{_datadir}/license/%{name}
+mkdir -p %{buildroot}%{_datadir}/dbus-1/services
+install -m 0644 %SOURCE2 %{buildroot}%{_datadir}/dbus-1/services
 
-mkdir -p %{buildroot}%{_datadir}/dbus-1/system-services
-install -m 0644 %SOURCE2 %{buildroot}%{_datadir}/dbus-1/system-services/org.tizen.calendar_service.dbus.service
+mkdir -p %{buildroot}/%{_sysconfdir}/dbus-1/session.d
+sed -i 's/@DBUS_INTERFACE@/%{_dbus_interface}/g' %{SOURCE1002}
+install -m 0644 %{SOURCE1002} %{buildroot}%{_sysconfdir}/dbus-1/session.d/%{name}.conf
 
 # alarm dbus service file
+install -m 0644 %SOURCE2001 %{buildroot}%{_unitdir_user}
 mkdir -p %{buildroot}%{_datadir}/dbus-1/system-services
-cp -a %SOURCE3 %{buildroot}%{_datadir}/dbus-1/system-services
+install -m 0644 %SOURCE2002 %{buildroot}%{_datadir}/dbus-1/system-services
 
-%post
-/sbin/ldconfig
+
+%post -p /sbin/ldconfig
+
 
 %postun -p /sbin/ldconfig
 
+
 %files
-%manifest calendar-service.manifest
+%manifest %{name}.manifest
 %defattr(-,root,root,-)
 %{_bindir}/calendar-serviced*
 %{_libdir}/lib%{name}2.so.*
-%{_unitdir_user}/default.target.wants/%{name}d.service
 %{_unitdir_user}/%{name}d.service
+%{_datadir}/dbus-1/services/%{_dbus_interface}.service
+%config %{_sysconfdir}/dbus-1/session.d/%{name}.conf
 %{_unitdir_user}/%{name}-alarm.service
-%{_datadir}/license/%{name}
 %{_datadir}/dbus-1/system-services/ALARM.acalendar-service.service
-%{_datadir}/dbus-1/system-services/org.tizen.calendar_service.dbus.service
-%config %{_sysconfdir}/dbus-1/system.d/org.tizen.calendar_service.dbus.conf
+%license LICENSE.APLv2
+
 
 %files devel
 %defattr(-,root,root,-)
