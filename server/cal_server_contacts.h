@@ -20,8 +20,8 @@
 #ifndef __CAL_SERVER_CONTACTS_H__
 #define __CAL_SERVER_CONTACTS_H__
 
-int cal_server_contacts(void);
 void cal_server_contacts_delete(int account_id);
-void cal_server_contacts_sync_start(void *user_data);
+int cal_server_contacts_init(void);
+void cal_server_contacts_deinit(void);
 
 #endif /* __CAL_SERVER_CONTACTS_H__ */

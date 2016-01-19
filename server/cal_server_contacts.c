@@ -552,7 +552,6 @@ void cal_server_contacts_delete(int account_id)
 static gpointer _cal_server_contacts_sync_main(gpointer user_data)
 {
 	int ret = CALENDAR_ERROR_NONE;
-	RETV_IF(NULL == user_data, NULL);
 
 	while (1) {
 		/*
@@ -591,7 +590,7 @@ static gpointer _cal_server_contacts_sync_main(gpointer user_data)
 	return NULL;
 }
 
-void cal_server_contacts_sync_start(void *user_data)
+static void cal_server_contacts_sync_start(void)
 {
 	CAL_FN_CALL();
 
@@ -599,10 +598,45 @@ void cal_server_contacts_sync_start(void *user_data)
 		g_mutex_init(&_cal_server_contacts_sync_mutex);
 		g_cond_init(&_cal_server_contacts_sync_cond);
 		_cal_server_contacts_sync_thread = g_thread_new(CAL_SERVER_CONTACTS_SYNC_THREAD_NAME,
-				_cal_server_contacts_sync_main, user_data);
+				_cal_server_contacts_sync_main, NULL);
 	}
 
 	/* don't use mutex. */
 	g_cond_signal(&_cal_server_contacts_sync_cond);
 }
 
+static void _changed_cb(const char* view_uri, void *user_data)
+{
+	cal_server_contacts_sync_start();
+}
+
+int cal_server_contacts_init(void)
+{
+	int ret = 0;
+
+	ret = contacts_connect();
+	if (CONTACTS_ERROR_NONE != ret) {
+		ERR("contacts_connect() Fail(%d)", ret);
+		return ret;
+	}
+
+	ret = contacts_db_add_changed_cb(_contacts_event._uri, _changed_cb, NULL);
+	if (CONTACTS_ERROR_NONE != ret)
+		WARN("contacts_db_add_changed_cb() Fail(%d)", ret);
+
+	ret = contacts_db_add_changed_cb(_contacts_name._uri, _changed_cb, NULL);
+	if (CONTACTS_ERROR_NONE != ret)
+		WARN("contacts_db_add_changed_cb() Fail(%d)", ret);
+
+	cal_server_contacts_sync_start();
+
+	return CALENDAR_ERROR_NONE;
+}
+
+void cal_server_contacts_deinit(void)
+{
+	contacts_db_remove_changed_cb(_contacts_event._uri, _changed_cb, NULL);
+	contacts_db_remove_changed_cb(_contacts_name._uri, _changed_cb, NULL);
+
+	contacts_disconnect();
+}

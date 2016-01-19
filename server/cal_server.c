@@ -150,9 +150,11 @@ int main(int argc, char *argv[])
 	_cal_server_create_file();
 	cal_server_schema_check();
 	cal_server_update();
+
 	_cal_server_init();
 	cal_server_alarm_init();
 	cal_server_account_init();
+	cal_server_contacts_init();
 
 	guint id;
 	id = cal_server_dbus_init();
@@ -160,8 +162,10 @@ int main(int argc, char *argv[])
 	_cal_server_main();
 
 	cal_time_u_cleanup();
+	cal_server_contacts_deinit();
 	cal_server_account_deinit();
 	cal_server_alarm_deinit();
+
 	_cal_server_deinit();
 	cal_server_dbus_deinit(id);
 	cal_inotify_deinit();

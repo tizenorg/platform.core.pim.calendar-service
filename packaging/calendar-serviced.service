@@ -1,5 +1,7 @@
 [Unit]
 Description=Calendar Service daemon
+After=contacts-service.service
+Requires=contacts-service.service
 
 [Service]
 Type=dbus
