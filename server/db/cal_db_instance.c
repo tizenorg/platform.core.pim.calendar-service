@@ -40,7 +40,6 @@
 
 #define ms2sec(ms) (long long int)(ms / 1000.0)
 #define sec2ms(s) (s * 1000.0)
-#define lli2p(x) ((gpointer)((time_t)x))
 
 /* input order
  * UCAL_MONTH + UCAL_DAY_OF_MONTH
@@ -204,7 +203,7 @@ static void __set_time_to_ucal(int calendar_system_type, UCalendar *ucal, calend
 	}
 }
 
-static int __get_exdate_list(UCalendar *ucal, cal_event_s *event, GList **l, int *count)
+static int __get_exdate_list(UCalendar *ucal, cal_event_s *event, GList **list)
 {
 	RETV_IF(NULL == ucal, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == event, CALENDAR_ERROR_INVALID_PARAMETER);
@@ -260,10 +259,15 @@ static int __get_exdate_list(UCalendar *ucal, cal_event_s *event, GList **l, int
 			break;
 		}
 		DBG("%lld", lli);
-		*l = g_list_append(*l, lli2p(lli));
+
+		long long int *lli_p = calloc(1, sizeof(long long int));
+		if (NULL == lli_p) {
+			break;
+		}
+		*lli_p = lli;
+
+		*list = g_list_append(*list, lli_p);
 	}
-	if (count) *count = len;
-	DBG("exdate len(%d)", len);
 	g_strfreev(t);
 
 	return CALENDAR_ERROR_NONE;
@@ -629,16 +633,25 @@ static bool __check_before_dtstart(long long int current_utime, long long int dt
 	return false;
 }
 
-static bool __check_exdate_to_skip(long long int get_lli, int exdate_len, GList **l)
+static bool __check_exdate_to_skip(long long int get_lli, GList **list)
 {
 	int i = 0;
-	for (i = 0; i < exdate_len; i++) {
-		long long int exdate_lli = (long long int)g_list_nth_data(*l, i);
-		if (exdate_lli == get_lli) {
+
+	GList *cursor = *list;
+	while (cursor) {
+		long long int *lli_p = (long long int *)cursor->data;
+		if (NULL == lli_p) {
+			cursor = g_list_next(cursor);
+			continue;
+		}
+		long long int lli = *lli_p;
+		if (lli == get_lli) {
 			DBG("found exdate(%lld)", get_lli);
-			*l = g_list_remove(*l, lli2p(get_lli));
+			free(lli_p);
+			*list = g_list_delete_link(*list, cursor);
 			return true;
 		}
+		cursor = g_list_next(cursor);
 	}
 	return false;
 }
@@ -762,9 +775,8 @@ static int _cal_db_instance_publish_yearly_yday(UCalendar *ucal, cal_event_s *ev
 	_cal_db_instance_parse_byint(event->bysetpos, bysetpos, &bysetpos_len);
 	DBG("bysetpos len(%d)", bysetpos_len);
 
-	GList *l = NULL;
-	int exdate_len = 0;
-	__get_exdate_list(ucal, event, &l, &exdate_len);
+	GList *list = NULL;
+	__get_exdate_list(ucal, event, &list);
 
 	int loop = 0;
 	int count = 0;
@@ -787,7 +799,7 @@ static int _cal_db_instance_publish_yearly_yday(UCalendar *ucal, cal_event_s *ev
 			if (true == __check_before_dtstart(current_utime, dtstart_utime))
 				continue;
 
-			if (true == __check_exdate_to_skip(current_utime, exdate_len, &l)) {
+			if (true == __check_exdate_to_skip(current_utime, &list)) {
 				count++;
 				continue;
 			}
@@ -802,7 +814,8 @@ static int _cal_db_instance_publish_yearly_yday(UCalendar *ucal, cal_event_s *ev
 		is_exit = __check_to_stop_loop(current_utime, &last_utime, loop);
 		loop++;
 	}
-	if (l) g_list_free(l);
+	if (list)
+		g_list_free_full(list, free);
 	return CALENDAR_ERROR_NONE;
 }
 
@@ -849,9 +862,8 @@ static int _cal_db_instance_publish_yearly_weekno(UCalendar *ucal, cal_event_s *
 	_cal_db_instance_parse_byint(event->bysetpos, bysetpos, &bysetpos_len);
 	DBG("bysetpos len(%d)", bysetpos_len);
 
-	GList *l = NULL;
-	int exdate_len = 0;
-	__get_exdate_list(ucal, event, &l, &exdate_len);
+	GList *list = NULL;
+	__get_exdate_list(ucal, event, &list);
 
 	int loop = 0;
 	int count = 0;
@@ -895,7 +907,7 @@ static int _cal_db_instance_publish_yearly_weekno(UCalendar *ucal, cal_event_s *
 					if (true == __check_before_dtstart(current_utime, dtstart_utime))
 						continue;
 
-					if (true == __check_exdate_to_skip(current_utime, exdate_len, &l)) {
+					if (true == __check_exdate_to_skip(current_utime, &list)) {
 						count++;
 						continue;
 					}
@@ -914,7 +926,8 @@ static int _cal_db_instance_publish_yearly_weekno(UCalendar *ucal, cal_event_s *
 		is_exit = __check_to_stop_loop(current_utime, &last_utime, loop);
 		loop++;
 	}
-	if (l) g_list_free(l);
+	if (list)
+		g_list_free_full(list, free);
 	return CALENDAR_ERROR_NONE;
 }
 
@@ -979,10 +992,8 @@ static int _cal_db_instance_publish_yearly_wday(UCalendar *ucal, cal_event_s *ev
 	_cal_db_instance_parse_byint(event->bysetpos, bysetpos, &bysetpos_len);
 	DBG("bysetpos len(%d)", bysetpos_len);
 
-	GList *l = NULL;
-	int exdate_len = 0;
-	__get_exdate_list(ucal, event, &l, &exdate_len);
-	DBG("exdate_len(%d)", exdate_len);
+	GList *list = NULL;
+	__get_exdate_list(ucal, event, &list);
 
 	int loop = 0;
 	int count = 0;
@@ -1029,7 +1040,7 @@ static int _cal_db_instance_publish_yearly_wday(UCalendar *ucal, cal_event_s *ev
 					if (true == __check_before_dtstart(current_utime, dtstart_utime))
 						continue;
 
-					if (true == __check_exdate_to_skip(current_utime, exdate_len, &l)) {
+					if (true == __check_exdate_to_skip(current_utime, &list)) {
 						count++;
 						continue;
 					}
@@ -1079,7 +1090,7 @@ static int _cal_db_instance_publish_yearly_wday(UCalendar *ucal, cal_event_s *ev
 						if (true == __check_before_dtstart(current_utime, dtstart_utime))
 							continue;
 
-						if (true == __check_exdate_to_skip(current_utime, exdate_len, &l)) {
+						if (true == __check_exdate_to_skip(current_utime, &list)) {
 							count++;
 							continue;
 						}
@@ -1123,7 +1134,7 @@ static int _cal_db_instance_publish_yearly_wday(UCalendar *ucal, cal_event_s *ev
 							if (true == __check_before_dtstart(current_utime, dtstart_utime))
 								continue;
 
-							if (true == __check_exdate_to_skip(current_utime, exdate_len, &l)) {
+							if (true == __check_exdate_to_skip(current_utime, &list)) {
 								count++;
 								continue;
 							}
@@ -1147,7 +1158,8 @@ static int _cal_db_instance_publish_yearly_wday(UCalendar *ucal, cal_event_s *ev
 		loop++;
 	}
 	g_strfreev(t);
-	if (l) g_list_free(l);
+	if (list)
+		g_list_free_full(list, free);
 	return CALENDAR_ERROR_NONE;
 }
 
@@ -1193,9 +1205,8 @@ static int _cal_db_instance_publish_yearly_mday(UCalendar *ucal, cal_event_s *ev
 	_cal_db_instance_parse_byint(event->bysetpos, bysetpos, &bysetpos_len);
 	DBG("bysetpos len(%d)", bysetpos_len);
 
-	GList *l = NULL;
-	int exdate_len = 0;
-	__get_exdate_list(ucal, event, &l, &exdate_len);
+	GList *list = NULL;
+	__get_exdate_list(ucal, event, &list);
 
 	int loop = 0;
 	int count = 0;
@@ -1238,7 +1249,7 @@ static int _cal_db_instance_publish_yearly_mday(UCalendar *ucal, cal_event_s *ev
 				if (true == __check_before_dtstart(current_utime, dtstart_utime))
 					continue;
 
-				if (true == __check_exdate_to_skip(current_utime, exdate_len, &l)) {
+				if (true == __check_exdate_to_skip(current_utime, &list)) {
 					count++;
 					continue;
 				}
@@ -1254,7 +1265,8 @@ static int _cal_db_instance_publish_yearly_mday(UCalendar *ucal, cal_event_s *ev
 		is_exit = __check_to_stop_loop(current_utime, &last_utime, loop);
 		loop++;
 	}
-	if (l) g_list_free(l);
+	if (list)
+		g_list_free_full(list, free);
 	return CALENDAR_ERROR_NONE;
 }
 
@@ -1321,10 +1333,8 @@ static int _cal_db_instance_publish_monthly_wday(UCalendar *ucal, cal_event_s *e
 	_cal_db_instance_parse_byint(event->bysetpos, bysetpos, &bysetpos_len);
 	DBG("bysetpos len(%d)", bysetpos_len);
 
-	GList *l = NULL;
-	int exdate_len = 0;
-	__get_exdate_list(ucal, event, &l, &exdate_len);
-	DBG("exdate_len(%d)", exdate_len);
+	GList *list = NULL;
+	__get_exdate_list(ucal, event, &list);
 
 	int loop = 0;
 	int count = 0;
@@ -1373,7 +1383,7 @@ static int _cal_db_instance_publish_monthly_wday(UCalendar *ucal, cal_event_s *e
 				if (true == __check_before_dtstart(current_utime, dtstart_utime))
 					continue;
 
-				if (true == __check_exdate_to_skip(current_utime, exdate_len, &l)) {
+				if (true == __check_exdate_to_skip(current_utime, &list)) {
 					count++;
 					continue;
 				}
@@ -1421,7 +1431,7 @@ static int _cal_db_instance_publish_monthly_wday(UCalendar *ucal, cal_event_s *e
 					if (true == __check_before_dtstart(current_utime, dtstart_utime))
 						continue;
 
-					if (true == __check_exdate_to_skip(current_utime, exdate_len, &l)) {
+					if (true == __check_exdate_to_skip(current_utime, &list)) {
 						count++;
 						continue;
 					}
@@ -1465,7 +1475,7 @@ static int _cal_db_instance_publish_monthly_wday(UCalendar *ucal, cal_event_s *e
 						if (true == __check_before_dtstart(current_utime, dtstart_utime))
 							continue;
 
-						if (true == __check_exdate_to_skip(current_utime, exdate_len, &l)) {
+						if (true == __check_exdate_to_skip(current_utime, &list)) {
 							count++;
 							continue;
 						}
@@ -1486,7 +1496,8 @@ static int _cal_db_instance_publish_monthly_wday(UCalendar *ucal, cal_event_s *e
 		loop++;
 	}
 	g_strfreev(t);
-	if (l) g_list_free(l);
+	if (list)
+		g_list_free_full(list, free);
 	return CALENDAR_ERROR_NONE;
 }
 
@@ -1519,10 +1530,8 @@ static int _cal_db_instance_publish_monthly_mday(UCalendar *ucal, cal_event_s *e
 	_cal_db_instance_parse_byint(event->bysetpos, bysetpos, &bysetpos_len);
 	DBG("bysetpos_len(%d)", bysetpos_len);
 
-	GList *l = NULL;
-	int exdate_len = 0;
-	__get_exdate_list(ucal, event, &l, &exdate_len);
-	DBG("exdate_len(%d)", bysetpos_len);
+	GList *list = NULL;
+	__get_exdate_list(ucal, event, &list);
 
 	int loop = 0;
 	int count = 0;
@@ -1562,7 +1571,7 @@ static int _cal_db_instance_publish_monthly_mday(UCalendar *ucal, cal_event_s *e
 			if (true == __check_before_dtstart(current_utime, dtstart_utime))
 				continue;
 
-			if (true == __check_exdate_to_skip(current_utime, exdate_len, &l)) {
+			if (true == __check_exdate_to_skip(current_utime, &list)) {
 				count++;
 				continue;
 			}
@@ -1577,7 +1586,8 @@ static int _cal_db_instance_publish_monthly_mday(UCalendar *ucal, cal_event_s *e
 		is_exit = __check_to_stop_loop(current_utime, &last_utime, loop);
 		loop++;
 	}
-	if (l) g_list_free(l);
+	if (list)
+		g_list_free_full(list, free);
 	return CALENDAR_ERROR_NONE;
 }
 
@@ -1624,9 +1634,8 @@ static int _cal_db_instance_publish_weekly_wday(UCalendar *ucal, cal_event_s *ev
 	_cal_db_instance_parse_byint(event->bysetpos, bysetpos, &bysetpos_len);
 	DBG("bysetpos len(%d)", bysetpos_len);
 
-	GList *l = NULL;
-	int exdate_len = 0;
-	__get_exdate_list(ucal, event, &l, &exdate_len);
+	GList *list = NULL;
+	__get_exdate_list(ucal, event, &list);
 
 	int byday_start = ucal_getAttribute(ucal, UCAL_FIRST_DAY_OF_WEEK);
 	DBG("get first day of week(%d)", byday_start);
@@ -1660,7 +1669,7 @@ static int _cal_db_instance_publish_weekly_wday(UCalendar *ucal, cal_event_s *ev
 			if (true == __check_before_dtstart(current_utime, dtstart_utime))
 				continue;
 
-			if (true == __check_exdate_to_skip(current_utime, exdate_len, &l)) {
+			if (true == __check_exdate_to_skip(current_utime, &list)) {
 				count++;
 				continue;
 			}
@@ -1675,7 +1684,8 @@ static int _cal_db_instance_publish_weekly_wday(UCalendar *ucal, cal_event_s *ev
 		is_exit = __check_to_stop_loop(current_utime, &last_utime, loop);
 		loop++;
 	}
-	if (l) g_list_free(l);
+	if (list)
+		g_list_free_full(list, free);
 	return CALENDAR_ERROR_NONE;
 }
 
@@ -1704,9 +1714,8 @@ static int _cal_db_instance_publish_daily_mday(UCalendar *ucal, cal_event_s *eve
 	int bymonth_len = 0;
 	_cal_db_instance_parse_byint(event->bymonth, bymonth, &bymonth_len);
 
-	GList *l = NULL;
-	int exdate_len = 0;
-	__get_exdate_list(ucal, event, &l, &exdate_len);
+	GList *list = NULL;
+	__get_exdate_list(ucal, event, &list);
 
 	calendar_time_s *st = &event->start;
 	__set_time_to_ucal(event->system_type, ucal, st);
@@ -1731,7 +1740,7 @@ static int _cal_db_instance_publish_daily_mday(UCalendar *ucal, cal_event_s *eve
 			if (0 == loop) loop = 1;
 			continue;
 		}
-		if (true == __check_exdate_to_skip(current_utime, exdate_len, &l)) {
+		if (true == __check_exdate_to_skip(current_utime, &list)) {
 			if (0 == loop) loop = 1;
 			count++;
 			continue;
@@ -1744,7 +1753,8 @@ static int _cal_db_instance_publish_daily_mday(UCalendar *ucal, cal_event_s *eve
 		is_exit = __check_to_stop_loop(current_utime, &last_utime, loop);
 		loop++;
 	}
-	if (l) g_list_free(l);
+	if (list)
+		g_list_free_full(list, free);
 	return CALENDAR_ERROR_NONE;
 }
 
