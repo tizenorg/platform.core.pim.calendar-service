@@ -537,6 +537,7 @@ static void _cal_server_dbus_delete_link(cal_sender_s *sender)
 
 	RET_IF(NULL == sender);
 
+	g_mutex_lock(&cal_server_dbus_sender);
 	cursor = cal_sender_list;
 	while (cursor) {
 		if (cursor->data == sender) {
@@ -545,6 +546,7 @@ static void _cal_server_dbus_delete_link(cal_sender_s *sender)
 		}
 		cursor = g_list_next(cursor);
 	}
+	g_mutex_unlock(&cal_server_dbus_sender);
 }
 
 static void _cal_server_dbus_name_owner_changed_cb(GDBusConnection *connection,
@@ -765,8 +767,8 @@ int cal_dbus_publish_reminder(int stream_size, char *stream)
 	GVariant *value = NULL;
 	value = cal_dbus_utils_stream_to_gvariant(stream_size, stream);
 
-	GList *cursor = NULL;
-	cursor = cal_sender_list;
+	g_mutex_lock(&cal_server_dbus_sender);
+	GList *cursor = cal_sender_list;
 	while (cursor) {
 		cal_sender_s *sender = (cal_sender_s *)cursor->data;
 		if (NULL == sender) {
@@ -779,5 +781,7 @@ int cal_dbus_publish_reminder(int stream_size, char *stream)
 		cal_dbus_emit_signal(sender->name, CAL_NOTI_REMINDER_CAHNGED, value);
 		cursor = g_list_next(cursor);
 	}
+	g_mutex_unlock(&cal_server_dbus_sender);
+
 	return CALENDAR_ERROR_NONE;
 }

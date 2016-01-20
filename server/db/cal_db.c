@@ -514,7 +514,6 @@ int cal_db_get_records_with_query(calendar_query_h query, int offset, int limit,
 	que = (cal_query_s *)query;
 
 	type = cal_view_get_type(que->view_uri);
-	DBG("uri[%s]", que->view_uri);
 
 	cal_db_plugin_cb_s* plugin_cb = _cal_db_get_plugin(type);
 	RETV_IF(NULL == plugin_cb, CALENDAR_ERROR_INVALID_PARAMETER);
