@@ -25,10 +25,6 @@
 extern "C" {
 #endif
 
-#ifndef API
-#define API __attribute__ ((visibility("default")))
-#endif
-
 #define _CALENDAR_HANDLE(A) typedef struct __##A* A;
 
 #define _CALENDAR_BEGIN_VIEW() \
@@ -41,7 +37,7 @@ extern "C" {
 #define _CALENDAR_PROPERTY_CALTIME(property_id_name)    unsigned int property_id_name;
 #define _CALENDAR_PROPERTY_CHILD_MULTIPLE(property_id_name) unsigned int property_id_name;
 #define _CALENDAR_END_VIEW(name) } name##_property_ids; \
-    extern API const name##_property_ids name;
+    extern __attribute__ ((visibility("default"))) const name##_property_ids name;
 
 #define _CALENDAR_BEGIN_READ_ONLY_VIEW() \
         typedef struct{ \
@@ -57,7 +53,7 @@ extern "C" {
 #define _CALENDAR_PROPERTY_FILTER_LLI(property_id_name)        unsigned int property_id_name;
 #define _CALENDAR_PROPERTY_FILTER_CALTIME(property_id_name)    unsigned int property_id_name;
 #define _CALENDAR_END_READ_ONLY_VIEW(name) } name##_property_ids; \
-    extern API const name##_property_ids name;
+    extern __attribute__ ((visibility("default"))) const name##_property_ids name;
 
 _CALENDAR_HANDLE(calendar_record_h)
 _CALENDAR_HANDLE(calendar_filter_h)
