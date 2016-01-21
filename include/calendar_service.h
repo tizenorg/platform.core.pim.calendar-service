@@ -20,10 +20,6 @@
 #ifndef __TIZEN_SOCIAL_CALENDAR_SERVICE_H__
 #define __TIZEN_SOCIAL_CALENDAR_SERVICE_H__
 
-#ifndef API
-#define API __attribute__ ((visibility("default")))
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif
