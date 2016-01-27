@@ -512,7 +512,8 @@ int _cal_vcalendar_make_rrule_append_mday(char *buf, int buf_len, char *mday)
 			continue;
 
 		int num = atoi(t[i]);
-		ret += snprintf(buf +len +ret, buf_len -len -ret, "%d%s", num, 0 < num ? " " : "- ");
+		ret += snprintf(buf +len +ret, buf_len -len -ret, "%d%s",
+				num < 0 ? (-1 * num) : num, num < 0 ? "- " : " ");
 	}
 	g_strfreev(t);
 
