@@ -12,13 +12,6 @@
 		<allow send_destination="@DBUS_INTERFACE@" send_interface="@DBUS_INTERFACE@"/>
 		<allow receive_sender="@DBUS_INTERFACE@"/>
     </policy>
-    <policy group="users">
-        <allow own="@DBUS_INTERFACE@"/>
-		<allow send_destination="@DBUS_INTERFACE@" send_interface="@DBUS_INTERFACE@"/>
-    </policy>
-	<policy at_console="true">
-		<allow send_destination="@DBUS_INTERFACE@" send_interface="@DBUS_INTERFACE@"/>
-	</policy>
     <policy context="default">
         <allow send_destination="@DBUS_INTERFACE@"/>
 		<check send_destination="@DBUS_INTERFACE@"
