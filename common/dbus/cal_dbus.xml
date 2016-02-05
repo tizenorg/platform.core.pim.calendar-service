@@ -8,14 +8,14 @@
 		</method>
 		<method name="insert_record">
 			<arg type="(ii)" name="handle" direction="in"/>
-			<arg type="(iv)" name="record" direction="in"/>
+			<arg type="(ivv)" name="record" direction="in"/>
 			<arg type="i" name="id" direction="out"/>
 			<arg type="i" name="version" direction="out"/>
 			<arg type="i" name="ret" direction="out"/>
 		</method>
 		<method name="update_record">
 			<arg type="(ii)" name="handle" direction="in"/>
-			<arg type="(iv)" name="record" direction="in"/>
+			<arg type="(ivv)" name="record" direction="in"/>
 			<arg type="i" name="version" direction="out"/>
 			<arg type="i" name="ret" direction="out"/>
 		</method>
@@ -28,7 +28,7 @@
 		</method>
 		<method name="replace_record">
 			<arg type="(ii)" name="handle" direction="in"/>
-			<arg type="(iv)" name="record" direction="in"/>
+			<arg type="(ivv)" name="record" direction="in"/>
 			<arg type="i" name="id" direction="in"/>
 			<arg type="i" name="version" direction="out"/>
 			<arg type="i" name="ret" direction="out"/>
@@ -67,7 +67,7 @@
 			<arg type="(ii)" name="handle" direction="in"/>
 			<arg type="s" name="view_uri" direction="in"/>
 			<arg type="i" name="id" direction="in"/>
-			<arg type="(iv)" name="record" direction="out"/>
+			<arg type="(ivv)" name="record" direction="out"/>
 			<arg type="i" name="ret" direction="out"/>
 		</method>
 		<method name="get_all_records">

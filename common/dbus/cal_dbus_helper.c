@@ -40,16 +40,74 @@ GVariant* cal_dbus_utils_null_to_gvariant(void)
 	return value;
 }
 
+GVariant *cal_dbus_utils_char_to_gvariant(unsigned char *ch, int count)
+{
+	GVariantBuilder builder;
+	g_variant_builder_init(&builder, G_VARIANT_TYPE("ay"));
+
+	int i;
+	for (i = 0; i < count; i++)
+		g_variant_builder_add(&builder, "y", ch[i]);
+
+	return g_variant_builder_end(&builder);
+}
+
+int cal_dbus_utils_gvariant_to_char(GVariant *arg_char, int count,
+		unsigned char **out_flag)
+{
+	if (0 == count)
+		return  CALENDAR_ERROR_NONE;
+
+	GVariantIter *iter_char = NULL;
+	g_variant_get(arg_char, "ay", &iter_char);
+
+	unsigned char *flag = calloc(count, sizeof(unsigned char));
+	if (NULL == flag) {
+		ERR("calloc() Fail");
+		return CALENDAR_ERROR_OUT_OF_MEMORY;
+	}
+	int i = 0;
+	for (i = 0; i < count; i++)
+		g_variant_iter_loop(iter_char, "y", &flag[i]);
+
+	*out_flag= flag;
+	return CALENDAR_ERROR_NONE;
+}
+
 GVariant* cal_dbus_utils_common_to_gvariant(cal_record_s *rec)
 {
+	GVariant *arg_flags = cal_dbus_utils_char_to_gvariant(rec->properties_flags,
+			rec->properties_max_count);
 	GVariant *value = NULL;
-	value = g_variant_new("(isuasy)",
+	value = g_variant_new("(isuvy)",
 			rec->type,
 			CAL_DBUS_SET_STRING(rec->view_uri),
 			rec->properties_max_count,
-			CAL_DBUS_SET_STRING(rec->properties_flags),
+			arg_flags,
 			rec->property_flag);
 	return value;
+}
+
+int cal_dbus_utils_gvariant_to_common(GVariant *arg_common, calendar_record_h *record)
+{
+	cal_record_s rec = {0};
+	GVariant *arg_flags = NULL;
+	g_variant_get(arg_common, "(i&suvy)",
+			&rec.type,
+			rec.view_uri,
+			&rec.properties_max_count,
+			&arg_flags,
+			&rec.property_flag);
+	CAL_DBUS_GET_STRING(rec.view_uri);
+	cal_dbus_utils_gvariant_to_char(arg_flags, rec.properties_max_count,
+			&rec.properties_flags);
+
+	cal_record_s *p = ((cal_record_s *)(*record));
+
+	p->properties_max_count = rec.properties_max_count;
+	p->properties_flags = rec.properties_flags;
+
+	return CALENDAR_ERROR_NONE;
 }
 
 GVariant* cal_dbus_utils_handle_to_gvariant(calendar_h handle)
@@ -755,13 +813,16 @@ GVariant *cal_dbus_utils_record_to_gvariant(calendar_record_h record)
 {
 	int type = 0;
 	GVariant *value = NULL;
+	GVariant *arg_common = NULL;
 	GVariant *arg_record = NULL;
 
 	if (NULL == record) {
 		ERR("record is NULL");
+		arg_common = cal_dbus_utils_null_to_gvariant();
 		type = -1;
 	} else {
 		cal_record_s *rec = (cal_record_s *)record;
+		arg_common = cal_dbus_utils_common_to_gvariant(rec);
 		type = rec->type;
 	}
 
@@ -810,7 +871,7 @@ GVariant *cal_dbus_utils_record_to_gvariant(calendar_record_h record)
 		arg_record = cal_dbus_utils_null_to_gvariant();
 		break;
 	}
-	value = g_variant_new("(iv)", type, arg_record);
+	value = g_variant_new("(ivv)", type, arg_common, arg_record);
 	return value;
 }
 
@@ -847,12 +908,6 @@ GVariant *cal_dbus_utils_list_to_gvariant(calendar_list_h list)
 
 	value = g_variant_new("(iv)", has_list, arg_list);
 	return value;
-}
-
-int cal_dbus_utils_gvariant_to_common(GVariant *arg_common, cal_record_s **rec)
-{
-
-	return CALENDAR_ERROR_NONE;
 }
 
 int cal_dbus_utils_gvariant_to_handle(GVariant *arg_handle, calendar_h *out_handle)
@@ -1603,7 +1658,7 @@ static int _gvariant_to_updated_info(GVariant * arg_record, calendar_record_h *o
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _gvariant_to_record(int type, GVariant *arg_record, calendar_record_h *out_record)
+static int _gvariant_to_record(int type, GVariant *arg_common, GVariant *arg_record, calendar_record_h *out_record)
 {
 	RETV_IF(NULL == arg_record, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == out_record, CALENDAR_ERROR_INVALID_PARAMETER);
@@ -1653,6 +1708,8 @@ static int _gvariant_to_record(int type, GVariant *arg_record, calendar_record_h
 		ERR("Invalid type(%d)", type);
 		break;
 	}
+	if (-1 != type)
+		cal_dbus_utils_gvariant_to_common(arg_common, &record);
 	*out_record = record;
 	return CALENDAR_ERROR_NONE;
 }
@@ -1660,9 +1717,10 @@ static int _gvariant_to_record(int type, GVariant *arg_record, calendar_record_h
 int cal_dbus_utils_gvariant_to_record(GVariant *arg_record_pack, calendar_record_h *out_record)
 {
 	int type = 0;
+	GVariant *arg_common = NULL;
 	GVariant *arg_record = NULL;
-	g_variant_get(arg_record_pack, "(iv)", &type, &arg_record);
-	_gvariant_to_record(type, arg_record, out_record);
+	g_variant_get(arg_record_pack, "(ivv)", &type, &arg_common, &arg_record);
+	_gvariant_to_record(type, arg_common, arg_record, out_record);
 	return CALENDAR_ERROR_NONE;
 }
 
