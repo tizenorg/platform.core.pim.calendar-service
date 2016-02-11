@@ -212,10 +212,8 @@ int cal_db_query_create_projection_update_set(calendar_record_h record, char **s
 
 	_record = (cal_record_s *)record;
 
-	if (_record->properties_max_count == 0 || NULL == _record->properties_flags) {
-		DBG("record don't have properties");
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-	}
+	RETV_IF(0 == _record->properties_max_count, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == _record->properties_flags, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	/* get propety_info_s from uri */
 	property_info = cal_view_get_property_info(_record->view_uri, &property_info_count);
@@ -462,8 +460,8 @@ static int _cal_db_query_create_composite_condition(cal_composite_filter_s *com_
 	cal_filter_s *filter;
 	int ret = CALENDAR_ERROR_NONE;
 
-	if (NULL == com_filter || NULL == com_filter->filters)
-		return CALENDAR_ERROR_INVALID_PARAMETER;
+	RETV_IF(NULL == com_filter, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == com_filter->filters, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	filter = (cal_filter_s *)com_filter->filters->data;
 	if (filter->filter_type == CAL_FILTER_COMPOSITE)

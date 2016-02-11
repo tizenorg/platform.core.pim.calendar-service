@@ -162,134 +162,86 @@ GVariant *cal_dbus_utils_ids_to_gvariant(int *ids, int count)
 	return g_variant_builder_end(&builder);
 }
 
-static GVariant *_attr_value_to_gvariant(cal_attribute_filter_s *p)
+static void _set_attribute_filter(GVariantBuilder *builder, cal_attribute_filter_s* filter)
 {
-	GVariant *value = NULL;
-
-	switch (p->filter_type) {
+	g_variant_builder_add(builder, "v", g_variant_new("i", filter->filter_type));
+	g_variant_builder_add(builder, "v", g_variant_new("i", filter->property_id));
+	g_variant_builder_add(builder, "v", g_variant_new("i", filter->match));
+	switch (filter->filter_type) {
 	case CAL_FILTER_STR:
-		value = g_variant_new("s", CAL_DBUS_SET_STRING(p->value.s));
+		g_variant_builder_add(builder, "v",
+				g_variant_new("s", CAL_DBUS_SET_STRING(filter->value.s)));
 		break;
 	case CAL_FILTER_INT:
-		value = g_variant_new("i", p->value.i);
+		g_variant_builder_add(builder, "v", g_variant_new("i", filter->value.i));
 		break;
 	case CAL_FILTER_DOUBLE:
-		value = g_variant_new("d", p->value.d);
+		g_variant_builder_add(builder, "v", g_variant_new("d", filter->value.d));
 		break;
 	case CAL_FILTER_LLI:
-		value = g_variant_new("x", p->value.lli);
+		g_variant_builder_add(builder, "v", g_variant_new("x", filter->value.lli));
 		break;
 	case CAL_FILTER_CALTIME:
-		value = g_variant_new("(iv)", p->value.caltime.type,
-				_caltime_to_gvariant(&p->value.caltime));
+		g_variant_builder_add(builder, "v", g_variant_new("(iv)", filter->value.caltime.type,
+				_caltime_to_gvariant(&filter->value.caltime)));
 		break;
 	default:
-		ERR("Invalid parameter(0x%x)", p->property_id);
+		ERR("Invalid parameter(0x%x)", filter->property_id);
 		break;
 	}
-	return value;
 }
 
-static GVariant *_composite_to_gvariant(cal_composite_filter_s *filter)
+static void _set_composite_filter(GVariantBuilder *builder, cal_composite_filter_s *filter)
 {
-	GVariantBuilder builder;
-	g_variant_builder_init(&builder, G_VARIANT_TYPE("a(isiv)"));
+	g_variant_builder_add(builder, "v", g_variant_new("i", filter->filter_type));
+	g_variant_builder_add(builder, "v",
+		g_variant_new("s", CAL_DBUS_SET_STRING(filter->view_uri)));
 
-	int has_composite = 0;
-	cal_composite_filter_s *f = filter;
 	do {
-		has_composite = 0;
-		int count_composite = 0;
-		GVariant *arg_composite = NULL;
-		if (f->filters) {
-			count_composite = g_slist_length(f->filters);
-			GSList *cursor = f->filters;
-
-			int is_error = 0;
-			GVariantBuilder builder_attribute;
-			g_variant_builder_init(&builder_attribute, G_VARIANT_TYPE("a(iiiv)"));
-			while (cursor) {
-				cal_filter_s *child = cursor->data;
-				if (NULL == child) {
-					ERR("child is NULL");
-					is_error = 1;
-					break;
-				}
-
-				if (CAL_FILTER_COMPOSITE == child->filter_type) {
-					has_composite = 1;
-					f = (cal_composite_filter_s *)child;
-					break;
-				}
-
-				cal_attribute_filter_s *attr = (cal_attribute_filter_s *)child;
-				GVariant *arg_attr_value = _attr_value_to_gvariant(attr);
-				g_variant_builder_add(&builder_attribute, "(iiiv)",
-						attr->filter_type, attr->property_id, attr->match, arg_attr_value);
-
-				cursor = g_slist_next(cursor);
-			}
-
-			if (1 == is_error) {
-				count_composite = 0;
-				arg_composite = cal_dbus_utils_null_to_gvariant();
-			} else {
-				arg_composite = g_variant_builder_end(&builder_attribute);
-			}
-		} else {
-			arg_composite = cal_dbus_utils_null_to_gvariant();
+		if (NULL == filter->filters) {
+			ERR("No filters");
+			g_variant_builder_add(builder, "v", g_variant_new("i", 0));
+			break;
 		}
-
-		g_variant_builder_add(&builder, "(isiv)",
-				f->filter_type, f->view_uri, count_composite, arg_composite);
-	} while (1 == has_composite);
-
-	return g_variant_builder_end(&builder);
-}
-
-static GVariant *_operate_to_gvariant(cal_composite_filter_s *f, int *out_count)
-{
-	int count_operate = 0;
-	GVariant *arg_operate = NULL;
-	if (f->filter_ops) {
-		GVariantBuilder builder;
-		g_variant_builder_init(&builder, G_VARIANT_TYPE("ai"));
-
-		count_operate = g_slist_length(f->filter_ops);
-		GSList *cursor = f->filter_ops;
+		GSList *cursor = NULL;
+		int filter_count = g_slist_length(filter->filters);
+		g_variant_builder_add(builder, "v", g_variant_new("i", filter_count));
+		cursor = filter->filters;
 		while (cursor) {
-			calendar_filter_operator_e operate = (calendar_filter_operator_e)cursor->data;
-			g_variant_builder_add(&builder, "i", operate);
+			cal_filter_s* child_filter = (cal_filter_s*)cursor->data;
+			if (CAL_FILTER_COMPOSITE == child_filter->filter_type)
+				_set_composite_filter(builder, (cal_composite_filter_s *)child_filter);
+			else
+				_set_attribute_filter(builder, (cal_attribute_filter_s *)child_filter);
+
 			cursor = g_slist_next(cursor);
 		}
-		arg_operate = g_variant_builder_end(&builder);
-	} else {
-		arg_operate = cal_dbus_utils_null_to_gvariant();
-	}
-	*out_count = count_operate;
+	} while (0);
 
-	return arg_operate;
+	do {
+		if (NULL == filter->filter_ops) {
+			ERR("No operation");
+			g_variant_builder_add(builder, "v", g_variant_new("i", 0));
+			break;
+		}
+		int ops_count = g_slist_length(filter->filter_ops);
+		g_variant_builder_add(builder, "v", g_variant_new("i", ops_count));
+		GSList *cursor = NULL;
+		cursor = filter->filter_ops;
+		while (cursor) {
+			calendar_filter_operator_e op = (calendar_filter_operator_e)cursor->data;
+			g_variant_builder_add(builder, "v", g_variant_new("i", op));
+			cursor = g_slist_next(cursor);
+		}
+	} while (0);
 }
 
 static GVariant *_filter_to_gvariant(cal_composite_filter_s *f)
 {
-	GVariant *arg_composite_pack = NULL;
-	if (f->filters)
-		arg_composite_pack = _composite_to_gvariant(f);
-	else
-		arg_composite_pack = cal_dbus_utils_null_to_gvariant();
-
-	int count_operate = 0;
-	GVariant *arg_operate = NULL;
-	if (f->filter_ops)
-		arg_operate = _operate_to_gvariant(f, &count_operate);
-	else
-		arg_operate = cal_dbus_utils_null_to_gvariant();
-
-	GVariant *value = NULL;
-	value = g_variant_new("(viv)",
-			arg_composite_pack, count_operate, arg_operate);
-	return value;
+	GVariantBuilder builder;
+	g_variant_builder_init(&builder, G_VARIANT_TYPE("av"));
+	_set_composite_filter(&builder, f);
+	return g_variant_builder_end(&builder);
 }
 
 static GVariant *_projection_to_gvariant(cal_query_s *p)
@@ -1153,93 +1105,35 @@ static int _gvariant_to_extended(GVariant * arg_record, calendar_record_h *out_r
 	return CALENDAR_ERROR_NONE;
 }
 
-static int _gvariant_to_attr_value(int type, GVariant *arg_value, cal_attribute_filter_s *p)
+static void _free_composite_filter(cal_composite_filter_s* filter)
 {
-	GVariant *arg_caltime = NULL;
-	switch (type) {
-	case CAL_FILTER_STR:
-		g_variant_get(arg_value, "&s", &p->value.s);
-		break;
-	case CAL_FILTER_INT:
-		g_variant_get(arg_value, "i", &p->value.i);
-		break;
-	case CAL_FILTER_DOUBLE:
-		g_variant_get(arg_value, "d", &p->value.d);
-		break;
-	case CAL_FILTER_LLI:
-		g_variant_get(arg_value, "x", &p->value.lli);
-		break;
-	case CAL_FILTER_CALTIME:
-		g_variant_get(arg_value, "(iv)", &p->value.caltime.type, &arg_caltime);
-		_gvariant_to_caltime(p->value.caltime.type, arg_caltime, &p->value.caltime);
-		break;
-	default:
-		break;
+	if (NULL == filter)
+		return;
+	if (NULL == filter->filters)
+		return;
+
+	GSList *cursor = filter->filters;
+	while (cursor) {
+		cal_filter_s *child_filter = (cal_filter_s*)cursor->data;
+		if (NULL == child_filter) {
+			cursor = g_slist_next(cursor);
+			continue;
+		}
+		if (CAL_FILTER_COMPOSITE == child_filter->filter_type) {
+			_free_composite_filter((cal_composite_filter_s *)child_filter);
+		} else {
+			cal_attribute_filter_s *attr = (cal_attribute_filter_s *)child_filter;
+			if (CAL_FILTER_STR == attr->filter_type)
+				free(attr->value.s);
+		}
+		cursor = g_slist_next(cursor);
 	}
-	return CALENDAR_ERROR_NONE;
-}
+	g_slist_free_full(filter->filters, free);
 
-static int _gvariant_to_composite(GVariant * arg_composite_pack, cal_composite_filter_s **out_composite)
-{
-	GVariantIter *iter_composite_pack = NULL;
-	g_variant_get(arg_composite_pack, "a(isiv)", &iter_composite_pack);
-
-	int filter_type = 0;
-	char *view_uri = NULL;
-	int count_composite = 0;
-	GVariant *arg_composite = NULL;
-
-	int composite_filter_type = 0;
-	int property_id = 0;
-	int match = 0;
-	GVariant *arg_attr_value = NULL;
-	GVariantIter *iter_composite = NULL;
-
-	cal_composite_filter_s *composite = NULL;
-	while (g_variant_iter_loop(iter_composite_pack, "(i&siv)",
-				&filter_type, &view_uri, &count_composite, &arg_composite)) {
-
-		cal_composite_filter_s *cf = calloc(1, sizeof(cal_composite_filter_s));
-		if (NULL == cf) {
-			ERR("calloc() Fail");
-			break;
-		}
-		cf->filter_type = CAL_FILTER_COMPOSITE;
-		cf->view_uri = cal_strdup(view_uri);
-		cf->properties = (cal_property_info_s *)cal_view_get_property_info(view_uri,
-				&cf->property_count);
-
-		int is_exit = 0;
-		if (0 == count_composite) {
-			DBG("composite count is 0");
-			is_exit = 1;
-		}
-		g_variant_get(arg_composite, "a(iiiv)", &iter_composite);
-		while (g_variant_iter_loop(iter_composite, "(iiiv)",
-					&composite_filter_type, &property_id, &match, &arg_attr_value)) {
-			cal_attribute_filter_s *filter = calloc(1, sizeof(cal_attribute_filter_s));
-			if (NULL == filter) {
-				ERR("calloc() Fail");
-				break;
-			}
-			filter->filter_type = composite_filter_type;
-			filter->property_id = property_id;
-			filter->match = match;
-			_gvariant_to_attr_value(composite_filter_type, arg_attr_value, filter);
-			cf->filters = g_slist_append(cf->filters, filter);
-		}
-
-		if (1 == is_exit)
-			break;
-
-		if (NULL == composite)
-			composite = cf;
-		else
-			composite->filters = g_slist_append(composite->filters, cf);
-
+	if (filter->filter_ops) {
+		g_slist_free(filter->filter_ops);
 	}
-	*out_composite = composite;
-	return CALENDAR_ERROR_NONE;
+	free(filter->view_uri);
 }
 
 static int _gvariant_to_operate(GVariant * arg_operate, cal_composite_filter_s *f)
@@ -1254,17 +1148,112 @@ static int _gvariant_to_operate(GVariant * arg_operate, cal_composite_filter_s *
 	return CALENDAR_ERROR_NONE;
 }
 
+static void _get_attribute_filter(GVariantIter *iter_filter, cal_filter_type_e filter_type,
+		cal_attribute_filter_s* filter)
+{
+	RET_IF(NULL == filter);
+
+	GVariant *arg_caltime = NULL;
+	filter->filter_type = filter_type;
+
+	GVariant *arg_value = NULL;
+	g_variant_iter_loop(iter_filter, "v", &arg_value);
+	g_variant_get(arg_value, "i", &filter->property_id);
+	g_variant_iter_loop(iter_filter, "v", &arg_value);
+	g_variant_get(arg_value, "i", &filter->match);
+	g_variant_iter_loop(iter_filter, "v", &arg_value);
+	switch (filter_type) {
+	case CAL_FILTER_STR:
+		g_variant_get(arg_value, "&s", &filter->value.s);
+		break;
+	case CAL_FILTER_INT:
+		g_variant_get(arg_value, "i", &filter->value.i);
+		break;
+	case CAL_FILTER_DOUBLE:
+		g_variant_get(arg_value, "d", &filter->value.d);
+		break;
+	case CAL_FILTER_LLI:
+		g_variant_get(arg_value, "x", &filter->value.lli);
+		break;
+	case CAL_FILTER_CALTIME:
+		g_variant_get(arg_value, "(iv)", &filter->value.caltime.type, &arg_caltime);
+		_gvariant_to_caltime(filter->value.caltime.type, arg_caltime, &filter->value.caltime);
+		break;
+	default:
+		ERR("Invalid filter_type(%d)", filter_type);
+		break;
+	}
+}
+
+static int _get_composite_filter(GVariantIter *iter_filter, cal_composite_filter_s* filter)
+{
+	RETV_IF(NULL == filter, CALENDAR_ERROR_INVALID_PARAMETER);
+
+	filter->filter_type = CAL_FILTER_COMPOSITE;
+
+	GVariant *arg_value = NULL;
+	g_variant_iter_loop(iter_filter, "v", &arg_value);
+	g_variant_get(arg_value, "&s", &filter->view_uri);
+
+	int filter_count = 0;
+	g_variant_iter_loop(iter_filter, "v", &arg_value);
+	g_variant_get(arg_value, "i", &filter_count);
+	int i;
+	for (i = 0; i < filter_count; i++) {
+		int filter_type = 0;
+		g_variant_iter_loop(iter_filter, "v", &arg_value);
+		g_variant_get(arg_value, "i", &filter_type);
+		if (CAL_FILTER_COMPOSITE == filter_type) {
+			cal_composite_filter_s* com_filter = NULL;
+			com_filter = calloc(1, sizeof(cal_composite_filter_s));
+			if (NULL == com_filter) {
+				ERR("calloc() Fail");
+				_free_composite_filter(filter);
+				return CALENDAR_ERROR_OUT_OF_MEMORY;
+			}
+			_get_composite_filter(iter_filter, com_filter);
+			filter->filters = g_slist_append(filter->filters, com_filter);
+		} else {
+			cal_attribute_filter_s* attr_filter = NULL;
+			attr_filter = calloc(1, sizeof(cal_attribute_filter_s));
+			if (NULL == attr_filter) {
+				ERR("calloc() Fail");
+				_free_composite_filter(filter);
+				return CALENDAR_ERROR_OUT_OF_MEMORY;
+			}
+			_get_attribute_filter(iter_filter, filter_type, attr_filter);
+			filter->filters = g_slist_append(filter->filters, attr_filter);
+		}
+	}
+	int ops_count = 0;
+	g_variant_iter_loop(iter_filter, "v", &arg_value);
+	g_variant_get(arg_value, "i", &ops_count);
+	for (i = 0; i < ops_count; i++) {
+		calendar_filter_operator_e op = 0;
+		g_variant_iter_loop(iter_filter, "v", &arg_value);
+		g_variant_get(arg_value, "i", &op);
+		filter->filter_ops = g_slist_append(filter->filter_ops, (void*)op);
+	}
+
+	filter->properties = (cal_property_info_s *)cal_view_get_property_info(filter->view_uri,
+			&filter->property_count);
+	return CALENDAR_ERROR_NONE;
+}
+
 static int _gvariant_to_filter(GVariant *arg_filter, cal_query_s *q)
 {
-	GVariant *arg_composite_pack = NULL;
-	int count_operate = 0;
-	GVariant *arg_operate = NULL;
-	g_variant_get(arg_filter, "(viv)", &arg_composite_pack, &count_operate, &arg_operate);
+	calendar_filter_h filter = (calendar_filter_h)q->filter;
+	calendar_filter_create(q->view_uri, &filter);
+	q->filter = (cal_composite_filter_s*)filter;
 
-	_gvariant_to_composite(arg_composite_pack, &q->filter);
+	GVariantIter *iter_filter = NULL;
+	g_variant_get(arg_filter, "av", &iter_filter);
 
-	if (count_operate)
-		_gvariant_to_operate(arg_operate, q->filter);
+	int count = 0;
+	GVariant *arg_value = NULL;
+	g_variant_iter_loop(iter_filter, "v", &arg_value);
+	g_variant_get(arg_value, "i", &count);
+	_get_composite_filter(iter_filter, q->filter);
 
 	return CALENDAR_ERROR_NONE;
 }
