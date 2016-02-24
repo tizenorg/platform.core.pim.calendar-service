@@ -6,5 +6,5 @@ Requires=contacts-service.service
 [Service]
 Type=dbus
 BusName=org.tizen.CalendarService.dbus
-Environment="TIMEOUT=0"
+Environment="TIMEOUT=90"
 ExecStart=/usr/bin/calendar-serviced $TIMEOUT
