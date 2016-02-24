@@ -11,7 +11,7 @@ Source1001: %{name}.manifest
 Source1002: %{name}.conf.in
 Source2001: %{name}-alarm.service
 Source2002: ALARM.a%{name}.service
-%if "%{?tizen_profile_name}" == "wearable"
+%if "%{?profile}" == "wearable"
 ExcludeArch: %{arm} %ix86 x86_64
 %endif
 BuildRequires: cmake
