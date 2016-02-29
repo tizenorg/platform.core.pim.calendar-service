@@ -800,13 +800,13 @@ static bool __app_matched_cb(app_control_h app_control, const char *package, voi
 		DBG("pkg[%s] time[%lld] tick[%d] unit[%d] record_type[%d]",
 				package, ad->time, ad->tick, ad->unit, ad->record);
 
-		int len = 0;
+		int slen = 0;
 		char extra[CAL_STR_MIDDLE_LEN] = {0};
-		len = snprintf(extra, sizeof(extra), "%s=%d", "id", ad->event_id);
-		len += snprintf(extra+len, sizeof(extra)-len, "&%s=%lld", "time", ad->time);
-		len += snprintf(extra+len, sizeof(extra)-len, "&%s=%d", "tick", ad->tick);
-		len += snprintf(extra+len, sizeof(extra)-len, "&%s=%d", "unit", ad->unit);
-		len += snprintf(extra+len, sizeof(extra)-len, "&%s=%d", "type", ad->record);
+		slen = snprintf(extra, sizeof(extra), "%s=%d", "id", ad->event_id);
+		slen += snprintf(extra+slen, sizeof(extra)-slen, "&%s=%lld", "time", ad->time);
+		slen += snprintf(extra+slen, sizeof(extra)-slen, "&%s=%d", "tick", ad->tick);
+		slen += snprintf(extra+slen, sizeof(extra)-slen, "&%s=%d", "unit", ad->unit);
+		slen += snprintf(extra+slen, sizeof(extra)-slen, "&%s=%d", "type", ad->record);
 
 		/*
 		 * key: id, value: id=4&time=123123&..
@@ -814,7 +814,7 @@ static bool __app_matched_cb(app_control_h app_control, const char *package, voi
 		char buf_id[CAL_STR_MIDDLE_LEN] = {0};
 		snprintf(buf_id, sizeof(buf_id), "%d", ad->event_id);
 		app_control_add_extra_data(ac, buf_id, extra);
-		DBG("value[%s]", extra);
+		DBG("value[%s] id[%s]", extra, buf_id);
 
 		/* append ids */
 		ids[i] = strdup(buf_id);

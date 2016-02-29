@@ -31,8 +31,6 @@ static gboolean cal_holding = FALSE;
 
 void cal_server_ondemand_stop(void)
 {
-	CAL_FN_CALL();
-
 	int timeout = cal_server_get_timeout();
 	if (timeout < 1)
 		return;
@@ -45,8 +43,6 @@ void cal_server_ondemand_stop(void)
 
 static gboolean _timeout_cb(gpointer user_data)
 {
-	CAL_FN_CALL();
-
 	pthread_mutex_lock(&cal_mutex_holding);
 	if (FALSE == cal_holding) {
 		DBG("exit");
@@ -58,8 +54,6 @@ static gboolean _timeout_cb(gpointer user_data)
 
 void cal_server_ondemand_start(void)
 {
-	CAL_FN_CALL();
-
 	int timeout = cal_server_get_timeout();
 	if (timeout < 1)
 		return;

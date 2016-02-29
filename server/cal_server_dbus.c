@@ -59,7 +59,7 @@ static bool _has_sender(const char *name, GList **out_cursor)
 			continue;
 		}
 		if (CAL_STRING_EQUAL == g_strcmp0(sender->name, name)) {
-			DBG("sender[%s] is already existed", name);
+			DBG("found sender[%s]", name);
 			has_sender = true;
 			if (out_cursor)
 				*out_cursor = cursor;
@@ -72,6 +72,8 @@ static bool _has_sender(const char *name, GList **out_cursor)
 
 static int _append_sender(const char *name)
 {
+	RETV_IF(NULL == name, CALENDAR_ERROR_INVALID_PARAMETER);
+
 	cal_sender_s *sender = NULL;
 	sender = calloc(1, sizeof(cal_sender_s));
 	if (NULL == sender) {
@@ -79,15 +81,9 @@ static int _append_sender(const char *name)
 		return CALENDAR_ERROR_OUT_OF_MEMORY;
 	}
 	sender->name = cal_strdup(name);
-	DBG("sender name[%s]", sender->name);
+	DBG("[SENDER] Append sender[%s]", sender->name);
 	cal_sender_list = g_list_append(cal_sender_list, sender);
 	return CALENDAR_ERROR_NONE;
-}
-
-static void _free_sender(void)
-{
-	g_list_free_full(cal_sender_list, free);
-	cal_sender_list = NULL;
 }
 
 static gboolean _handle_register_resource(calDbus *object,
@@ -131,13 +127,17 @@ static gboolean _handle_unregister_resource(calDbus *object,
 	GList *cursor = NULL;
 	g_mutex_lock(&cal_server_dbus_sender);
 	if (true == _has_sender(sender_name, &cursor)) {
-		DBG("found sender[%s]", sender_name);
+		DBG("[SENDER] delete sender[%s]", sender_name);
+		cal_sender_s *sender = (cal_sender_s *)cursor->data;
+		free(sender->name);
+		sender->name = NULL;
 		cal_sender_list = g_list_delete_link(cal_sender_list, cursor);
 	}
 
 	if (0 == g_list_length(cal_sender_list)) {
 		DBG("sender list is 0");
-		_free_sender();
+		g_list_free_full(cal_sender_list, free);
+		cal_sender_list = NULL;
 	}
 	g_mutex_unlock(&cal_server_dbus_sender);
 
@@ -520,33 +520,25 @@ static int _cal_server_dbus_find_sender(const char *owner_name, cal_sender_s **o
 		}
 		cursor = g_list_next(cursor);
 	}
-	return CALENDAR_ERROR_NONE;
-}
-
-static int _cal_server_dbus_cleanup_sender(cal_sender_s *sender) /* cleanup_handle_list */
-{
-	CAL_FN_CALL();
-	RETV_IF(NULL == sender, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	return CALENDAR_ERROR_NONE;
 }
 
-static void _cal_server_dbus_delete_link(cal_sender_s *sender)
+static void _delete_sender(cal_sender_s *sender)
 {
-	GList *cursor = NULL;
-
 	RET_IF(NULL == sender);
 
-	g_mutex_lock(&cal_server_dbus_sender);
-	cursor = cal_sender_list;
+	GList *cursor = cal_sender_list;
 	while (cursor) {
 		if (cursor->data == sender) {
+			DBG("[SENDER] Delete sender[%s]", sender->name);
+			free(sender->name);
+			sender->name = NULL;
 			cal_sender_list = g_list_delete_link(cal_sender_list, cursor);
 			break;
 		}
 		cursor = g_list_next(cursor);
 	}
-	g_mutex_unlock(&cal_server_dbus_sender);
 }
 
 static void _cal_server_dbus_name_owner_changed_cb(GDBusConnection *connection,
@@ -565,31 +557,27 @@ static void _cal_server_dbus_name_owner_changed_cb(GDBusConnection *connection,
 	gchar *new_owner = NULL;
 
 	g_variant_get(parameters, "(&s&s&s)", &name, &old_owner, &new_owner);
-	if (new_owner) {
-		DBG("new_owner is NULL");
-		return;
-	}
-
 	DBG("name[%s] old_owner[%s] new_owner[%s]", name, old_owner, new_owner);
 
+	if (0 != strlen(new_owner)) {
+		DBG("new_owner[%s]", new_owner);
+		return;
+	}
+	g_mutex_lock(&cal_server_dbus_sender);
 	/* empty new_owner means server-kill */
 	cal_sender_s *sender = NULL;
 	ret = _cal_server_dbus_find_sender(old_owner, &sender);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("_cal_server_dbus_find_sender() Fail(%d)", ret);
+		g_mutex_unlock(&cal_server_dbus_sender);
 		return;
 	}
 
 	if (sender) { /* found bus name in our bus list */
 		DBG("owner[%s] stopped", old_owner);
-
-		ret = _cal_server_dbus_cleanup_sender(sender);
-		if (CALENDAR_ERROR_NONE != ret) {
-			ERR("_cal_server_dbus_cleanup_sender() Fail(%d)", ret);
-			return;
-		}
-		_cal_server_dbus_delete_link(sender);
+		_delete_sender(sender);
 	}
+	g_mutex_unlock(&cal_server_dbus_sender);
 }
 
 static int _cal_server_dbus_subscribe_name_owner_changed(GDBusConnection *conn)
@@ -728,6 +716,8 @@ void cal_server_dbus_deinit(unsigned int id)
 
 int cal_dbus_emit_signal(const char *dest, const char *signal_name, GVariant *value)
 {
+	CAL_FN_CALL();
+
 	gboolean ret;
 	GError *error = NULL;
 
@@ -766,22 +756,7 @@ int cal_dbus_publish_reminder(int stream_size, char *stream)
 
 	GVariant *value = NULL;
 	value = cal_dbus_utils_stream_to_gvariant(stream_size, stream);
-
-	g_mutex_lock(&cal_server_dbus_sender);
-	GList *cursor = cal_sender_list;
-	while (cursor) {
-		cal_sender_s *sender = (cal_sender_s *)cursor->data;
-		if (NULL == sender) {
-			ERR("sender is NULL");
-			cursor = g_list_next(cursor);
-			continue;
-		}
-
-		DBG("------------------[%s]", sender->name);
-		cal_dbus_emit_signal(sender->name, CAL_NOTI_REMINDER_CAHNGED, value);
-		cursor = g_list_next(cursor);
-	}
-	g_mutex_unlock(&cal_server_dbus_sender);
+	cal_dbus_emit_signal(NULL, CAL_NOTI_REMINDER_CAHNGED, value);
 
 	return CALENDAR_ERROR_NONE;
 }
