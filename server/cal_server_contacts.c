@@ -41,7 +41,8 @@ GThread *_cal_server_contacts_sync_thread = NULL;
 GCond _cal_server_contacts_sync_cond;
 GMutex _cal_server_contacts_sync_mutex;
 
-static int _cal_server_contacts_set_new_event(int id, char *label, int date, char *type, int account_id, calendar_record_h *out_event)
+static int _cal_server_contacts_set_new_event(int id, char *label, int calendar_type,
+		int date, char *type_str, int account_id, calendar_record_h *out_event)
 {
 	int ret;
 	char buf[4] = {0};
@@ -67,14 +68,15 @@ static int _cal_server_contacts_set_new_event(int id, char *label, int date, cha
 
 	ret = calendar_record_create(_calendar_event._uri, &event);
 	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "calendar_record_create() Fail");
+
 	ret = calendar_record_set_str(event, _calendar_event.summary, label);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("calendar_record_set_str() Fail:summary");
 		calendar_record_destroy(event, true);
 		return ret;
 	}
-
-	ret = calendar_record_set_int(event, _calendar_event.calendar_book_id, DEFAULT_BIRTHDAY_CALENDAR_BOOK_ID);
+	ret = calendar_record_set_int(event, _calendar_event.calendar_book_id,
+			DEFAULT_BIRTHDAY_CALENDAR_BOOK_ID);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("calendar_record_set_int() Fail:calendar_book_id");
 		calendar_record_destroy(event, true);
@@ -98,7 +100,7 @@ static int _cal_server_contacts_set_new_event(int id, char *label, int date, cha
 		calendar_record_destroy(event, true);
 		return ret;
 	}
-	ret = calendar_record_set_str(event, _calendar_event.sync_data1, type);
+	ret = calendar_record_set_str(event, _calendar_event.sync_data1, type_str);
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("calendar_record_set_str() Fail:sync_data1");
 		calendar_record_destroy(event, true);
@@ -116,15 +118,25 @@ static int _cal_server_contacts_set_new_event(int id, char *label, int date, cha
 		calendar_record_destroy(event, true);
 		return ret;
 	}
-	ret = calendar_record_set_str(event, _calendar_event.bymonthday, buf);
-	if (CALENDAR_ERROR_NONE != ret) {
-		ERR("calendar_record_set_str() Fail:bymonthday");
-		calendar_record_destroy(event, true);
-		return ret;
+	if (CONTACTS_EVENT_CALENDAR_TYPE_CHINESE == calendar_type) {
+		ret = calendar_record_set_int(event, _calendar_event.calendar_system_type,
+				CALENDAR_SYSTEM_EAST_ASIAN_LUNISOLAR);
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("calendar_record_set_int() Fail:calendar_system_type");
+			calendar_record_destroy(event, true);
+			return ret;
+		}
+	} else {
+		ret = calendar_record_set_str(event, _calendar_event.bymonthday, buf);
+		if (CALENDAR_ERROR_NONE != ret) {
+			ERR("calendar_record_set_str() Fail:bymonthday");
+			calendar_record_destroy(event, true);
+			return ret;
+		}
 	}
 	ret = calendar_record_set_int(event, _calendar_event.range_type, CALENDAR_RANGE_NONE);
 	if (CALENDAR_ERROR_NONE != ret) {
-		ERR("calendar_record_set_int() Fail:interval");
+		ERR("calendar_record_set_int() Fail:range type");
 		calendar_record_destroy(event, true);
 		return ret;
 	}
@@ -133,7 +145,7 @@ static int _cal_server_contacts_set_new_event(int id, char *label, int date, cha
 		snprintf(buf, sizeof(buf), "%d", account_id);
 		ret = calendar_record_set_str(event, _calendar_event.sync_data4, buf);
 		if (CALENDAR_ERROR_NONE != ret) {
-			ERR("calendar_record_set_str() Fail:interval");
+			ERR("calendar_record_set_str() Fail:sync data4");
 			calendar_record_destroy(event, true);
 			return ret;
 		}
@@ -239,7 +251,8 @@ static int cal_server_contacts_insert_event(int id, calendar_list_h out_insert)
 
 	int index = 0;
 	contacts_record_h contact_event = NULL;
-	while (CONTACTS_ERROR_NONE == contacts_record_get_child_record_at_p(contact, _contacts_contact.event, index++, &contact_event)) {
+	while (CONTACTS_ERROR_NONE == contacts_record_get_child_record_at_p(contact,
+				_contacts_contact.event, index++, &contact_event)) {
 		int type = 0;
 		ret = contacts_record_get_int(contact_event, _contacts_event.type, &type);
 		BREAK_IF(CONTACTS_ERROR_NONE != ret, "contacts_record_get_int() Fail(%d)", ret);
@@ -248,20 +261,24 @@ static int cal_server_contacts_insert_event(int id, calendar_list_h out_insert)
 		ret = contacts_record_get_int(contact_event, _contacts_event.date, &date);
 		BREAK_IF(CONTACTS_ERROR_NONE != ret, "contacts_record_get_int() Fail(%d)", ret);
 
+		int calendar_type = 0;
+		ret = contacts_record_get_int(contact_event, _contacts_event.calendar_type, &calendar_type);
+		BREAK_IF(CONTACTS_ERROR_NONE != ret, "contacts_record_get_int() Fail(%d)", ret);
+
 		bool is_proper_type = true;
-		char *caltype = NULL;
+		char *type_str = NULL;
 		switch (type) {
 		case CONTACTS_EVENT_TYPE_BIRTH:
-			caltype = "birthday";
+			type_str = "birthday";
 			break;
 		case CONTACTS_EVENT_TYPE_ANNIVERSARY:
-			caltype = "anniversary";
+			type_str = "anniversary";
 			break;
 		case CONTACTS_EVENT_TYPE_OTHER:
-			caltype = "other";
+			type_str = "other";
 			break;
 		case CONTACTS_EVENT_TYPE_CUSTOM:
-			ret = contacts_record_get_str_p(contact_event, _contacts_event.label, &caltype);
+			ret = contacts_record_get_str_p(contact_event, _contacts_event.label, &type_str);
 			if (CONTACTS_ERROR_NONE != ret) {
 				ERR("contacts_record_get_str_p() Fail(%d)", ret);
 				is_proper_type = false;
@@ -283,7 +300,8 @@ static int cal_server_contacts_insert_event(int id, calendar_list_h out_insert)
 		SEC_DBG("id(%d) display[%s] type(%d)", id, display, type);
 
 		calendar_record_h out_event = NULL;
-		_cal_server_contacts_set_new_event(id, display, date, caltype, account_id, &out_event);
+		_cal_server_contacts_set_new_event(id, display, calendar_type, date, type_str,
+				account_id, &out_event);
 		if (out_event)
 			calendar_list_add(out_insert, out_event);
 	}
