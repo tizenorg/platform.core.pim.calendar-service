@@ -1136,18 +1136,6 @@ static void _free_composite_filter(cal_composite_filter_s* filter)
 	free(filter->view_uri);
 }
 
-static int _gvariant_to_operate(GVariant * arg_operate, cal_composite_filter_s *f)
-{
-	GVariantIter *iter_operate = NULL;
-	g_variant_get(arg_operate, "ai", &iter_operate);
-
-	int operate = 0;
-	while (g_variant_iter_loop(iter_operate, "i", &operate))
-		f->filter_ops = g_slist_append(f->filter_ops, GINT_TO_POINTER(operate));
-
-	return CALENDAR_ERROR_NONE;
-}
-
 static void _get_attribute_filter(GVariantIter *iter_filter, cal_filter_type_e filter_type,
 		cal_attribute_filter_s* filter)
 {

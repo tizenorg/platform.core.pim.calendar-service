@@ -635,8 +635,6 @@ static bool __check_before_dtstart(long long int current_utime, long long int dt
 
 static bool __check_exdate_to_skip(long long int get_lli, GList **list)
 {
-	int i = 0;
-
 	GList *cursor = *list;
 	while (cursor) {
 		long long int *lli_p = (long long int *)cursor->data;
