@@ -962,17 +962,17 @@
  *
  * int i = 0;
  * for (i = 0; i < len; i++) {
- * 	// "id" is the key to get detail value
- * 	char *value = NULL;
- * 	app_control_get_extra_data(b, ids[i], &value);
- * 	if (NULL == value) {
- * 		continue;
- * 	}
- * 	// parse detail data
+ *	// "id" is the key to get detail value
+ *	char *value = NULL;
+ *	app_control_get_extra_data(b, ids[i], &value);
+ *	if (NULL == value) {
+ *		continue;
+ *	}
+ *	// parse detail data
  *
- * 	// free
- * 	free(ids[i]);
- * 	ids[i] = NULL;
+ *	// free
+ *	free(ids[i]);
+ *	ids[i] = NULL;
  * }
  *
  * free(ids);
@@ -1007,15 +1007,15 @@
  * <caption> Table: Vcalendar example ( http://www.ietf.org/rfc/rfc2445.txt ) </caption>
  * <tr>
  *  <td>
- *  	BEGIN:VCALENDAR<br>
- *  	VERSION:2.0<br>
- *  	PRODID:-//hacksw/handcal//NONSGML v1.0//EN<br>
- *  	BEGIN:VEVENT<br>
- *  	DTSTART:19970714T170000Z<br>
- *  	DTEND:19970715T035959Z<br>
- *  	SUMMARY:Bastille Day Party<br>
- *  	END:VEVENT<br>
- *  	END:VCALENDAR<br>
+ *	BEGIN:VCALENDAR<br>
+ *	VERSION:2.0<br>
+ *	PRODID:-//hacksw/handcal//NONSGML v1.0//EN<br>
+ *	BEGIN:VEVENT<br>
+ *	DTSTART:19970714T170000Z<br>
+ *	DTEND:19970715T035959Z<br>
+ *	SUMMARY:Bastille Day Party<br>
+ *	END:VEVENT<br>
+ *	END:VCALENDAR<br>
  *  </td>
  * </tr>
  * </table>

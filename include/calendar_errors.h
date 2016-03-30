@@ -39,8 +39,7 @@ extern "C" {
  * @brief Enumeration for calendar errors.
  * @since_tizen 2.3
  */
-typedef enum
-{
+typedef enum {
 	CALENDAR_ERROR_NONE                 = TIZEN_ERROR_NONE,                     /**< Successful */
 	CALENDAR_ERROR_OUT_OF_MEMORY        = TIZEN_ERROR_OUT_OF_MEMORY,            /**< Out of memory */
 	CALENDAR_ERROR_INVALID_PARAMETER    = TIZEN_ERROR_INVALID_PARAMETER,        /**< Invalid parameter */

@@ -34,4 +34,4 @@ char* cal_vcalendar_parse_read_line(char *stream, char **line);
 char* cal_vcalendar_parse_read_key_value(char *stream, char **prop, char **cont);
 int cal_vcalendar_parse_vcalendar_object(char *vcalendar_object_stream, calendar_list_h list, vcalendar_foreach_s *foreach_data);
 
-#endif // __CALENDAR_SVC_VCALENDAR_PARSE_H__
+#endif /* __CALENDAR_SVC_VCALENDAR_PARSE_H__ */

@@ -63,7 +63,7 @@ int calendar_record_create(const char* view_uri, calendar_record_h* out_record);
  *
  * @since_tizen 2.3
  *
- * @param[in]	record  	    The record handle
+ * @param[in]	record          The record handle
  * @param[in]	delete_child    If @c true, child records are destroyed automatically,
  *                              otherwise @c false
  *
@@ -142,7 +142,7 @@ int calendar_record_get_str(calendar_record_h record, unsigned int property_id, 
  * @remarks You MUST NOT release @a value.
  *
  * @param[in]   record         The record handle
- * @param[in]   property_id	   The property ID
+ * @param[in]   property_id    The property ID
  * @param[out]  out_str        The result value
  *
  * @return @c 0 on success,
@@ -341,7 +341,7 @@ int calendar_record_set_caltime(calendar_record_h record, unsigned int property_
  *          otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE                  Successful
  * @retval  #CALENDAR_ERROR_INVALID_PARAMETER     Invalid parameter
- * @retval  #CALENDAR_ERROR_NOT_PERMITTED		  Operation not permitted
+ * @retval  #CALENDAR_ERROR_NOT_PERMITTED         Operation not permitted
  *
  * @see calendar_record_remove_child_record()
  */
@@ -353,14 +353,14 @@ int calendar_record_add_child_record(calendar_record_h record, unsigned int prop
  * @since_tizen 2.3
  *
  * @param[in]	record        The parent record handle
- * @param[in]	property_id	  The property ID
+ * @param[in]	property_id   The property ID
  * @param[in]	child_record  The handle of the child record to be removed from the parent record
  *
  * @return  @c 0 on success,
  *          otherwise a negative error value
  * @retval  #CALENDAR_ERROR_NONE                Successful
  * @retval  #CALENDAR_ERROR_INVALID_PARAMETER   Invalid parameter
- * @retval  #CALENDAR_ERROR_NOT_PERMITTED		Operation not permitted
+ * @retval  #CALENDAR_ERROR_NOT_PERMITTED       Operation not permitted
  *
  * @see calendar_record_add_child_record()
  */
@@ -372,7 +372,7 @@ int calendar_record_remove_child_record(calendar_record_h record, unsigned int p
  * @since_tizen 2.3
  *
  * @param[in]	record          The parent record handle
- * @param[in]	property_id	    The property ID
+ * @param[in]	property_id     The property ID
  * @param[out]	count           The child record count
  *
  * @return @c 0 on success,
@@ -394,7 +394,7 @@ int calendar_record_get_child_record_count(calendar_record_h record, unsigned in
  * @remarks You MUST NOT release @a child_record. \n It is released when the parent record handle is destroyed.
  *
  * @param[in]   record          The record handle
- * @param[in]   property_id	    The property ID
+ * @param[in]   property_id     The property ID
  * @param[in]   index           The index of the child record
  * @param[out]  child_record    The child record handle pointer
  *
@@ -419,7 +419,7 @@ int calendar_record_get_child_record_at_p(calendar_record_h record, unsigned int
  *
  * @param[in]   record          The record handle
  * @param[in]   property_id     The property ID
- * @param[out]  out_list  	    The cloned list handle
+ * @param[out]  out_list        The cloned list handle
  *
  * @return @c 0 on success,
  *         otherwise a negative error value

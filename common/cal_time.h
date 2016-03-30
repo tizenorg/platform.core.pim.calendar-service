@@ -61,4 +61,4 @@ enum cal_extract_field {
 }
 #endif
 
-#endif // __CALENDAR_SVC_TIME_H__
+#endif /* __CALENDAR_SVC_TIME_H__ */

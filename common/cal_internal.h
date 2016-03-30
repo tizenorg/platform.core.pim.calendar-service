@@ -26,7 +26,7 @@
 #define API __attribute__ ((visibility("default")))
 #endif
 
-#define SAFE_STRDUP(src) (src)?strdup((char *)src):NULL
+#define SAFE_STRDUP(src) (src) ? strdup((char *)src) : NULL
 
 #define CAL_DEBUGGING
 
@@ -126,10 +126,10 @@
 #define CAL_PROFILE
 #ifdef CAL_PROFILE
 #define CAL_PROFILE_GET_TIME() (clock() / (CLOCKS_PER_SEC / 1000));
-#define CAL_PROFILE_PRINT(starttime,endtime) ERR("%ld ~ %ld : %ld(%d sec) msec",starttime,endtime,endtime-starttime, (endtime-starttime)/1000);
+#define CAL_PROFILE_PRINT(starttime, endtime) ERR("%ld ~ %ld : %ld(%d sec) msec", starttime, endtime, endtime-starttime, (endtime-starttime)/1000);
 #else
 #define CAL_PROFILE_GET_TIME(input_time) 0
-#define CAL_PROFILE_PRINT(starttime,endtime)
+#define CAL_PROFILE_PRINT(starttime, endtime)
 #endif
 
 #define CAL_FREE(ptr) \

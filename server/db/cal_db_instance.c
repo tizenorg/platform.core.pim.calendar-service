@@ -261,9 +261,9 @@ static int __get_exdate_list(UCalendar *ucal, cal_event_s *event, GList **list)
 		DBG("%lld", lli);
 
 		long long int *lli_p = calloc(1, sizeof(long long int));
-		if (NULL == lli_p) {
+		if (NULL == lli_p)
 			break;
-		}
+
 		*lli_p = lli;
 
 		*list = g_list_append(*list, lli_p);

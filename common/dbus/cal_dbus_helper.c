@@ -70,7 +70,7 @@ int cal_dbus_utils_gvariant_to_char(GVariant *arg_char, int count,
 	for (i = 0; i < count; i++)
 		g_variant_iter_loop(iter_char, "y", &flag[i]);
 
-	*out_flag= flag;
+	*out_flag = flag;
 	return CALENDAR_ERROR_NONE;
 }
 
@@ -1130,9 +1130,9 @@ static void _free_composite_filter(cal_composite_filter_s* filter)
 	}
 	g_slist_free_full(filter->filters, free);
 
-	if (filter->filter_ops) {
+	if (filter->filter_ops)
 		g_slist_free(filter->filter_ops);
-	}
+
 	free(filter->view_uri);
 }
 

@@ -27,4 +27,4 @@ enum {
 	VCALENDAR_TYPE_VTODO,
 };
 
-#endif // __CALENDAR_SVC_VCALENDAR_H__
+#endif /* __CALENDAR_SVC_VCALENDAR_H__ */

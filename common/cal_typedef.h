@@ -35,9 +35,9 @@
 
 #define CAL_TZID_GMT "Etc/GMT"
 #define CAL_SOCK_PATH "/run/user/%d"
-#define CAL_NOTI_EVENT_CHANGED tzplatform_mkpath(TZ_USER_DATA,"calendar-svc/.CALENDAR_SVC_EVENT_CHANGED")
-#define CAL_NOTI_TODO_CHANGED tzplatform_mkpath(TZ_USER_DATA,"calendar-svc/.CALENDAR_SVC_TODO_CHANGED")
-#define CAL_NOTI_CALENDAR_CHANGED tzplatform_mkpath(TZ_USER_DATA,"calendar-svc/.CALENDAR_SVC_CALENDAR_CHANGED")
+#define CAL_NOTI_EVENT_CHANGED tzplatform_mkpath(TZ_USER_DATA, "calendar-svc/.CALENDAR_SVC_EVENT_CHANGED")
+#define CAL_NOTI_TODO_CHANGED tzplatform_mkpath(TZ_USER_DATA, "calendar-svc/.CALENDAR_SVC_TODO_CHANGED")
+#define CAL_NOTI_CALENDAR_CHANGED tzplatform_mkpath(TZ_USER_DATA, "calendar-svc/.CALENDAR_SVC_CALENDAR_CHANGED")
 #define CAL_NOTI_REMINDER_CAHNGED "reminder"
 #define CAL_FORMAT_LOCAL_DATETIME "%04d-%02d-%02dT%02d:%02d:%02d"
 #define CAL_DATETIME_FORMAT_YYYYMMDD "%04d%02d%02d"
@@ -48,15 +48,13 @@
  * @enum cal_priority_e
  * This enumeration defines priority for todo data.
  */
-typedef enum
-{
+typedef enum {
 	CAL_PRIORITY_LOW,	/**< priority low */
 	CAL_PRIORITY_MID,	/**< priority middle */
 	CAL_PRIORITY_HIGH	/**< priority high */
 } cal_priority_e;
 
-typedef enum
-{
+typedef enum {
 	CAL_PERMISSION_NONE = 0x00,
 	CAL_PERMISSION_READ = 0x01,
 	CAL_PERMISSION_WRITE = 0x02,
@@ -64,11 +62,10 @@ typedef enum
 
 #define LOCAL_ACCOUNT_ID -1
 
-#define CAL_INVALID_ID				(-1)
+#define CAL_INVALID_ID (-1)
 
-typedef enum
-{
-	CAL_SCH_TYPE_NONE=0,           /**< None type */
+typedef enum {
+	CAL_SCH_TYPE_NONE = 0, /**< None type */
 	CAL_SCH_TYPE_EVENT,    /**< schedule event type */
 	CAL_SCH_TYPE_TODO,     /**< task event type */
 	CAL_SCH_TYPE_MAX,      /**< max type */
@@ -83,8 +80,7 @@ typedef struct {
 /**
  * This structure defines schedule information.
  */
-typedef struct
-{
+typedef struct {
 	cal_record_s common;
 	int index;				/**< Record index */
 	int calendar_id;
@@ -152,8 +148,7 @@ typedef struct
 	cal_list_s *extended_list;
 } cal_event_s;
 
-typedef struct
-{
+typedef struct {
 	cal_record_s common;
 	int index;
 	int calendar_id;
@@ -208,8 +203,7 @@ typedef struct
 	cal_list_s *extended_list;
 } cal_todo_s;
 
-typedef struct
-{
+typedef struct {
 	int freq;
 	int range_type;
 	calendar_time_s until;
@@ -231,8 +225,7 @@ typedef struct
  * This structure defines participant information of a meetting.
  * ical: cutype, member, role, partstat, rsvp, delto, delfrom, sentby, cn,  dir, language
  */
-typedef struct
-{
+typedef struct {
 	cal_record_s common;
 	int id; /* Internal property. Do not add to view_uri property */
 	int parent_id;
@@ -258,8 +251,7 @@ typedef struct
 /**
  * This structure defines exception information of alarm.
  */
-typedef struct
-{
+typedef struct {
 	cal_record_s common;
 	int id; /* Internal property. Do not add to view_uri property */
 	int parent_id;
@@ -276,8 +268,7 @@ typedef struct
 } cal_alarm_s;
 
 /* This is the calendar schema */
-typedef struct
-{
+typedef struct {
 	cal_record_s common;
 	int index;
 	int store_type;
@@ -300,8 +291,7 @@ typedef struct
 
 
 /* type for timezone information save */
-typedef struct
-{
+typedef struct {
 	cal_record_s common;
 	int index;
 	int tz_offset_from_gmt;
@@ -322,8 +312,7 @@ typedef struct
 	int calendar_id;
 } cal_timezone_s;
 
-typedef struct
-{
+typedef struct {
 	cal_record_s common;
 	int event_id;
 	int calendar_id;
@@ -345,8 +334,7 @@ typedef struct
 	char *sync_data1;
 } cal_instance_normal_s;
 
-typedef struct
-{
+typedef struct {
 	cal_record_s common;
 	int event_id;
 	int calendar_id;
@@ -369,8 +357,7 @@ typedef struct
 	int is_allday;
 } cal_instance_allday_s;
 
-typedef struct
-{
+typedef struct {
 	cal_record_s common;
 	int event_id;
 	int calendar_id;
@@ -398,8 +385,7 @@ typedef struct
 	char *sync_data4;
 } cal_instance_normal_extended_s;
 
-typedef struct
-{
+typedef struct {
 	cal_record_s common;
 	int event_id;
 	int calendar_id;
@@ -428,8 +414,7 @@ typedef struct
 	int is_allday;
 } cal_instance_allday_extended_s;
 
-typedef struct
-{
+typedef struct {
 	cal_record_s common;
 	int type;
 	int id;
@@ -437,8 +422,7 @@ typedef struct
 	int version;
 } cal_updated_info_s;
 
-typedef enum
-{
+typedef enum {
 	CAL_NOTI_TYPE_EVENT = 0x0,
 	CAL_NOTI_TYPE_TODO,
 	CAL_NOTI_TYPE_CALENDAR,

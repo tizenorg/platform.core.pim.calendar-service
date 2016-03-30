@@ -30,7 +30,7 @@
 #define DATA_PATH tzplatform_getenv(TZ_USER_DATA)
 #define CAL_DB_FILE tzplatform_mkpath(TZ_USER_DB, ".calendar-svc.db")
 #define CAL_JN_FILE tzplatform_mkpath(TZ_USER_DB, ".calendar-svc.db-journal")
-#define CAL_DATA_PATH tzplatform_mkpath(TZ_USER_DATA,"calendar-svc")
+#define CAL_DATA_PATH tzplatform_mkpath(TZ_USER_DATA, "calendar-svc")
 
 /* For Security */
 #define CAL_SECURITY_FILE_GROUP 5000

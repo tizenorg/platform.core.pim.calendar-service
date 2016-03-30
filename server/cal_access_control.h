@@ -28,7 +28,7 @@
 void cal_access_control_set_client_info(void *ipc, const char* smack_label);
 void cal_access_control_unset_client_info(void);
 char* cal_access_control_get_label(void);
-void cal_access_control_reset(void);  // reset read_list, write_list..
+void cal_access_control_reset(void);  /* reset read_list, write_list.. */
 bool cal_access_control_have_write_permission(int book_id);
 int cal_is_owner(int book_id);
 

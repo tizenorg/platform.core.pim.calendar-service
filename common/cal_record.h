@@ -25,8 +25,7 @@
 extern "C" {
 #endif
 
-typedef enum
-{
+typedef enum {
 	CAL_RECORD_TYPE_INVALID = 0,
 	CAL_RECORD_TYPE_CALENDAR,
 	CAL_RECORD_TYPE_EVENT ,
@@ -113,23 +112,21 @@ typedef struct {
 	(dst)->plugin_cb = (src)->plugin_cb;\
 	(dst)->view_uri = (src)->view_uri;\
 	(dst)->properties_max_count = (src)->properties_max_count;\
-	if ((src)->properties_flags) \
-	{\
+	if ((src)->properties_flags) {\
 		(dst)->properties_flags  = calloc((dst)->properties_max_count, sizeof(char));\
 		if ((dst)->properties_flags)\
 		memcpy((dst)->properties_flags, (src)->properties_flags, sizeof(char)*(dst)->properties_max_count);\
-	}\
+	} \
 	(dst)->property_flag = (src)->property_flag;\
 } while (0)
 
 #define CAL_RECORD_RESET_COMMON(src) do {\
-	if ((src)->properties_flags) \
-	{\
+	if ((src)->properties_flags) {\
 		free((src)->properties_flags); \
 		(src)->properties_max_count = 0;\
 		(src)->properties_flags = NULL;\
 		(src)->property_flag = 0;\
-	}\
+	} \
 } while (0)
 
 cal_record_plugin_cb_s* cal_record_get_plugin_cb(cal_record_type_e type);
