@@ -37,11 +37,11 @@ extern "C" {
 #define _CALENDAR_PROPERTY_CALTIME(property_id_name)    unsigned int property_id_name;
 #define _CALENDAR_PROPERTY_CHILD_MULTIPLE(property_id_name) unsigned int property_id_name;
 #define _CALENDAR_END_VIEW(name) } name##_property_ids; \
-    extern __attribute__ ((visibility("default"))) const name##_property_ids name;
+	extern __attribute__ ((visibility("default"))) const name##_property_ids name;
 
 #define _CALENDAR_BEGIN_READ_ONLY_VIEW() \
-        typedef struct { \
-            const char* _uri;
+	typedef struct { \
+		const char* _uri;
 #define _CALENDAR_PROPERTY_PROJECTION_INT(property_id_name)        unsigned int property_id_name;
 #define _CALENDAR_PROPERTY_PROJECTION_STR(property_id_name)        unsigned int property_id_name;
 #define _CALENDAR_PROPERTY_PROJECTION_DOUBLE(property_id_name)     unsigned int property_id_name;
@@ -53,7 +53,7 @@ extern "C" {
 #define _CALENDAR_PROPERTY_FILTER_LLI(property_id_name)        unsigned int property_id_name;
 #define _CALENDAR_PROPERTY_FILTER_CALTIME(property_id_name)    unsigned int property_id_name;
 #define _CALENDAR_END_READ_ONLY_VIEW(name) } name##_property_ids; \
-    extern __attribute__ ((visibility("default"))) const name##_property_ids name;
+	extern __attribute__ ((visibility("default"))) const name##_property_ids name;
 
 _CALENDAR_HANDLE(calendar_record_h)
 _CALENDAR_HANDLE(calendar_filter_h)
@@ -452,8 +452,8 @@ typedef struct {
 			int minute;			/**< minute */
 			int second;			/**< second */
 			bool is_leap_month; /**< Deprecated since 2.4:leap month */
-		}date;
-	}time;
+		} date;
+	} time;
 } calendar_time_s;
 
 /**
@@ -497,4 +497,5 @@ typedef enum {
 }
 #endif
 
-#endif //__TIZEN_SOCIAL_CALENDAR_TYPES_H__
+#endif /*__TIZEN_SOCIAL_CALENDAR_TYPES_H__ */
+

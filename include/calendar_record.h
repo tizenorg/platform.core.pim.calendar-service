@@ -245,7 +245,7 @@ int calendar_record_get_caltime(calendar_record_h record, unsigned int property_
  *              otherwise a negative error value
  * @retval      #CALENDAR_ERROR_NONE                  Successful
  * @retval      #CALENDAR_ERROR_INVALID_PARAMETER     Invalid parameter
- * @retval  	#CALENDAR_ERROR_NOT_PERMITTED         Operation not permitted
+ * @retval      #CALENDAR_ERROR_NOT_PERMITTED         Operation not permitted
  *
  * @see calendar_record_get_str()
  * @see calendar_record_get_str_p()
@@ -265,7 +265,7 @@ int calendar_record_set_str(calendar_record_h record, unsigned int property_id, 
  *              otherwise a negative error value
  * @retval      #CALENDAR_ERROR_NONE                  Successful
  * @retval      #CALENDAR_ERROR_INVALID_PARAMETER     Invalid parameter
- * @retval  	#CALENDAR_ERROR_NOT_PERMITTED         Operation not permitted
+ * @retval      #CALENDAR_ERROR_NOT_PERMITTED         Operation not permitted
  *
  * @see calendar_record_get_int()
  */
@@ -284,7 +284,7 @@ int calendar_record_set_int(calendar_record_h record, unsigned int property_id, 
  *              otherwise a negative error value
  * @retval      #CALENDAR_ERROR_NONE                  Successful
  * @retval      #CALENDAR_ERROR_INVALID_PARAMETER     Invalid parameter
- * @retval  	#CALENDAR_ERROR_NOT_PERMITTED         Operation not permitted
+ * @retval      #CALENDAR_ERROR_NOT_PERMITTED         Operation not permitted
  *
  * @see calendar_record_get_double()
  */
@@ -303,7 +303,7 @@ int calendar_record_set_double(calendar_record_h record, unsigned int property_i
  *              otherwise a negative error value
  * @retval      #CALENDAR_ERROR_NONE                  Successful
  * @retval      #CALENDAR_ERROR_INVALID_PARAMETER     Invalid parameter
- * @retval  	#CALENDAR_ERROR_NOT_PERMITTED         Operation not permitted
+ * @retval      #CALENDAR_ERROR_NOT_PERMITTED         Operation not permitted
  *
  * @see calendar_record_get_lli()
  */
@@ -322,7 +322,7 @@ int calendar_record_set_lli(calendar_record_h record, unsigned int property_id, 
  *              otherwise a negative error value
  * @retval      #CALENDAR_ERROR_NONE                  Successful
  * @retval      #CALENDAR_ERROR_INVALID_PARAMETER     Invalid parameter
- * @retval  	#CALENDAR_ERROR_NOT_PERMITTED         Operation not permitted
+ * @retval      #CALENDAR_ERROR_NOT_PERMITTED         Operation not permitted
  *
  * @see calendar_record_get_caltime()
  */
@@ -384,7 +384,7 @@ int calendar_record_remove_child_record(calendar_record_h record, unsigned int p
  * @see calendar_record_add_child_record()
  * @see calendar_record_remove_child_record()
  */
-int calendar_record_get_child_record_count(calendar_record_h record, unsigned int property_id,unsigned int* count);
+int calendar_record_get_child_record_count(calendar_record_h record, unsigned int property_id, unsigned int* count);
 
 /**
  * @brief Gets a child record handle pointer from the parent record.

@@ -428,7 +428,7 @@ typedef enum {
 	CAL_NOTI_TYPE_CALENDAR,
 } cal_noti_type_e;
 
-typedef struct{
+typedef struct {
 	unsigned int property_id;
 	const char* fields; /* DB field */
 } cal_property_info_s;
