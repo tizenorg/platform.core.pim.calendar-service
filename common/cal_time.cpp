@@ -132,8 +132,7 @@ char* cal_time_convert_ltos(const char *tzid, long long int lli, int is_allday)
 	if (CAL_STRING_EQUAL == strncmp(tzid, CAL_TZID_GMT, strlen(CAL_TZID_GMT))) {
 		snprintf(buf, sizeof(buf), CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS"%s",
 				y, mon, d, h, min, s, is_allday ? "" : "Z");
-	}
-	else {
+	} else {
 		snprintf(buf, sizeof(buf), CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS, y, mon, d, h, min, s);
 	}
 
