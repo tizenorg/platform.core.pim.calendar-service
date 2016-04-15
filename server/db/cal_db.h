@@ -25,11 +25,9 @@
 #include "calendar_list.h"
 
 #define CALS_DB_NAME ".calendar-svc.db"
-#define CALS_JN_NAME ".calendar-svc.db-journal"
 #define DB_PATH tzplatform_getenv(TZ_USER_DB)
 #define DATA_PATH tzplatform_getenv(TZ_USER_DATA)
 #define CAL_DB_FILE tzplatform_mkpath(TZ_USER_DB, ".calendar-svc.db")
-#define CAL_JN_FILE tzplatform_mkpath(TZ_USER_DB, ".calendar-svc.db-journal")
 #define CAL_DATA_PATH tzplatform_mkpath(TZ_USER_DATA, "calendar-svc")
 
 /* For Security */

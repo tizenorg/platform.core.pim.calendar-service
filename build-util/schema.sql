@@ -16,6 +16,7 @@
 -- limitations under the License.
 --
 PRAGMA user_version = 105;
+PRAGMA journal_mode = WAL;
 
 CREATE TABLE schedule_table
 (

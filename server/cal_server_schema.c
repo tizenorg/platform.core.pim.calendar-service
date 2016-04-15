@@ -31,11 +31,10 @@
 
 static inline int __remake_db_file(char* db_path)
 {
-	int ret, fd;
+	int ret;
 	char *errmsg;
 	sqlite3 *db;
 	char db_file[CAL_STR_MIDDLE_LEN] = {0};
-	char jn_file[CAL_STR_MIDDLE_LEN] = {0};
 
 	snprintf(db_file, sizeof(db_file), "%s/%s", db_path ? db_path : DB_PATH, CALS_DB_NAME);
 
@@ -51,26 +50,6 @@ static inline int __remake_db_file(char* db_path)
 		sqlite3_free(errmsg);
 	}
 	db_util_close(db);
-
-	fd = open(db_file, O_CREAT | O_RDWR, 0660);
-	if (-1 == fd) {
-		ERR("open Fail ");
-		return -1;
-	}
-	fchmod(fd, CAL_SECURITY_DEFAULT_PERMISSION);
-	close(fd);
-
-	snprintf(jn_file, sizeof(jn_file), "%s/%s", db_path ? db_path : DB_PATH, CALS_JN_NAME);
-	DBG("[%s]", jn_file);
-
-	fd = open(jn_file, O_CREAT | O_RDWR, 0660);
-	if (-1 == fd) {
-		ERR("open Fail ");
-		return -1;
-	}
-	fchmod(fd, CAL_SECURITY_DEFAULT_PERMISSION);
-	close(fd);
-
 	return 0;
 }
 
