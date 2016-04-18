@@ -1295,6 +1295,8 @@ int cal_dbus_utils_gvariant_to_query(GVariant *arg_query, calendar_query_h *out_
 		_gvariant_to_projection(count_projection, arg_projection, q);
 
 	q->sort_property_id = property_id;
+	q->properties = (cal_property_info_s *)cal_view_get_property_info(view_uri,
+			&q->property_count);
 	q->asc = has_asc;
 	q->distinct = has_distinct;
 
