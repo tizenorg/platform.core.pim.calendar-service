@@ -129,12 +129,11 @@ char* cal_time_convert_ltos(const char *tzid, long long int lli, int is_allday)
 	min = ucal_get(ucal, UCAL_MINUTE, &status);
 	s = ucal_get(ucal, UCAL_SECOND, &status);
 
-	if (CAL_STRING_EQUAL == strncmp(tzid, CAL_TZID_GMT, strlen(CAL_TZID_GMT))) {
+	if (CAL_STRING_EQUAL == strncmp(tzid, CAL_TZID_GMT, strlen(CAL_TZID_GMT)))
 		snprintf(buf, sizeof(buf), CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS"%s",
 				y, mon, d, h, min, s, is_allday ? "" : "Z");
-	} else {
+	else
 		snprintf(buf, sizeof(buf), CAL_DATETIME_FORMAT_YYYYMMDDTHHMMSS, y, mon, d, h, min, s);
-	}
 
 	ucal_close(ucal);
 
