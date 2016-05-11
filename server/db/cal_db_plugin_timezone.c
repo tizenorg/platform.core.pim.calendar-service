@@ -865,7 +865,7 @@ static void _cal_db_timezone_get_property_stmt(sqlite3_stmt *stmt,
 		timezone->calendar_id = sqlite3_column_int(stmt, stmt_count);
 		break;
 	default:
-		sqlite3_column_int(stmt, stmt_count);
+		ERR("Invalid property(0x%x)", property);
 		break;
 	}
 

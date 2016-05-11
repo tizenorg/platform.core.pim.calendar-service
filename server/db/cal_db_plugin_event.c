@@ -1972,6 +1972,22 @@ static void _cal_db_event_get_property_stmt(sqlite3_stmt *stmt,
 		event->range_type = sqlite3_column_int(stmt, *stmt_count);
 		break;
 	case CAL_PROPERTY_EVENT_UNTIL:
+		event->until.type = sqlite3_column_int(stmt, *stmt_count);
+		if (event->until.type == CALENDAR_TIME_UTIME) {
+			*stmt_count = *stmt_count+1;
+			event->until.time.utime = sqlite3_column_int64(stmt, *stmt_count);
+			*stmt_count = *stmt_count+1; /* until_datetime */
+		} else {
+			*stmt_count = *stmt_count+1;
+			*stmt_count = *stmt_count+1;
+			temp = sqlite3_column_text(stmt, *stmt_count);
+			if (temp) {
+				sscanf((const char *)temp, CAL_FORMAT_LOCAL_DATETIME, &(event->until.time.date.year),
+						&(event->until.time.date.month), &(event->until.time.date.mday),
+						&(event->until.time.date.hour), &(event->until.time.date.minute),
+						&(event->until.time.date.second));
+			}
+		}
 		break;
 	case CAL_PROPERTY_EVENT_COUNT:
 		event->count = sqlite3_column_int(stmt, *stmt_count);
@@ -2095,8 +2111,11 @@ static void _cal_db_event_get_property_stmt(sqlite3_stmt *stmt,
 	case CAL_PROPERTY_EVENT_CALENDAR_SYSTEM_TYPE:
 		event->system_type = sqlite3_column_int(stmt, *stmt_count);
 		break;
+	case CAL_PROPERTY_EVENT_IS_ALLDAY:
+		event->is_allday = sqlite3_column_int(stmt, *stmt_count);
+		break;
 	default:
-		sqlite3_column_int(stmt, *stmt_count);
+		ERR("invalid (0x%x)", property);
 		break;
 	}
 

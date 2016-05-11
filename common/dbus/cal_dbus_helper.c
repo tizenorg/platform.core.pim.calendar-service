@@ -244,13 +244,13 @@ static GVariant *_filter_to_gvariant(cal_composite_filter_s *f)
 	return g_variant_builder_end(&builder);
 }
 
-static GVariant *_projection_to_gvariant(cal_query_s *p)
+static GVariant *_projection_to_gvariant(cal_query_s *q)
 {
 	int i;
 	GVariantBuilder builder;
 	g_variant_builder_init(&builder, G_VARIANT_TYPE("au"));
-	for (i = 0; i < p->projection_count; i++)
-		g_variant_builder_add(&builder, "u", p->projection[i]);
+	for (i = 0; i < q->projection_count; i++)
+		g_variant_builder_add(&builder, "u", q->projection[i]);
 
 	return g_variant_builder_end(&builder);
 }
@@ -1251,14 +1251,14 @@ static int _gvariant_to_projection(int count_projection, GVariant *arg_projectio
 	GVariantIter *iter_projection = NULL;
 	g_variant_get(arg_projection, "au", &iter_projection);
 
-	int i = 0;
 	q->projection = calloc(count_projection, sizeof(unsigned int));
 	if (NULL == q->projection) {
 		ERR("calloc() Fail");
 		return CALENDAR_ERROR_OUT_OF_MEMORY;
 	}
-	while (g_variant_iter_loop(iter_projection, "u", &q->projection[i]))
-		i++;
+	int i = 0;
+	for (i = 0; i < count_projection; i++)
+		g_variant_iter_loop(iter_projection, "u", &q->projection[i]);
 
 	q->projection_count = count_projection;
 

@@ -344,6 +344,7 @@ int cal_db_util_query_get_first_int_result(const char *query, GSList *bind_text,
 		sqlite3_finalize(stmt);
 		return CALENDAR_ERROR_NONE;
 	}
+	sqlite3_finalize(stmt);
 
 	switch (ret) {
 	case SQLITE_DONE:

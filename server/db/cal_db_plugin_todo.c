@@ -1587,6 +1587,22 @@ static void _cal_db_todo_get_property_stmt(sqlite3_stmt *stmt,
 		todo->range_type = sqlite3_column_int(stmt, *stmt_count);
 		break;
 	case CAL_PROPERTY_TODO_UNTIL:
+		todo->until.type = sqlite3_column_int(stmt, *stmt_count);
+		if (todo->until.type == CALENDAR_TIME_UTIME) {
+			*stmt_count = *stmt_count+1;
+			todo->until.time.utime = sqlite3_column_int64(stmt, *stmt_count);
+			*stmt_count = *stmt_count+1; /* until_datetime */
+		} else {
+			*stmt_count = *stmt_count+1;
+			*stmt_count = *stmt_count+1;
+			temp = sqlite3_column_text(stmt, *stmt_count);
+			if (temp) {
+				sscanf((const char *)temp, CAL_FORMAT_LOCAL_DATETIME, &(todo->until.time.date.year),
+						&(todo->until.time.date.month), &(todo->until.time.date.mday),
+						&(todo->until.time.date.hour), &(todo->until.time.date.minute),
+						&(todo->until.time.date.second));
+			}
+		}
 		break;
 	case CAL_PROPERTY_TODO_COUNT:
 		todo->count = sqlite3_column_int(stmt, *stmt_count);
