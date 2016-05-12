@@ -35,8 +35,6 @@ static int _cal_db_timezone_update_record(calendar_record_h record);
 static int _cal_db_timezone_delete_record(int id);
 static int _cal_db_timezone_get_all_records(int offset, int limit, calendar_list_h* out_list);
 static int _cal_db_timezone_get_records_with_query(calendar_query_h query, int offset, int limit, calendar_list_h* out_list);
-static int _cal_db_timezone_insert_records(const calendar_list_h list, int** ids);
-static int _cal_db_timezone_update_records(const calendar_list_h list);
 static int _cal_db_timezone_delete_records(int ids[], int count);
 static int _cal_db_timezone_get_count(int *out_count);
 static int _cal_db_timezone_get_count_with_query(calendar_query_h query, int *out_count);
@@ -63,8 +61,8 @@ cal_db_plugin_cb_s cal_db_timezone_plugin_cb = {
 	.delete_record = _cal_db_timezone_delete_record,
 	.get_all_records = _cal_db_timezone_get_all_records,
 	.get_records_with_query = _cal_db_timezone_get_records_with_query,
-	.insert_records = _cal_db_timezone_insert_records,
-	.update_records = _cal_db_timezone_update_records,
+	.insert_records = NULL,
+	.update_records = NULL,
 	.delete_records = _cal_db_timezone_delete_records,
 	.get_count = _cal_db_timezone_get_count,
 	.get_count_with_query = _cal_db_timezone_get_count_with_query,
@@ -572,72 +570,6 @@ static int _cal_db_timezone_get_records_with_query(calendar_query_h query, int o
 	}
 	CAL_FREE(query_str);
 	sqlite3_finalize(stmt);
-
-	return CALENDAR_ERROR_NONE;
-}
-static int _cal_db_timezone_insert_records(const calendar_list_h list, int** ids)
-{
-	calendar_record_h record;
-	int ret = 0;
-	int count = 0;
-	int i = 0;
-	int *id = NULL;
-
-	ret = calendar_list_get_count(list, &count);
-	if (CALENDAR_ERROR_NONE != ret) {
-		ERR("list get error");
-		return ret;
-	}
-
-	id = calloc(1, sizeof(int)*count);
-	RETVM_IF(NULL == id, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc() Fail");
-
-	ret = calendar_list_first(list);
-	if (CALENDAR_ERROR_NONE != ret) {
-		ERR("calendar_list_first() Fail(%d)", ret);
-		CAL_FREE(id);
-		return ret;
-	}
-	do {
-		if (CALENDAR_ERROR_NONE == calendar_list_get_current_record_p(list, &record)) {
-			ret = _cal_db_timezone_insert_record(record, &id[i]);
-			if (CALENDAR_ERROR_NONE != ret) {
-				ERR("_cal_db_timezone_insert_record() Fail(%d)", ret);
-				CAL_FREE(id);
-				return CALENDAR_ERROR_DB_FAILED;
-			}
-		}
-		i++;
-	} while (CALENDAR_ERROR_NO_DATA != calendar_list_next(list));
-
-	if (ids)
-		*ids = id;
-	else
-		CAL_FREE(id);
-
-
-	return CALENDAR_ERROR_NONE;
-}
-
-static int _cal_db_timezone_update_records(const calendar_list_h list)
-{
-	calendar_record_h record;
-	int ret = 0;
-
-	ret = calendar_list_first(list);
-	if (CALENDAR_ERROR_NONE != ret) {
-		ERR("calendar_list_first() Fail(%d)", ret);
-		return ret;
-	}
-	do {
-		if (CALENDAR_ERROR_NONE == calendar_list_get_current_record_p(list, &record)) {
-			ret = _cal_db_timezone_update_record(record);
-			if (CALENDAR_ERROR_NONE != ret) {
-				ERR("_cal_db_timezone_update_record() Fail(%d)", ret);
-				return CALENDAR_ERROR_DB_FAILED;
-			}
-		}
-	} while (CALENDAR_ERROR_NO_DATA != calendar_list_next(list));
 
 	return CALENDAR_ERROR_NONE;
 }
