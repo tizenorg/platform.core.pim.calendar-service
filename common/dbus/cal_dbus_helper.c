@@ -712,7 +712,8 @@ static GVariant *_value_to_gvariant(cal_search_value_s *p)
 {
 	GVariant *value = NULL;
 
-	switch (p->property_id) {
+	int type = p->property_id & CAL_PROPERTY_DATA_TYPE_MASK;
+	switch (type) {
 	case CAL_PROPERTY_DATA_TYPE_STR:
 		value = g_variant_new("s", CAL_DBUS_SET_STRING(p->value.s));
 		break;
@@ -726,10 +727,11 @@ static GVariant *_value_to_gvariant(cal_search_value_s *p)
 		value = g_variant_new("x", p->value.lli);
 		break;
 	case CAL_PROPERTY_DATA_TYPE_CALTIME:
-		value = _caltime_to_gvariant(&p->value.caltime);
+		value = g_variant_new("(iv)", p->value.caltime.type,
+				_caltime_to_gvariant(&p->value.caltime));
 		break;
 	default:
-		ERR("Invalid parameter(0x%x)", p->property_id);
+		ERR("Invalid parameter(0x%x)", type);
 		break;
 	}
 	return value;
@@ -737,28 +739,31 @@ static GVariant *_value_to_gvariant(cal_search_value_s *p)
 
 static GVariant *_search_to_gvariant(calendar_record_h record)
 {
-	GVariantBuilder builder;
-
 	cal_search_s *p = (cal_search_s *)record;
-	if (p->values) {
-		g_variant_builder_init(&builder, (G_VARIANT_TYPE("ia(iv)")));
 
-		int count = g_slist_length(p->values);
-		g_variant_builder_add(&builder, "i", count);
+	GVariant *arg_search = NULL;
+	GVariantBuilder builder;
+	g_variant_builder_init(&builder, (G_VARIANT_TYPE("a(iv)")));
+	GVariant *arg_value = NULL;
+	int count = g_slist_length(p->values);
 
+	if (0 < count) {
 		GSList *cursor = p->values;
 		while (cursor) {
 			cal_search_value_s * d = (cal_search_value_s *)(cursor->data);
-			GVariant *arg_value = _value_to_gvariant(d);
-			g_variant_builder_add(&builder, "iv", d->property_id, arg_value);
+			arg_value = _value_to_gvariant(d);
+			g_variant_builder_add(&builder, "(iv)", d->property_id, arg_value);
 			cursor = g_slist_next(cursor);
 		}
 	} else {
-		g_variant_builder_init(&builder, (G_VARIANT_TYPE("i")));
-		g_variant_builder_add(&builder, "i", 0);
+		arg_value = cal_dbus_utils_null_to_gvariant();
+		g_variant_builder_add(&builder, "(iv)", 1, arg_value);
 	}
+	arg_search = g_variant_builder_end(&builder);
 
-	return g_variant_builder_end(&builder);
+	GVariant *value = NULL;
+	value = g_variant_new("(isv)", count, p->common.view_uri, arg_search);
+	return value;
 }
 
 GVariant *cal_dbus_utils_record_to_gvariant(calendar_record_h record)
@@ -1038,9 +1043,12 @@ static int _gvariant_to_only_event(GVariant *arg_record, calendar_record_h *out_
 
 static int _gvariant_to_value(GVariant *arg_value, cal_search_value_s *p)
 {
-	switch (p->property_id) {
+	int type = p->property_id & CAL_PROPERTY_DATA_TYPE_MASK;
+	GVariant *arg_caltime = NULL;
+	switch (type) {
 	case CAL_PROPERTY_DATA_TYPE_STR:
 		g_variant_get(arg_value, "&s", &p->value.s);
+		CAL_DBUS_GET_STRING(p->value.s);
 		break;
 	case CAL_PROPERTY_DATA_TYPE_INT:
 		g_variant_get(arg_value, "i", &p->value.i);
@@ -1052,14 +1060,11 @@ static int _gvariant_to_value(GVariant *arg_value, cal_search_value_s *p)
 		g_variant_get(arg_value, "x", &p->value.lli);
 		break;
 	case CAL_PROPERTY_DATA_TYPE_CALTIME:
-		g_variant_get(arg_value, "(ixiiiiiii)",
-			&p->value.caltime.type, &p->value.caltime.time.utime,
-			&p->value.caltime.time.date.year, &p->value.caltime.time.date.month,
-			&p->value.caltime.time.date.mday, &p->value.caltime.time.date.hour,
-			&p->value.caltime.time.date.minute, &p->value.caltime.time.date.second);
+		g_variant_get(arg_value, "(iv)", &p->value.caltime.type, arg_caltime);
+		_gvariant_to_caltime(p->value.caltime.type, arg_caltime, &p->value.caltime);
 		break;
 	default:
-		ERR("Invalid parameter(0x%x)", p->property_id);
+		ERR("Invalid parameter(0x%x)", type);
 		break;
 	}
 	return CALENDAR_ERROR_NONE;
@@ -1071,20 +1076,30 @@ static int _gvariant_to_search(GVariant *arg_record, calendar_record_h *out_reco
 	RETV_IF(NULL == out_record, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	int count = 0;
-	GVariantIter *iter_value = NULL;
-	g_variant_get(arg_record, "ia(iv)", &count, &iter_value);
-	int value_count = g_variant_iter_n_children(iter_value);
-	if (0 != value_count) {
-		gboolean is_continue = FALSE;
-		do {
-			cal_search_value_s p = {0};
-			GVariant *arg_value = NULL;
-			is_continue = g_variant_iter_loop(iter_value, "(iv)",
-					&p.property_id, arg_value);
-			_gvariant_to_value(arg_value, &p);
-		} while (TRUE == is_continue);
-		g_variant_iter_free(iter_value);
+	char *view_uri = NULL;
+	GVariant *arg_search = NULL;
+	g_variant_get(arg_record, "(i&sv)", &count, &view_uri, &arg_search);
+
+	calendar_record_h record = NULL;
+	calendar_record_create(view_uri, &record);
+	cal_search_s *p = (cal_search_s *)record;
+
+	GVariantIter *iter_search = NULL;
+	g_variant_get(arg_search, "a(iv)", &iter_search);
+	int i;
+	for (i = 0; i < count; i++) {
+		cal_search_value_s *value = calloc(1, sizeof(cal_search_value_s));
+		if (NULL == value) {
+			ERR("calloc() Fail");
+			break;
+		}
+		GVariant *arg_value = NULL;
+		g_variant_iter_loop(iter_search, "(iv)", &value->property_id, &arg_value);
+		_gvariant_to_value(arg_value, value);
+		p->values = g_slist_append(p->values, value);
 	}
+
+	*out_record = record;
 	return CALENDAR_ERROR_NONE;
 }
 
@@ -1496,9 +1511,7 @@ static int _gvariant_to_todo(GVariant * arg_record, calendar_record_h *out_recor
 	} else {
 		DBG("No extended");
 	}
-
 	*out_record = record;
-	return CALENDAR_ERROR_NONE;
 
 	return CALENDAR_ERROR_NONE;
 }
