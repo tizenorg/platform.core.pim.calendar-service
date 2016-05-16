@@ -19,7 +19,6 @@ pkg_check_modules(client_pkgs REQUIRED
 	icu-i18n
 	contacts-service2
 	libtzplatform-config
-	capi-appfw-package-manager
 	dlog
 	capi-base-common
 	gio-2.0

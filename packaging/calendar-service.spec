@@ -26,7 +26,6 @@ BuildRequires: pkgconfig(contacts-service2)
 BuildRequires: pkgconfig(alarm-service)
 BuildRequires: pkgconfig(libtzplatform-config)
 BuildRequires: pkgconfig(capi-base-common)
-BuildRequires: pkgconfig(capi-appfw-package-manager)
 BuildRequires: pkgconfig(capi-appfw-application)
 BuildRequires: pkgconfig(libsmack)
 Requires(post): /sbin/ldconfig

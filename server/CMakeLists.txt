@@ -23,7 +23,6 @@ pkg_check_modules(daemon_pkgs REQUIRED
 	icu-i18n
 	contacts-service2
 	libtzplatform-config
-	capi-appfw-package-manager
 	dlog
 	capi-base-common
 	accounts-svc
