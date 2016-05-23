@@ -275,7 +275,7 @@ API int calendar_db_add_changed_cb(const char* view_uri, calendar_db_changed_cb 
 
 	ret = cal_client_handle_get_p(&handle);
 	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_client_handle_get_p() Fail(%d)", ret);
-	return cal_client_db_add_changed_cb(handle, view_uri, callback, user_data);
+	return cal_dbus_add_changed_cb(handle, view_uri, callback, user_data);
 }
 
 API int calendar_db_remove_changed_cb(const char* view_uri, calendar_db_changed_cb callback, void* user_data)
@@ -288,7 +288,7 @@ API int calendar_db_remove_changed_cb(const char* view_uri, calendar_db_changed_
 
 	ret = cal_client_handle_get_p(&handle);
 	RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_client_handle_get_p() Fail(%d)", ret);
-	return cal_client_db_remove_changed_cb(handle, view_uri, callback, user_data);
+	return cal_dbus_remove_changed_cb(handle, view_uri, callback, user_data);
 }
 
 API int calendar_db_insert_vcalendars(const char* vcalendar_stream, int **record_id_array, int *count)

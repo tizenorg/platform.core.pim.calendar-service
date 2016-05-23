@@ -31,6 +31,7 @@
 #include "cal_list.h"
 #include "cal_client_handle.h"
 #include "cal_client_reminder.h"
+#include "cal_client_db_helper.h"
 
 #define __CAL_CLIENT_ACCESS_MAX 10
 #define __CAL_CLIENT_ALLOW_USEC 25000
@@ -679,6 +680,51 @@ int cal_dbus_get_count_with_query(calendar_h handle, calendar_query_h query, int
 	return ret;
 }
 
+int cal_dbus_add_changed_cb(calendar_h handle, const char* view_uri,
+		void *callback, void* user_data)
+{
+	GError *error = NULL;
+	int ret = 0;
+
+	RETV_IF(NULL == handle, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == callback, CALENDAR_ERROR_INVALID_PARAMETER);
+
+	cal_dbus_call_check_permission_write_sync(cal_dbus_object, NULL, &error);
+	if (error) {
+		ERR("cal_dbus_call_check_permission_write_sync() Fail[%s]", error->message);
+		if (G_DBUS_ERROR_ACCESS_DENIED == error->code)
+			ret = CALENDAR_ERROR_PERMISSION_DENIED;
+		else
+			ret = CALENDAR_ERROR_IPC;
+		g_error_free(error);
+		return ret;
+	}
+
+	return cal_client_db_add_changed_cb(handle, view_uri, callback, user_data);
+}
+
+int cal_dbus_remove_changed_cb(calendar_h handle, const char* view_uri,
+		void *callback, void* user_data)
+{
+	GError *error = NULL;
+	int ret = 0;
+
+	RETV_IF(NULL == handle, CALENDAR_ERROR_INVALID_PARAMETER);
+	RETV_IF(NULL == callback, CALENDAR_ERROR_INVALID_PARAMETER);
+
+	cal_dbus_call_check_permission_write_sync(cal_dbus_object, NULL, &error);
+	if (error) {
+		ERR("cal_dbus_call_check_permission_write_sync() Fail[%s]", error->message);
+		if (G_DBUS_ERROR_ACCESS_DENIED == error->code)
+			ret = CALENDAR_ERROR_PERMISSION_DENIED;
+		else
+			ret = CALENDAR_ERROR_IPC;
+		g_error_free(error);
+		return ret;
+	}
+	return cal_client_db_remove_changed_cb(handle, view_uri, callback, user_data);
+}
+
 int cal_dbus_get_current_version(calendar_h handle, int *out_version)
 {
 	GError *error = NULL;
@@ -714,9 +760,22 @@ int cal_dbus_get_current_version(calendar_h handle, int *out_version)
 
 int cal_dbus_get_last_change_version(calendar_h handle, int *out_version)
 {
+	GError *error = NULL;
+	int ret = 0;
+
 	RETV_IF(NULL == handle, CALENDAR_ERROR_INVALID_PARAMETER);
 	RETV_IF(NULL == out_version, CALENDAR_ERROR_INVALID_PARAMETER);
 
+	cal_dbus_call_check_permission_read_sync(cal_dbus_object, NULL, &error);
+	if (error) {
+		ERR("cal_dbus_call_check_permission_read_sync() Fail[%s]", error->message);
+		if (G_DBUS_ERROR_ACCESS_DENIED == error->code)
+			ret = CALENDAR_ERROR_PERMISSION_DENIED;
+		else
+			ret = CALENDAR_ERROR_IPC;
+		g_error_free(error);
+		return ret;
+	}
 	return cal_handle_get_version(handle, out_version);
 }
 

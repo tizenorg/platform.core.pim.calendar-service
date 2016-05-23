@@ -56,16 +56,20 @@ int cal_dbus_get_records_with_query(calendar_h handle, calendar_query_h query,
 int cal_dbus_get_count(calendar_h handle, const char *view_uri, int *out_count);
 int cal_dbus_get_count_with_query(calendar_h handle, calendar_query_h query,
 		int *out_count);
+int cal_dbus_add_changed_cb(calendar_h handle, const char* view_uri,
+		void *callback, void* user_data);
+int cal_dbus_remove_changed_cb(calendar_h handle, const char* view_uri,
+		void *callback, void* user_data);
 int cal_dbus_get_current_version(calendar_h handle, int *out_version);
 int cal_dbus_get_changes_by_version(calendar_h handle, const char *view_uri,
 		int book_id, int version, calendar_list_h *out_list, int *out_version);
 int cal_dbus_get_changes_exception_by_version(calendar_h handle, const char *view_uri,
 		int original_id, int version, calendar_list_h *out_list);
+int cal_dbus_get_last_change_version(calendar_h handle, int *out_version);
 int cal_dbus_clean_after_sync(calendar_h handle, int book_id, int version);
 int cal_dbus_insert_vcalendars(calendar_h handle, const char *stream, int **out_ids,
 		int *out_count);
 int cal_dbus_replace_vcalendars(calendar_h handle, const char *stream, int *ids,
 		int count);
-int cal_dbus_get_last_change_version(calendar_h handle, int *out_version);
 
 #endif /* __CAL_CLIENT_DBUS_H__ */

@@ -406,6 +406,18 @@ static gboolean _handle_get_current_version(calDbus *object, GDBusMethodInvocati
 	return TRUE;
 }
 
+static gboolean _handle_check_permission_write(calDbus *object, GDBusMethodInvocation *invocation)
+{
+	cal_server_ondemand_start();
+	return TRUE;
+}
+
+static gboolean _handle_check_permission_read(calDbus *object, GDBusMethodInvocation *invocation)
+{
+	cal_server_ondemand_start();
+	return TRUE;
+}
+
 static gboolean _handle_get_changes_by_version(calDbus *object, GDBusMethodInvocation *invocation,
 		GVariant *arg_handle, char *view_uri, int book_id, int in_version)
 {
@@ -645,18 +657,12 @@ static void _dbus_on_bus_acquired(GDBusConnection *conn, const gchar *name, gpoi
 			G_CALLBACK(_handle_get_count_with_query), NULL);
 	g_signal_connect(dbus_object, "handle-get-current-version",
 			G_CALLBACK(_handle_get_current_version), NULL);
-/*
-	g_signal_connect(dbus_object, "handle-add-changed-cb",
-	G_CALLBACK(_handle_add_changed_cb), NULL);
-	g_signal_connect(dbus_object, "handle-remove-changed-cb",
-	G_CALLBACK(_handle_remove_changed_cb), NULL);
-*/
+	g_signal_connect(dbus_object, "handle-check-permission-write",
+			G_CALLBACK(_handle_check_permission_write), NULL);
+	g_signal_connect(dbus_object, "handle-check-permission-read",
+			G_CALLBACK(_handle_check_permission_read), NULL);
 	g_signal_connect(dbus_object, "handle-get-changes-by-version",
 			G_CALLBACK(_handle_get_changes_by_version), NULL);
-/*
-	g_signal_connect(dbus_object, "handle-get-last-change-version",
-	G_CALLBACK(_handle_get_last_change_version), NULL);
-*/
 	g_signal_connect(dbus_object, "handle-get-changes-exception-by-version",
 			G_CALLBACK(_handle_get_changes_exception_by_version), NULL);
 	g_signal_connect(dbus_object, "handle-clean-after-sync",

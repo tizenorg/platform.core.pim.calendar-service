@@ -15,6 +15,12 @@
     <policy context="default">
         <allow send_destination="@DBUS_INTERFACE@"/>
 		<check send_destination="@DBUS_INTERFACE@"
+				send_interface="@DBUS_INTERFACE@" send_member="check_permission_write"
+				privilege="http://tizen.org/privilege/calendar.write"/>
+		<check send_destination="@DBUS_INTERFACE@"
+				send_interface="@DBUS_INTERFACE@" send_member="check_permission_read"
+				privilege="http://tizen.org/privilege/calendar.read"/>
+		<check send_destination="@DBUS_INTERFACE@"
 				send_interface="@DBUS_INTERFACE@" send_member="insert_record"
 				privilege="http://tizen.org/privilege/calendar.write"/>
 		<check send_destination="@DBUS_INTERFACE@"
@@ -58,9 +64,6 @@
 				privilege="http://tizen.org/privilege/calendar.read"/>
 		<check send_destination="@DBUS_INTERFACE@"
 				send_interface="@DBUS_INTERFACE@" send_member="get_changes_by_version"
-				privilege="http://tizen.org/privilege/calendar.read"/>
-		<check send_destination="@DBUS_INTERFACE@"
-				send_interface="@DBUS_INTERFACE@" send_member="get_last_change_version"
 				privilege="http://tizen.org/privilege/calendar.read"/>
 		<check send_destination="@DBUS_INTERFACE@"
 				send_interface="@DBUS_INTERFACE@" send_member="get_changes_exception_by_version"

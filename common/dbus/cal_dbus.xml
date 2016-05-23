@@ -1,5 +1,9 @@
 <node>
 	<interface name="org.tizen.CalendarService.dbus">
+		<method name="check_permission_read">
+		</method>
+		<method name="check_permission_write">
+		</method>
 		<method name="register_resource">
 			<arg type="i" name="ret" direction="out"/>
 		</method>
@@ -103,10 +107,6 @@
 			<arg type="i" name="version" direction="out"/>
 			<arg type="i" name="ret" direction="out"/>
 		</method>
-		<method name="add_changed_cb">
-		</method>
-		<method name="remove_changed_cb">
-		</method>
 		<method name="get_changes_by_version">
 			<arg type="(ii)" name="handle" direction="in"/>
 			<arg type="s" name="view_uri" direction="in"/>
@@ -115,8 +115,6 @@
 			<arg type="(iv)" name="list" direction="out"/>
 			<arg type="i" name="version" direction="out"/>
 			<arg type="i" name="ret" direction="out"/>
-		</method>
-		<method name="get_last_change_version">
 		</method>
 		<method name="get_changes_exception_by_version">
 			<arg type="(ii)" name="handle" direction="in"/>
