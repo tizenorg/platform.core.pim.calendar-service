@@ -408,12 +408,14 @@ static gboolean _handle_get_current_version(calDbus *object, GDBusMethodInvocati
 
 static gboolean _handle_check_permission_write(calDbus *object, GDBusMethodInvocation *invocation)
 {
+	cal_dbus_complete_check_permission_write(object, invocation);
 	cal_server_ondemand_start();
 	return TRUE;
 }
 
 static gboolean _handle_check_permission_read(calDbus *object, GDBusMethodInvocation *invocation)
 {
+	cal_dbus_complete_check_permission_read(object, invocation);
 	cal_server_ondemand_start();
 	return TRUE;
 }
