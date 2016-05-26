@@ -734,8 +734,18 @@ int cal_dbus_emit_signal(const char *dest, const char *signal_name, GVariant *va
 
 	calDbusSkeleton *skeleton = NULL;
 	skeleton = CAL_DBUS_SKELETON(cal_dbus_get_object());
+	if (NULL == skeleton) {
+		ERR("cal_dbus_get_object() Fail");
+		return CALENDAR_ERROR_IPC;
+	}
+
 	GDBusConnection *conn = NULL;
 	conn = g_dbus_interface_skeleton_get_connection(G_DBUS_INTERFACE_SKELETON(skeleton));
+	if (NULL == conn) {
+		ERR("g_dbus_interface_skeleton_get_connection() Fail");
+		return CALENDAR_ERROR_IPC;
+	}
+
 	ret = g_dbus_connection_emit_signal(conn,
 			dest,
 			CAL_DBUS_OBJPATH,
@@ -743,15 +753,22 @@ int cal_dbus_emit_signal(const char *dest, const char *signal_name, GVariant *va
 			signal_name,
 			value,
 			&error);
+
 	if (FALSE == ret) {
-		ERR("g_dbus_connection_emit_signal() Fail(%s)", error->message);
-		g_error_free(error);
+		ERR("g_dbus_connection_emit_signal() Fail");
+		if (error) {
+			ERR("error[%s]", error->message);
+			g_error_free(error);
+		}
 		return CALENDAR_ERROR_IPC;
 	}
 
 	if (FALSE == g_dbus_connection_flush_sync(conn, NULL, &error)) {
-		ERR("g_dbus_connection_flush_sync() Fail(%s)", error->message);
-		g_error_free(error);
+		ERR("g_dbus_connection_flush_sync() Fail");
+		if (error) {
+			ERR("error[%s]", error->message);
+			g_error_free(error);
+		}
 		return CALENDAR_ERROR_IPC;
 	}
 

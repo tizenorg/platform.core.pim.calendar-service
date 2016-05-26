@@ -179,8 +179,11 @@ int cal_dbus_start(void)
 			NULL,
 			&error);
 	if (NULL == cal_dbus_object) {
-		ERR("cal_dbus_proxy_new_for_bus_sync() Fail[%s]", error->message);
-		g_error_free(error);
+		ERR("cal_dbus_proxy_new_for_bus_sync() Fail");
+		if (error) {
+			ERR("error[%s]", error->message);
+			g_error_free(error);
+		}
 		return CALENDAR_ERROR_IPC;
 	}
 
@@ -233,8 +236,11 @@ int cal_dbus_recovery(void)
 			NULL,
 			&error);
 	if (NULL == cal_dbus_object) {
-		ERR("cal_dbus_proxy_new_for_bus_sync() Fail[%s]", error->message);
-		g_error_free(error);
+		ERR("cal_dbus_proxy_new_for_bus_sync() Fail");
+		if (error) {
+			ERR("error[%s]", error->message);
+			g_error_free(error);
+		}
 		return CALENDAR_ERROR_IPC;
 	}
 
