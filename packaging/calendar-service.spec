@@ -1,6 +1,6 @@
 Name:       calendar-service
 Summary:    DB library for calendar
-Version:    0.1.162
+Version:    0.1.163
 Release:    1
 Group:      System/Libraries
 License:    Apache-2.0
@@ -9,8 +9,7 @@ Source1:    %{name}d.service
 Source2:    org.tizen.CalendarService.dbus.service
 Source1001: %{name}.manifest
 Source1002: %{name}.conf.in
-Source2001: %{name}-alarm.service
-Source2002: ALARM.a%{name}.service
+Source2001: ALARM.a%{name}.service
 %if "%{?profile}" == "wearable"
 ExcludeArch: %{arm} %ix86 x86_64
 %endif
@@ -80,9 +79,8 @@ sed -i 's/@DBUS_INTERFACE@/%{_dbus_interface}/g' %{SOURCE1002}
 install -m 0644 %{SOURCE1002} %{buildroot}%{_sysconfdir}/dbus-1/session.d/%{name}.conf
 
 # alarm dbus service file
-install -m 0644 %SOURCE2001 %{buildroot}%{_unitdir_user}
 mkdir -p %{buildroot}%{_datadir}/dbus-1/system-services
-install -m 0644 %SOURCE2002 %{buildroot}%{_datadir}/dbus-1/system-services
+install -m 0644 %SOURCE2001 %{buildroot}%{_unitdir_user}
 
 
 %post -p /sbin/ldconfig
@@ -99,8 +97,7 @@ install -m 0644 %SOURCE2002 %{buildroot}%{_datadir}/dbus-1/system-services
 %{_unitdir_user}/%{name}d.service
 %{_datadir}/dbus-1/services/%{_dbus_interface}.service
 %config %{_sysconfdir}/dbus-1/session.d/%{name}.conf
-%{_unitdir_user}/%{name}-alarm.service
-%{_datadir}/dbus-1/system-services/ALARM.acalendar-service.service
+%{_unitdir_user}/ALARM.acalendar-service.service
 %license LICENSE.APLv2
 
 

@@ -1,8 +1,0 @@
-[Unit]
-Description=Calendar Service Alarm
-
-[Service]
-Type=dbus
-BusName=ALARM.acalendar-service
-Environment="TIMEOUT=0"
-ExecStart=/usr/bin/calendar-serviced $TIMEOUT

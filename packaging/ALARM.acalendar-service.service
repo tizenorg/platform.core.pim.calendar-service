@@ -1,5 +1,4 @@
 [D-BUS Service]
 Name=ALARM.acalendar-service
 Exec=/bin/false
-User=app
-SystemdService=calendar-service-alarm.service
+SystemdService=calendar-serviced.service
