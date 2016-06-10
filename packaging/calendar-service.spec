@@ -79,8 +79,8 @@ sed -i 's/@DBUS_INTERFACE@/%{_dbus_interface}/g' %{SOURCE1002}
 install -m 0644 %{SOURCE1002} %{buildroot}%{_sysconfdir}/dbus-1/session.d/%{name}.conf
 
 # alarm dbus service file
-mkdir -p %{buildroot}%{_datadir}/dbus-1/system-services
-install -m 0644 %SOURCE2001 %{buildroot}%{_unitdir_user}
+mkdir -p %{buildroot}%{_datadir}/dbus-1/services
+install -m 0644 %SOURCE2001 %{buildroot}%{_datadir}/dbus-1/services
 
 
 %post -p /sbin/ldconfig
@@ -97,7 +97,7 @@ install -m 0644 %SOURCE2001 %{buildroot}%{_unitdir_user}
 %{_unitdir_user}/%{name}d.service
 %{_datadir}/dbus-1/services/%{_dbus_interface}.service
 %config %{_sysconfdir}/dbus-1/session.d/%{name}.conf
-%{_unitdir_user}/ALARM.acalendar-service.service
+%{_datadir}/dbus-1/services/ALARM.acalendar-service.service
 %license LICENSE.APLv2
 
 
