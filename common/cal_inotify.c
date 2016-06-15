@@ -128,14 +128,18 @@ static inline int _inotify_attach_handler(int fd)
 	GIOChannel *channel;
 
 	if (fd < 0) {
+		/* LCOV_EXCL_START */
 		ERR("Invalid argument: fd is NULL");
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	channel = g_io_channel_unix_new(fd);
 	if (NULL == channel) {
+		/* LCOV_EXCL_START */
 		ERR("g_io_channel_unix_new() Fail");
 		return -1; /* CALENDAR_ERROR_FAILED_INOTIFY */
+		/* LCOV_EXCL_STOP */
 	}
 
 	g_io_channel_set_flags(channel, G_IO_FLAG_NONBLOCK, NULL);
@@ -164,6 +168,7 @@ int cal_inotify_init(void)
 #endif
 	_inoti_fd = inotify_init();
 	if (_inoti_fd == -1) {
+		/* LCOV_EXCL_START */
 		ERR("inotify_init() Fail(%d)", errno);
 #ifdef CAL_IPC_CLIENT
 		cal_mutex_lock(CAL_MUTEX_INOTIFY);
@@ -171,6 +176,7 @@ int cal_inotify_init(void)
 		cal_mutex_unlock(CAL_MUTEX_INOTIFY);
 #endif
 		return -1; /* CALENDAR_ERROR_FAILED_INOTIFY */
+		/* LCOV_EXCL_STOP */
 	}
 
 	ret = fcntl(_inoti_fd, F_SETFD, FD_CLOEXEC);
@@ -180,6 +186,7 @@ int cal_inotify_init(void)
 
 	inoti_handler = _inotify_attach_handler(_inoti_fd);
 	if (inoti_handler <= 0) {
+		/* LCOV_EXCL_START */
 		ERR("_inotify_attach_handler() Fail");
 		close(_inoti_fd);
 		_inoti_fd = -1;
@@ -190,6 +197,7 @@ int cal_inotify_init(void)
 		cal_mutex_unlock(CAL_MUTEX_INOTIFY);
 #endif
 		return -1; /* CALENDAR_ERROR_FAILED_INOTIFY */
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -206,8 +214,10 @@ static inline int _cal_inotify_add_watch(int fd, const char *notipath)
 
 	ret = inotify_add_watch(fd, notipath, IN_CLOSE_WRITE);
 	if (ret < 0) {
+		/* LCOV_EXCL_START */
 		ERR("Failed to add watch(ret:%d)", ret);
 		return -1; /* CALENDAR_ERROR_FAILED_INOTIFY */
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -221,7 +231,7 @@ static bool _has_noti(int wd, void *cb, void *cb_data)
 	while (cursor) {
 		noti_info_s *info = (noti_info_s *)cursor->data;
 		if (NULL == info) {
-			ERR("No info");
+			WARN("No info");
 			cursor = g_slist_next(cursor);
 			continue;
 		}
@@ -239,8 +249,10 @@ static int _append_noti(int wd, int type, void *cb, void *cb_data)
 	noti_info_s *info = NULL;
 	info = calloc(1, sizeof(noti_info_s));
 	if (NULL == info) {
+		/* LCOV_EXCL_START */
 		ERR("calloc() Fail");
 		return CALENDAR_ERROR_OUT_OF_MEMORY;
+		/* LCOV_EXCL_STOP */
 	}
 
 	info->wd = wd;
@@ -264,22 +276,28 @@ int cal_inotify_subscribe(cal_noti_type_e type, const char *path, void *cb, void
 
 	wd = _cal_inotify_get_wd(_inoti_fd, path);
 	if (wd == -1) {
+		/* LCOV_EXCL_START */
 		ERR("_cal_inotify_get_wd() Fail(%d)", errno);
 		if (errno == EACCES)
 			return CALENDAR_ERROR_PERMISSION_DENIED;
 		return CALENDAR_ERROR_SYSTEM;
+		/* LCOV_EXCL_STOP */
 	}
 
 	if (true == _has_noti(wd, cb, cb_data)) {
+		/* LCOV_EXCL_START */
 		ERR("noti is already registered: path[%s]", path);
 		_cal_inotify_add_watch(_inoti_fd, path);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	ret = _cal_inotify_add_watch(_inoti_fd, path);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("_cal_inotify_add_watch() Fail(%d)", ret);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 	_append_noti(wd, type, cb, cb_data);
 
@@ -312,8 +330,10 @@ static int _cal_del_noti(GSList **_noti_list, int wd, void *cb, void *cb_data)
 	}
 
 	if (del_cnt == 0) {
+		/* LCOV_EXCL_START */
 		ERR("Nothing to delete");
 		return CALENDAR_ERROR_NO_DATA;
+		/* LCOV_EXCL_STOP */
 	}
 	*_noti_list = result;
 
@@ -330,10 +350,12 @@ int cal_inotify_unsubscribe(const char *path, void *cb, void *cb_data)
 
 	wd = _cal_inotify_get_wd(_inoti_fd, path);
 	if (wd == -1) {
+		/* LCOV_EXCL_START */
 		ERR("_cal_inotify_get_wd() Fail(%d)", errno);
 		if (errno == EACCES)
 			return CALENDAR_ERROR_PERMISSION_DENIED;
 		return CALENDAR_ERROR_SYSTEM;
+		/* LCOV_EXCL_STOP */
 	}
 
 	ret = _cal_del_noti(&_noti_list, wd, cb, cb_data);

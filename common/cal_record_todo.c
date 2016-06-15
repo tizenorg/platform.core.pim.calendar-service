@@ -307,8 +307,10 @@ static int _cal_record_todo_get_str(calendar_record_h record, unsigned int prope
 		*out_str = cal_strdup(rec->organizer_email);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -385,8 +387,10 @@ static int _cal_record_todo_get_str_p(calendar_record_h record, unsigned int pro
 		*out_str = (rec->organizer_email);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -442,8 +446,10 @@ static int _cal_record_todo_get_int(calendar_record_h record, unsigned int prope
 		*out_value = (rec->is_allday);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -460,8 +466,10 @@ static int _cal_record_todo_get_double(calendar_record_h record, unsigned int pr
 		*out_value = (rec->longitude);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -481,8 +489,10 @@ static int _cal_record_todo_get_lli(calendar_record_h record, unsigned int prope
 		*out_value = (rec->completed_time);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -502,8 +512,10 @@ static int _cal_record_todo_get_caltime(calendar_record_h record, unsigned int p
 		*out_value = rec->until;
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -602,7 +614,10 @@ static int _cal_record_todo_set_str(calendar_record_h record, unsigned int prope
 		rec->organizer_email = cal_strdup(value);
 		break;
 	default:
+		/* LCOV_EXCL_START */
+		ERR("invalid parameter (value:%s)", value);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -628,8 +643,10 @@ static int _cal_record_todo_set_int(calendar_record_h record, unsigned int prope
 			(rec->todo_status) = value;
 			break;
 		default:
+			/* LCOV_EXCL_START */
 			ERR("invalid parameter (value:%d)", value);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
+			/* LCOV_EXCL_STOP */
 		}
 		break;
 	case CAL_PROPERTY_TODO_PRIORITY:
@@ -641,8 +658,10 @@ static int _cal_record_todo_set_int(calendar_record_h record, unsigned int prope
 			(rec->priority) = value;
 			break;
 		default:
+			/* LCOV_EXCL_START */
 			ERR("invalid parameter (value:%d)", value);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
+			/* LCOV_EXCL_STOP */
 		}
 		break;
 	case CAL_PROPERTY_TODO_SENSITIVITY:
@@ -664,8 +683,10 @@ static int _cal_record_todo_set_int(calendar_record_h record, unsigned int prope
 			(rec->freq) = value;
 			break;
 		default:
+			/* LCOV_EXCL_START */
 			ERR("invalid parameter (value:%d)", value);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
+			/* LCOV_EXCL_STOP */
 		}
 		break;
 	case CAL_PROPERTY_TODO_RANGE_TYPE:
@@ -676,8 +697,10 @@ static int _cal_record_todo_set_int(calendar_record_h record, unsigned int prope
 			(rec->range_type) = value;
 			break;
 		default:
+			/* LCOV_EXCL_START */
 			ERR("invalid parameter (value:%d)", value);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
+			/* LCOV_EXCL_STOP */
 		}
 		break;
 	case CAL_PROPERTY_TODO_COUNT:
@@ -700,8 +723,10 @@ static int _cal_record_todo_set_int(calendar_record_h record, unsigned int prope
 			(rec->wkst) = value;
 			break;
 		default:
+			/* LCOV_EXCL_START */
 			ERR("invalid parameter (value:%d)", value);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
+			/* LCOV_EXCL_STOP */
 		}
 		break;
 	case CAL_PROPERTY_TODO_HAS_ALARM:
@@ -714,8 +739,10 @@ static int _cal_record_todo_set_int(calendar_record_h record, unsigned int prope
 		(rec->is_allday) = value;
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -732,8 +759,10 @@ static int _cal_record_todo_set_double(calendar_record_h record, unsigned int pr
 		(rec->longitude) = value;
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -750,8 +779,10 @@ static int _cal_record_todo_set_lli(calendar_record_h record, unsigned int prope
 		(rec->created_time) = value;
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -771,8 +802,10 @@ static int _cal_record_todo_set_caltime(calendar_record_h record, unsigned int p
 		(rec->until) = value;
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -794,8 +827,10 @@ static int _cal_record_todo_reset_child_record_id(calendar_record_h child_record
 		((cal_extended_s *)record)->id = 0;
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("Invalid child record type (%d)", record->type);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 	return CALENDAR_ERROR_NONE;
 }
@@ -820,8 +855,10 @@ static int _cal_record_todo_add_child_record(calendar_record_h record, unsigned 
 		ret = calendar_list_add((calendar_list_h)rec->extended_list, child_record);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 	return ret;
 }
@@ -846,8 +883,10 @@ static int _cal_record_todo_remove_child_record(calendar_record_h record, unsign
 		ret = calendar_list_remove((calendar_list_h)rec->extended_list, child_record);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 	return ret;
 }
@@ -871,8 +910,10 @@ static int _cal_record_todo_get_child_record_count(calendar_record_h record, uns
 		ret = calendar_list_get_count((calendar_list_h)rec->extended_list, (int *)count);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 	return ret;
 }
@@ -896,8 +937,10 @@ static int _cal_record_todo_get_child_record_at_p(calendar_record_h record, unsi
 		ret = cal_list_get_nth_record_p(rec->extended_list, index, child_record);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 	return ret;
 }
@@ -921,8 +964,10 @@ static int _cal_record_todo_clone_child_record_list(calendar_record_h record, un
 		ret = cal_list_clone((calendar_list_h)rec->extended_list, out_list);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 	return ret;
 }

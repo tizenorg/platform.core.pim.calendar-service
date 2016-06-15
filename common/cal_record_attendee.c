@@ -163,8 +163,10 @@ static int _cal_record_attendee_get_str(calendar_record_h record, unsigned int p
 		*out_str = cal_strdup(rec->attendee_member);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -199,8 +201,10 @@ static int _cal_record_attendee_get_str_p(calendar_record_h record, unsigned int
 		*out_str = (rec->attendee_member);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -229,8 +233,10 @@ static int _cal_record_attendee_get_int(calendar_record_h record, unsigned int p
 		*out_value = (rec->parent_id);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -273,8 +279,10 @@ static int _cal_record_attendee_set_str(calendar_record_h record, unsigned int p
 		rec->attendee_member = cal_strdup(value);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -303,8 +311,10 @@ static int _cal_record_attendee_set_int(calendar_record_h record, unsigned int p
 		(rec->parent_id) = value;
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;

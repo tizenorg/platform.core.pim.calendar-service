@@ -54,9 +54,11 @@ int cal_client_connect(calendar_h handle, unsigned int id, int *connection_count
 #endif
 		ret = cal_inotify_init();
 		if (CALENDAR_ERROR_NONE != ret) {
+			/* LCOV_EXCL_START */
 			ERR("cal_inotify_init() Fail(%d)", ret);
 			cal_mutex_unlock(CAL_MUTEX_CONNECTION);
 			return ret;
+			/* LCOV_EXCL_STOP */
 		}
 
 		cal_view_initialize();
@@ -102,9 +104,11 @@ int cal_client_disconnect(calendar_h handle, unsigned int id, int *connection_co
 	} else if (1 < *connection_count) {
 		DBG("[System] connection count(%d)", *connection_count);
 	} else {
-		DBG("[System] calendar_connect() is needed");
+		/* LCOV_EXCL_START */
+		ERR("[System] calendar_connect() is needed");
 		cal_mutex_unlock(CAL_MUTEX_CONNECTION);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	(*connection_count)--;

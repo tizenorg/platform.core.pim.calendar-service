@@ -48,9 +48,11 @@ int cal_server_account_init(void)
 	pthread_mutex_lock(&cal_mutex_account);
 	ret = account_subscribe_create(&cal_account_h);
 	if (ACCOUNT_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("account_subscribe_create() Fail(%d)", ret);
 		pthread_mutex_unlock(&cal_mutex_account);
 		return CALENDAR_ERROR_SYSTEM;
+		/* LCOV_EXCL_STOP */
 	}
 
 	ret = account_subscribe_notification(cal_account_h, _noti_cb, NULL);

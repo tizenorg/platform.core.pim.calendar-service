@@ -33,9 +33,11 @@ int cal_db_instance_helper_insert_utime_instance(int event_id, long long int s, 
 
 	ret = cal_db_util_query_exec(query);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_exec() Fail(%d)", ret);
 		SECURE("[%s]", query);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 	return CALENDAR_ERROR_NONE;
 }
@@ -49,9 +51,11 @@ int cal_db_instance_helper_insert_localtime_instance(int event_id, const char *s
 
 	ret = cal_db_util_query_exec(query);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_exec() Fail(%d)", ret);
 		SECURE("[%s]", query);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 	return CALENDAR_ERROR_NONE;
 }

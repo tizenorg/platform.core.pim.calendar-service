@@ -97,12 +97,16 @@ static inline void _cal_record_set_property_flag(calendar_record_h record, unsig
 			_record->properties_flags = calloc(count, sizeof(char));
 			_record->properties_max_count = count;
 			if (NULL == _record->properties_flags) {
+				/* LCOV_EXCL_START */
 				ERR("calloc() Fail");
 				return ;
+				/* LCOV_EXCL_STOP */
 			}
 		} else {
+			/* LCOV_EXCL_START */
 			ERR("get property_info_Fail");
 			return ;
+			/* LCOV_EXCL_STOP */
 		}
 	}
 

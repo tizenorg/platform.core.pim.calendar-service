@@ -71,83 +71,107 @@ static int _cal_server_contacts_set_new_event(int id, char *label, int calendar_
 
 	ret = calendar_record_set_str(event, _calendar_event.summary, label);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("calendar_record_set_str() Fail:summary");
 		calendar_record_destroy(event, true);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 	ret = calendar_record_set_int(event, _calendar_event.calendar_book_id,
 			DEFAULT_BIRTHDAY_CALENDAR_BOOK_ID);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("calendar_record_set_int() Fail:calendar_book_id");
 		calendar_record_destroy(event, true);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 	ret = calendar_record_set_caltime(event, _calendar_event.start_time, st);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("calendar_record_set_caltime() Fail:start_time");
 		calendar_record_destroy(event, true);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 	ret = calendar_record_set_caltime(event, _calendar_event.end_time, et);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("calendar_record_set_caltime() Fail:end_time");
 		calendar_record_destroy(event, true);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 	ret = calendar_record_set_int(event, _calendar_event.person_id, id);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("calendar_record_set_int() Fail:person_id");
 		calendar_record_destroy(event, true);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 	ret = calendar_record_set_str(event, _calendar_event.sync_data1, type_str);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("calendar_record_set_str() Fail:sync_data1");
 		calendar_record_destroy(event, true);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 	ret = calendar_record_set_int(event, _calendar_event.freq, CALENDAR_RECURRENCE_YEARLY);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("calendar_record_set_int() Fail:freq");
 		calendar_record_destroy(event, true);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 	ret = calendar_record_set_int(event, _calendar_event.interval, 1);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("calendar_record_set_int() Fail:interval");
 		calendar_record_destroy(event, true);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 	if (CONTACTS_EVENT_CALENDAR_TYPE_CHINESE == calendar_type) {
 		ret = calendar_record_set_int(event, _calendar_event.calendar_system_type,
 				CALENDAR_SYSTEM_EAST_ASIAN_LUNISOLAR);
 		if (CALENDAR_ERROR_NONE != ret) {
+			/* LCOV_EXCL_START */
 			ERR("calendar_record_set_int() Fail:calendar_system_type");
 			calendar_record_destroy(event, true);
 			return ret;
+			/* LCOV_EXCL_STOP */
 		}
 	} else {
 		ret = calendar_record_set_str(event, _calendar_event.bymonthday, buf);
 		if (CALENDAR_ERROR_NONE != ret) {
+			/* LCOV_EXCL_START */
 			ERR("calendar_record_set_str() Fail:bymonthday");
 			calendar_record_destroy(event, true);
 			return ret;
+			/* LCOV_EXCL_STOP */
 		}
 	}
 	ret = calendar_record_set_int(event, _calendar_event.range_type, CALENDAR_RANGE_NONE);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("calendar_record_set_int() Fail:range type");
 		calendar_record_destroy(event, true);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	if (0 < account_id) {
 		snprintf(buf, sizeof(buf), "%d", account_id);
 		ret = calendar_record_set_str(event, _calendar_event.sync_data4, buf);
 		if (CALENDAR_ERROR_NONE != ret) {
+			/* LCOV_EXCL_START */
 			ERR("calendar_record_set_str() Fail:sync data4");
 			calendar_record_destroy(event, true);
 			return ret;
+			/* LCOV_EXCL_STOP */
 		}
 	}
 
@@ -167,8 +191,10 @@ static int cal_server_contacts_delete_event(int contact_id, int **out_array, int
 
 	array = calloc(max_count, sizeof(int));
 	if (NULL == array) {
+		/* LCOV_EXCL_START */
 		ERR("calloc() Fail");
 		return CALENDAR_ERROR_OUT_OF_MEMORY;
+		/* LCOV_EXCL_STOP */
 	}
 
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
@@ -177,26 +203,32 @@ static int cal_server_contacts_delete_event(int contact_id, int **out_array, int
 			CAL_TABLE_SCHEDULE, contact_id);
 	ret = cal_db_util_query_prepare(query, &stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query);
 		free(array);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	int index = 0;
 	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		int event_id = sqlite3_column_int(stmt, 0);
 		if (0 == event_id) {
+			/* LCOV_EXCL_START */
 			ERR("event id is invalid");
 			break;
+			/* LCOV_EXCL_STOP */
 		}
 
 		if (max_count <= index) {
 			max_count *= 2;
 			array = realloc(array, max_count *sizeof(int));
 			if (NULL == array) {
+				/* LCOV_EXCL_START */
 				ERR("realloc() Fail");
 				break;
+				/* LCOV_EXCL_STOP */
 			}
 		}
 		array[index] = event_id;
@@ -220,31 +252,39 @@ static int cal_server_contacts_insert_event(int id, calendar_list_h out_insert)
 	contacts_record_h contact = NULL;
 	ret = contacts_db_get_record(_contacts_contact._uri, id, &contact);
 	if (CONTACTS_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("contacts_db_get_record() Fail(%d)", ret);
 		return CALENDAR_ERROR_SYSTEM;
+		/* LCOV_EXCL_STOP */
 	}
 	int address_book_id = 0;
 	ret = contacts_record_get_int(contact, _contacts_contact.address_book_id, &address_book_id);
 	if (CONTACTS_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("contacts_record_get_int() Fail(%d)", ret);
 		contacts_record_destroy(contact, true);
 		return CALENDAR_ERROR_SYSTEM;
+		/* LCOV_EXCL_STOP */
 	}
 	if (0 < address_book_id) { /* default phone addressbook is 0 */
 		DBG("address_book_id(%d)", address_book_id);
 		contacts_record_h address_book = NULL;
 		ret = contacts_db_get_record(_contacts_address_book._uri, address_book_id, &address_book);
 		if (CONTACTS_ERROR_NONE != ret) {
+			/* LCOV_EXCL_START */
 			DBG("contacts_db_get_record() Fail(%d)", ret);
 			contacts_record_destroy(contact, true);
 			return CALENDAR_ERROR_SYSTEM;
+			/* LCOV_EXCL_STOP */
 		}
 		ret = contacts_record_get_int(address_book, _contacts_address_book.account_id, &account_id);
 		contacts_record_destroy(address_book, true);
 		if (CONTACTS_ERROR_NONE != ret) {
+			/* LCOV_EXCL_START */
 			DBG("contacts_record_get_inti() Fail(%d)", ret);
 			contacts_record_destroy(contact, true);
 			return CALENDAR_ERROR_SYSTEM;
+			/* LCOV_EXCL_STOP */
 		}
 		DBG("account_id[%d]", account_id);
 	}
@@ -280,9 +320,11 @@ static int cal_server_contacts_insert_event(int id, calendar_list_h out_insert)
 		case CONTACTS_EVENT_TYPE_CUSTOM:
 			ret = contacts_record_get_str_p(contact_event, _contacts_event.label, &type_str);
 			if (CONTACTS_ERROR_NONE != ret) {
+				/* LCOV_EXCL_START */
 				ERR("contacts_record_get_str_p() Fail(%d)", ret);
 				is_proper_type = false;
 				break;
+				/* LCOV_EXCL_STOP */
 			}
 			break;
 		default:
@@ -344,8 +386,10 @@ static void _cal_server_contacts_get_event_list(contacts_list_h contacts_list,
 			cal_server_contacts_delete_event(contact_id, &delete_array, &delete_count);
 			break;
 		default:
+			/* LCOV_EXCL_START */
 			ERR("Invalid");
 			break;
+			/* LCOV_EXCL_STOP */
 		}
 
 		if (0 < delete_count) {
@@ -356,9 +400,11 @@ static void _cal_server_contacts_get_event_list(contacts_list_h contacts_list,
 				array = realloc(array, (count +delete_count) *sizeof(int));
 
 			if (NULL == array) {
+				/* LCOV_EXCL_START */
 				ERR("calloc() Fail");
 				free(delete_array);
 				break;
+				/* LCOV_EXCL_STOP */
 			}
 			memcpy(array +count, delete_array, delete_count *sizeof(int));
 			count += delete_count;
@@ -373,15 +419,17 @@ static int _cal_server_contacts_sync(void)
 {
 	CAL_START_TIMESTAMP
 
-	int ret;
+		int ret;
 
 	int contacts_ver = -1;
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	snprintf(query, sizeof(query), "SELECT contacts_ver FROM %s", CAL_TABLE_VERSION);
 	ret = cal_db_util_query_get_first_int_result(query, NULL, &contacts_ver);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_get_first_int_result() Fail(%d)", ret);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 	DBG("contacts_ver(%d)", contacts_ver);
 
@@ -390,9 +438,11 @@ static int _cal_server_contacts_sync(void)
 	ret = contacts_db_get_changes_by_version(_contacts_contact_updated_info._uri,
 			-1, contacts_ver, &contacts_list, &latest_ver);
 	if (CONTACTS_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("contacts_db_get_changes_by_version() Fail(%d)", ret);
 		contacts_list_destroy(contacts_list, true);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	if (NULL == contacts_list) {
@@ -421,12 +471,14 @@ static int _cal_server_contacts_sync(void)
 
 	ret = cal_db_util_begin_trans();
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_begin_trans() Fail(%d)", ret);
 		contacts_list_destroy(contacts_list, true);
 		calendar_list_destroy(insert_list, true);
 		free(delete_array);
 		cal_db_util_end_trans(false);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	ret = cal_db_delete_records(_calendar_event._uri, delete_array, delete_count);
@@ -435,12 +487,14 @@ static int _cal_server_contacts_sync(void)
 	snprintf(query, sizeof(query), "UPDATE %s SET contacts_ver=%d", CAL_TABLE_VERSION, latest_ver);
 	ret = cal_db_util_query_exec(query);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_exec() Fail(%d)", ret);
 		contacts_list_destroy(contacts_list, true);
 		calendar_list_destroy(insert_list, true);
 		free(delete_array);
 		cal_db_util_end_trans(false);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 	cal_db_util_notify(CAL_NOTI_TYPE_EVENT);
 	contacts_list_destroy(contacts_list, true);
@@ -449,7 +503,7 @@ static int _cal_server_contacts_sync(void)
 	cal_db_util_end_trans(true);
 
 	CAL_PRINT_TIMESTAMP
-	return CALENDAR_ERROR_NONE;
+		return CALENDAR_ERROR_NONE;
 }
 
 void cal_server_contacts_delete(int account_id)
@@ -471,75 +525,93 @@ void cal_server_contacts_delete(int account_id)
 	RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_query_create() Fail");
 	ret = calendar_filter_create(_calendar_event._uri, &filter);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("calendar_filter_create() Fail");
 		calendar_query_destroy(query);
 		return ;
+		/* LCOV_EXCL_STOP */
 	}
 	ret = calendar_filter_add_str(filter, _calendar_event.sync_data4,
 			CALENDAR_MATCH_EXACTLY, buf);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("calendar_filter_add_str() Fail(%d)", ret);
 		calendar_filter_destroy(filter);
 		calendar_query_destroy(query);
 		return ;
+		/* LCOV_EXCL_STOP */
 	}
 	ret = calendar_filter_add_operator(filter, CALENDAR_FILTER_OPERATOR_AND);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("calendar_filter_add_operator() Fail(%d)", ret);
 		calendar_filter_destroy(filter);
 		calendar_query_destroy(query);
 		return ;
+		/* LCOV_EXCL_STOP */
 	}
 	ret = calendar_filter_add_int(filter, _calendar_event.calendar_book_id,
 			CALENDAR_MATCH_EQUAL, DEFAULT_BIRTHDAY_CALENDAR_BOOK_ID);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("calendar_filter_add_int() Fail(%d)", ret);
 		calendar_filter_destroy(filter);
 		calendar_query_destroy(query);
 		return ;
+		/* LCOV_EXCL_STOP */
 	}
 	ret = calendar_query_set_filter(query, filter);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("calendar_query_set_filter() Fail");
 		calendar_filter_destroy(filter);
 		calendar_query_destroy(query);
 		return ;
+		/* LCOV_EXCL_STOP */
 	}
 	unsigned int projection = _calendar_event.id;
 	ret = calendar_query_set_projection(query, &projection , 1);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("calendar_query_set_projection() Fail");
 		calendar_filter_destroy(filter);
 		calendar_query_destroy(query);
 		return ;
+		/* LCOV_EXCL_STOP */
 	}
 
 	ret = cal_db_get_records_with_query(query, 0, 0, &list);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_get_records_with_query() Fail");
 		calendar_list_destroy(list, true);
 		calendar_filter_destroy(filter);
 		calendar_query_destroy(query);
 		return ;
+		/* LCOV_EXCL_STOP */
 	}
 	ret = calendar_list_get_count(list, &count);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("calendar_list_get_count() Fail");
 		calendar_list_destroy(list, true);
 		calendar_filter_destroy(filter);
 		calendar_query_destroy(query);
 		return ;
+		/* LCOV_EXCL_STOP */
 	}
 	DBG("event count(%d)\n", count);
 
 	if (0 < count) {
 		record_id_array = (int *)calloc(count, sizeof(int));
 		if (NULL == record_id_array) {
+			/* LCOV_EXCL_START */
 			ERR("calloc() Fail");
 			calendar_list_destroy(list, true);
 			calendar_filter_destroy(filter);
 			calendar_query_destroy(query);
 			return;
+			/* LCOV_EXCL_STOP */
 		}
 
 		calendar_list_first(list);
@@ -580,9 +652,11 @@ static gpointer _cal_server_contacts_sync_main(gpointer user_data)
 
 		ret = cal_connect();
 		if (CALENDAR_ERROR_NONE != ret) {
+			/* LCOV_EXCL_START */
 			ERR("cal_connect() Fail(%d)", ret);
 			cal_server_ondemand_start();
 			break;
+			/* LCOV_EXCL_STOP */
 		}
 
 		cal_access_control_set_client_info(NULL, "calendar-service");
@@ -634,8 +708,10 @@ int cal_server_contacts_init(void)
 
 	ret = contacts_connect();
 	if (CONTACTS_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("contacts_connect() Fail(%d)", ret);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	ret = contacts_db_add_changed_cb(_contacts_event._uri, _changed_cb, NULL);

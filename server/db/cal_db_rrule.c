@@ -183,9 +183,11 @@ int _cal_db_rrule_insert_record(int id, cal_rrule_s *rrule)
 
 	ret = cal_db_util_query_prepare(query, &stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	index = 1;
@@ -241,8 +243,10 @@ int _cal_db_rrule_insert_record(int id, cal_rrule_s *rrule)
 	ret = cal_db_util_stmt_step(stmt);
 	sqlite3_finalize(stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_stmt_step() Fail(%d)", ret);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	rrule_id = cal_db_util_last_insert_id();
@@ -268,17 +272,21 @@ int cal_db_rrule_get_rrule(int id, cal_rrule_s **rrule)
 
 	ret = cal_db_util_query_prepare(query, &stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	ret = cal_db_util_stmt_step(stmt);
 	if (CAL_SQLITE_ROW != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_stmt_step() Fail(%d)", ret);
 		SECURE("query[%s]", query);
 		sqlite3_finalize(stmt);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	_rrule = calloc(1, sizeof(cal_rrule_s));
@@ -355,9 +363,11 @@ static int _cal_db_rrule_delete_record(int id)
 
 	ret = cal_db_util_query_exec(query);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_exec() Fail(%d)", ret);
 		SECURE("[%s]", query);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -375,8 +385,10 @@ static int _cal_db_rrule_has_record(int id, int *has_record)
 
 	ret = cal_db_util_query_get_first_int_result(query, NULL, &count);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_get_first_int_result() failed");
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	*has_record = 0 < count ? 1 : 0;
@@ -422,9 +434,11 @@ static int _cal_db_rrule_update_record(int id, cal_rrule_s *rrule)
 
 	ret = cal_db_util_query_prepare(query, &stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	int index = 1;
@@ -479,8 +493,10 @@ static int _cal_db_rrule_update_record(int id, cal_rrule_s *rrule)
 	ret = cal_db_util_stmt_step(stmt);
 	sqlite3_finalize(stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_stmt_step() Fail(%d)", ret);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;

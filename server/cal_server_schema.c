@@ -40,14 +40,20 @@ static inline int __remake_db_file(char* db_path)
 
 	ret = db_util_open(db_file, &db, 0);
 	if (SQLITE_OK != ret) {
+		/* LCOV_EXCL_START */
 		ERR("db_util_open() Fail(%d) ", ret);
 		return -1;
+		/* LCOV_EXCL_STOP */
 	}
 
 	ret = sqlite3_exec(db, schema_query, NULL, 0, &errmsg);
 	if (SQLITE_OK != ret) {
+		/* LCOV_EXCL_START */
 		ERR("sqlite3_exec() Fail[%s]", errmsg);
 		sqlite3_free(errmsg);
+		db_util_close(db);
+		return -1;
+		/* LCOV_EXCL_STOP */
 	}
 	db_util_close(db);
 	return 0;
@@ -62,8 +68,10 @@ static inline int __check_db_file(char* db_path)
 
 	fd = open(db_file, O_RDONLY);
 	if (fd < 0) {
+		/* LCOV_EXCL_START */
 		ERR("DB file(%s) is not exist(err:%d) ", db_file, fd);
 		return -1;
+		/* LCOV_EXCL_STOP */
 	}
 	close(fd);
 	return 0;

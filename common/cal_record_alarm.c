@@ -140,8 +140,10 @@ static int _cal_record_alarm_get_str(calendar_record_h record, unsigned int prop
 		*out_str = cal_strdup(rec->alarm_attach);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -161,8 +163,10 @@ static int _cal_record_alarm_get_str_p(calendar_record_h record, unsigned int pr
 		*out_str = (rec->alarm_attach);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -185,8 +189,10 @@ static int _cal_record_alarm_get_int(calendar_record_h record, unsigned int prop
 		*out_value = (rec->alarm_action);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -200,8 +206,10 @@ static int _cal_record_alarm_get_caltime(calendar_record_h record, unsigned int 
 		*out_value = rec->alarm;
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 	return CALENDAR_ERROR_NONE;
 }
@@ -223,8 +231,10 @@ static int _cal_record_alarm_set_str(calendar_record_h record, unsigned int prop
 		rec->alarm_attach = cal_strdup(value);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -248,8 +258,10 @@ static int _cal_record_alarm_set_int(calendar_record_h record, unsigned int prop
 			rec->remind_tick_unit = value;
 			break;
 		default:
+			/* LCOV_EXCL_START */
 			ERR("invalid parameter (value:%d)", value);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
+			/* LCOV_EXCL_STOP */
 		}
 		break;
 	case CAL_PROPERTY_ALARM_PARENT_ID:
@@ -263,13 +275,17 @@ static int _cal_record_alarm_set_int(calendar_record_h record, unsigned int prop
 			rec->alarm_action = value;
 			break;
 		default:
+			/* LCOV_EXCL_START */
 			ERR("invalid parameter (value:%d)", value);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
+			/* LCOV_EXCL_STOP */
 		}
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -283,8 +299,10 @@ static int _cal_record_alarm_set_caltime(calendar_record_h record, unsigned int 
 		rec->alarm = value;
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 	return CALENDAR_ERROR_NONE;
 

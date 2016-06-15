@@ -196,8 +196,10 @@ static int _cal_record_instance_allday_extended_get_str(calendar_record_h record
 		*out_str = cal_strdup(rec->sync_data4);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -235,8 +237,10 @@ static int _cal_record_instance_allday_extended_get_str_p(calendar_record_h reco
 		*out_str = (rec->sync_data4);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -281,8 +285,10 @@ static int _cal_record_instance_allday_extended_get_int(calendar_record_h record
 		break;
 
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -300,8 +306,10 @@ static int _cal_record_instance_allday_extended_get_double(calendar_record_h rec
 		break;
 
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -332,8 +340,10 @@ static int _cal_record_instance_allday_extended_get_caltime(calendar_record_h re
 		*out_value = rec->end;
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -380,8 +390,10 @@ static int _cal_record_instance_allday_extended_set_str(calendar_record_h record
 		rec->sync_data4 = cal_strdup(value);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -422,8 +434,10 @@ static int _cal_record_instance_allday_extended_set_int(calendar_record_h record
 		(rec->has_attendee) = value;
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -441,8 +455,10 @@ static int _cal_record_instance_allday_extended_set_double(calendar_record_h rec
 		break;
 
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -459,8 +475,10 @@ static int _cal_record_instance_allday_extended_set_caltime(calendar_record_h re
 		rec->end = value;
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;

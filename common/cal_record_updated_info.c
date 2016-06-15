@@ -118,8 +118,10 @@ static int _cal_record_updated_info_get_int(calendar_record_h record, unsigned i
 		*out_value = (rec->version);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -142,8 +144,10 @@ static int _cal_record_updated_info_set_int(calendar_record_h record, unsigned i
 		(rec->version) = value;
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;

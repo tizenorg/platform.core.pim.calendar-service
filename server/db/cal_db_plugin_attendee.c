@@ -121,11 +121,13 @@ static int _cal_db_attendee_get_all_records(int offset, int limit, calendar_list
 
 	ret = cal_db_util_query_prepare(query, &stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query);
 		calendar_list_destroy(*out_list, true);
 		*out_list = NULL;
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	calendar_record_h record = NULL;
@@ -133,20 +135,26 @@ static int _cal_db_attendee_get_all_records(int offset, int limit, calendar_list
 	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt))	{
 		ret = calendar_record_create(_calendar_attendee._uri, &record);
 		if (CALENDAR_ERROR_NONE != ret) {
+			/* LCOV_EXCL_START */
+			ERR("calendar_record_create() Fail(%d)", ret);
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
 			sqlite3_finalize(stmt);
 			return ret;
+			/* LCOV_EXCL_STOP */
 		}
 		_cal_db_attendee_get_stmt(stmt, record);
 
 		ret = calendar_list_add(*out_list, record);
 		if (CALENDAR_ERROR_NONE != ret) {
+			/* LCOV_EXCL_START */
+			ERR("calendar_list_add() Fail(%d)", ret);
 			calendar_list_destroy(*out_list, true);
 			*out_list = NULL;
 			calendar_record_destroy(record, true);
 			sqlite3_finalize(stmt);
 			return ret;
+			/* LCOV_EXCL_STOP */
 		}
 	}
 	sqlite3_finalize(stmt);
@@ -249,17 +257,21 @@ static int _cal_db_attendee_get_records_with_query(calendar_query_h query, int o
 	if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_ATTENDEE)) {
 		table_name = cal_strdup(CAL_TABLE_ATTENDEE);
 	} else {
+		/* LCOV_EXCL_START */
 		ERR("uri(%s) not support get records with query", que->view_uri);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	/* make filter */
 	if (que->filter) {
 		ret = cal_db_query_create_condition(query, &condition, &bind_text);
 		if (CALENDAR_ERROR_NONE != ret) {
-			CAL_FREE(table_name);
+			/* LCOV_EXCL_START */
 			ERR("cal_db_query_create_condition() Fail(%d), ret");
+			CAL_FREE(table_name);
 			return ret;
+			/* LCOV_EXCL_STOP */
 		}
 	}
 
@@ -306,6 +318,7 @@ static int _cal_db_attendee_get_records_with_query(calendar_query_h query, int o
 	/* query */
 	ret = cal_db_util_query_prepare(query_str, &stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query_str);
 		if (bind_text) {
@@ -314,6 +327,7 @@ static int _cal_db_attendee_get_records_with_query(calendar_query_h query, int o
 		}
 		free(query_str);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	/* bind text */
@@ -324,14 +338,16 @@ static int _cal_db_attendee_get_records_with_query(calendar_query_h query, int o
 
 	ret = calendar_list_create(out_list);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
+		ERR("calendar_list_create() Fail");
 		if (bind_text) {
 			g_slist_free_full(bind_text, free);
 			bind_text = NULL;
 		}
 		CAL_FREE(query_str);
-		ERR("calendar_list_create() Fail");
 		sqlite3_finalize(stmt);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
@@ -398,8 +414,10 @@ static int _cal_db_attendee_get_count(int *out_count)
 
 	ret = cal_db_util_query_get_first_int_result(query, NULL, &count);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_get_first_int_result() failed");
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 	DBG("%s=%d", query, count);
 
@@ -422,17 +440,21 @@ static int _cal_db_attendee_get_count_with_query(calendar_query_h query, int *ou
 	if (CAL_STRING_EQUAL == strcmp(que->view_uri, CALENDAR_VIEW_ATTENDEE)) {
 		table_name = cal_strdup(CAL_TABLE_ATTENDEE);
 	} else {
+		/* LCOV_EXCL_START */
 		ERR("uri(%s) not support get records with query", que->view_uri);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	/* make filter */
 	if (que->filter) {
 		ret = cal_db_query_create_condition(query, &condition, &bind_text);
 		if (CALENDAR_ERROR_NONE != ret) {
-			CAL_FREE(table_name);
+			/* LCOV_EXCL_START */
 			ERR("cal_db_query_create_condition() Fail(%d), ret");
+			CAL_FREE(table_name);
 			return ret;
+			/* LCOV_EXCL_STOP */
 		}
 	}
 
@@ -453,6 +475,7 @@ static int _cal_db_attendee_get_count_with_query(calendar_query_h query, int *ou
 	/* query */
 	ret = cal_db_util_query_get_first_int_result(query_str, bind_text, &count);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_get_first_int_result() failed");
 		if (bind_text) {
 			g_slist_free_full(bind_text, free);
@@ -460,6 +483,7 @@ static int _cal_db_attendee_get_count_with_query(calendar_query_h query, int *ou
 		}
 		CAL_FREE(query_str);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 	DBG("%s=%d", query_str, count);
 

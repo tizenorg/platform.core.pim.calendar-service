@@ -49,9 +49,11 @@ int cal_db_extended_get_records(int record_id, calendar_record_type_e record_typ
 
 	ret = cal_db_util_query_prepare(query, &stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	int count = 0;
@@ -62,9 +64,11 @@ int cal_db_extended_get_records(int record_id, calendar_record_type_e record_typ
 	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		ret = calendar_record_create(_calendar_extended_property._uri, &record);
 		if (CALENDAR_ERROR_NONE != ret) {
+			/* LCOV_EXCL_START */
 			sqlite3_finalize(stmt);
 			cal_list_clear(list);
 			return ret;
+			/* LCOV_EXCL_STOP */
 		}
 
 		count = 0;
@@ -94,9 +98,11 @@ int cal_db_extended_delete_with_id(int record_id, calendar_record_type_e record_
 
 	ret = cal_db_util_query_exec(query);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_exec() Fail(%d)", ret);
 		SECURE("[%s]", query);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -122,9 +128,11 @@ int cal_db_extended_insert_record(calendar_record_h record, int record_id, calen
 
 	ret = cal_db_util_query_prepare(query, &stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	if (extended->key)
@@ -136,8 +144,10 @@ int cal_db_extended_insert_record(calendar_record_h record, int record_id, calen
 	ret = cal_db_util_stmt_step(stmt);
 	sqlite3_finalize(stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_stmt_step() Fail(%d)", ret);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 	index = cal_db_util_last_insert_id();
 
@@ -150,9 +160,11 @@ int cal_db_extended_insert_record(calendar_record_h record, int record_id, calen
 				CAL_TABLE_SCHEDULE, record_id);
 		ret = cal_db_util_query_exec(query);
 		if (CALENDAR_ERROR_NONE != ret) {
+			/* LCOV_EXCL_START */
 			ERR("cal_db_util_query_exec() Fail(%d)", ret);
 			SECURE("[%s]", query);
 			return ret;
+			/* LCOV_EXCL_STOP */
 		}
 	}
 	return CALENDAR_ERROR_NONE;

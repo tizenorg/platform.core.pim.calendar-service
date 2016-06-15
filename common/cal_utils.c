@@ -41,14 +41,18 @@ char* cal_strdup_with_sort(const char *src)
 	char **t = NULL;
 	t = g_strsplit_set(src, " ,", -1);
 	if (NULL == t) {
+		/* LCOV_EXCL_START */
 		ERR("g_strsplit_set() Fail");
 		return NULL;
+		/* LCOV_EXCL_STOP */
 	}
 	int len_t = 0;
 	len_t = g_strv_length(t);
 	if (0 == len_t) {
+		/* LCOV_EXCL_START */
 		ERR("Empty src");
 		return NULL;
+		/* LCOV_EXCL_STOP */
 	}
 
 	int i;
@@ -58,12 +62,16 @@ char* cal_strdup_with_sort(const char *src)
 			continue;
 		int num = atoi(t[i]);
 		if (0 == num) {
+			/* LCOV_EXCL_START */
 			ERR("Invalid parameter[%s]", t[i]);
 			continue;
+			/* LCOV_EXCL_STOP */
 		}
 		if (g_list_find(l, GINT_TO_POINTER(num))) {
+			/* LCOV_EXCL_START */
 			ERR("Find same data[%s]", t[i]);
 			continue;
+			/* LCOV_EXCL_STOP */
 		}
 		l = g_list_append(l, GINT_TO_POINTER(num));
 	}
@@ -72,10 +80,12 @@ char* cal_strdup_with_sort(const char *src)
 	int len_src = strlen(src) +1;
 	char *out_str = calloc(len_src, sizeof(char));
 	if (NULL == out_str) {
+		/* LCOV_EXCL_START */
 		ERR("calloc() Fail");
 		g_list_free(l);
 		g_strfreev(t);
 		return NULL;
+		/* LCOV_EXCL_STOP */
 	}
 	int len = 0;
 	GList *cursor = NULL;

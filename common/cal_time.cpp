@@ -88,8 +88,10 @@ UCalendar *cal_time_open_ucal(int calendar_system_type, const char *tzid, int wk
 	}
 
 	if (U_FAILURE(status)) {
+		/* LCOV_EXCL_START */
 		ERR("ucal_open() Fail(%s)", u_errorName(status));
 		return NULL;
+		/* LCOV_EXCL_STOP */
 	}
 	if (CALENDAR_SUNDAY <= wkst && wkst <= CALENDAR_SATURDAY) {
 		DBG("set wkst(%d)", wkst);
@@ -112,14 +114,18 @@ char* cal_time_convert_ltos(const char *tzid, long long int lli, int is_allday)
 
 	ucal = cal_time_open_ucal(-1, tzid, -1);
 	if (NULL == ucal) {
+		/* LCOV_EXCL_START */
 		ERR("cal_time_open_ucal() Fail");
 		return NULL;
+		/* LCOV_EXCL_STOP */
 	}
 	ucal_setMillis(ucal, sec2ms(lli), &status);
 	if (U_FAILURE(status)) {
+		/* LCOV_EXCL_START */
 		ERR("ucal_setMillFail (%s)", u_errorName(status));
 		ucal_close(ucal);
 		return NULL;
+		/* LCOV_EXCL_STOP */
 	}
 
 	y = ucal_get(ucal, UCAL_YEAR, &status);
@@ -148,8 +154,10 @@ long long int cal_time_convert_itol(const char *tzid, int y, int mon, int d, int
 
 	ucal = cal_time_open_ucal(-1, tzid, -1);
 	if (NULL == ucal) {
+		/* LCOV_EXCL_START */
 		ERR("cal_time_open_ucal() Fail");
 		return 0;
+		/* LCOV_EXCL_STOP */
 	}
 	ucal_set(ucal, UCAL_YEAR, y);
 	ucal_set(ucal, UCAL_MONTH, mon -1);
@@ -185,9 +193,11 @@ int cal_time_get_next_date(calendar_time_s *today, calendar_time_s *next)
 	u_uastrcpy(utzid, tzid);
 	ucal = ucal_open(utzid, u_strlen(utzid), "en_US", UCAL_TRADITIONAL, &status);
 	if (U_FAILURE(status)) {
+		/* LCOV_EXCL_START */
 		ERR("ucal_open() Fail(%s)", u_errorName(status));
 		CAL_FREE(utzid);
 		return status;
+		/* LCOV_EXCL_STOP */
 	}
 
 	switch (today->type) {
@@ -237,8 +247,10 @@ void cal_time_get_tz_offset(const char *tz, time_t *zone_offset, time_t *dst_off
 
 	ucal = cal_time_open_ucal(-1, tz, -1);
 	if (NULL == ucal) {
+		/* LCOV_EXCL_START */
 		ERR("cal_time_open_ucal() Fail");
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 	int32_t zone = ucal_get(ucal, UCAL_ZONE_OFFSET, &status);
 	int32_t dst = ucal_get(ucal, UCAL_DST_OFFSET, &status);
@@ -255,8 +267,10 @@ bool cal_time_in_dst(const char *tz, long long int t)
 
 	ucal = cal_time_open_ucal(-1, tz, -1);
 	if (NULL == ucal) {
+		/* LCOV_EXCL_START */
 		ERR("cal_time_open_ucal() Fail");
 		return false;
+		/* LCOV_EXCL_STOP */
 	}
 	ucal_setMillis(ucal, sec2ms(t), &status);
 	bool is_dst = ucal_inDaylightTime(ucal, &status);
@@ -374,8 +388,10 @@ void cal_time_get_datetime(long long int t, int *y, int *m, int *d, int *h, int 
 	UErrorCode status = U_ZERO_ERROR;
 	UCalendar *ucal = __get_gmt_ucal();
 	if (NULL == ucal) {
+		/* LCOV_EXCL_START */
 		ERR("__get_gmt_ucal() Fail");
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 	ucal_setMillis(ucal, sec2ms(t), &status);
 	if (y) *y = ucal_get(ucal, UCAL_YEAR, &status);
@@ -391,8 +407,10 @@ void cal_time_get_local_datetime(char *tzid, long long int t, int *y, int *m, in
 	UErrorCode status = U_ZERO_ERROR;
 	UCalendar *ucal = cal_time_open_ucal(-1, tzid, 0);
 	if (NULL == ucal) {
+		/* LCOV_EXCL_START */
 		ERR("__get_gmt_ucal() Fail");
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 	ucal_setMillis(ucal, sec2ms(t), &status);
 	if (y) *y = ucal_get(ucal, UCAL_YEAR, &status);

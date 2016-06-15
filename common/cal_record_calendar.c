@@ -175,8 +175,10 @@ static int _cal_record_calendar_get_str(calendar_record_h record, unsigned int p
 		*out_str = cal_strdup(cal_rec->sync_data4);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -214,8 +216,10 @@ static int _cal_record_calendar_get_str_p(calendar_record_h record, unsigned int
 		*out_str = (cal_rec->sync_data4);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -244,8 +248,10 @@ static int _cal_record_calendar_get_int(calendar_record_h record, unsigned int p
 		*out_value = (cal_rec->mode);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -292,8 +298,10 @@ static int _cal_record_calendar_set_str(calendar_record_h record, unsigned int p
 		cal_rec->sync_data4 = cal_strdup(value);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -321,8 +329,10 @@ static int _cal_record_calendar_set_int(calendar_record_h record, unsigned int p
 			(cal_rec->store_type) = value;
 			break;
 		default:
+			/* LCOV_EXCL_START */
 			ERR("Invalid parameter : store type is invalid value (%d)", value);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
+			/* LCOV_EXCL_STOP */
 		}
 		break;
 	case CAL_PROPERTY_CALENDAR_SYNC_EVENT:
@@ -333,8 +343,10 @@ static int _cal_record_calendar_set_int(calendar_record_h record, unsigned int p
 			(cal_rec->sync_event) = value;
 			break;
 		default:
+			/* LCOV_EXCL_START */
 			ERR("Invalid parameter : sync event is invalid value (%d)", value);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
+			/* LCOV_EXCL_STOP */
 		}
 		break;
 	case CAL_PROPERTY_CALENDAR_MODE:
@@ -343,8 +355,10 @@ static int _cal_record_calendar_set_int(calendar_record_h record, unsigned int p
 		(cal_rec->mode) = value;
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid parameter (property:0x%x)", property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;

@@ -1055,7 +1055,9 @@ cal_record_type_e cal_view_get_type(const char *view_uri)
 		else
 			ERR("g_hash_table_lookup() Fail");
 	} else {
+		/* LCOV_EXCL_START */
 		ERR("Unable to get cal_uri_property_hash[%s]", view_uri);
+		/* LCOV_EXCL_STOP */
 	}
 
 	return type;

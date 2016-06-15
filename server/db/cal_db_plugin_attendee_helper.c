@@ -68,9 +68,11 @@ static int _cal_db_attendee_insert_record(calendar_record_h record, int parent_i
 
 	ret = cal_db_util_query_prepare(query, &stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	index = 1;
@@ -109,8 +111,10 @@ static int _cal_db_attendee_insert_record(calendar_record_h record, int parent_i
 	ret = cal_db_util_stmt_step(stmt);
 	sqlite3_finalize(stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_stmt_step() Fail(%d)", ret);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	attendee->parent_id = parent_id;
@@ -169,9 +173,11 @@ int cal_db_attendee_get_records(int parent_id, cal_list_s *list)
 
 	ret = cal_db_util_query_prepare(query, &stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	int index;
@@ -182,9 +188,12 @@ int cal_db_attendee_get_records(int parent_id, cal_list_s *list)
 	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		ret = calendar_record_create(_calendar_attendee._uri, &record);
 		if (CALENDAR_ERROR_NONE != ret) {
+			/* LCOV_EXCL_START */
+			ERR("calendar_record_create() Fail(%d)", ret);
 			sqlite3_finalize(stmt);
 			cal_list_clear(list);
 			return ret;
+			/* LCOV_EXCL_STOP */
 		}
 
 		index = 0;
@@ -241,9 +250,11 @@ int cal_db_attendee_delete_with_id(int parent_id)
 
 	ret = cal_db_util_query_exec(query);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_exec() Fail(%d)", ret);
 		SECURE("[%s]", query);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;

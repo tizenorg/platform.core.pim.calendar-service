@@ -54,7 +54,7 @@ static bool _has_sender(const char *name, GList **out_cursor)
 	while (cursor) {
 		cal_sender_s *sender = (cal_sender_s *)cursor->data;
 		if (NULL == sender) {
-			ERR("sender is NULL");
+			WARN("sender is NULL");
 			cursor = g_list_next(cursor);
 			continue;
 		}
@@ -77,8 +77,10 @@ static int _append_sender(const char *name)
 	cal_sender_s *sender = NULL;
 	sender = calloc(1, sizeof(cal_sender_s));
 	if (NULL == sender) {
+		/* LCOV_EXCL_START */
 		ERR("calloc() Fail");
 		return CALENDAR_ERROR_OUT_OF_MEMORY;
+		/* LCOV_EXCL_STOP */
 	}
 	sender->name = cal_strdup(name);
 	DBG("[SENDER] Append sender[%s]", sender->name);
@@ -97,15 +99,19 @@ static gboolean _handle_register_resource(calDbus *object,
 
 	g_mutex_lock(&cal_server_dbus_sender);
 	if (true == _has_sender(sender_name, NULL)) {
+		/* LCOV_EXCL_START */
 		ERR("Already has sender");
 		g_mutex_unlock(&cal_server_dbus_sender);
 		return TRUE;
+		/* LCOV_EXCL_STOP */
 	}
 	ret = _append_sender(sender_name);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("_append_sender() Fail");
 		g_mutex_unlock(&cal_server_dbus_sender);
 		return TRUE;
+		/* LCOV_EXCL_STOP */
 	}
 	DBG("append sender");
 	g_mutex_unlock(&cal_server_dbus_sender);
@@ -502,8 +508,10 @@ static int _cal_server_dbus_find_sender(const char *owner_name, cal_sender_s **o
 	while (cursor) {
 		cal_sender_s *sender = (cal_sender_s *)cursor->data;
 		if (NULL == sender) {
+			/* LCOV_EXCL_START */
 			ERR("sender is NULL");
 			return CALENDAR_ERROR_NO_DATA;
+			/* LCOV_EXCL_STOP */
 		}
 
 		if (CAL_STRING_EQUAL == g_strcmp0(sender->name, owner_name)) {
@@ -560,9 +568,11 @@ static void _cal_server_dbus_name_owner_changed_cb(GDBusConnection *connection,
 	cal_sender_s *sender = NULL;
 	ret = _cal_server_dbus_find_sender(old_owner, &sender);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("_cal_server_dbus_find_sender() Fail(%d)", ret);
 		g_mutex_unlock(&cal_server_dbus_sender);
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 
 	if (sender) { /* found bus name in our bus list */
@@ -588,8 +598,10 @@ static int _cal_server_dbus_subscribe_name_owner_changed(GDBusConnection *conn)
 			NULL,
 			NULL);
 	if (0 == id) {
+		/* LCOV_EXCL_START */
 		ERR("g_dbus_connection_signal_subscribe() Fail");
 		return CALENDAR_ERROR_IPC;
+		/* LCOV_EXCL_STOP */
 	}
 	return CALENDAR_ERROR_NONE;
 }
@@ -601,8 +613,10 @@ static void _dbus_on_bus_acquired(GDBusConnection *conn, const gchar *name, gpoi
 
 	dbus_object = cal_dbus_skeleton_new();
 	if (NULL == dbus_object) {
+		/* LCOV_EXCL_START */
 		ERR("cal_dbus_skeleton_new() Fail");
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 
 	g_signal_connect(dbus_object, "handle-register-resource",
@@ -655,15 +669,19 @@ static void _dbus_on_bus_acquired(GDBusConnection *conn, const gchar *name, gpoi
 	ret = g_dbus_interface_skeleton_export(G_DBUS_INTERFACE_SKELETON(dbus_object),
 			conn, CAL_DBUS_OBJPATH, &error);
 	if (FALSE == ret) {
+		/* LCOV_EXCL_START */
 		ERR("g_dbus_interface_skeleton_export() Fail(%s)", error->message);
 		g_error_free(error);
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 
 	ret = _cal_server_dbus_subscribe_name_owner_changed(conn);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("_cal_server_dbus_subscribe_name_owner_changed() Fail(%d)", ret);
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 }
 
@@ -689,8 +707,10 @@ unsigned int cal_server_dbus_init(void)
 			NULL,
 			NULL);
 	if (0 == id) {
+		/* LCOV_EXCL_START */
 		ERR("g_bus_own_name() Fail");
 		return 0;
+		/* LCOV_EXCL_STOP */
 	}
 	return id;
 }
@@ -713,15 +733,19 @@ int cal_dbus_emit_signal(const char *dest, const char *signal_name, GVariant *va
 	calDbusSkeleton *skeleton = NULL;
 	skeleton = CAL_DBUS_SKELETON(cal_dbus_get_object());
 	if (NULL == skeleton) {
+		/* LCOV_EXCL_START */
 		ERR("cal_dbus_get_object() Fail");
 		return CALENDAR_ERROR_IPC;
+		/* LCOV_EXCL_STOP */
 	}
 
 	GDBusConnection *conn = NULL;
 	conn = g_dbus_interface_skeleton_get_connection(G_DBUS_INTERFACE_SKELETON(skeleton));
 	if (NULL == conn) {
+		/* LCOV_EXCL_START */
 		ERR("g_dbus_interface_skeleton_get_connection() Fail");
 		return CALENDAR_ERROR_IPC;
+		/* LCOV_EXCL_STOP */
 	}
 
 	ret = g_dbus_connection_emit_signal(conn,
@@ -733,21 +757,25 @@ int cal_dbus_emit_signal(const char *dest, const char *signal_name, GVariant *va
 			&error);
 
 	if (FALSE == ret) {
+		/* LCOV_EXCL_START */
 		ERR("g_dbus_connection_emit_signal() Fail");
 		if (error) {
 			ERR("error[%s]", error->message);
 			g_error_free(error);
 		}
 		return CALENDAR_ERROR_IPC;
+		/* LCOV_EXCL_STOP */
 	}
 
 	if (FALSE == g_dbus_connection_flush_sync(conn, NULL, &error)) {
+		/* LCOV_EXCL_START */
 		ERR("g_dbus_connection_flush_sync() Fail");
 		if (error) {
 			ERR("error[%s]", error->message);
 			g_error_free(error);
 		}
 		return CALENDAR_ERROR_IPC;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;

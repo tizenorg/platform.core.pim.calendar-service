@@ -53,7 +53,9 @@ static void _cal_db_util_notify_event_change(void)
 		close(fd);
 		event_change = false;
 	} else {
+		/* LCOV_EXCL_START */
 		ERR("open() Fail");
+		/* LCOV_EXCL_STOP */
 	}
 }
 
@@ -64,7 +66,9 @@ static inline void _cal_db_util_notify_todo_change(void)
 		close(fd);
 		todo_change = false;
 	} else {
+		/* LCOV_EXCL_START */
 		ERR("open() Fail");
+		/* LCOV_EXCL_STOP */
 	}
 }
 
@@ -75,7 +79,9 @@ static inline void _cal_db_util_notify_calendar_change(void)
 		close(fd);
 		calendar_change = false;
 	} else {
+		/* LCOV_EXCL_START */
 		ERR("open() Fail");
+		/* LCOV_EXCL_STOP */
 	}
 }
 
@@ -100,8 +106,10 @@ int cal_db_util_notify(cal_noti_type_e type)
 			calendar_change = true;
 			break;
 		default:
+			/* LCOV_EXCL_START */
 			ERR("The type(%d) is not supported", type);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
+			/* LCOV_EXCL_STOP */
 		}
 		return CALENDAR_ERROR_NONE;
 	}
@@ -117,8 +125,10 @@ int cal_db_util_notify(cal_noti_type_e type)
 		_cal_db_util_notify_calendar_change();
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("The type(%d) is not supported", type);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -138,8 +148,10 @@ int cal_db_util_open(void)
 	int ret = 0;
 	ret = db_util_open(CAL_DB_FILE, &cal_db, 0);
 	if (SQLITE_OK != ret) {
+		/* LCOV_EXCL_START */
 		ERR("db_util_open() Fail(%d).", ret);
 		return CALENDAR_ERROR_DB_FAILED;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -196,17 +208,23 @@ int cal_db_util_query_prepare(char *query, sqlite3_stmt **stmt)
 		ret = CALENDAR_ERROR_NONE;
 		break;
 	case SQLITE_BUSY:
+		/* LCOV_EXCL_START */
 		ERR("SQLITE_BUSY");
 		ret = CALENDAR_ERROR_DB_FAILED;
 		break;
+		/* LCOV_EXCL_STOP */
 	case SQLITE_LOCKED:
+		/* LCOV_EXCL_START */
 		ERR("SQLITE_LOCKED");
 		ret = CALENDAR_ERROR_DB_FAILED;
 		break;
+		/* LCOV_EXCL_STOP */
 	default:
+		/* LCOV_EXCL_START */
 		ERR("ERROR(%d)", ret);
 		ret = CALENDAR_ERROR_DB_FAILED;
 		break;
+		/* LCOV_EXCL_STOP */
 	}
 	return ret;
 }
@@ -241,17 +259,23 @@ int cal_db_util_stmt_step(sqlite3_stmt *stmt)
 		ret = CALENDAR_ERROR_NONE;
 		break;
 	case SQLITE_BUSY:
+		/* LCOV_EXCL_START */
 		ERR("SQLITE_BUSY");
 		ret = CALENDAR_ERROR_DB_FAILED;
 		break;
+		/* LCOV_EXCL_STOP */
 	case SQLITE_LOCKED:
+		/* LCOV_EXCL_START */
 		ERR("SQLITE_LOCKED");
 		ret = CALENDAR_ERROR_DB_FAILED;
 		break;
+		/* LCOV_EXCL_STOP */
 	default:
+		/* LCOV_EXCL_START */
 		ERR("ERROR(%d)", ret);
 		ret = CALENDAR_ERROR_DB_FAILED;
 		break;
+		/* LCOV_EXCL_STOP */
 	}
 	return ret;
 }
@@ -265,16 +289,20 @@ int cal_db_util_query_exec(char *query)
 	sqlite3_stmt *stmt = NULL;
 	ret = cal_db_util_query_prepare(query, &stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	ret = cal_db_util_stmt_step(stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_stmt_step() Fail(%d)", ret);
 		SECURE("query[%s]", query);
 		sqlite3_finalize(stmt);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 	sqlite3_finalize(stmt);
 
@@ -296,6 +324,7 @@ int cal_db_util_query_get_first_int_result(const char *query, GSList *bind_text,
 	do {
 		ret = sqlite3_prepare_v2(cal_db, query, strlen(query), &stmt, NULL);
 		if (SQLITE_BUSY == ret || SQLITE_LOCKED == ret) {
+			/* LCOV_EXCL_START */
 			ERR("sqlite3_prepare_v2() Fail:[%s]", sqlite3_errmsg(cal_db));
 			SECURE("[%s]", query);
 			gettimeofday(&now, NULL);
@@ -303,15 +332,18 @@ int cal_db_util_query_get_first_int_result(const char *query, GSList *bind_text,
 			retry = (diff.tv_sec < CAL_QUERY_RETRY_TIME) ? true : false;
 			if (retry)
 				usleep(CAL_QUERY_RETRY_INTERVAL); /* 50ms */
+			/* LCOV_EXCL_STOP */
 		} else {
 			retry = false;
 		}
 	} while (retry);
 
 	if (SQLITE_OK != ret) {
+		/* LCOV_EXCL_START */
 		ERR("sqlite3_prepare_v2(%s) Fail(%s).", query, sqlite3_errmsg(cal_db));
 		SECURE("query[%s]", query);
 		return CALENDAR_ERROR_DB_FAILED;
+		/* LCOV_EXCL_STOP */
 	}
 
 	if (bind_text) {
@@ -328,12 +360,14 @@ int cal_db_util_query_get_first_int_result(const char *query, GSList *bind_text,
 	do {
 		ret = sqlite3_step(stmt);
 		if (SQLITE_BUSY == ret || SQLITE_LOCKED == ret) {
+			/* LCOV_EXCL_START */
 			ERR("sqlite3_step fail(%d, %s)", ret, sqlite3_errmsg(cal_db));
 			gettimeofday(&now, NULL);
 			timersub(&now, &from, &diff);
 			retry = (diff.tv_sec < CAL_QUERY_RETRY_TIME) ? true :  false;
 			if (retry)
 				usleep(CAL_QUERY_RETRY_INTERVAL); /* 50ms */
+			/* LCOV_EXCL_STOP */
 		} else {
 			retry = false;
 		}
@@ -352,17 +386,23 @@ int cal_db_util_query_get_first_int_result(const char *query, GSList *bind_text,
 		ret = CALENDAR_ERROR_NO_DATA;
 		break;
 	case SQLITE_BUSY:
+		/* LCOV_EXCL_START */
 		ERR("SQLITE_BUSY");
 		ret = CALENDAR_ERROR_DB_FAILED;
 		break;
+		/* LCOV_EXCL_STOP */
 	case SQLITE_LOCKED:
+		/* LCOV_EXCL_START */
 		ERR("SQLITE_LOCKED");
 		ret = CALENDAR_ERROR_DB_FAILED;
 		break;
+		/* LCOV_EXCL_STOP */
 	default:
+		/* LCOV_EXCL_START */
 		ERR("ERROR(%d)", ret);
 		ret = CALENDAR_ERROR_DB_FAILED;
 		break;
+		/* LCOV_EXCL_STOP */
 	}
 	return CALENDAR_ERROR_NONE;
 }
@@ -386,8 +426,10 @@ int cal_db_util_begin_trans(void)
 		const char *query = "SELECT ver FROM "CAL_TABLE_VERSION;
 		ret = cal_db_util_query_get_first_int_result(query, NULL, &transaction_ver);
 		if (CALENDAR_ERROR_NONE != ret) {
+			/* LCOV_EXCL_START */
 			ERR("cal_db_util_query_get_first_int_result() Fail");
 			return ret;
+			/* LCOV_EXCL_STOP */
 		}
 		version_up = false;
 	}
@@ -437,11 +479,13 @@ int cal_db_util_end_trans(bool is_success)
 
 	if (CALENDAR_ERROR_NONE != ret) {
 		int tmp_ret;
+		/* LCOV_EXCL_START */
 		ERR("cal_query_exec() Fail(%d)", ret);
 		_cal_db_util_cancel_changes();
 		tmp_ret = cal_db_util_query_exec("ROLLBACK TRANSACTION");
 		WARN_IF(CALENDAR_ERROR_NONE != tmp_ret, "cal_query_exec(ROLLBACK) Fail(%d).", tmp_ret);
 		return CALENDAR_ERROR_DB_FAILED;
+		/* LCOV_EXCL_STOP */
 	}
 	if (event_change) _cal_db_util_notify_event_change();
 	if (todo_change) _cal_db_util_notify_todo_change();

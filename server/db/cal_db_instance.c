@@ -72,8 +72,10 @@ static void __print_ucal(int calendar_system_type, UCalendar *ucal, const char *
 	case CALENDAR_SYSTEM_EAST_ASIAN_LUNISOLAR:
 		s_ucal = cal_time_open_ucal(-1, tzid, wkst);
 		if (NULL == s_ucal) {
+			/* LCOV_EXCL_START */
 			ERR("cal_time_open_ucal() Fail");
 			return;
+			/* LCOV_EXCL_STOP */
 		}
 		ucal_setMillis(s_ucal, ucal_getMillis(ucal, &ec), &ec);
 		break;
@@ -105,8 +107,10 @@ static void __get_allday_date(cal_event_s *event, UCalendar *ucal, int *y, int *
 	case CALENDAR_SYSTEM_EAST_ASIAN_LUNISOLAR:
 		s_ucal = cal_time_open_ucal(-1, event->start_tzid, event->wkst);
 		if (NULL == s_ucal) {
+			/* LCOV_EXCL_START */
 			ERR("cal_time_open_ucal() Fail");
 			return;
+			/* LCOV_EXCL_STOP */
 		}
 		ucal_setMillis(s_ucal, ucal_getMillis(ucal, &ec), &ec);
 		break;
@@ -337,10 +341,12 @@ static int _cal_db_instance_update_exdate_mod(int original_event_id, char *recur
 		}
 		ret = cal_db_util_query_exec(query);
 		if (CALENDAR_ERROR_NONE != ret) {
+			/* LCOV_EXCL_START */
 			ERR("cal_db_util_query_exec() Fail(%d)", ret);
 			SECURE("[%s]", query);
 			g_strfreev(t);
 			return ret;
+			/* LCOV_EXCL_STOP */
 		}
 	}
 	g_strfreev(t);
@@ -413,9 +419,11 @@ static int _cal_db_instance_del_inundant(int event_id, calendar_time_s *st, cal_
 
 	ret = cal_db_util_query_exec(query);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_exec() Fail(%d)", ret);
 		SECURE("[%s]", query);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 	return CALENDAR_ERROR_NONE;
 }
@@ -459,8 +467,10 @@ static int _cal_db_instance_get_duration(UCalendar *ucal, calendar_time_s *st, c
 	switch (st->type) {
 	case CALENDAR_TIME_UTIME:
 		if (et->time.utime < st->time.utime) {
+			/* LCOV_EXCL_START */
 			ERR("check time: end(%lld < start(%lld)", et->time.utime, st->time.utime);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
+			/* LCOV_EXCL_STOP */
 		}
 		_duration = et->time.utime - st->time.utime;
 		break;
@@ -475,8 +485,10 @@ static int _cal_db_instance_get_duration(UCalendar *ucal, calendar_time_s *st, c
 
 		_duration = ucal_getFieldDifference(ucal, ud, UCAL_SECOND, &ec);
 		if (U_FAILURE(ec)) {
+			/* LCOV_EXCL_START */
 			ERR("ucal_getFieldDifference() Fail[%s]", u_errorName(ec));
 			return ec;
+			/* LCOV_EXCL_STOP */
 		}
 		break;
 	}
@@ -1845,8 +1857,10 @@ int cal_db_instance_update_exdate_del(int id, char *exdate)
 	DBG("exdate[%s]", exdate);
 	t = g_strsplit_set(exdate, " ,", -1);
 	if (NULL == t) {
+		/* LCOV_EXCL_START */
 		ERR("g_strsplit_set() Fail");
 		return CALENDAR_ERROR_OUT_OF_MEMORY;
+		/* LCOV_EXCL_STOP */
 	}
 
 	int i;
@@ -1887,10 +1901,12 @@ int cal_db_instance_update_exdate_del(int id, char *exdate)
 
 		ret = cal_db_util_query_exec(query);
 		if (CALENDAR_ERROR_NONE != ret) {
+			/* LCOV_EXCL_START */
 			ERR("cal_db_util_query_exec() Fail(%d)", ret);
 			SECURE("[%s]", query);
 			g_strfreev(t);
 			return ret;
+			/* LCOV_EXCL_STOP */
 		}
 	}
 	g_strfreev(t);
@@ -1965,9 +1981,11 @@ int cal_db_instance_discard_record(int index)
 
 	ret = cal_db_util_query_exec(query);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_exec() Fail(%d)", ret);
 		SECURE("[%s]", query);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	DBG("delete allday");
@@ -1976,9 +1994,11 @@ int cal_db_instance_discard_record(int index)
 
 	ret = cal_db_util_query_exec(query);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_exec() Fail(%d)", ret);
 		SECURE("[%s]", query);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 	return CALENDAR_ERROR_NONE;
 }

@@ -42,9 +42,11 @@ int cal_db_delete_account(int account_id)
 
 	ret = cal_db_util_query_prepare(query, &stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
@@ -59,9 +61,11 @@ int cal_db_delete_account(int account_id)
 
 	ret = cal_db_util_begin_trans();
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_begin_trans() Fail(%d)", ret);
 		g_list_free(calendar_list);
 		return CALENDAR_ERROR_DB_FAILED;
+		/* LCOV_EXCL_STOP */
 	}
 
 	GList* cursor = calendar_list;
@@ -70,8 +74,10 @@ int cal_db_delete_account(int account_id)
 
 		ret = cal_db_delete_record(_calendar_book._uri, id);
 		if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 			ERR("cal_db_delete_record() Fail(%d)", ret);
 			SECURE("book_id(%d)", id);
+		/* LCOV_EXCL_STOP */
 		}
 		cursor = g_list_next(cursor);
 	}

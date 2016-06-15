@@ -54,11 +54,13 @@
 GMainLoop* main_loop = NULL;
 static int cal_timeout = 0;
 
+/* LCOV_EXCL_START */
 void cal_server_quit_loop(void)
 {
 	g_main_loop_quit(main_loop);
 	main_loop = NULL;
 }
+/* LCOV_EXCL_STOP */
 
 static int _cal_server_init(void)
 {
@@ -69,8 +71,10 @@ static int _cal_server_init(void)
 
 	ret = cal_connect();
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_connect() Failed");
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	cal_access_control_set_client_info(NULL, "calendar-service");
@@ -138,10 +142,11 @@ int cal_server_get_timeout(void)
 int main(int argc, char *argv[])
 {
 	INFO("---------------------[SERVER START]------------------------");
+
 	if (getuid() == 0) { /* root */
 		gid_t glist[] = {CAL_SECURITY_FILE_GROUP};
 		if (setgroups(1, glist) < 0)
-			ERR("setgroups() Failed");
+			WARN("setgroups() Failed");
 	}
 
 	cal_timeout = argc > 1 ? atoi(argv[1]) : CAL_TIMEOUT_FOR_DEFAULT;

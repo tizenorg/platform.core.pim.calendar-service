@@ -36,14 +36,18 @@ static int _cal_server_update_get_db_version(sqlite3 *db, int *version)
 	snprintf(query, sizeof(query), "PRAGMA user_version;");
 	ret = sqlite3_prepare_v2(db, query, strlen(query), &stmt, NULL);
 	if (SQLITE_OK != ret) {
+		/* LCOV_EXCL_START */
 		ERR("sqlite3_prepare_v2() failed[%s]", sqlite3_errmsg(db));
 		return CALENDAR_ERROR_DB_FAILED;
+		/* LCOV_EXCL_STOP */
 	}
 	ret = sqlite3_step(stmt);
 	if (SQLITE_ROW != ret) {
+		/* LCOV_EXCL_START */
 		ERR("sqlite3_step() failed[%s]", sqlite3_errmsg(db));
 		sqlite3_finalize(stmt);
 		return CALENDAR_ERROR_DB_FAILED;
+		/* LCOV_EXCL_STOP */
 	}
 	if (version)
 		*version = (int)sqlite3_column_int(stmt, 0);
@@ -65,12 +69,15 @@ int cal_server_update(void)
 	snprintf(db_file, sizeof(db_file), "%s/%s", DB_PATH, CALS_DB_NAME);
 	ret = db_util_open(db_file, &__db, 0);
 	if (SQLITE_OK != ret) {
+		/* LCOV_EXCL_START */
 		ERR("db_util_open() fail(%d):[%s]", ret, db_file);
 		return CALENDAR_ERROR_DB_FAILED;
+		/* LCOV_EXCL_STOP */
 	}
 	_cal_server_update_get_db_version(__db, &old_version);
 	DBG("[%s] old version(%d)", db_file, old_version);
 
+	/* LCOV_EXCL_START */
 	if (old_version < 100) {
 		/* ----------------------- start modified 2013/08/22
 		 * added attendee_table(cutype, delegatee_uri, member), alarm_table(summary, action, attach).
@@ -114,7 +121,7 @@ int cal_server_update(void)
 		}
 		old_version = 100;
 		/* ----------------------- end modified 2013/08/22
-		 */
+		*/
 	}
 	if (old_version == 100) {
 		/* ----------------------- start modified 2013/09/22
@@ -127,7 +134,7 @@ int cal_server_update(void)
 		}
 		old_version = 101;
 		/* ----------------------- end modified 2013/09/22
-		 */
+		*/
 	}
 	if (old_version == 101) {
 		/* ----------------------- start modified 2014/07/02
@@ -211,7 +218,7 @@ int cal_server_update(void)
 			sqlite3_free(errmsg);
 		}
 		/* ----------------------- end modified 2014/07/02
-		 */
+		*/
 		old_version = 102;
 	}
 	if (old_version == 102) {
@@ -226,7 +233,7 @@ int cal_server_update(void)
 			sqlite3_free(errmsg);
 		}
 		/* ----------------------- end modified 2014/10/24
-		 */
+		*/
 		old_version = 103;
 	}
 
@@ -261,13 +268,18 @@ int cal_server_update(void)
 		}
 		old_version = 105;
 	}
+	/* LCOV_EXCL_STOP */
 
 	/* update DB user_version */
 	snprintf(query, sizeof(query), "PRAGMA user_version = %d", __USER_VERSION);
 	ret = sqlite3_exec(__db, query, NULL, 0, &errmsg);
 	if (SQLITE_OK != ret) {
+		/* LCOV_EXCL_START */
 		ERR("sqlite3_exec() failed(%d) [%s]", ret, errmsg);
 		sqlite3_free(errmsg);
+		db_util_close(__db);
+		return CALENDAR_ERROR_SYSTEM;
+		/* LCOV_EXCL_STOP */
 	}
 	db_util_close(__db);
 	__db = NULL;

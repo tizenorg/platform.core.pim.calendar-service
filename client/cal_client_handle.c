@@ -31,6 +31,7 @@
 
 static GHashTable *_cal_handle_table = NULL;
 
+/* LCOV_EXCL_START */
 static void _foreach_cb(gpointer key, gpointer value, gpointer user_data)
 {
 	DBG("[hash check]--------- key[%s] value[%p]", key, value);
@@ -40,6 +41,7 @@ static void _print_hash(GHashTable *table)
 	if (table)
 		g_hash_table_foreach(table, _foreach_cb, NULL);
 }
+/* LCOV_EXCL_STOP */
 
 static int _cal_client_handle_get_key(unsigned int id, char *key, int key_len)
 {
@@ -72,18 +74,22 @@ int cal_client_handle_get_p(calendar_h *out_handle)
 	if (NULL == handle && tid != pid) {
 		ret = _cal_client_handle_get_key(pid, key, sizeof(key));
 		if (CALENDAR_ERROR_NONE != ret) {
+			/* LCOV_EXCL_START */
 			ERR("_cal_client_handle_get_key() Fail(%d):No handle(key[%s])", ret, key);
 			_print_hash(_cal_handle_table);
 			return ret;
+			/* LCOV_EXCL_STOP */
 		}
 
 		cal_mutex_lock(CAL_MUTEX_HANDLE);
 		handle = g_hash_table_lookup(_cal_handle_table, key);
 		cal_mutex_unlock(CAL_MUTEX_HANDLE);
 		if (NULL == handle) {
+			/* LCOV_EXCL_START */
 			ERR("g_hash_table_lookup() Fail:No handle(key[%s])", key);
 			_print_hash(_cal_handle_table);
 			return CALENDAR_ERROR_NO_DATA;
+			/* LCOV_EXCL_STOP */
 		}
 	}
 	*out_handle = handle;
@@ -106,9 +112,11 @@ int cal_client_handle_get_p_with_id(unsigned int id, calendar_h *out_handle)
 	handle = g_hash_table_lookup(_cal_handle_table, key);
 	cal_mutex_unlock(CAL_MUTEX_HANDLE);
 	if (NULL == handle) {
+		/* LCOV_EXCL_START */
 		ERR("g_hash_table_lookup() Fail:No handle:key[%s]", key);
 		_print_hash(_cal_handle_table);
 		return CALENDAR_ERROR_NO_DATA;
+		/* LCOV_EXCL_STOP */
 	}
 	*out_handle = handle;
 	return CALENDAR_ERROR_NONE;
@@ -144,9 +152,11 @@ int cal_client_handle_create(unsigned int id, calendar_h *out_handle)
 
 	ret = _cal_client_handle_add(handle, key);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("_cal_client_handle_add() Fail(%d)", ret);
 		cal_handle_destroy(handle);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	*out_handle = handle;

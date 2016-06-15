@@ -65,9 +65,11 @@ API int calendar_reminder_add_cb(calendar_reminder_cb callback, void *user_data)
 	callback_info_s *ci = NULL;
 	ci = calloc(1, sizeof(callback_info_s));
 	if (NULL == ci) {
+		/* LCOV_EXCL_START */
 		ERR("calloc() Fail");
 		pthread_mutex_unlock(&cal_mutex_reminder);
 		return CALENDAR_ERROR_IPC;
+		/* LCOV_EXCL_STOP */
 	}
 
 	DBG("add reminer(0x%x)", callback);
@@ -105,9 +107,11 @@ API int calendar_reminder_remove_cb(calendar_reminder_cb callback, void *user_da
 	}
 
 	if (0 == is_matched) {
+		/* LCOV_EXCL_START */
 		ERR("Not matched callback(0x%x)", callback);
 		pthread_mutex_unlock(&cal_mutex_reminder);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	DBG("remove reminder(0x%x)", callback);
@@ -137,7 +141,7 @@ int cal_client_reminder_call_subscribe(const char *stream)
 	while (cursor) {
 		callback_info_s *ci = (callback_info_s *)cursor->data;
 		if (NULL == ci) {
-			ERR("data is NULL");
+			WARN("data is NULL");
 			cursor = g_slist_next(cursor);
 			continue;
 		}

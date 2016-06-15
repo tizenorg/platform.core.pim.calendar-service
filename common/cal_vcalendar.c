@@ -60,14 +60,18 @@ API int calendar_vcalendar_make_from_records(calendar_list_h list, char **vcalen
 	cal_vcalendar_make_free(&b);
 
 	if (!ical) {
+		/* LCOV_EXCL_START */
 		ERR("cal_vcalendar_make_get_data() Fail");
 		return CALENDAR_ERROR_OUT_OF_MEMORY;
+		/* LCOV_EXCL_STOP */
 	}
 
 	if (!*ical) {
+		/* LCOV_EXCL_START */
 		ERR("No ical data");
 		free(ical);
 		return CALENDAR_ERROR_NO_DATA;
+		/* LCOV_EXCL_STOP */
 	}
 
 	*vcalendar_stream = ical;
@@ -109,8 +113,10 @@ static const char* __calendar_vcalendar_get_vcalendar_object(const char *origina
 				len = (int)((long)vcal_cursor - (long)vcal_start);
 				vcalendar_object = calloc(len + 1, sizeof(char));
 				if (NULL == vcalendar_object) {
+					/* LCOV_EXCL_START */
 					ERR("calloc() Fail");
 					return NULL;
+					/* LCOV_EXCL_STOP */
 				}
 				memcpy(vcalendar_object, vcal_start, len);
 				*pvcalendar_object = vcalendar_object;
@@ -156,11 +162,13 @@ API int calendar_vcalendar_parse_to_calendar(const char* vcalendar_stream, calen
 
 		err = cal_vcalendar_parse_vcalendar_object(vcalendar_object, list, NULL);
 		if (CALENDAR_ERROR_NONE != err) {
+			/* LCOV_EXCL_START */
 			ERR("cal_vcalendar_parse_vcalendar_object() failed(%d)", err);
 			calendar_list_destroy(list, true);
 			free(vcalendar_object);
 			cal_time_fini();
 			return err;
+			/* LCOV_EXCL_STOP */
 		}
 		free(vcalendar_object);
 	}
@@ -194,28 +202,34 @@ API int calendar_vcalendar_parse_to_calendar_foreach(const char *vcalendar_file_
 
 	file = fopen(vcalendar_file_path, "r");
 	if (NULL == file) {
+		/* LCOV_EXCL_START */
 		ERR("Invalid argument: no file");
 		calendar_list_destroy(list, true);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	len = 0;
 	buf_size = ICALENAR_BUFFER_MAX;
 	stream = calloc(ICALENAR_BUFFER_MAX, sizeof(char));
 	if (NULL == stream) {
+		/* LCOV_EXCL_START */
 		ERR("calloc() Fail");
 		fclose(file);
 		calendar_list_destroy(list, true);
 		return CALENDAR_ERROR_OUT_OF_MEMORY;
+		/* LCOV_EXCL_STOP */
 	}
 
 	foreach_data = calloc(1, sizeof(vcalendar_foreach_s));
 	if (NULL == foreach_data) {
+		/* LCOV_EXCL_START */
 		ERR("calloc() Fail");
 		free(stream);
 		fclose(file);
 		calendar_list_destroy(list, true);
 		return CALENDAR_ERROR_OUT_OF_MEMORY;
+		/* LCOV_EXCL_STOP */
 	}
 	foreach_data->callback = callback;
 	foreach_data->user_data = user_data;
@@ -231,12 +245,14 @@ API int calendar_vcalendar_parse_to_calendar_foreach(const char *vcalendar_file_
 			if (new_stream) {
 				stream = new_stream;
 			} else {
+				/* LCOV_EXCL_START */
+				ERR("out of memory");
 				free(stream);
 				fclose(file);
 				free(foreach_data);
 				calendar_list_destroy(list, true);
-				ERR("out of memory");
 				return CALENDAR_ERROR_OUT_OF_MEMORY;
+				/* LCOV_EXCL_STOP */
 			}
 			len += snprintf(stream + len, strlen(buf) +1, "%s", buf);
 		}
@@ -248,6 +264,7 @@ API int calendar_vcalendar_parse_to_calendar_foreach(const char *vcalendar_file_
 			__calendar_vcalendar_get_vcalendar_object(stream, &vcalendar_object);
 			err = cal_vcalendar_parse_vcalendar_object(vcalendar_object, list, foreach_data);
 			if (CALENDAR_ERROR_NONE != err || false == foreach_data->ret) {
+				/* LCOV_EXCL_START */
 				ERR("cal_vcalendar_parse_vcalendar_object() failed(%d)", err);
 				calendar_list_destroy(list, true);
 				free(vcalendar_object);
@@ -255,6 +272,7 @@ API int calendar_vcalendar_parse_to_calendar_foreach(const char *vcalendar_file_
 				free(foreach_data);
 				fclose(file);
 				return err;
+				/* LCOV_EXCL_STOP */
 			}
 			free(vcalendar_object);
 			len = 0;

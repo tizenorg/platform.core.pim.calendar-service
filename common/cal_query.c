@@ -112,8 +112,10 @@ API int calendar_query_set_filter(calendar_query_h query, calendar_filter_h filt
 	que = (cal_query_s *)query;
 
 	if (NULL == ((cal_composite_filter_s*)filter)->filters) {
+		/* LCOV_EXCL_START */
 		ERR("Empty filter");
 		return CALENDAR_ERROR_NO_DATA;
+		/* LCOV_EXCL_STOP */
 	}
 
 	ret = cal_filter_clone(filter, &new_filter);

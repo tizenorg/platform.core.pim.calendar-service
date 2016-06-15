@@ -470,8 +470,10 @@ static int _cal_db_query_create_composite_condition(cal_composite_filter_s *com_
 		ret = _cal_db_query_create_attribute_condition(com_filter, (cal_attribute_filter_s*)filter, &cond, &binds);
 
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("_cal_db_query_create_attribute_condition() Fail(%d)", ret);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	cursor_filter = com_filter->filters->next;
@@ -491,6 +493,7 @@ static int _cal_db_query_create_composite_condition(cal_composite_filter_s *com_
 			ret = _cal_db_query_create_attribute_condition(com_filter, (cal_attribute_filter_s*)filter, &cond, &binds2);
 
 		if (CALENDAR_ERROR_NONE != ret) {
+			/* LCOV_EXCL_START */
 			ERR("_cal_db_query_create_attribute_condition() Fail(%d)", ret);
 			CAL_FREE(out_cond);
 			if (binds) {
@@ -498,6 +501,7 @@ static int _cal_db_query_create_composite_condition(cal_composite_filter_s *com_
 				binds = NULL;
 			}
 			return CALENDAR_ERROR_INVALID_PARAMETER;
+			/* LCOV_EXCL_STOP */
 		}
 
 		op = (calendar_filter_operator_e)cursor_ops->data;
@@ -549,8 +553,10 @@ static int _cal_db_query_create_attribute_condition(cal_composite_filter_s *com_
 		ret = _cal_db_query_create_caltime_condition(com_filter, filter, &cond);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("The filter type is not supported (%d)", filter->filter_type);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	if (CALENDAR_ERROR_NONE == ret)
@@ -593,8 +599,10 @@ static int _cal_db_query_create_int_condition(cal_composite_filter_s *com_filter
 		snprintf(out_cond, sizeof(out_cond), "%s <> %d", field_name, filter->value.i);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("Invalid parameter : int match rule(%d) is not supported", filter->match);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	*condition = strdup(out_cond);
@@ -635,8 +643,10 @@ static int _cal_db_query_create_double_condition(cal_composite_filter_s *com_fil
 		snprintf(out_cond, sizeof(out_cond), "%s <> %lf", field_name, filter->value.d);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("Invalid parameter : int match rule(%d) is not supported", filter->match);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	*condition = strdup(out_cond);
@@ -677,8 +687,10 @@ static int _cal_db_query_create_lli_condition(cal_composite_filter_s *com_filter
 		snprintf(out_cond, sizeof(out_cond), "%s <> %lld", field_name, filter->value.lli);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("Invalid parameter : int match rule(%d) is not supported", filter->match);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	*condition = strdup(out_cond);
@@ -725,8 +737,10 @@ static int _cal_db_query_create_caltime_condition(cal_composite_filter_s *com_fi
 			snprintf(out_cond, sizeof(out_cond), "%s <> %lld", tmp, filter->value.caltime.time.utime);
 			break;
 		default:
+			/* LCOV_EXCL_START */
 			ERR("Invalid parameter : int match rule(%d) is not supported", filter->match);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
+			/* LCOV_EXCL_STOP */
 		}
 	} else if (filter->value.caltime.type == CALENDAR_TIME_LOCALTIME) {
 		char sdate[CAL_STR_SHORT_LEN32] = {0};
@@ -758,12 +772,16 @@ static int _cal_db_query_create_caltime_condition(cal_composite_filter_s *com_fi
 			break;
 		case CALENDAR_MATCH_NONE:
 		default:
+			/* LCOV_EXCL_START */
 			ERR("Invalid parameter : int match rule(%d) is not supported", filter->match);
 			return CALENDAR_ERROR_INVALID_PARAMETER;
+			/* LCOV_EXCL_STOP */
 		}
 	} else {
+		/* LCOV_EXCL_START */
 		ERR("Invalid parameter : property id(%d)", filter->property_id);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	cal_record_type_e record_type = cal_view_get_type(com_filter->view_uri);
@@ -832,8 +850,10 @@ static int _cal_db_query_create_str_condition(cal_composite_filter_s *com_filter
 		snprintf(out_cond, sizeof(out_cond), "%s IS NOT NULL", field_name);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("Invalid paramter : int match rule (%d) is not supported", filter->match);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	if (filter->value.s) {

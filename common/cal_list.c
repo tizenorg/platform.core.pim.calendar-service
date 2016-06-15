@@ -208,23 +208,29 @@ int cal_list_clone(calendar_list_h list, calendar_list_h *out_list)
 		calendar_record_h clone_record = NULL;
 		ret = calendar_list_get_current_record_p(list, &record);
 		if (CALENDAR_ERROR_NONE != ret) {
+			/* LCOV_EXCL_START */
 			ERR("calendar_list_get_current_record_p() Fail(%d)", ret);
 			calendar_list_destroy(l, true);
 			return ret;
+			/* LCOV_EXCL_STOP */
 		}
 
 		ret = calendar_record_clone(record, &clone_record);
 		if (CALENDAR_ERROR_NONE != ret) {
+			/* LCOV_EXCL_START */
 			ERR("calendar_record_clone() Fail(%d)", ret);
 			calendar_list_destroy(l, true);
 			return ret;
+			/* LCOV_EXCL_STOP */
 		}
 
 		ret = calendar_list_add(l, clone_record);
 		if (CALENDAR_ERROR_NONE != ret) {
+			/* LCOV_EXCL_START */
 			ERR("calendar_list_add() Fail(%d)", ret);
 			calendar_list_destroy(l, true);
 			return ret;
+			/* LCOV_EXCL_STOP */
 		}
 		calendar_list_next(list);
 	}
@@ -247,8 +253,10 @@ int cal_list_get_nth_record_p(cal_list_s *list_s, int index, calendar_record_h *
 		return CALENDAR_ERROR_NONE;
 	}
 
+	/* LCOV_EXCL_START */
 	ERR("Check count(%d) < index(%d)", list_s->count, index);
 	return CALENDAR_ERROR_NO_DATA;
+	/* LCOV_EXCL_STOP */
 }
 
 int cal_list_clear(cal_list_s *list_s)
@@ -262,8 +270,10 @@ int cal_list_clear(cal_list_s *list_s)
 	while (CALENDAR_ERROR_NONE == calendar_list_get_current_record_p(list, &record)) {
 		ret = calendar_list_remove(list, record);
 		if (CALENDAR_ERROR_NONE != ret) {
+			/* LCOV_EXCL_START */
 			ERR("calendar_list_remove() Fail(%d)", ret);
 			break;
+			/* LCOV_EXCL_STOP */
 		}
 	}
 	return ret;

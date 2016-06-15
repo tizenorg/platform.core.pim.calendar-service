@@ -38,8 +38,10 @@ API int calendar_connect(void)
 		ret = cal_client_handle_create(id, &handle);
 		RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_client_handle_create() Fail(%d)", ret);
 	} else if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_client_handle_get_p_with_id() Fail(%d)", ret);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 	ret = cal_client_connect(handle, id, &connection_count);
 	return ret;
@@ -55,8 +57,10 @@ API int calendar_disconnect(void)
 	if (CALENDAR_ERROR_NO_DATA == ret) {
 		return CALENDAR_ERROR_NONE;
 	} else if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_client_handle_get_p_with_id() Fail(%d)", ret);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 	ret = cal_client_disconnect(handle, id, &connection_count);
 	WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_client_disconnect() Fail(%d)", ret);
@@ -74,8 +78,10 @@ API int calendar_connect_on_thread(void)
 		ret = cal_client_handle_create(id, &handle);
 		RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_client_handle_create() Fail(%d)", ret);
 	} else if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_client_handle_get_p_with_id() Fail(%d)", ret);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 	ret = cal_client_connect(handle, id, &connection_count_on_thread);
 	return ret;
@@ -91,8 +97,10 @@ API int calendar_disconnect_on_thread(void)
 	if (CALENDAR_ERROR_NO_DATA == ret) {
 		return CALENDAR_ERROR_NONE;
 	} else if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_client_handle_get_p_with_id() Fail(%d)", ret);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 	ret = cal_client_disconnect(handle, id, &connection_count_on_thread);
 	WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_client_disconnect() Fail(%d)", ret);
@@ -110,8 +118,10 @@ API int calendar_connect_with_flags(unsigned int flags)
 		ret = cal_client_handle_create(id, &handle);
 		RETVM_IF(CALENDAR_ERROR_NONE != ret, ret, "cal_client_handle_create() Fail(%d)", ret);
 	} else if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_client_handle_get_p_with_id() Fail(%d)", ret);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 	ret = cal_client_connect_with_flags(handle, id, &connection_count, flags);
 	return ret;

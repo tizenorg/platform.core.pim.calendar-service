@@ -59,12 +59,14 @@ static gpointer  _cal_server_calendar_main(gpointer user_data);
 static bool _cal_server_calendar_delete_step(int ret, __calendar_delete_data_s* data)
 {
 	if (CALENDAR_ERROR_NONE != ret && CALENDAR_ERROR_NO_DATA != ret) {
+		/* LCOV_EXCL_START */
+		ERR("_cal_server_calendar_delete_step Fail(%d)", ret);
 		if (data->calendar_id_list)
 			g_list_free(data->calendar_id_list);
 
 		CAL_FREE(data);
-		ERR("_cal_server_calendar_delete_step Fail(%d)", ret);
 		return false;
+		/* LCOV_EXCL_STOP */
 	}
 	switch (data->step) {
 	case STEP_1:
@@ -106,9 +108,11 @@ static int _cal_server_calendar_delete_step1(__calendar_delete_data_s* data)
 		snprintf(query, sizeof(query), "SELECT id FROM %s WHERE deleted = 1", CAL_TABLE_CALENDAR);
 		ret = cal_db_util_query_prepare(query, &stmt);
 		if (CALENDAR_ERROR_NONE != ret) {
+			/* LCOV_EXCL_START */
 			ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 			SECURE("query[%s]", query);
 			return ret;
+			/* LCOV_EXCL_STOP */
 		}
 		while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 			int id = 0;
@@ -120,7 +124,7 @@ static int _cal_server_calendar_delete_step1(__calendar_delete_data_s* data)
 
 	count = g_list_length(data->calendar_id_list);
 	if (count <= 0)
-			return CALENDAR_ERROR_NO_DATA;
+		return CALENDAR_ERROR_NO_DATA;
 
 	GList *cursor = g_list_first(data->calendar_id_list);
 	if (cursor) {
@@ -145,8 +149,10 @@ static int _cal_server_calendar_delete_step2(__calendar_delete_data_s* data)
 
 	ret = cal_db_util_begin_trans();
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_begin_trans() failed");
 		return CALENDAR_ERROR_DB_FAILED;
+		/* LCOV_EXCL_STOP */
 	}
 
 	/* get event_list */
@@ -155,10 +161,12 @@ static int _cal_server_calendar_delete_step2(__calendar_delete_data_s* data)
 
 	ret = cal_db_util_query_prepare(query, &stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query);
 		cal_db_util_end_trans(false);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
@@ -182,11 +190,13 @@ static int _cal_server_calendar_delete_step2(__calendar_delete_data_s* data)
 		snprintf(query, sizeof(query), "DELETE FROM %s WHERE id=%d", CAL_TABLE_SCHEDULE, id);
 		ret = cal_db_util_query_exec(query);
 		if (CALENDAR_ERROR_NONE != ret) {
+			/* LCOV_EXCL_START */
 			ERR("cal_db_util_query_exec() Fail(%d)", ret);
 			SECURE("[%s]", query);
 			cal_db_util_end_trans(false);
 			g_list_free(list);
 			return ret;
+			/* LCOV_EXCL_STOP */
 		}
 		cursor = g_list_next(cursor);
 	}
@@ -205,8 +215,10 @@ static int _cal_server_calendar_delete_step3(__calendar_delete_data_s* data)
 
 	ret = cal_db_util_begin_trans();
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_begin_trans() failed");
 		return CALENDAR_ERROR_DB_FAILED;
+		/* LCOV_EXCL_STOP */
 	}
 
 	CAL_FN_CALL();
@@ -215,10 +227,12 @@ static int _cal_server_calendar_delete_step3(__calendar_delete_data_s* data)
 	snprintf(query, sizeof(query), "DELETE FROM %s WHERE id=%d", CAL_TABLE_CALENDAR, data->current_calendar_id);
 	ret = cal_db_util_query_exec(query);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_exec() Fail(%d)", ret);
 		SECURE("[%s]", query);
 		cal_db_util_end_trans(false);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 	cal_db_util_end_trans(true);
 
@@ -232,8 +246,10 @@ static bool  _cal_server_calendar_run(__calendar_delete_data_s* data)
 	CAL_FN_CALL();
 
 	if (data == NULL) {
+		/* LCOV_EXCL_START */
 		ERR("data is NULL");
 		return false;
+		/* LCOV_EXCL_STOP */
 	}
 
 	switch (data->step) {
@@ -247,13 +263,14 @@ static bool  _cal_server_calendar_run(__calendar_delete_data_s* data)
 		ret = _cal_server_calendar_delete_step3(data);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("invalid step");
 		if (data->calendar_id_list)
 			g_list_free(data->calendar_id_list);
 
 		CAL_FREE(data);
-
 		return false;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return _cal_server_calendar_delete_step(ret, data);
@@ -269,8 +286,10 @@ static gpointer _cal_server_calendar_main(gpointer user_data)
 		__calendar_delete_data_s *callback_data = NULL;
 		callback_data = calloc(1, sizeof(__calendar_delete_data_s));
 		if (NULL == callback_data) {
+			/* LCOV_EXCL_START */
 			ERR("calloc() Fail");
 			break;
+			/* LCOV_EXCL_STOP */
 		}
 
 		callback_data->step = STEP_1;
@@ -278,9 +297,11 @@ static gpointer _cal_server_calendar_main(gpointer user_data)
 		/* delete */
 		ret = cal_connect();
 		if (CALENDAR_ERROR_NONE != ret) {
+			/* LCOV_EXCL_START */
 			ERR("cal_connect() Fail(%d)", ret);
 			free(callback_data);
 			break;
+			/* LCOV_EXCL_STOP */
 		}
 
 		while (1) {

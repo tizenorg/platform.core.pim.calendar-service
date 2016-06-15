@@ -500,9 +500,11 @@ int _cal_vcalendar_make_rrule_append_mday(char *buf, int buf_len, char *mday)
 	char **t = NULL;
 	t = g_strsplit_set(mday, " ,", -1);
 	if (!t) {
+		/* LCOV_EXCL_START */
 		ERR("g_strsplit_set() Fail");
 		g_strfreev(t);
 		return 0;
+		/* LCOV_EXCL_STOP */
 	}
 	int len = strlen(buf);
 	int tlen = g_strv_length(t);
@@ -618,9 +620,11 @@ void _cal_vcalendar_make_rrule_append_text_wday(int rrule_type, char *buf, int b
 	int len = strlen(buf);
 	t = g_strsplit_set(wday, " ,", -1);
 	if (!t) {
+		/* LCOV_EXCL_START */
 		ERR("g_strsplit_set() Fail");
 		g_strfreev(t);
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 	length = g_strv_length(t);
 
@@ -681,9 +685,11 @@ int _cal_vcalendar_make_rrule_append_wday(int rrule_type, char *buf, int buf_len
 	num_past = 0;
 	t = g_strsplit_set(wday, " ,", -1);
 	if (!t) {
+		/* LCOV_EXCL_START */
 		ERR("g_strsplit_set() Fail");
 		g_strfreev(t);
 		return CALENDAR_ERROR_OUT_OF_MEMORY;
+		/* LCOV_EXCL_STOP */
 	}
 	length = g_strv_length(t);
 	DBG("len(%d)", length);
@@ -720,7 +726,7 @@ int _cal_vcalendar_make_rrule_append_wday(int rrule_type, char *buf, int buf_len
 			}
 			if (num_past == num)
 				len += snprintf(buf +len, buf_len -len, "%s ", p +j);
-			 else
+			else
 				ERR("Out of 1.0 spec");
 
 			DBG("%d num(%d) val[%s]", i, num, p + j);
@@ -832,8 +838,10 @@ static void __make_sensitivity(cal_make_s *b, calendar_record_h record)
 		sensitivity = "CONFIDENTIAL";
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("Invalid sensitivity(%d)", value);
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 	_cal_vcalendar_make_printf(b, "CLASS:", sensitivity);
 }
@@ -848,8 +856,10 @@ int _cal_vcalendar_make_rrule_append_until(char *buf, int buf_len, calendar_reco
 
 	ret = calendar_record_get_int(record, _calendar_event.range_type, &range_type);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("calendar_record_get_int() Fail");
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	int len = strlen(buf);
@@ -857,8 +867,10 @@ int _cal_vcalendar_make_rrule_append_until(char *buf, int buf_len, calendar_reco
 	case CALENDAR_RANGE_COUNT:
 		ret = calendar_record_get_int(record, _calendar_event.count, &count);
 		if (CALENDAR_ERROR_NONE != ret) {
+			/* LCOV_EXCL_START */
 			ERR("calendar_record_get_int() Fail");
 			return ret;
+			/* LCOV_EXCL_STOP */
 		}
 		snprintf(buf +len, buf_len -len, "#%d", count);
 		break;
@@ -868,8 +880,10 @@ int _cal_vcalendar_make_rrule_append_until(char *buf, int buf_len, calendar_reco
 
 		ret = calendar_record_get_caltime(record, _calendar_event.until_time, &caltime);
 		if (CALENDAR_ERROR_NONE != ret) {
+			/* LCOV_EXCL_START */
 			ERR("calendar_record_get_caltime() Fail");
 			return ret;
+			/* LCOV_EXCL_STOP */
 		}
 		switch (caltime.type) {
 		case CALENDAR_TIME_UTIME:
@@ -1018,8 +1032,10 @@ static void __make_rrule_ver1(cal_make_s *b, calendar_record_h record)
 		break;
 
 	default:
+		/* LCOV_EXCL_START */
 		ERR("Out of scope");
 		break;
+		/* LCOV_EXCL_STOP */
 	}
 
 	if (*buf) {
@@ -1239,8 +1255,10 @@ static void __make_rrule(cal_make_s *b, calendar_record_h record)
 		}
 		break;
 	case CALENDAR_BOOK_TYPE_TODO:
+		/* LCOV_EXCL_START */
 		ERR("No rrule in todo");
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 }
 
@@ -1461,8 +1479,10 @@ static void __make_alarm(cal_make_s *b, calendar_record_h record)
 		}
 		break;
 	case CALENDAR_BOOK_TYPE_TODO:
+		/* LCOV_EXCL_START */
 		ERR("No rrule in todo");
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 
 }
@@ -1832,8 +1852,10 @@ static void __make_exdate(cal_make_s *b, calendar_record_h record)
 		RETM_IF(CALENDAR_ERROR_NONE != ret, "calendar_record_get_str_p() Fail(%d)", ret);
 		break;
 	case CALENDAR_BOOK_TYPE_TODO:
+		/* LCOV_EXCL_START */
 		ERR("Not support exdate in TODO");
 		break;
+		/* LCOV_EXCL_STOP */
 	}
 	if (value && *value)
 		_cal_vcalendar_make_printf(b, "EXDATE:", value);

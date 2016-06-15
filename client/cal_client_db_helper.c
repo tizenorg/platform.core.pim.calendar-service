@@ -53,12 +53,16 @@ int cal_client_db_add_changed_cb(calendar_h handle, const char* view_uri, void *
 				callback, user_data);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("Invalid view_uri(%s)", view_uri);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_inotify_subscribe() Fail(%d)", ret);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;
@@ -85,12 +89,16 @@ int cal_client_db_remove_changed_cb(calendar_h handle, const char* view_uri, cal
 		ret = cal_inotify_unsubscribe(CAL_NOTI_TODO_CHANGED, callback, user_data);
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("Invalid view_uri(%s)", view_uri);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_inotify_unsubscribe() Fail(%d)", ret);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	return CALENDAR_ERROR_NONE;

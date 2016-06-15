@@ -97,15 +97,19 @@ static void _cal_access_control_set_permission_info(cal_permission_info_s *info)
 	snprintf(query, sizeof(query), "SELECT count(id) FROM %s WHERE deleted = 0 ", CAL_TABLE_CALENDAR);
 	ret = cal_db_util_query_get_first_int_result(query, NULL, &count);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_get_first_int_result() Fail(%d)", ret);
 		SECURE("query[%s]", query);
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 
 	info->write_list = calloc(count +1, sizeof(int));
 	if (NULL == info->write_list) {
+		/* LCOV_EXCL_START */
 		ERR("calloc() Fail");
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 	info->write_list_count = 0;
 
@@ -113,9 +117,11 @@ static void _cal_access_control_set_permission_info(cal_permission_info_s *info)
 	snprintf(query, sizeof(query), "SELECT id, mode, owner_label FROM %s WHERE deleted = 0 ", CAL_TABLE_CALENDAR);
 	ret = cal_db_util_query_prepare(query, &stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query);
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 
 	int write_index = 0;
@@ -151,9 +157,11 @@ void cal_access_control_set_client_info(void *ipc, const char *smack_label)
 	if (NULL == info) {
 		info = calloc(1, sizeof(cal_permission_info_s));
 		if (NULL == info) {
+		/* LCOV_EXCL_START */
 			ERR("calloc() Fail");
 			cal_mutex_unlock(CAL_MUTEX_ACCESS_CONTROL);
 			return;
+		/* LCOV_EXCL_STOP */
 		}
 		__thread_list  = g_list_append(__thread_list, info);
 	}
@@ -219,15 +227,19 @@ bool cal_access_control_have_write_permission(int book_id)
 	unsigned int thread_id = pthread_self();
 	info = _cal_access_control_find_permission_info(thread_id);
 	if (NULL == info) {
+		/* LCOV_EXCL_START */
 		cal_mutex_unlock(CAL_MUTEX_ACCESS_CONTROL);
 		ERR("_cal_access_control_find_permission_info() Fail");
 		return false;
+		/* LCOV_EXCL_STOP */
 	}
 
 	if (NULL == info->write_list) {
+		/* LCOV_EXCL_START */
 		cal_mutex_unlock(CAL_MUTEX_ACCESS_CONTROL);
 		ERR("there is no write access info");
 		return false;
+		/* LCOV_EXCL_STOP */
 	}
 
 	int i = 0;
@@ -255,15 +267,19 @@ int cal_is_owner(int book_id)
 			CAL_TABLE_CALENDAR, book_id);
 	ret = cal_db_util_query_prepare(query, &stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	if (CAL_SQLITE_ROW != cal_db_util_stmt_step(stmt)) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_stmt_step() Fail(%d)", ret);
 		sqlite3_finalize(stmt);
 		return CALENDAR_ERROR_DB_FAILED;
+		/* LCOV_EXCL_STOP */
 	}
 
 	ret = CALENDAR_ERROR_PERMISSION_DENIED;

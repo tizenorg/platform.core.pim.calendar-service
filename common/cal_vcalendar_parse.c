@@ -602,8 +602,10 @@ static void __decode_base64(char *p)
 		return;
 	}
 	if (strlen(p) < size) {
+		/* LCOV_EXCL_START */
 		ERR("out of size");
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 
 	snprintf(p, size + 1, "%s%c", buf, '\0');
@@ -684,8 +686,10 @@ static char* __decode_iso8859_1_to_utf8(char *p)
 	char *out_p = NULL;
 	out_p = realloc(p, len);
 	if (NULL == out_p) {
+		/* LCOV_EXCL_START */
 		ERR("realloc() Fail");
 		return NULL;
+		/* LCOV_EXCL_STOP */
 	}
 
 	/* check enough space */
@@ -720,9 +724,11 @@ static char* __decode_charset(char *p)
 	char **s = NULL;
 	s = g_strsplit(t[0], ";", -1);
 	if (NULL == s) {
+		/* LCOV_EXCL_START */
 		ERR("g_strsplit() Fail");
 		g_strfreev(t);
 		return NULL;
+		/* LCOV_EXCL_STOP */
 	}
 	int count_param = g_strv_length(s);
 	DBG("count_param(%d)", count_param);
@@ -817,8 +823,10 @@ static char* __decode_datetime(char *p, struct user_data *ud)
 		char *tzid = NULL;
 		tzid = strdup(s[i] + strlen("TZID="));
 		if (NULL == tzid) {
+			/* LCOV_EXCL_START */
 			ERR("strdup() Fail");
 			break;
+			/* LCOV_EXCL_STOP */
 		}
 		__adjust_tzid(tzid);
 		DBG("modified tzid[%s]", tzid);
@@ -833,12 +841,16 @@ static char* __decode_datetime(char *p, struct user_data *ud)
 		if (ud->timezone_tzid && *ud->timezone_tzid) {
 			ud->datetime_tzid = strdup(ud->timezone_tzid);
 			if (NULL == ud->datetime_tzid) {
+				/* LCOV_EXCL_START */
 				ERR("strdup() Fail");
 				break;
+				/* LCOV_EXCL_STOP */
 			}
 			DBG("set datetime_tzid[%s] as timezone_tzid", ud->datetime_tzid);
 		} else {
+			/* LCOV_EXCL_START */
 			ERR("INVALID tzid");
+			/* LCOV_EXCL_STOP */
 		}
 		break;
 	}
@@ -920,8 +932,10 @@ static void __decode_duration(char *cursor, int len, int *tick, int *unit)
 			digit = 0;
 			break;
 		default:
+			/* LCOV_EXCL_START */
 			ERR("Invalid value");
 			break;
+			/* LCOV_EXCL_STOP */
 		}
 	}
 
@@ -1047,9 +1061,11 @@ static int _get_caltime(char *p, calendar_time_s *caltime, struct user_data *ud)
 		}
 		break;
 	default:
+		/* LCOV_EXCL_START */
 		ERR("Invalid time format[%s]", p);
 		ret = CALENDAR_ERROR_INVALID_PARAMETER;
 		break;
+		/* LCOV_EXCL_STOP */
 	}
 	return ret;
 }
@@ -1077,9 +1093,11 @@ static void __parse_tz(const char *tz, int *h, int *m)
 		sign = 0;
 
 	if (0 == strlen(t[0])) {
+		/* LCOV_EXCL_START */
 		ERR("No hour");
 		g_strfreev(t);
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 
 	char buf[8] = {0};
@@ -1182,8 +1200,10 @@ static void __work_component_property_dtstart(char *value, calendar_record_h rec
 	calendar_time_s dtstart = {0};
 	ret = _get_caltime(value, &dtstart, ud);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("_get_caltime() Fail(%d)", ret);
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 
 	char *tzid = NULL;
@@ -1888,8 +1908,10 @@ static void __work_component_property_dtend(char *value, calendar_record_h recor
 	calendar_time_s dtend = {0};
 	ret = _get_caltime(value, &dtend, ud);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("_get_caltime() Fail(%d)", ret);
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 
 	char *tzid = NULL;
@@ -1987,7 +2009,9 @@ static void __work_component_property_attendee_cutype(calendar_record_h attendee
 			prop = "UNKNOWN";
 
 	} else {
+		/* LCOV_EXCL_START */
 		ERR("Invalid value[%s]", value);
+		/* LCOV_EXCL_STOP */
 	}
 	WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
 
@@ -2030,7 +2054,9 @@ static void __work_component_property_attendee_role(calendar_record_h attendee, 
 		if (strlen(value) > strlen("CHAIR"))
 			prop = "CHAIR";
 	} else {
+		/* LCOV_EXCL_START */
 		ERR("Invalid value[%s]", value);
+		/* LCOV_EXCL_STOP */
 	}
 	WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
 
@@ -2083,7 +2109,9 @@ static void __work_component_property_attendee_partstat(calendar_record_h attend
 			prop = "IN-PROCESS";
 
 	} else {
+		/* LCOV_EXCL_START */
 		ERR("Invalid value[%s]", value);
+		/* LCOV_EXCL_STOP */
 	}
 	WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
 
@@ -2284,9 +2312,11 @@ static void __work_component_property_dalarm(char *value, calendar_record_h reco
 	calendar_record_h alarm = NULL;
 	ret = calendar_record_create(_calendar_alarm._uri, &alarm);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("calendar_record_create() Fail(%d)", ret);
 		g_strfreev(t);
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 	ret = cal_record_set_int(alarm, _calendar_alarm.action, CALENDAR_ALARM_ACTION_DISPLAY);
 	WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
@@ -2306,9 +2336,11 @@ static void __work_component_property_dalarm(char *value, calendar_record_h reco
 			calendar_time_s alarm_time = {0};
 			ret = _get_caltime(t[i], &alarm_time, ud);
 			if (CALENDAR_ERROR_NONE != ret) {
+				/* LCOV_EXCL_START */
 				ERR("_get_caltime() Fail(%d)", ret);
 				index = VCAL_VER_10_AALARM_NONE;
 				break;
+				/* LCOV_EXCL_STOP */
 			}
 
 			if (true == ud->has_rrule) {
@@ -2318,9 +2350,11 @@ static void __work_component_property_dalarm(char *value, calendar_record_h reco
 				int diff = 0;
 				ret = _sub_caltime(ud, &start_time, &alarm_time, &diff);
 				if (CALENDAR_ERROR_NONE != ret) {
+					/* LCOV_EXCL_START */
 					ERR("_sub_caltime() Fail(%d)", ret);
 					index = VCAL_VER_10_DALARM_NONE;
 					break;
+					/* LCOV_EXCL_STOP */
 				}
 				_set_alarm_tick_unit(alarm, alarm_time, diff);
 
@@ -2377,9 +2411,11 @@ static void __work_component_property_malarm(char *value, calendar_record_h reco
 	calendar_record_h alarm = NULL;
 	ret = calendar_record_create(_calendar_alarm._uri, &alarm);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("calendar_record_create() Fail(%d)", ret);
 		g_strfreev(t);
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 	ret = cal_record_set_int(alarm, _calendar_alarm.action, CALENDAR_ALARM_ACTION_EMAIL);
 	WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
@@ -2399,9 +2435,11 @@ static void __work_component_property_malarm(char *value, calendar_record_h reco
 			calendar_time_s alarm_time = {0};
 			ret = _get_caltime(t[i], &alarm_time, ud);
 			if (CALENDAR_ERROR_NONE != ret) {
+				/* LCOV_EXCL_START */
 				ERR("_get_caltime() Fail(%d)", ret);
 				index = VCAL_VER_10_AALARM_NONE;
 				break;
+				/* LCOV_EXCL_STOP */
 			}
 
 			if (true == ud->has_rrule) {
@@ -2412,9 +2450,11 @@ static void __work_component_property_malarm(char *value, calendar_record_h reco
 				int diff = 0;
 				ret = _sub_caltime(ud, &start_time, &alarm_time, &diff);
 				if (CALENDAR_ERROR_NONE != ret) {
+					/* LCOV_EXCL_START */
 					ERR("_sub_caltime() Fail(%d)", ret);
 					index = VCAL_VER_10_MALARM_NONE;
 					break;
+					/* LCOV_EXCL_STOP */
 				}
 				_set_alarm_tick_unit(alarm, alarm_time, diff);
 
@@ -2478,9 +2518,11 @@ static void __work_component_property_aalarm(char *value, calendar_record_h reco
 	calendar_record_h alarm = NULL;
 	ret = calendar_record_create(_calendar_alarm._uri, &alarm);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("calendar_record_create() Fail(%d)", ret);
 		g_strfreev(t);
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 	ret = cal_record_set_int(alarm, _calendar_alarm.action, CALENDAR_ALARM_ACTION_AUDIO);
 	WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_int() Fail(%d)", ret);
@@ -2500,9 +2542,11 @@ static void __work_component_property_aalarm(char *value, calendar_record_h reco
 			calendar_time_s alarm_time = {0};
 			ret = _get_caltime(t[i], &alarm_time, ud);
 			if (CALENDAR_ERROR_NONE != ret) {
+				/* LCOV_EXCL_START */
 				ERR("_get_caltime() Fail(%d)", ret);
 				index = VCAL_VER_10_AALARM_NONE;
 				break;
+				/* LCOV_EXCL_STOP */
 			}
 
 			if (true == ud->has_rrule) {
@@ -2512,9 +2556,11 @@ static void __work_component_property_aalarm(char *value, calendar_record_h reco
 				int diff = 0;
 				ret = _sub_caltime(ud, &start_time, &alarm_time, &diff);
 				if (CALENDAR_ERROR_NONE != ret) {
+					/* LCOV_EXCL_START */
 					ERR("_sub_caltime() Fail(%d)", ret);
 					index = VCAL_VER_10_AALARM_NONE;
 					break;
+					/* LCOV_EXCL_STOP */
 				}
 				_set_alarm_tick_unit(alarm, alarm_time, diff);
 
@@ -2565,8 +2611,10 @@ static void __work_component_property_exdate(char *value, calendar_record_h reco
 		WARN_IF(CALENDAR_ERROR_NONE != ret, "cal_record_set_str() Fail(%d)", ret);
 		break;
 	case CALENDAR_BOOK_TYPE_TODO:
+		/* LCOV_EXCL_START */
 		ERR("No exdate in todo");
 		break;
+		/* LCOV_EXCL_STOP */
 	}
 }
 
@@ -2887,9 +2935,11 @@ static char* __work_component_property_begin(char *cursor, calendar_record_h rec
 			break;
 
 		default:
+			/* LCOV_EXCL_START */
 			ERR("Invalid index(%d)", index);
 			cursor = __crlf(cursor);
 			break;
+			/* LCOV_EXCL_STOP */
 		}
 
 		if (true == exit_loop) break;
@@ -3393,9 +3443,11 @@ static char* __work_component_vtimezone(char *cursor, calendar_record_h record, 
 		if (CAL_STRING_EQUAL == strncmp(cursor, "TZID:", strlen("TZID:"))) {
 			char *p = cursor + strlen("TZID");
 			if (NULL == p || '\0' == *p) {
+				/* LCOV_EXCL_START */
 				ERR("Inavlid tzid");
 				cursor = __crlf(cursor);
 				continue;
+				/* LCOV_EXCL_STOP */
 			}
 			if (ud->timezone_tzid) {
 				free(ud->timezone_tzid);

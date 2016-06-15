@@ -57,8 +57,10 @@ static int _cal_server_alarm_unset_alerted_alarmmgr_id(int alarm_id)
 
 	ret = cal_db_util_begin_trans();
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_begin_trans() Fail");
 		return CALENDAR_ERROR_DB_FAILED;
+		/* LCOV_EXCL_STOP */
 	}
 
 	DBG("alarm_id(%d)", alarm_id);
@@ -67,10 +69,12 @@ static int _cal_server_alarm_unset_alerted_alarmmgr_id(int alarm_id)
 			CAL_TABLE_ALARM, alarm_id);
 	ret = cal_db_util_query_exec(query);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_exec() Fail(%d)", ret);
 		SECURE("[%s]", query);
 		cal_db_util_end_trans(false);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 	cal_db_util_end_trans(true);
 	return CALENDAR_ERROR_NONE;
@@ -84,8 +88,10 @@ static int _cal_server_alarm_clear_all_cb(alarm_id_t alarm_id, void *data)
 	_cal_server_alarm_unset_alerted_alarmmgr_id(alarm_id);
 	ret = alarmmgr_remove_alarm(alarm_id);
 	if (ret != ALARMMGR_RESULT_SUCCESS) {
+		/* LCOV_EXCL_START */
 		ERR("alarmmgr_remove_alarm() Fail(ret:%d)", ret);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 	return CALENDAR_ERROR_NONE;
 }
@@ -97,8 +103,10 @@ static int _cal_server_alarm_update_alarm_id(int alarm_id, int event_id, int tic
 
 	ret = cal_db_util_begin_trans();
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_begin_trans() Fail");
 		return CALENDAR_ERROR_DB_FAILED;
+		/* LCOV_EXCL_STOP */
 	}
 
 	DBG("Update alarm_id(%d) in alarm table", alarm_id);
@@ -107,10 +115,12 @@ static int _cal_server_alarm_update_alarm_id(int alarm_id, int event_id, int tic
 			CAL_TABLE_ALARM, alarm_id, event_id, tick, unit);
 	ret = cal_db_util_query_exec(query);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_exec() Fail(%d)", ret);
 		SECURE("[%s]", query);
 		cal_db_util_end_trans(false);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 	cal_db_util_end_trans(true);
 	return CALENDAR_ERROR_NONE;
@@ -127,9 +137,11 @@ static long long int _cal_server_alarm_get_alert_utime(const char *field, int ev
 	sqlite3_stmt *stmt = NULL;
 	ret = cal_db_util_query_prepare(query, &stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	long long int utime = 0;
@@ -155,9 +167,11 @@ static int _cal_server_alarm_get_alert_localtime(const char *field, int event_id
 	sqlite3_stmt *stmt = NULL;
 	ret = cal_db_util_query_prepare(query, &stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	const char *datetime = NULL;
@@ -165,9 +179,11 @@ static int _cal_server_alarm_get_alert_localtime(const char *field, int event_id
 		datetime = (const char *)sqlite3_column_text(stmt, 0);
 
 	if (NULL == datetime || '\0' == *datetime) {
+		/* LCOV_EXCL_START */
 		ERR("Invalid datetime [%s]", datetime);
 		sqlite3_finalize(stmt);
 		return 0;
+		/* LCOV_EXCL_STOP */
 	}
 
 	int y = 0, m = 0, d = 0;
@@ -203,9 +219,11 @@ int cal_server_alarm_get_alert_time(int alarm_id, time_t *tt_alert)
 	sqlite3_stmt *stmt = NULL;
 	ret = cal_db_util_query_prepare(query, &stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	int event_id = 0;
@@ -232,9 +250,11 @@ int cal_server_alarm_get_alert_time(int alarm_id, time_t *tt_alert)
 	}
 
 	if (NULL == tt_alert) {
+		/* LCOV_EXCL_START */
 		ERR("Invalid parameter: tt_alert is NULL");
 		sqlite3_finalize(stmt);
 		return CALENDAR_ERROR_INVALID_PARAMETER;
+		/* LCOV_EXCL_STOP */
 	}
 
 	if (CALENDAR_ALARM_TIME_UNIT_SPECIFIC == unit) {
@@ -317,17 +337,21 @@ static void _cal_server_alarm_get_upcoming_specific_utime(time_t utime, bool get
 	sqlite3_stmt *stmt = NULL;
 	ret = cal_db_util_query_prepare(query, &stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query);
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 
 	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		struct _alarm_data_s *ad = calloc(1, sizeof(struct _alarm_data_s));
 		if (NULL == ad) {
+			/* LCOV_EXCL_START */
 			ERR("calloc() Fail");
 			sqlite3_finalize(stmt);
 			return;
+			/* LCOV_EXCL_STOP */
 		}
 
 		ad->event_id = sqlite3_column_int(stmt, 0);
@@ -349,7 +373,7 @@ static void _cal_server_alarm_get_upcoming_specific_localtime(const char *dateti
 {
 	int ret = 0;
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
-snprintf(query, sizeof(query), "SELECT event_id,remind_tick_unit,remind_tick,"
+	snprintf(query, sizeof(query), "SELECT event_id,remind_tick_unit,remind_tick,"
 			"alarm_type,alarm_utime,alarm_datetime "
 			"FROM %s WHERE remind_tick_unit=%d AND alarm_type=%d AND alarm_datetime %s '%s' %s",
 			CAL_TABLE_ALARM, CALENDAR_ALARM_TIME_UNIT_SPECIFIC, CALENDAR_TIME_LOCALTIME,
@@ -359,17 +383,21 @@ snprintf(query, sizeof(query), "SELECT event_id,remind_tick_unit,remind_tick,"
 	sqlite3_stmt *stmt = NULL;
 	ret = cal_db_util_query_prepare(query, &stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query);
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 
 	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		struct _alarm_data_s *ad = calloc(1, sizeof(struct _alarm_data_s));
 		if (NULL == ad) {
+			/* LCOV_EXCL_START */
 			ERR("calloc() Fail");
 			sqlite3_finalize(stmt);
 			return;
+			/* LCOV_EXCL_STOP */
 		}
 
 		ad->event_id = sqlite3_column_int(stmt, 0);
@@ -418,17 +446,21 @@ static void _cal_server_alarm_get_upcoming_nonspecific_event_utime(time_t utime,
 	sqlite3_stmt *stmt = NULL;
 	ret = cal_db_util_query_prepare(query, &stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query);
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 
 	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		struct _alarm_data_s *ad = calloc(1, sizeof(struct _alarm_data_s));
 		if (NULL == ad) {
+			/* LCOV_EXCL_START */
 			ERR("calloc() Fail");
 			sqlite3_finalize(stmt);
 			return;
+			/* LCOV_EXCL_STOP */
 		}
 
 		ad->event_id = sqlite3_column_int(stmt, 0);
@@ -466,17 +498,21 @@ static void _cal_server_alarm_get_upcoming_nonspecific_event_localtime(const cha
 	sqlite3_stmt *stmt = NULL;
 	ret = cal_db_util_query_prepare(query, &stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query);
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 
 	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		struct _alarm_data_s *ad = calloc(1, sizeof(struct _alarm_data_s));
 		if (NULL == ad) {
+			/* LCOV_EXCL_START */
 			ERR("calloc() Fail");
 			sqlite3_finalize(stmt);
 			return;
+			/* LCOV_EXCL_STOP */
 		}
 
 		ad->event_id = sqlite3_column_int(stmt, 0);
@@ -527,17 +563,21 @@ static void _cal_server_alarm_get_upcoming_nonspecific_todo_utime(time_t utime, 
 	sqlite3_stmt *stmt = NULL;
 	ret = cal_db_util_query_prepare(query, &stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query);
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 
 	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		struct _alarm_data_s *ad = calloc(1, sizeof(struct _alarm_data_s));
 		if (NULL == ad) {
+			/* LCOV_EXCL_START */
 			ERR("calloc() Fail");
 			sqlite3_finalize(stmt);
 			return;
+			/* LCOV_EXCL_STOP */
 		}
 
 		ad->event_id = sqlite3_column_int(stmt, 0);
@@ -577,17 +617,21 @@ static void _cal_server_alarm_get_upcoming_nonspecific_todo_localtime(const char
 	sqlite3_stmt *stmt = NULL;
 	ret = cal_db_util_query_prepare(query, &stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
 		SECURE("query[%s]", query);
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 
 	while (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt)) {
 		struct _alarm_data_s *ad = calloc(1, sizeof(struct _alarm_data_s));
 		if (NULL == ad) {
+			/* LCOV_EXCL_START */
 			ERR("calloc() Fail");
 			sqlite3_finalize(stmt);
 			return;
+			/* LCOV_EXCL_STOP */
 		}
 
 		ad->event_id = sqlite3_column_int(stmt, 0);
@@ -675,16 +719,20 @@ static int _cal_server_alarm_register(GList *alarm_list)
 	/* clear all alarm which set by mine. */
 	ret = alarmmgr_enum_alarm_ids(_cal_server_alarm_clear_all_cb, NULL);
 	if (ret != ALARMMGR_RESULT_SUCCESS) {
+		/* LCOV_EXCL_START */
 		ERR("alarmmgr_enum_alarm_ids() Fail");
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 
 	time_t mod_time = (time_t)ad->alert_utime;
 	alarm_entry_t *alarm_info = NULL;
 	alarm_info = alarmmgr_create_alarm();
 	if (NULL == alarm_info) {
+		/* LCOV_EXCL_START */
 		ERR("Failed to create alarm");
 		return CALENDAR_ERROR_DB_FAILED;
+		/* LCOV_EXCL_STOP */
 	}
 	tzset();
 	struct tm st_alarm = {0};
@@ -715,9 +763,11 @@ static int _cal_server_alarm_register(GList *alarm_list)
 	int alarm_id = 0;
 	ret = alarmmgr_add_alarm_with_localtime(alarm_info, NULL, &alarm_id);
 	if (ret < 0) {
+		/* LCOV_EXCL_START */
 		ERR("alarmmgr_add_alarm_with_localtime Fail (%d)", ret);
 		alarmmgr_free_alarm(alarm_info);
 		return ret;
+		/* LCOV_EXCL_STOP */
 	}
 	DBG("alarmmgr id (%d)", alarm_id);
 	_cal_server_alarm_update_alarm_id(alarm_id, ad->event_id, ad->tick, ad->unit);
@@ -753,8 +803,10 @@ static bool __app_matched_cb(app_control_h app_control, const char *package, voi
 	struct alarm_ud *au = (struct alarm_ud *)user_data;
 	GList *alarm_list = au->alarm_list;
 	if (NULL == alarm_list) {
+		/* LCOV_EXCL_START */
 		ERR("No list");
 		return true;
+		/* LCOV_EXCL_STOP */
 	}
 	int len = 0;
 	len = g_list_length(alarm_list);
@@ -766,34 +818,42 @@ static bool __app_matched_cb(app_control_h app_control, const char *package, voi
 	app_control_h ac = NULL;
 	ret = app_control_create(&ac);
 	if (APP_CONTROL_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("app_control_create() Fail(%d)", ret);
 		return true;
+		/* LCOV_EXCL_STOP */
 	}
 	ret = app_control_set_operation(ac,  APP_CONTROL_OPERATION_DEFAULT);
 	if (APP_CONTROL_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("app_control_create() Fail(%d)", ret);
 		app_control_destroy(ac);
 		return true;
+		/* LCOV_EXCL_STOP */
 	}
 	ret = app_control_set_app_id(ac, package);
 	if (APP_CONTROL_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("app_control_set_app_id() Fail(%d)", ret);
 		app_control_destroy(ac);
 		return true;
+		/* LCOV_EXCL_STOP */
 	}
 
 	char **ids = NULL;
 	ids = calloc(len, sizeof(char *));
 	if (NULL == ids) {
+		/* LCOV_EXCL_START */
 		ERR("calloc() Fail");
 		app_control_destroy(ac);
 		return true;
+		/* LCOV_EXCL_STOP */
 	}
 	GList *cursor = g_list_first(alarm_list);
 	for (i = 0; i < len; i++) {
 		struct _alarm_data_s *ad = (struct _alarm_data_s *)cursor->data;
 		if (NULL == ad) {
-			ERR("No data");
+			WARN("No data");
 			cursor = g_list_next(cursor);
 			continue;
 		}
@@ -845,35 +905,45 @@ static void _cal_server_alarm_noti_with_control(GList *alarm_list)
 	app_control_h app_control = NULL;
 	ret = app_control_create(&app_control);
 	if (APP_CONTROL_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("app_control_create() Fail(%d)", ret);
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 	ret = app_control_set_operation(app_control, APP_CONTROL_OPERATION_VIEW);
 	if (APP_CONTROL_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("app_control_set_operation() Fail(%d)", ret);
 		app_control_destroy(app_control);
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 	ret = app_control_set_mime(app_control, "application/x-tizen.calendar.reminder");
 	if (APP_CONTROL_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("app_control_set_mime() Fail(%d)", ret);
 		app_control_destroy(app_control);
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 
 	struct alarm_ud *au = calloc(1, sizeof(struct alarm_ud));
 	if (NULL == au) {
+		/* LCOV_EXCL_START */
 		ERR("calloc() Fail");
 		app_control_destroy(app_control);
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 	au->alarm_list = alarm_list;
 	ret = app_control_foreach_app_matched(app_control, __app_matched_cb, au);
 	if (APP_CONTROL_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
 		ERR("app_control_foreach_app_matched() Fail(%d)", ret);
 		free(au);
 		app_control_destroy(app_control);
 		return;
+		/* LCOV_EXCL_STOP */
 	}
 	free(au);
 	app_control_destroy(app_control);
@@ -887,7 +957,7 @@ static void _cal_server_alarm_noti_with_callback(GList *alarm_list)
 	while (l) {
 		struct _alarm_data_s *ad = (struct _alarm_data_s *)l->data;
 		if (NULL == ad) {
-			ERR("No data");
+			WARN("No data");
 			l = g_list_next(l);
 			continue;
 		}
@@ -1007,14 +1077,18 @@ int cal_server_alarm_init(void)
 
 	ret = alarmmgr_init("calendar-service");
 	if (ret < 0) {
+		/* LCOV_EXCL_START */
 		ERR("alarmmgr_init() Fail(%d)", ret);
 		return CALENDAR_ERROR_SYSTEM;
+		/* LCOV_EXCL_STOP */
 	}
 
 	ret = alarmmgr_set_cb(_alert_cb, NULL);
 	if (ret < 0) {
+		/* LCOV_EXCL_START */
 		ERR("alarmmgr_set_cb() Fail(%d)", ret);
 		return CALENDAR_ERROR_SYSTEM;
+		/* LCOV_EXCL_STOP */
 	}
 
 	cal_server_alarm_register_next_alarm(time(NULL));
