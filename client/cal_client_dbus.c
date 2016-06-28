@@ -273,6 +273,8 @@ int cal_dbus_insert_record(calendar_h handle, calendar_record_h record, int *out
 	GVariant *arg_record = cal_dbus_utils_record_to_gvariant(record);
 	cal_dbus_call_insert_record_sync(cal_dbus_object, arg_handle, arg_record,
 			&id, &version, &ret, NULL, &error);
+	g_variant_unref(arg_record);
+	g_variant_unref(arg_handle);
 	if (error) {
 		ERR("cal_dbus_call_insert_record_sync() Fail[%s]", error->message);
 		if (G_DBUS_ERROR_ACCESS_DENIED == error->code)
@@ -280,13 +282,12 @@ int cal_dbus_insert_record(calendar_h handle, calendar_record_h record, int *out
 		else
 			ret = CALENDAR_ERROR_IPC;
 		g_error_free(error);
-		g_variant_unref(arg_handle);
-		g_variant_unref(arg_record);
 		return ret;
 	}
 	cal_client_handle_set_version(handle, version);
 	if (out_id)
 		*out_id = id;
+
 	CAL_LIMIT_ACCESS_BACK;
 	return ret;
 }
@@ -307,6 +308,8 @@ int cal_dbus_update_record(calendar_h handle, calendar_record_h record)
 	GVariant *arg_record = cal_dbus_utils_record_to_gvariant(record);
 	cal_dbus_call_update_record_sync(cal_dbus_object, arg_handle, arg_record,
 			&version, &ret, NULL, &error);
+	g_variant_unref(arg_record);
+	g_variant_unref(arg_handle);
 	if (error) {
 		ERR("cal_dbus_call_update_record_sync() Fail[%s]", error->message);
 		if (G_DBUS_ERROR_ACCESS_DENIED == error->code)
@@ -314,11 +317,10 @@ int cal_dbus_update_record(calendar_h handle, calendar_record_h record)
 		else
 			ret = CALENDAR_ERROR_IPC;
 		g_error_free(error);
-		g_variant_unref(arg_handle);
-		g_variant_unref(arg_record);
 		return ret;
 	}
 	cal_client_handle_set_version(handle, version);
+
 	CAL_LIMIT_ACCESS_BACK;
 	return ret;
 }
@@ -338,6 +340,7 @@ int cal_dbus_delete_record(calendar_h handle, const char *view_uri, int id)
 	GVariant *arg_handle = cal_dbus_utils_handle_to_gvariant(handle);
 	cal_dbus_call_delete_record_sync(cal_dbus_object, arg_handle, view_uri, id,
 			&version, &ret, NULL, &error);
+	g_variant_unref(arg_handle);
 	if (error) {
 		ERR("cal_dbus_call_delete_record_sync() Fail[%s]", error->message);
 		if (G_DBUS_ERROR_ACCESS_DENIED == error->code)
@@ -348,6 +351,7 @@ int cal_dbus_delete_record(calendar_h handle, const char *view_uri, int id)
 		return ret;
 	}
 	cal_client_handle_set_version(handle, version);
+
 	CAL_LIMIT_ACCESS_BACK;
 	return ret;
 }
@@ -368,6 +372,8 @@ int cal_dbus_replace_record(calendar_h handle, calendar_record_h record, int id)
 	GVariant *arg_record = cal_dbus_utils_record_to_gvariant(record);
 	cal_dbus_call_replace_record_sync(cal_dbus_object, arg_handle, arg_record, id,
 			&version, &ret, NULL, &error);
+	g_variant_unref(arg_record);
+	g_variant_unref(arg_handle);
 	if (error) {
 		ERR("cal_dbus_call_replace_record_sync() Fail[%s]", error->message);
 		if (G_DBUS_ERROR_ACCESS_DENIED == error->code)
@@ -375,11 +381,10 @@ int cal_dbus_replace_record(calendar_h handle, calendar_record_h record, int id)
 		else
 			ret = CALENDAR_ERROR_IPC;
 		g_error_free(error);
-		g_variant_unref(arg_handle);
-		g_variant_unref(arg_record);
 		return ret;
 	}
 	cal_client_handle_set_version(handle, version);
+
 	CAL_LIMIT_ACCESS_BACK;
 	return ret;
 }
@@ -401,6 +406,8 @@ int cal_dbus_insert_records(calendar_h handle, calendar_list_h list,
 	GVariant *arg_ids = NULL;
 	cal_dbus_call_insert_records_sync(cal_dbus_object, arg_handle, arg_list,
 			&arg_ids, &count, &version, &ret, NULL, &error);
+	g_variant_unref(arg_list);
+	g_variant_unref(arg_handle);
 	if (error) {
 		ERR("cal_dbus_call_insert_records_sync() Fail[%s]", error->message);
 		if (G_DBUS_ERROR_ACCESS_DENIED == error->code)
@@ -408,8 +415,6 @@ int cal_dbus_insert_records(calendar_h handle, calendar_list_h list,
 		else
 			ret = CALENDAR_ERROR_IPC;
 		g_error_free(error);
-		g_variant_unref(arg_handle);
-		g_variant_unref(arg_list);
 		return ret;
 	}
 
@@ -417,6 +422,7 @@ int cal_dbus_insert_records(calendar_h handle, calendar_list_h list,
 
 	int *ids = NULL;
 	cal_dbus_utils_gvariant_to_ids(arg_ids, count, &ids);
+	g_variant_unref(arg_ids);
 
 	if (out_ids)
 		*out_ids = ids;
@@ -443,6 +449,8 @@ int cal_dbus_update_records(calendar_h handle, calendar_list_h list)
 	GVariant *arg_list = cal_dbus_utils_list_to_gvariant(list);
 	cal_dbus_call_update_records_sync(cal_dbus_object, arg_handle, arg_list,
 			&version, &ret, NULL, &error);
+	g_variant_unref(arg_list);
+	g_variant_unref(arg_handle);
 	if (error) {
 		ERR("cal_dbus_call_update_records_sync() Fail[%s]",  error->message);
 		if (G_DBUS_ERROR_ACCESS_DENIED == error->code)
@@ -450,10 +458,10 @@ int cal_dbus_update_records(calendar_h handle, calendar_list_h list)
 		else
 			ret = CALENDAR_ERROR_IPC;
 		g_error_free(error);
-		g_variant_unref(arg_handle);
 		return ret;
 	}
 	cal_client_handle_set_version(handle, version);
+
 	return ret;
 }
 
@@ -473,6 +481,8 @@ int cal_dbus_delete_records(calendar_h handle, const char *view_uri, int *ids, i
 	GVariant *arg_ids = cal_dbus_utils_ids_to_gvariant(ids, count);
 	cal_dbus_call_delete_records_sync(cal_dbus_object, arg_handle, view_uri,
 			arg_ids, count, &version, &ret, NULL, &error);
+	g_variant_unref(arg_ids);
+	g_variant_unref(arg_handle);
 	if (error) {
 		ERR("cal_dbus_call_delete_records_sync() Fail[%s]",  error->message);
 		if (G_DBUS_ERROR_ACCESS_DENIED == error->code)
@@ -480,11 +490,10 @@ int cal_dbus_delete_records(calendar_h handle, const char *view_uri, int *ids, i
 		else
 			ret = CALENDAR_ERROR_IPC;
 		g_error_free(error);
-		g_variant_unref(arg_handle);
 		return ret;
 	}
-
 	cal_client_handle_set_version(handle, version);
+
 	return ret;
 }
 
@@ -505,6 +514,9 @@ int cal_dbus_replace_records(calendar_h handle, calendar_list_h list, int *ids, 
 	GVariant *arg_ids = cal_dbus_utils_ids_to_gvariant(ids, count);
 	cal_dbus_call_replace_records_sync(cal_dbus_object, arg_handle, arg_list,
 			arg_ids, count, &version, &ret, NULL, &error);
+	g_variant_unref(arg_list);
+	g_variant_unref(arg_ids);
+	g_variant_unref(arg_handle);
 	if (error) {
 		ERR("cal_dbus_call_replace_records_sync() Fail[%s]",  error->message);
 		if (G_DBUS_ERROR_ACCESS_DENIED == error->code)
@@ -512,12 +524,10 @@ int cal_dbus_replace_records(calendar_h handle, calendar_list_h list, int *ids, 
 		else
 			ret = CALENDAR_ERROR_IPC;
 		g_error_free(error);
-		g_variant_unref(arg_handle);
-		g_variant_unref(arg_list);
-		g_variant_unref(arg_ids);
 		return ret;
 	}
 	cal_client_handle_set_version(handle, version);
+
 	return ret;
 }
 
@@ -536,6 +546,7 @@ int cal_dbus_get_record(calendar_h handle, const char *view_uri, int id,
 	GVariant *arg_record = NULL;
 	cal_dbus_call_get_record_sync(cal_dbus_object, arg_handle, view_uri, id,
 			&arg_record, &ret, NULL, &error);
+	g_variant_unref(arg_handle);
 	if (error) {
 		ERR("cal_dbus_call_get_record_sync() Fail[%s]",  error->message);
 		if (G_DBUS_ERROR_ACCESS_DENIED == error->code)
@@ -543,7 +554,6 @@ int cal_dbus_get_record(calendar_h handle, const char *view_uri, int id,
 		else
 			ret = CALENDAR_ERROR_IPC;
 		g_error_free(error);
-		g_variant_unref(arg_handle);
 		return ret;
 	}
 
@@ -553,8 +563,9 @@ int cal_dbus_get_record(calendar_h handle, const char *view_uri, int id,
 		*out_record = NULL;
 		return ret;
 	}
-
 	cal_dbus_utils_gvariant_to_record(arg_record, out_record);
+	g_variant_unref(arg_record);
+
 	return ret;
 }
 
@@ -572,6 +583,7 @@ int cal_dbus_get_all_records(calendar_h handle, const char *view_uri,
 	GVariant *arg_list = NULL;
 	cal_dbus_call_get_all_records_sync(cal_dbus_object, arg_handle, view_uri,
 			offset, limit, &arg_list, &ret, NULL, &error);
+	g_variant_unref(arg_handle);
 	if (error) {
 		ERR("cal_dbus_call_get_all_records_sync() Fail[%s]", error->message);
 		if (G_DBUS_ERROR_ACCESS_DENIED == error->code)
@@ -579,7 +591,6 @@ int cal_dbus_get_all_records(calendar_h handle, const char *view_uri,
 		else
 			ret = CALENDAR_ERROR_IPC;
 		g_error_free(error);
-		g_variant_unref(arg_handle);
 		return ret;
 	}
 
@@ -591,8 +602,11 @@ int cal_dbus_get_all_records(calendar_h handle, const char *view_uri,
 	}
 
 	cal_dbus_utils_gvariant_to_list(arg_list, out_list);
+	g_variant_unref(arg_list);
+
 	if (*out_list)
 		calendar_list_first(*out_list);
+
 	return ret;
 }
 
@@ -609,9 +623,10 @@ int cal_dbus_get_records_with_query(calendar_h handle, calendar_query_h query,
 	GVariant *arg_handle = cal_dbus_utils_handle_to_gvariant(handle);
 	GVariant *arg_query = cal_dbus_utils_query_to_gvariant(query);
 	GVariant *arg_list = NULL;
-
 	cal_dbus_call_get_records_with_query_sync(cal_dbus_object, arg_handle, arg_query,
 			offset, limit, &arg_list, &ret, NULL, &error);
+	g_variant_unref(arg_query);
+	g_variant_unref(arg_handle);
 	if (error) {
 		ERR("cal_dbus_call_get_records_with_query_sync() Fail[%s]",  error->message);
 		if (G_DBUS_ERROR_ACCESS_DENIED == error->code)
@@ -619,14 +634,14 @@ int cal_dbus_get_records_with_query(calendar_h handle, calendar_query_h query,
 		else
 			ret = CALENDAR_ERROR_IPC;
 		g_error_free(error);
-		g_variant_unref(arg_handle);
-		g_variant_unref(arg_query);
 		return ret;
 	}
-
 	cal_dbus_utils_gvariant_to_list(arg_list, out_list);
+	g_variant_unref(arg_list);
+
 	if (*out_list)
 		calendar_list_first(*out_list);
+
 	return ret;
 }
 
@@ -643,6 +658,7 @@ int cal_dbus_get_count(calendar_h handle, const char *view_uri, int *out_count)
 	GVariant *arg_handle = cal_dbus_utils_handle_to_gvariant(handle);
 	cal_dbus_call_get_count_sync(cal_dbus_object, arg_handle, view_uri,
 			&count, &ret, NULL, &error);
+	g_variant_unref(arg_handle);
 	if (error) {
 		ERR("cal_dbus_call_get_count_sync() Fail[%s]",  error->message);
 		if (G_DBUS_ERROR_ACCESS_DENIED == error->code)
@@ -650,10 +666,10 @@ int cal_dbus_get_count(calendar_h handle, const char *view_uri, int *out_count)
 		else
 			ret = CALENDAR_ERROR_IPC;
 		g_error_free(error);
-		g_variant_unref(arg_handle);
 		return ret;
 	}
 	*out_count = count;
+
 	return ret;
 }
 
@@ -671,6 +687,8 @@ int cal_dbus_get_count_with_query(calendar_h handle, calendar_query_h query, int
 	GVariant *arg_query = cal_dbus_utils_query_to_gvariant(query);
 	cal_dbus_call_get_count_with_query_sync(cal_dbus_object, arg_handle, arg_query,
 			&count, &ret, NULL, &error);
+	g_variant_unref(arg_query);
+	g_variant_unref(arg_handle);
 	if (error) {
 		ERR("cal_dbus_call_get_count_with_query_sync() Fail[%s]",  error->message);
 		if (G_DBUS_ERROR_ACCESS_DENIED == error->code)
@@ -678,11 +696,10 @@ int cal_dbus_get_count_with_query(calendar_h handle, calendar_query_h query, int
 		else
 			ret = CALENDAR_ERROR_IPC;
 		g_error_free(error);
-		g_variant_unref(arg_handle);
-		g_variant_unref(arg_query);
 		return ret;
 	}
 	*out_count = count;
+
 	return ret;
 }
 
@@ -744,6 +761,7 @@ int cal_dbus_get_current_version(calendar_h handle, int *out_version)
 	GVariant *arg_handle = cal_dbus_utils_handle_to_gvariant(handle);
 	cal_dbus_call_get_current_version_sync(cal_dbus_object, arg_handle,
 			&version, &ret, NULL, &error);
+	g_variant_unref(arg_handle);
 	if (error) {
 		ERR("cal_dbus_call_get_current_version_sync() Fail[%s]",  error->message);
 		if (G_DBUS_ERROR_ACCESS_DENIED == error->code)
@@ -751,16 +769,14 @@ int cal_dbus_get_current_version(calendar_h handle, int *out_version)
 		else
 			ret = CALENDAR_ERROR_IPC;
 		g_error_free(error);
-		g_variant_unref(arg_handle);
 		return ret;
 	}
 	if (CALENDAR_ERROR_NONE != ret) {
 		ERR("server return Fail(%d)", ret);
-		g_variant_unref(arg_handle);
 		return ret;
 	}
-
 	*out_version = version;
+
 	return ret;
 }
 
@@ -801,6 +817,7 @@ int cal_dbus_get_changes_by_version(calendar_h handle, const char *view_uri,
 	GVariant *arg_list = NULL;
 	cal_dbus_call_get_changes_by_version_sync(cal_dbus_object, arg_handle, view_uri,
 			book_id, in_version, &arg_list, out_version, &ret, NULL, &error);
+	g_variant_unref(arg_handle);
 	if (error) {
 		ERR("cal_dbus_call_get_changes_by_version_sync() Fail[%s]",  error->message);
 		if (G_DBUS_ERROR_ACCESS_DENIED == error->code)
@@ -808,12 +825,14 @@ int cal_dbus_get_changes_by_version(calendar_h handle, const char *view_uri,
 		else
 			ret = CALENDAR_ERROR_IPC;
 		g_error_free(error);
-		g_variant_unref(arg_handle);
 		return ret;
 	}
 	cal_dbus_utils_gvariant_to_list(arg_list, out_list);
+	g_variant_unref(arg_list);
+
 	if (*out_list)
 		calendar_list_first(*out_list);
+
 	return ret;
 }
 
@@ -832,6 +851,7 @@ int cal_dbus_get_changes_exception_by_version(calendar_h handle, const char *vie
 	GVariant *arg_list = NULL;
 	cal_dbus_call_get_changes_exception_by_version_sync(cal_dbus_object, arg_handle,
 			view_uri, original_id, version, &arg_list, &ret, NULL, &error);
+	g_variant_unref(arg_handle);
 	if (error) {
 		ERR("cal_dbus_call_get_changes_exception_by_version_sync() Fail[%s]",  error->message);
 		if (G_DBUS_ERROR_ACCESS_DENIED == error->code)
@@ -839,14 +859,16 @@ int cal_dbus_get_changes_exception_by_version(calendar_h handle, const char *vie
 		else
 			ret = CALENDAR_ERROR_IPC;
 		g_error_free(error);
-		g_variant_unref(arg_handle);
 		return ret;
 	}
 	cal_client_handle_set_version(handle, version);
 
 	cal_dbus_utils_gvariant_to_list(arg_list, out_list);
+	g_variant_unref(arg_list);
+
 	if (*out_list)
 		calendar_list_first(*out_list);
+
 	return ret;
 }
 
@@ -861,7 +883,7 @@ int cal_dbus_clean_after_sync(calendar_h handle, int book_id, int version)
 	GVariant *arg_handle = cal_dbus_utils_handle_to_gvariant(handle);
 	cal_dbus_call_clean_after_sync_sync(cal_dbus_object, arg_handle, book_id, version,
 			&ret, NULL, &error);
-
+	g_variant_unref(arg_handle);
 	if (error) {
 		ERR("cal_dbus_call_clean_after_sync_sync() Fail[%s]",  error->message);
 		if (G_DBUS_ERROR_ACCESS_DENIED == error->code)
@@ -869,9 +891,9 @@ int cal_dbus_clean_after_sync(calendar_h handle, int book_id, int version)
 		else
 			ret = CALENDAR_ERROR_IPC;
 		g_error_free(error);
-		g_variant_unref(arg_handle);
 		return ret;
 	}
+
 	return ret;
 }
 
@@ -892,6 +914,7 @@ int cal_dbus_insert_vcalendars(calendar_h handle, const char *stream,
 	GVariant *arg_handle = cal_dbus_utils_handle_to_gvariant(handle);
 	cal_dbus_call_insert_vcalendars_sync(cal_dbus_object, arg_handle, stream,
 			&arg_ids, &count, &version, &ret, NULL, &error);
+	g_variant_unref(arg_handle);
 	if (error) {
 		ERR("cal_dbus_call_insert_vcalendars_sync() Fail[%s]",  error->message);
 		if (G_DBUS_ERROR_ACCESS_DENIED == error->code)
@@ -899,13 +922,14 @@ int cal_dbus_insert_vcalendars(calendar_h handle, const char *stream,
 		else
 			ret = CALENDAR_ERROR_IPC;
 		g_error_free(error);
-		g_variant_unref(arg_handle);
 		return ret;
 	}
 	cal_client_handle_set_version(handle, version);
 
 	int *ids = NULL;
 	cal_dbus_utils_gvariant_to_ids(arg_ids, count, &ids);
+	g_variant_unref(arg_ids);
+
 	if (out_ids)
 		*out_ids = ids;
 	else
@@ -934,6 +958,8 @@ int cal_dbus_replace_vcalendars(calendar_h handle, const char *stream,
 	GVariant *arg_ids = cal_dbus_utils_ids_to_gvariant(ids, count);
 	cal_dbus_call_replace_vcalendars_sync(cal_dbus_object, arg_handle, stream,
 			arg_ids, count, &ret, &version, NULL, &error);
+	g_variant_unref(arg_ids);
+	g_variant_unref(arg_handle);
 	if (error) {
 		ERR("cal_dbus_call_replace_vcalendars_sync Fail[%s]",  error->message);
 		if (G_DBUS_ERROR_ACCESS_DENIED == error->code)
@@ -941,8 +967,6 @@ int cal_dbus_replace_vcalendars(calendar_h handle, const char *stream,
 		else
 			ret = CALENDAR_ERROR_IPC;
 		g_error_free(error);
-		g_variant_unref(arg_handle);
-		g_variant_unref(arg_ids);
 		return ret;
 	}
 	cal_client_handle_set_version(handle, version);
