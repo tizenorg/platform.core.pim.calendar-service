@@ -150,9 +150,7 @@ static gboolean _handle_insert_record(calDbus *object, GDBusMethodInvocation *in
 		GVariant *arg_handle, GVariant *arg_record)
 {
 	int ret = 0;
-	calendar_h handle = NULL;
 	calendar_record_h record = NULL;
-	ret = cal_dbus_utils_gvariant_to_handle(arg_handle, &handle);
 	ret = cal_dbus_utils_gvariant_to_record(arg_record, &record);
 
 	int id = 0;
@@ -160,8 +158,9 @@ static gboolean _handle_insert_record(calDbus *object, GDBusMethodInvocation *in
 
 	int version = 0;
 	version = cal_db_util_get_transaction_ver();
-
 	cal_dbus_complete_insert_record(object, invocation, id, version, ret);
+	calendar_record_destroy(record, true);
+
 	cal_server_ondemand_start();
 	return TRUE;
 }
@@ -170,17 +169,16 @@ static gboolean _handle_update_record(calDbus *object, GDBusMethodInvocation *in
 		GVariant *arg_handle, GVariant *arg_record)
 {
 	int ret = 0;
-	calendar_h handle = NULL;
 	calendar_record_h record = NULL;
-	ret = cal_dbus_utils_gvariant_to_handle(arg_handle, &handle);
 	ret = cal_dbus_utils_gvariant_to_record(arg_record, &record);
 
 	ret = cal_db_update_record(record);
 
 	int version = 0;
 	version = cal_db_util_get_transaction_ver();
-
 	cal_dbus_complete_update_record(object, invocation, version, ret);
+	calendar_record_destroy(record, true);
+
 	cal_server_ondemand_start();
 	return TRUE;
 }
@@ -189,15 +187,12 @@ static gboolean _handle_delete_record(calDbus *object, GDBusMethodInvocation *in
 		GVariant *arg_handle, char *view_uri, int id)
 {
 	int ret = 0;
-	calendar_h handle = NULL;
-	ret = cal_dbus_utils_gvariant_to_handle(arg_handle, &handle);
-
 	ret = cal_db_delete_record(view_uri, id);
 
 	int version = 0;
 	version = cal_db_util_get_transaction_ver();
-
 	cal_dbus_complete_delete_record(object, invocation, version, ret);
+
 	cal_server_ondemand_start();
 	return TRUE;
 }
@@ -206,17 +201,16 @@ static gboolean _handle_replace_record(calDbus *object, GDBusMethodInvocation *i
 		GVariant *arg_handle, GVariant *arg_record, int id)
 {
 	int ret = 0;
-	calendar_h handle = NULL;
 	calendar_record_h record = NULL;
-	ret = cal_dbus_utils_gvariant_to_handle(arg_handle, &handle);
 	ret = cal_dbus_utils_gvariant_to_record(arg_record, &record);
 
 	ret = cal_db_replace_record(record, id);
 
 	int version = 0;
 	version = cal_db_util_get_transaction_ver();
-
 	cal_dbus_complete_replace_record(object, invocation, version, ret);
+	calendar_record_destroy(record, true);
+
 	cal_server_ondemand_start();
 	return TRUE;
 }
@@ -225,22 +219,23 @@ static gboolean _handle_insert_records(calDbus *object, GDBusMethodInvocation *i
 		GVariant *arg_handle, GVariant *arg_list)
 {
 	int ret = 0;
-	calendar_h handle = NULL;
 	calendar_list_h list = NULL;
-	ret = cal_dbus_utils_gvariant_to_handle(arg_handle, &handle);
 	ret = cal_dbus_utils_gvariant_to_list(arg_list, &list);
 
 	int *ids = NULL;
 	int count = 0;
 	ret = cal_db_insert_records(list, &ids, &count);
+	calendar_list_destroy(list, true);
 
 	int version = 0;
 	version = cal_db_util_get_transaction_ver();
-
 	GVariant *arg_ids = cal_dbus_utils_ids_to_gvariant(ids, count);
 	cal_dbus_complete_insert_records(object, invocation, arg_ids, count, version, ret);
-	cal_server_ondemand_start();
 
+	free(ids);
+	g_variant_unref(arg_ids);
+
+	cal_server_ondemand_start();
 	return TRUE;
 }
 
@@ -248,17 +243,16 @@ static gboolean _handle_update_records(calDbus *object, GDBusMethodInvocation *i
 		GVariant *arg_handle, GVariant *arg_list)
 {
 	int ret = 0;
-	calendar_h handle = NULL;
 	calendar_list_h list = NULL;
-	ret = cal_dbus_utils_gvariant_to_handle(arg_handle, &handle);
 	ret = cal_dbus_utils_gvariant_to_list(arg_list, &list);
 
 	ret = cal_db_update_records(list);
+	calendar_list_destroy(list, true);
 
 	int version = 0;
 	version = cal_db_util_get_transaction_ver();
-
 	cal_dbus_complete_update_records(object, invocation, version, ret);
+
 	cal_server_ondemand_start();
 	return TRUE;
 }
@@ -267,19 +261,16 @@ static gboolean _handle_delete_records(calDbus *object, GDBusMethodInvocation *i
 		GVariant *arg_handle, char *view_uri, GVariant *arg_ids, int count)
 {
 	int ret = 0;
-	calendar_h handle = NULL;
-
 	int *ids = NULL;
-	ret = cal_dbus_utils_gvariant_to_handle(arg_handle, &handle);
-
 	ret = cal_dbus_utils_gvariant_to_ids(arg_ids, count, &ids);
 
 	ret = cal_db_delete_records(view_uri, ids, count);
 
 	int version = 0;
 	version = cal_db_util_get_transaction_ver();
-
 	cal_dbus_complete_delete_records(object, invocation, version, ret);
+	free(ids);
+
 	cal_server_ondemand_start();
 	return TRUE;
 }
@@ -288,20 +279,19 @@ static gboolean _handle_replace_records(calDbus *object, GDBusMethodInvocation *
 		GVariant *arg_handle, GVariant *arg_list, GVariant *arg_ids, int count)
 {
 	int ret = 0;
-	calendar_h handle = NULL;
 	calendar_list_h list = NULL;
 	int *ids = NULL;
-	ret = cal_dbus_utils_gvariant_to_handle(arg_handle, &handle);
 	ret = cal_dbus_utils_gvariant_to_list(arg_list, &list);
 	ret = cal_dbus_utils_gvariant_to_ids(arg_ids, count, &ids);
 
 	ret = cal_db_replace_records(list, ids, count);
 	free(ids);
+	calendar_list_destroy(list, true);
 
 	int version = 0;
 	version = cal_db_util_get_transaction_ver();
-
 	cal_dbus_complete_replace_records(object, invocation, version, ret);
+
 	cal_server_ondemand_start();
 	return TRUE;
 }
@@ -310,15 +300,14 @@ static gboolean _handle_get_record(calDbus *object, GDBusMethodInvocation *invoc
 		GVariant *arg_handle, char *view_uri, int id)
 {
 	int ret = 0;
-	calendar_h handle = NULL;
-	ret = cal_dbus_utils_gvariant_to_handle(arg_handle, &handle);
-
 	calendar_record_h record = NULL;
 	ret = cal_db_get_record(view_uri, id, &record);
 
 	GVariant *arg_record = cal_dbus_utils_record_to_gvariant(record);
-
 	cal_dbus_complete_get_record(object, invocation, arg_record, ret);
+	g_variant_unref(arg_record);
+	calendar_record_destroy(record, true);
+
 	cal_server_ondemand_start();
 	return TRUE;
 }
@@ -329,14 +318,14 @@ static gboolean _handle_get_all_records(calDbus *object, GDBusMethodInvocation *
 	CAL_FN_CALL();
 
 	int ret = 0;
-	calendar_h handle = NULL;
-	ret = cal_dbus_utils_gvariant_to_handle(arg_handle, &handle);
-
 	calendar_list_h list = NULL;
 	ret = cal_db_get_all_records(view_uri, offset, limit, &list);
 
 	GVariant *arg_list = cal_dbus_utils_list_to_gvariant(list);
 	cal_dbus_complete_get_all_records(object, invocation, arg_list, ret);
+	calendar_list_destroy(list, true);
+	g_variant_unref(arg_list);
+
 	cal_server_ondemand_start();
 	return TRUE;
 }
@@ -345,9 +334,7 @@ static gboolean _handle_get_records_with_query(calDbus *object, GDBusMethodInvoc
 		GVariant *arg_handle, GVariant *arg_query, int offset, int limit)
 {
 	int ret = 0;
-	calendar_h handle = NULL;
 	calendar_query_h query = NULL;
-	ret = cal_dbus_utils_gvariant_to_handle(arg_handle, &handle);
 	ret = cal_dbus_utils_gvariant_to_query(arg_query, &query);
 
 	calendar_list_h list = NULL;
@@ -355,6 +342,9 @@ static gboolean _handle_get_records_with_query(calDbus *object, GDBusMethodInvoc
 
 	GVariant *arg_list = cal_dbus_utils_list_to_gvariant(list);
 	cal_dbus_complete_get_records_with_query(object, invocation, arg_list, ret);
+	g_variant_unref(arg_list);
+	calendar_list_destroy(list, true);
+
 	cal_server_ondemand_start();
 	return TRUE;
 }
@@ -363,13 +353,11 @@ static gboolean _handle_get_count(calDbus *object, GDBusMethodInvocation *invoca
 		GVariant *arg_handle, char *view_uri)
 {
 	int ret = 0;
-	calendar_h handle = NULL;
-	ret = cal_dbus_utils_gvariant_to_handle(arg_handle, &handle);
-
 	int count = 0;
 	ret = cal_db_get_count(view_uri, &count);
 
 	cal_dbus_complete_get_count(object, invocation, count, ret);
+
 	cal_server_ondemand_start();
 	return TRUE;
 }
@@ -378,15 +366,13 @@ static gboolean _handle_get_count_with_query(calDbus *object, GDBusMethodInvocat
 		GVariant *arg_handle, GVariant *arg_query)
 {
 	int ret = 0;
-	calendar_h handle = NULL;
 	calendar_query_h query = NULL;
-	ret = cal_dbus_utils_gvariant_to_handle(arg_handle, &handle);
 	ret = cal_dbus_utils_gvariant_to_query(arg_query, &query);
 
 	int count = 0;
 	ret = cal_db_get_count_with_query(query, &count);
-
 	cal_dbus_complete_get_count_with_query(object, invocation, count, ret);
+
 	cal_server_ondemand_start();
 	return TRUE;
 }
@@ -395,13 +381,11 @@ static gboolean _handle_get_current_version(calDbus *object, GDBusMethodInvocati
 		GVariant *arg_handle)
 {
 	int ret = 0;
-	calendar_h handle = NULL;
-	ret = cal_dbus_utils_gvariant_to_handle(arg_handle, &handle);
-
 	int version = 0;
 	ret = cal_db_get_current_version(&version);
 
 	cal_dbus_complete_get_current_version(object, invocation, version, ret);
+
 	cal_server_ondemand_start();
 	return TRUE;
 }
@@ -424,16 +408,15 @@ static gboolean _handle_get_changes_by_version(calDbus *object, GDBusMethodInvoc
 		GVariant *arg_handle, char *view_uri, int book_id, int in_version)
 {
 	int ret = 0;
-	calendar_h handle = NULL;
-	ret = cal_dbus_utils_gvariant_to_handle(arg_handle, &handle);
-
 	calendar_list_h list = NULL;
 	int out_version = 0;
-	ret = cal_db_get_changes_by_version(view_uri, book_id, in_version,
-			&list, &out_version);
+	ret = cal_db_get_changes_by_version(view_uri, book_id, in_version, &list, &out_version);
 
 	GVariant *arg_list = cal_dbus_utils_list_to_gvariant(list);
 	cal_dbus_complete_get_changes_by_version(object, invocation, arg_list, out_version, ret);
+	calendar_list_destroy(list, true);
+	g_variant_unref(arg_list);
+
 	cal_server_ondemand_start();
 	return TRUE;
 }
@@ -446,15 +429,14 @@ static gboolean _handle_get_changes_exception_by_version(calDbus *object,
 		int version)
 {
 	int ret = 0;
-	calendar_h handle = NULL;
-	ret = cal_dbus_utils_gvariant_to_handle(arg_handle, &handle);
-
 	calendar_list_h list = NULL;
-	ret = cal_db_get_changes_exception_by_version(view_uri, original_id,
-			  version, &list);
+	ret = cal_db_get_changes_exception_by_version(view_uri, original_id, version, &list);
 
 	GVariant *arg_list = cal_dbus_utils_list_to_gvariant(list);
 	cal_dbus_complete_get_changes_exception_by_version(object, invocation, arg_list, ret);
+	calendar_list_destroy(list, true);
+	g_variant_unref(arg_list);
+
 	cal_server_ondemand_start();
 	return TRUE;
 }
@@ -463,12 +445,10 @@ static gboolean _handle_clean_after_sync(calDbus *object, GDBusMethodInvocation 
 		GVariant *arg_handle, int book_id, int version)
 {
 	int ret = 0;
-	calendar_h handle = NULL;
-	ret = cal_dbus_utils_gvariant_to_handle(arg_handle, &handle);
-
 	ret = cal_db_clean_after_sync(book_id, version);
 
 	cal_dbus_complete_clean_after_sync(object, invocation, ret);
+
 	cal_server_ondemand_start();
 	return TRUE;
 }
@@ -477,18 +457,18 @@ static gboolean _handle_insert_vcalendars(calDbus *object, GDBusMethodInvocation
 		GVariant *arg_handle, char *stream)
 {
 	int ret = 0;
-	calendar_h handle = NULL;
-	ret = cal_dbus_utils_gvariant_to_handle(arg_handle, &handle);
-
 	int *ids = NULL;
 	int count = 0;
 	ret = cal_db_insert_vcalendars(stream, &ids, &count);
 
 	GVariant *arg_ids = cal_dbus_utils_ids_to_gvariant(ids, count);
+
 	int version = 0;
 	version = cal_db_util_get_transaction_ver();
-
 	cal_dbus_complete_insert_vcalendars(object, invocation, arg_ids, count, version, ret);
+	free(ids);
+	g_variant_unref(arg_ids);
+
 	cal_server_ondemand_start();
 	return TRUE;
 }
@@ -498,17 +478,15 @@ static gboolean _handle_replace_vcalendars(calDbus *object, GDBusMethodInvocatio
 {
 	int ret = 0;
 	int *ids = NULL;
-	calendar_h handle = NULL;
-	ret = cal_dbus_utils_gvariant_to_handle(arg_handle, &handle);
 	ret = cal_dbus_utils_gvariant_to_ids(arg_ids, count, &ids);
 
 	ret = cal_db_replace_vcalendars(stream, ids, count);
-	free(ids);
 
 	int version = 0;
 	version = cal_db_util_get_transaction_ver();
-
 	cal_dbus_complete_replace_vcalendars(object, invocation, ret, version);
+	free(ids);
+
 	cal_server_ondemand_start();
 	return TRUE;
 }

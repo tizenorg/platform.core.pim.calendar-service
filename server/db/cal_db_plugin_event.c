@@ -2496,6 +2496,7 @@ static int _cal_db_event_get_deleted_data(int id, int* book_id, int* created_ver
 	ret = cal_db_util_stmt_step(stmt);
 	if (CAL_SQLITE_ROW != ret) {
 		ERR("cal_db_util_stmt_step() Fail(%d)", ret);
+		SECURE("query[%s]", query);
 		sqlite3_finalize(stmt);
 		return CALENDAR_ERROR_DB_RECORD_NOT_FOUND;
 	}
