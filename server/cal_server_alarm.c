@@ -926,8 +926,12 @@ void cal_server_alarm_alert(time_t tt_alert)
 {
 	GList *l = NULL;
 	_cal_server_alarm_get_latest(tt_alert, true, &l);
+	if (NULL == l)
+		return;
+
 	_cal_server_alarm_noti_with_callback(l);
 	_cal_server_alarm_noti_with_control(l);
+	/* DO NOT FREE LIST, list is freed in callback */
 }
 
 static int _alert_cb(alarm_id_t alarm_id, void *data)
@@ -954,13 +958,24 @@ void _cal_server_alarm_set_timechange(void)
 {
 	vconf_notify_key_changed(VCONFKEY_SYSTEM_TIME_CHANGED,
 			_cal_server_alarm_timechange_cb, NULL);
-
 	vconf_notify_key_changed(VCONFKEY_TELEPHONY_NITZ_GMT,
 			_cal_server_alarm_timechange_cb, NULL);
 	vconf_notify_key_changed(VCONFKEY_TELEPHONY_NITZ_EVENT_GMT,
 			_cal_server_alarm_timechange_cb, NULL);
 	vconf_notify_key_changed(VCONFKEY_TELEPHONY_NITZ_ZONE,
 			_cal_server_alarm_timechange_cb, NULL);
+}
+
+void _cal_server_alarm_unset_timechange(void)
+{
+	vconf_ignore_key_changed(VCONFKEY_SYSTEM_TIME_CHANGED,
+			_cal_server_alarm_timechange_cb);
+	vconf_ignore_key_changed(VCONFKEY_TELEPHONY_NITZ_GMT,
+			_cal_server_alarm_timechange_cb);
+	vconf_ignore_key_changed(VCONFKEY_TELEPHONY_NITZ_EVENT_GMT,
+			_cal_server_alarm_timechange_cb);
+	vconf_ignore_key_changed(VCONFKEY_TELEPHONY_NITZ_ZONE,
+			_cal_server_alarm_timechange_cb);
 }
 
 static void _changed_cb(const char* view_uri, void* data)
@@ -974,6 +989,12 @@ static int _cal_server_alarm_set_inotify(calendar_db_changed_cb callback)
 	cal_inotify_subscribe(CAL_NOTI_TYPE_EVENT, CAL_NOTI_EVENT_CHANGED, callback, NULL);
 	cal_inotify_subscribe(CAL_NOTI_TYPE_TODO, CAL_NOTI_TODO_CHANGED, callback, NULL);
 	return 0;
+}
+
+static void _cal_server_alarm_unset_inotify(calendar_db_changed_cb callback)
+{
+	cal_inotify_unsubscribe(CAL_NOTI_EVENT_CHANGED, callback, NULL);
+	cal_inotify_unsubscribe(CAL_NOTI_TODO_CHANGED, callback, NULL);
 }
 
 int cal_server_alarm_init(void)
@@ -1003,5 +1024,8 @@ int cal_server_alarm_init(void)
 void cal_server_alarm_deinit(void)
 {
 	alarmmgr_fini();
+	_cal_server_alarm_unset_inotify(_changed_cb);
+	_cal_server_alarm_unset_timechange();
+
 }
 

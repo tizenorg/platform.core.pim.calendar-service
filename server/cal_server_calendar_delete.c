@@ -317,7 +317,10 @@ void cal_server_calendar_delete_start(void)
 	}
 	/* don't use mutex. */
 	g_cond_signal(&_cal_server_calendar_delete_cond);
+}
 
-	return ;
-
+void cal_server_calendar_delete_stop(void)
+{
+	if (_cal_server_calendar_delete_thread)
+		g_thread_join(_cal_server_calendar_delete_thread);
 }

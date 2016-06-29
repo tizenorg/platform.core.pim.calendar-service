@@ -83,6 +83,7 @@ static int _cal_server_init(void)
 
 static void _cal_server_deinit(void)
 {
+	cal_server_calendar_delete_stop();
 	cal_access_control_unset_client_info();
 	cal_disconnect();
 }

@@ -20,5 +20,6 @@
 #define __CAL_SERVER_CALENDAR_DELETE_H__
 
 void cal_server_calendar_delete_start(void);
+void cal_server_calendar_delete_stop(void);
 
 #endif /*__CAL_SERVER_CALENDAR_DELETE_H__*/

@@ -653,6 +653,9 @@ int cal_server_contacts_init(void)
 
 void cal_server_contacts_deinit(void)
 {
+	if (_cal_server_contacts_sync_thread)
+		g_thread_join(_cal_server_contacts_sync_thread);
+
 	contacts_db_remove_changed_cb(_contacts_event._uri, _changed_cb, NULL);
 	contacts_db_remove_changed_cb(_contacts_name._uri, _changed_cb, NULL);
 
