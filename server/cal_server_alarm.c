@@ -126,7 +126,7 @@ static int _cal_server_alarm_update_alarm_id(int alarm_id, int event_id, int tic
 	return CALENDAR_ERROR_NONE;
 }
 
-static long long int _cal_server_alarm_get_alert_utime(const char *field, int event_id, time_t current)
+static long long int _get_event_alert_utime(const char *field, int event_id, time_t current)
 {
 	int ret = 0;
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
@@ -152,7 +152,7 @@ static long long int _cal_server_alarm_get_alert_utime(const char *field, int ev
 	return utime;
 }
 
-static int _cal_server_alarm_get_alert_localtime(const char *field, int event_id, time_t current)
+static int _get_event_alert_localtime(const char *field, int event_id, time_t current)
 {
 	int ret = 0;
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
@@ -201,6 +201,91 @@ static int _cal_server_alarm_get_alert_localtime(const char *field, int event_id
 	return (long long int)mktime(&st);
 }
 
+static int64_t _get_todo_alert_utime(const char *field, int id, time_t now_t)
+{
+	int ret = 0;
+	char query[CAL_DB_SQL_MAX_LEN] = {0};
+	snprintf(query, sizeof(query), "SELECT %s FROM "CAL_TABLE_SCHEDULE" "
+			"WHERE id=%d AND %s>%ld ORDER BY %s LIMIT 1", field, id, field, now_t, field);
+
+	sqlite3_stmt *stmt = NULL;
+	ret = cal_db_util_query_prepare(query, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
+		SECURE("query[%s]", query);
+		return ret;
+		/* LCOV_EXCL_STOP */
+	}
+
+	int64_t utime = 0;
+	ret = cal_db_util_stmt_step(stmt);
+	switch (ret) {
+	case CAL_SQLITE_ROW:
+		utime = (int64_t)sqlite3_column_int64(stmt, 0);
+		break;
+		/* LCOV_EXCL_START */
+	case SQLITE_DONE:
+		ERR("No data");
+		break;
+	default:
+		ERR("Invalid return(%d)", ret);
+		break;
+		/* LCOV_EXCL_STOP */
+	}
+
+	sqlite3_finalize(stmt);
+	return utime;
+}
+
+static int _get_todo_alert_localtime(const char *field, int event_id, time_t current)
+{
+	int ret = 0;
+	char query[CAL_DB_SQL_MAX_LEN] = {0};
+	struct tm st = {0};
+	tzset();
+	localtime_r(&current, &st);
+	time_t mod_current = timegm(&st);
+	snprintf(query, sizeof(query), "SELECT %s FROM %s "
+			"WHERE id=%d AND strftime('%%s', %s)>%ld ORDER BY %s LIMIT 1",
+			field, CAL_TABLE_SCHEDULE, event_id, field, mod_current, field);
+
+	sqlite3_stmt *stmt = NULL;
+	ret = cal_db_util_query_prepare(query, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
+		SECURE("query[%s]", query);
+		return ret;
+		/* LCOV_EXCL_STOP */
+	}
+
+	const char *datetime = NULL;
+	if (CAL_SQLITE_ROW == cal_db_util_stmt_step(stmt))
+		datetime = (const char *)sqlite3_column_text(stmt, 0);
+
+	if (NULL == datetime || '\0' == *datetime) {
+		/* LCOV_EXCL_START */
+		ERR("Invalid datetime [%s]", datetime);
+		sqlite3_finalize(stmt);
+		return 0;
+		/* LCOV_EXCL_STOP */
+	}
+
+	int y = 0, m = 0, d = 0;
+	int h = 0, n = 0, s = 0;
+	sscanf(datetime, CAL_FORMAT_LOCAL_DATETIME, &y, &m, &d, &h, &n, &s);
+	sqlite3_finalize(stmt);
+
+	st.tm_year = y - 1900;
+	st.tm_mon = m - 1;
+	st.tm_mday = d;
+	st.tm_hour = h;
+	st.tm_min = n;
+	st.tm_sec = s;
+
+	return (long long int)mktime(&st);
+}
 /*
  * to get aler time, time(NULL) is not accurate. 1 secs diff could be occured.
  * so, searching DB is neccessary to find alert time.
@@ -289,11 +374,11 @@ int cal_server_alarm_get_alert_time(int alarm_id, time_t *tt_alert)
 	case CALENDAR_BOOK_TYPE_EVENT:
 		switch (dtstart_type) {
 		case CALENDAR_TIME_UTIME:
-			utime = _cal_server_alarm_get_alert_utime("dtstart_utime", event_id, current);
+			utime = _get_event_alert_utime("dtstart_utime", event_id, current);
 			break;
 
 		case CALENDAR_TIME_LOCALTIME:
-			utime = _cal_server_alarm_get_alert_localtime("dtstart_datetime", event_id, current);
+			utime = _get_event_alert_localtime("dtstart_datetime", event_id, current);
 			break;
 		}
 		break;
@@ -301,11 +386,11 @@ int cal_server_alarm_get_alert_time(int alarm_id, time_t *tt_alert)
 	case CALENDAR_BOOK_TYPE_TODO:
 		switch (dtend_type) {
 		case CALENDAR_TIME_UTIME:
-			utime = _cal_server_alarm_get_alert_utime("dtend_utime", event_id, current);
+			utime = _get_todo_alert_utime("dtend_utime", event_id, current);
 			break;
 
 		case CALENDAR_TIME_LOCALTIME:
-			utime = _cal_server_alarm_get_alert_localtime("dtend_datetime", event_id, current);
+			utime = _get_todo_alert_localtime("dtend_datetime", event_id, current);
 			break;
 		}
 		break;
