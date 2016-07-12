@@ -44,7 +44,6 @@ static int _cal_db_event_update_record(calendar_record_h record);
 static int _cal_db_event_delete_record(int id);
 static int _cal_db_event_replace_record(calendar_record_h record, int id);
 static int _cal_db_event_delete_records(int ids[], int count);
-static int _cal_db_event_replace_records(const calendar_list_h list, int ids[], int count);
 static int _cal_db_event_get_record(int id, calendar_record_h* out_record);
 static int _cal_db_event_get_all_records(int offset, int limit, calendar_list_h* out_list);
 static int _cal_db_event_get_records_with_query(calendar_query_h query, int offset, int limit, calendar_list_h* out_list);
@@ -102,7 +101,7 @@ cal_db_plugin_cb_s cal_db_event_plugin_cb = {
 	.insert_records = NULL,
 	.update_records = NULL,
 	.delete_records = _cal_db_event_delete_records,
-	.replace_records = _cal_db_event_replace_records,
+	.replace_records = NULL,
 	.get_record = _cal_db_event_get_record,
 	.get_all_records = _cal_db_event_get_all_records,
 	.get_records_with_query = _cal_db_event_get_records_with_query,
@@ -1660,44 +1659,6 @@ static int _cal_db_event_replace_record(calendar_record_h record, int id)
 	}
 
 	cal_db_util_notify(CAL_NOTI_TYPE_EVENT);
-
-	return CALENDAR_ERROR_NONE;
-}
-
-static int _cal_db_event_replace_records(const calendar_list_h list, int ids[], int count)
-{
-	calendar_record_h record;
-	int i = 0;
-	int ret = 0;
-
-	if (NULL == list) {
-		/* LCOV_EXCL_START */
-		ERR("Invalid argument: list is NULL");
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-		/* LCOV_EXCL_STOP */
-	}
-
-	ret = calendar_list_first(list);
-	if (CALENDAR_ERROR_NONE != ret) {
-		/* LCOV_EXCL_START */
-		ERR("list first error");
-		return ret;
-		/* LCOV_EXCL_STOP */
-	}
-
-	for (i = 0; i < count; i++) {
-		if (CALENDAR_ERROR_NONE == calendar_list_get_current_record_p(list, &record)) {
-			ret = _cal_db_event_replace_record(record, ids[i]);
-			if (CALENDAR_ERROR_NONE != ret) {
-				/* LCOV_EXCL_START */
-				ERR("_cal_db_event_replace_record() Fail(%d)", ret);
-				return CALENDAR_ERROR_DB_FAILED;
-				/* LCOV_EXCL_STOP */
-			}
-		}
-		if (CALENDAR_ERROR_NO_DATA != calendar_list_next(list))
-			break;
-	}
 
 	return CALENDAR_ERROR_NONE;
 }

@@ -47,7 +47,6 @@ static int _cal_db_calendar_delete_records(int ids[], int count);
 static int _cal_db_calendar_get_count(int *out_count);
 static int _cal_db_calendar_get_count_with_query(calendar_query_h query, int *out_count);
 static int _cal_db_calendar_replace_record(calendar_record_h record, int id);
-static int _cal_db_calendar_replace_records(const calendar_list_h list, int ids[], int count);
 
 /*
  * static function
@@ -74,7 +73,7 @@ cal_db_plugin_cb_s cal_db_calendar_plugin_cb = {
 	.get_count = _cal_db_calendar_get_count,
 	.get_count_with_query = _cal_db_calendar_get_count_with_query,
 	.replace_record = _cal_db_calendar_replace_record,
-	.replace_records = _cal_db_calendar_replace_records
+	.replace_records = NULL
 };
 
 static bool _cal_db_calendar_check_value_validation(cal_book_s* calendar)
@@ -675,44 +674,6 @@ static int _cal_db_calendar_delete_records(int ids[], int count)
 			/* LCOV_EXCL_STOP */
 		}
 	}
-	return CALENDAR_ERROR_NONE;
-}
-
-static int _cal_db_calendar_replace_records(const calendar_list_h list, int ids[], int count)
-{
-	calendar_record_h record;
-	int i = 0;
-	int ret = 0;
-
-	if (NULL == list) {
-		/* LCOV_EXCL_START */
-		ERR("Invalid argument: list is NULL");
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-		/* LCOV_EXCL_STOP */
-	}
-
-	ret = calendar_list_first(list);
-	if (CALENDAR_ERROR_NONE != ret) {
-		/* LCOV_EXCL_START */
-		ERR("list first error");
-		return ret;
-		/* LCOV_EXCL_STOP */
-	}
-
-	for (i = 0; i < count; i++) {
-		if (CALENDAR_ERROR_NONE == calendar_list_get_current_record_p(list, &record)) {
-			ret = _cal_db_calendar_replace_record(record, ids[i]);
-			if (CALENDAR_ERROR_NONE != ret) {
-				/* LCOV_EXCL_START */
-				ERR("_cal_db_calendar_replace_record() Fail(%d)", ret);
-				return ret;
-				/* LCOV_EXCL_STOP */
-			}
-		}
-		if (CALENDAR_ERROR_NO_DATA != calendar_list_next(list))
-			break;
-	}
-
 	return CALENDAR_ERROR_NONE;
 }
 

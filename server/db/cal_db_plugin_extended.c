@@ -36,13 +36,10 @@ static int _cal_db_extended_update_record(calendar_record_h record);
 static int _cal_db_extended_delete_record(int id);
 static int _cal_db_extended_get_all_records(int offset, int limit, calendar_list_h* out_list);
 static int _cal_db_extended_get_records_with_query(calendar_query_h query, int offset, int limit, calendar_list_h* out_list);
-static int _cal_db_extended_insert_records(const calendar_list_h list, int** ids);
-static int _cal_db_extended_update_records(const calendar_list_h list);
 static int _cal_db_extended_delete_records(int ids[], int count);
 static int _cal_db_extended_get_count(int *out_count);
 static int _cal_db_extended_get_count_with_query(calendar_query_h query, int *out_count);
 static int _cal_db_extended_replace_record(calendar_record_h record, int id);
-static int _cal_db_extended_replace_records(const calendar_list_h list, int ids[], int count);
 
 /*
  * static function
@@ -64,13 +61,13 @@ cal_db_plugin_cb_s cal_db_extended_plugin_cb = {
 	.delete_record = _cal_db_extended_delete_record,
 	.get_all_records = _cal_db_extended_get_all_records,
 	.get_records_with_query = _cal_db_extended_get_records_with_query,
-	.insert_records = _cal_db_extended_insert_records,
-	.update_records = _cal_db_extended_update_records,
+	.insert_records = NULL,
+	.update_records = NULL,
 	.delete_records = _cal_db_extended_delete_records,
 	.get_count = _cal_db_extended_get_count,
 	.get_count_with_query = _cal_db_extended_get_count_with_query,
 	.replace_record = _cal_db_extended_replace_record,
-	.replace_records = _cal_db_extended_replace_records
+	.replace_records = NULL
 };
 
 static int _cal_db_extended_insert_record(calendar_record_h record, int* id)
@@ -461,82 +458,6 @@ static int _cal_db_extended_get_records_with_query(calendar_query_h query, int o
 
 	return CALENDAR_ERROR_NONE;
 }
-static int _cal_db_extended_insert_records(const calendar_list_h list, int** ids)
-{
-	calendar_record_h record;
-	int ret = 0;
-	int count = 0;
-	int i = 0;
-	int *id = NULL;
-
-	ret = calendar_list_get_count(list, &count);
-	if (CALENDAR_ERROR_NONE != ret) {
-		/* LCOV_EXCL_START */
-		ERR("list get error");
-		return ret;
-		/* LCOV_EXCL_STOP */
-	}
-
-	id = calloc(1, sizeof(int)*count);
-
-	RETVM_IF(NULL == id, CALENDAR_ERROR_OUT_OF_MEMORY, "calloc() Fail");
-
-	ret = calendar_list_first(list);
-	if (CALENDAR_ERROR_NONE != ret) {
-		/* LCOV_EXCL_START */
-		ERR("list first error");
-		CAL_FREE(id);
-		return ret;
-		/* LCOV_EXCL_STOP */
-	}
-	do {
-		if (CALENDAR_ERROR_NONE == calendar_list_get_current_record_p(list, &record)) {
-			ret = _cal_db_extended_insert_record(record, &id[i]);
-			if (CALENDAR_ERROR_NONE != ret) {
-				/* LCOV_EXCL_START */
-				ERR("_cal_db_extended_insert_record() Fail(%d)", ret);
-				CAL_FREE(id);
-				return CALENDAR_ERROR_DB_FAILED;
-				/* LCOV_EXCL_STOP */
-			}
-		}
-		i++;
-	} while (CALENDAR_ERROR_NO_DATA != calendar_list_next(list));
-
-	if (ids)
-		*ids = id;
-	else
-		CAL_FREE(id);
-
-	return CALENDAR_ERROR_NONE;
-}
-
-static int _cal_db_extended_update_records(const calendar_list_h list)
-{
-	calendar_record_h record;
-	int ret = 0;
-
-	ret = calendar_list_first(list);
-	if (CALENDAR_ERROR_NONE != ret) {
-		/* LCOV_EXCL_START */
-		ERR("list first error");
-		return ret;
-		/* LCOV_EXCL_STOP */
-	}
-	do {
-		if (CALENDAR_ERROR_NONE == calendar_list_get_current_record_p(list, &record)) {
-			ret = _cal_db_extended_update_record(record);
-			if (CALENDAR_ERROR_NONE != ret) {
-				/* LCOV_EXCL_START */
-				ERR("_cal_db_extended_update_record() Fail(%d)", ret);
-				return CALENDAR_ERROR_DB_FAILED;
-				/* LCOV_EXCL_STOP */
-			}
-		}
-	} while (CALENDAR_ERROR_NO_DATA != calendar_list_next(list));
-
-	return CALENDAR_ERROR_NONE;
-}
 
 static int _cal_db_extended_delete_records(int ids[], int count)
 {
@@ -551,44 +472,6 @@ static int _cal_db_extended_delete_records(int ids[], int count)
 			/* LCOV_EXCL_STOP */
 		}
 	}
-	return CALENDAR_ERROR_NONE;
-}
-
-static int _cal_db_extended_replace_records(const calendar_list_h list, int ids[], int count)
-{
-	calendar_record_h record;
-	int i;
-	int ret = 0;
-
-	if (NULL == list) {
-		/* LCOV_EXCL_START */
-		ERR("Invalid argument: list is NULL");
-		return CALENDAR_ERROR_INVALID_PARAMETER;
-		/* LCOV_EXCL_STOP */
-	}
-
-	ret = calendar_list_first(list);
-	if (CALENDAR_ERROR_NONE != ret) {
-		/* LCOV_EXCL_START */
-		ERR("list first error");
-		return ret;
-		/* LCOV_EXCL_STOP */
-	}
-
-	for (i = 0; i < count; i++) {
-		if (CALENDAR_ERROR_NONE == calendar_list_get_current_record_p(list, &record)) {
-			ret = _cal_db_extended_replace_record(record, ids[i]);
-			if (CALENDAR_ERROR_NONE != ret) {
-				/* LCOV_EXCL_START */
-				ERR("_cal_db_extended_replace_record() Fail(%d)", ret);
-				return CALENDAR_ERROR_DB_FAILED;
-				/* LCOV_EXCL_STOP */
-			}
-		}
-		if (CALENDAR_ERROR_NO_DATA != calendar_list_next(list))
-			break;
-	}
-
 	return CALENDAR_ERROR_NONE;
 }
 
