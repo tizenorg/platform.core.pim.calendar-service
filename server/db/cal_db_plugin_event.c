@@ -903,6 +903,33 @@ static int _cal_db_event_add_exdate(int original_event_id, char* recurrence_id)
 	return CALENDAR_ERROR_NONE;
 }
 
+static bool is_deleted_exception(int id)
+{
+	int ret = CALENDAR_ERROR_NONE;
+	char query[CAL_DB_SQL_MAX_LEN] = {0};
+	snprintf(query, sizeof(query), "SELECT schedule_id FROM "CAL_TABLE_DELETED" "
+			"WHERE schedule_id=%d", id);
+
+	sqlite3_stmt *stmt = NULL;
+	ret = cal_db_util_query_prepare(query, &stmt);
+	if (CALENDAR_ERROR_NONE != ret) {
+		/* LCOV_EXCL_START */
+		ERR("cal_db_util_query_prepare() Fail(%d)", ret);
+		SECURE("query[%s]", query);
+		return ret;
+		/* LCOV_EXCL_STOP */
+	}
+
+	ret = cal_db_util_stmt_step(stmt);
+	sqlite3_finalize(stmt);
+
+	if (CAL_SQLITE_ROW == ret) {
+		DBG("This record is already deleted, it could be exception record");
+		return true;
+	}
+	return false;
+}
+
 static int _cal_db_event_delete_record(int id)
 {
 	int ret = CALENDAR_ERROR_NONE;
@@ -916,11 +943,22 @@ static int _cal_db_event_delete_record(int id)
 	DBG("delete record(id:%d)", id);
 	RETVM_IF(id < 0, CALENDAR_ERROR_INVALID_PARAMETER, "id(%d) < 0", id);
 
+
+	/*
+	 * if parent is deleted first, exception record is failed to be deleted.
+	 * Becase exception record is deleted first, ret has SQLITE_DONE
+	 * Trigger in schema deletes exception first, before deleting parent.
+	 */
+	if (true == is_deleted_exception(id)) {
+		return CALENDAR_ERROR_NONE;
+	}
+
 	/* get calendar_id, created_ver, original_event_id, recurrence_id */
-	ret = _cal_db_event_get_deleted_data(id, &calendar_book_id, &created_ver, &original_event_id, &recurrence_id);
+	ret = _cal_db_event_get_deleted_data(id, &calendar_book_id, &created_ver,
+			&original_event_id, &recurrence_id);
 	if (CALENDAR_ERROR_NONE != ret) {
 		/* LCOV_EXCL_START */
-		DBG("_cal_db_event_get_deleted_data() Fail");
+		DBG("_cal_db_event_get_deleted_data() Fail(%d)", ret);
 		return ret;
 		/* LCOV_EXCL_STOP */
 	}
@@ -2536,10 +2574,11 @@ static int _cal_db_event_exception_update(cal_list_s *exception_list_s, int orig
 	return CALENDAR_ERROR_NONE;
 }
 
+
 static int _cal_db_event_get_deleted_data(int id, int* book_id, int* created_ver,
 		int* original_event_id, char** recurrence_id)
 {
-	int ret = 0;
+	int ret = CALENDAR_ERROR_NONE;
 	char query[CAL_DB_SQL_MAX_LEN] = {0};
 	sqlite3_stmt *stmt = NULL;
 
@@ -2549,8 +2588,9 @@ static int _cal_db_event_get_deleted_data(int id, int* book_id, int* created_ver
 	RETV_IF(NULL == recurrence_id, CALENDAR_ERROR_INVALID_PARAMETER);
 
 	snprintf(query, sizeof(query), "SELECT calendar_id, created_ver, "
-			"original_event_id, recurrence_id FROM %s WHERE id = %d ",
+			"original_event_id, recurrence_id FROM %s WHERE id=%d ",
 			CAL_TABLE_SCHEDULE, id);
+
 	ret = cal_db_util_query_prepare(query, &stmt);
 	if (CALENDAR_ERROR_NONE != ret) {
 		/* LCOV_EXCL_START */
@@ -2576,6 +2616,7 @@ static int _cal_db_event_get_deleted_data(int id, int* book_id, int* created_ver
 	*recurrence_id = cal_strdup((const char *)sqlite3_column_text(stmt, 3));
 
 	sqlite3_finalize(stmt);
+
 	return CALENDAR_ERROR_NONE;
 }
 
