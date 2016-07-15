@@ -25,8 +25,9 @@
 #include "cal_internal.h"
 #include "cal_db.h"
 
-#define __USER_VERSION 105
+#define __USER_VERSION 106
 
+/* LCOV_EXCL_START */
 static int _cal_server_update_get_db_version(sqlite3 *db, int *version)
 {
 	int ret = CALENDAR_ERROR_NONE;
@@ -36,18 +37,14 @@ static int _cal_server_update_get_db_version(sqlite3 *db, int *version)
 	snprintf(query, sizeof(query), "PRAGMA user_version;");
 	ret = sqlite3_prepare_v2(db, query, strlen(query), &stmt, NULL);
 	if (SQLITE_OK != ret) {
-		/* LCOV_EXCL_START */
 		ERR("sqlite3_prepare_v2() failed[%s]", sqlite3_errmsg(db));
 		return CALENDAR_ERROR_DB_FAILED;
-		/* LCOV_EXCL_STOP */
 	}
 	ret = sqlite3_step(stmt);
 	if (SQLITE_ROW != ret) {
-		/* LCOV_EXCL_START */
 		ERR("sqlite3_step() failed[%s]", sqlite3_errmsg(db));
 		sqlite3_finalize(stmt);
 		return CALENDAR_ERROR_DB_FAILED;
-		/* LCOV_EXCL_STOP */
 	}
 	if (version)
 		*version = (int)sqlite3_column_int(stmt, 0);
@@ -69,15 +66,12 @@ int cal_server_update(void)
 	snprintf(db_file, sizeof(db_file), "%s/%s", DB_PATH, CALS_DB_NAME);
 	ret = db_util_open(db_file, &__db, 0);
 	if (SQLITE_OK != ret) {
-		/* LCOV_EXCL_START */
 		ERR("db_util_open() fail(%d):[%s]", ret, db_file);
 		return CALENDAR_ERROR_DB_FAILED;
-		/* LCOV_EXCL_STOP */
 	}
 	_cal_server_update_get_db_version(__db, &old_version);
 	DBG("[%s] old version(%d)", db_file, old_version);
 
-	/* LCOV_EXCL_START */
 	if (old_version < 100) {
 		/* ----------------------- start modified 2013/08/22
 		 * added attendee_table(cutype, delegatee_uri, member), alarm_table(summary, action, attach).
@@ -87,7 +81,6 @@ int cal_server_update(void)
 			ERR("sqlite3_exec() failed: DROP VIEW event_calendar_attendee_view(%d) [%s]", ret, errmsg);
 			sqlite3_free(errmsg);
 		}
-
 		ret = sqlite3_exec(__db, "ALTER TABLE attendee_table ADD COLUMN attendee_cutype INTEGER", NULL, 0, &errmsg);
 		if (SQLITE_OK != ret) {
 			ERR("sqlite3_exec() failed: ALTER TABLE attendee_table ADD COLUMN attendee_cutype(%d) [%s]", ret, errmsg);
@@ -268,23 +261,59 @@ int cal_server_update(void)
 		}
 		old_version = 105;
 	}
-	/* LCOV_EXCL_STOP */
+	if (old_version == 105) {
+		/* ----------------------- start modified 2016/07/14
+		 * modify trigger trg_schedule_del
+		 * to delete alarm, attendee records of exception record
+		 */
+		ret = sqlite3_exec(__db, "DROP trigger trg_schedule_del", NULL, 0, &errmsg);
+		if (SQLITE_OK != ret) {
+			ERR("sqlite3_exec() Fail(%d)[%s]: DROP trigger trg_schedule_del", ret, errmsg);
+			sqlite3_free(errmsg);
+		}
+		ret = sqlite3_exec(__db,
+				"CREATE TRIGGER trg_schedule_del AFTER DELETE ON schedule_table "
+				"BEGIN "
+				"  DELETE FROM rrule_table WHERE event_id = old.id;"
+				"  DELETE FROM alarm_table WHERE event_id = old.id;"
+				"  DELETE FROM attendee_table WHERE event_id = old.id;"
+				"  DELETE FROM normal_instance_table WHERE event_id = old.id;"
+				"  DELETE FROM allday_instance_table WHERE event_id = old.id;"
+				"  DELETE FROM extended_table WHERE record_id = old.id AND record_type = 2;"
+				"  DELETE FROM extended_table WHERE record_id = old.id AND record_type = 3;"
+				"  DELETE FROM alarm_table WHERE event_id = (SELECT id FROM schedule_table WHERE original_event_id = old.id);"
+				"  DELETE FROM attendee_table WHERE event_id = (SELECT id FROM schedule_table WHERE original_event_id = old.id);"
+				"  DELETE FROM normal_instance_table WHERE event_id = (SELECT id FROM schedule_table WHERE original_event_id = old.id);"
+				"  DELETE FROM allday_instance_table WHERE event_id = (SELECT id FROM schedule_table WHERE original_event_id = old.id);"
+				"  DELETE FROM extended_table WHERE record_id = (SELECT id FROM schedule_table WHERE original_event_id = old.id) AND record_type = 2;"
+				"  DELETE FROM extended_table WHERE record_id = (SELECT id FROM schedule_table WHERE original_event_id = old.id) AND record_type = 3;"
+				"  DELETE FROM schedule_table WHERE original_event_id = old.id;"
+				"END;",
+				NULL, 0, &errmsg);
+		if (SQLITE_OK != ret) {
+			ERR("CREATE TRIGGER trg_schedule_del failed(%d:%s)", ret, errmsg);
+			sqlite3_free(errmsg);
+
+		}
+		old_version = __USER_VERSION;
+		/* ----------------------- end modified 2016/07/14
+		*/
+	}
 
 	/* update DB user_version */
 	snprintf(query, sizeof(query), "PRAGMA user_version = %d", __USER_VERSION);
 	ret = sqlite3_exec(__db, query, NULL, 0, &errmsg);
 	if (SQLITE_OK != ret) {
-		/* LCOV_EXCL_START */
 		ERR("sqlite3_exec() failed(%d) [%s]", ret, errmsg);
 		sqlite3_free(errmsg);
 		db_util_close(__db);
 		return CALENDAR_ERROR_SYSTEM;
-		/* LCOV_EXCL_STOP */
 	}
 	db_util_close(__db);
 	__db = NULL;
 
 	return CALENDAR_ERROR_NONE;
 }
+/* LCOV_EXCL_STOP */
 
 

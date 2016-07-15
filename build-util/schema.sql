@@ -15,7 +15,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
-PRAGMA user_version = 105;
+PRAGMA user_version = 106;
 PRAGMA journal_mode = WAL;
 
 CREATE TABLE schedule_table
@@ -88,12 +88,18 @@ CREATE TRIGGER trg_schedule_del AFTER DELETE ON schedule_table
  BEGIN
    DELETE FROM rrule_table WHERE event_id = old.id;
    DELETE FROM alarm_table WHERE event_id = old.id;
-   DELETE FROM schedule_table WHERE original_event_id = old.id;
+   DELETE FROM attendee_table WHERE event_id = old.id;
    DELETE FROM normal_instance_table WHERE event_id = old.id;
    DELETE FROM allday_instance_table WHERE event_id = old.id;
-   DELETE FROM attendee_table WHERE event_id = old.id;
    DELETE FROM extended_table WHERE record_id = old.id AND record_type = 2;
    DELETE FROM extended_table WHERE record_id = old.id AND record_type = 3;
+   DELETE FROM alarm_table WHERE event_id = (SELECT id FROM schedule_table WHERE original_event_id = old.id);
+   DELETE FROM attendee_table WHERE event_id = (SELECT id FROM schedule_table WHERE original_event_id = old.id);
+   DELETE FROM normal_instance_table WHERE event_id = (SELECT id FROM schedule_table WHERE original_event_id = old.id);
+   DELETE FROM allday_instance_table WHERE event_id = (SELECT id FROM schedule_table WHERE original_event_id = old.id);
+   DELETE FROM extended_table WHERE record_id = (SELECT id FROM schedule_table WHERE original_event_id = old.id) AND record_type = 2;
+   DELETE FROM extended_table WHERE record_id = (SELECT id FROM schedule_table WHERE original_event_id = old.id) AND record_type = 3;
+   DELETE FROM schedule_table WHERE original_event_id = old.id;
  END;
 
 -- type + 1: is cal_record_type_e = cal_sch_type_e + 1
